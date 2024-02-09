@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "ledit-client"
+version = "0.1.0"
+description = "A LED matrix infotainment system client"
+authors = ["Martyn van Dijke <martijnvdijke600@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.1.1"
+ruff = "^0.2.1"
+pytest = "^8.0.0"
+invoke = "^2.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
