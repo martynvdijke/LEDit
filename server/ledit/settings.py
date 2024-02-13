@@ -29,14 +29,15 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media/')
-
+MEDIA_ROOT = os.path.join(PROJECT_PATH, "media/")
+STATIC_ROOT = os.path.join(PROJECT_PATH, "static/")
 
 # Application definition
 
 INSTALLED_APPS = [
     "daphne",
     "debug_toolbar",
+    "django_bootstrap5",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -61,7 +62,9 @@ ROOT_URLCONF = "ledit.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(PROJECT_PATH, 'templates/'),],
+        "DIRS": [
+            os.path.join(PROJECT_PATH, "templates/"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -74,8 +77,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "ledit.wsgi.application"
-
+# WSGI_APPLICATION = "ledit.wsgi.application"
+ASGI_APPLICATION = "ledit.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -128,5 +131,3 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-ASGI_APPLICATION = "ledit.asgi.application"

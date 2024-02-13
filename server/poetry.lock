@@ -367,6 +367,20 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-bootstrap5"
+version = "23.4"
+description = "Bootstrap 5 for Django"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "django-bootstrap5-23.4.tar.gz", hash = "sha256:fbf9942a17e1f48b4142e78df9e85afb65e4066a20e38ec7c497d36ae5ef7256"},
+    {file = "django_bootstrap5-23.4-py3-none-any.whl", hash = "sha256:5181bf1e97afae6211e963f28f48d4a90c937a3b036b3f752f52260f0029f3bc"},
+]
+
+[package.dependencies]
+Django = ">=3.2"
+
+[[package]]
 name = "django-cors-headers"
 version = "4.3.1"
 description = "django-cors-headers is a Django application for handling the server headers required for Cross-Origin Resource Sharing (CORS)."
@@ -1145,4 +1159,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5b511f90a99d4b865bc935fd020f62264212b9e8767d030b03d3e8254cf689d9"
+content-hash = "b4927b56af6ff2d189bb7dfd81427b94e84aa93966e91e66680cffb87c0da0ff"
