@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "daphne",
     "debug_toolbar",
     "django_bootstrap5",
+    "ledit",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
