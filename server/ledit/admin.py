@@ -3,21 +3,29 @@ from django.contrib import admin
 from .models import (
     GeneralSettings,
     Image,
-    SonarrSettings,
-    RadarrSettings,
-    F1Settings,
-    WeatherSettings,
-    HomeAssistantSettings,
-    UntappedSettings,
-    StocksTrackerSettings,
+    Sonarr,
+    Radarr,
+    Readarr,
+    Lidarr,
+    F1,
+    Weather,
+    HomeAssistant,
+    Untapped,
+    StocksTracker,
+    CyrptoTracker,
+    Ical
 )
 
 admin.site.register(GeneralSettings)
 admin.site.register(Image)
-admin.site.register(SonarrSettings)
-admin.site.register(RadarrSettings)
-admin.site.register(F1Settings)
-admin.site.register(WeatherSettings)
-admin.site.register(HomeAssistantSettings)
-admin.site.register(UntappedSettings)
-admin.site.register(StocksTrackerSettings)
+admin.site.register(Sonarr)
+admin.site.register(Radarr)
+admin.site.register(Readarr)
+admin.site.register(Lidarr)
+admin.site.register(F1)
+admin.site.register(Weather)
+admin.site.register(HomeAssistant)
+admin.site.register(Untapped)
+admin.site.register(StocksTracker)
+admin.site.register(CyrptoTracker)
+admin.site.register(Ical)

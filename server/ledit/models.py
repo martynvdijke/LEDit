@@ -1,9 +1,15 @@
 from django.db import models
-# from .singleton_model import models.Model
+from .render_model import RenderModel
+import base64
 
-
-class Image(models.Model):
+class Image(RenderModel):
     image = models.ImageField(upload_to="custom_images")
+    
+    def get_png(self):
+        with open(self.image.path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read())
+            data = f"{encoded_string}"
+        return data
 
 
 class DeviceSettings(models.Model):
@@ -15,70 +21,76 @@ class DeviceSettings(models.Model):
     height = models.IntegerField(default="64")
 
 
-class SonarrSettings(models.Model):
-    token = models.CharField(max_length=100, default='')
+class Sonarr(RenderModel):
+    token = models.CharField(max_length=100, default="")
     url = models.CharField(max_length=100)
 
 
-class RadarrSettings(models.Model):
-    token = models.CharField(max_length=100, default='')
+class Radarr(RenderModel):
+    token = models.CharField(max_length=100, default="")
     url = models.CharField(max_length=100)
 
 
-class F1Settings(models.Model):
-    token = models.CharField(max_length=100, default='')
+class Readarr(RenderModel):
+    token = models.CharField(max_length=100, default="")
     url = models.CharField(max_length=100)
 
 
-class WeatherSettings(models.Model):
-    token = models.CharField(max_length=100, default='')
+class Lidarr(RenderModel):
+    token = models.CharField(max_length=100, default="")
     url = models.CharField(max_length=100)
 
 
-class HomeAssistantSettings(models.Model):
-    token = models.CharField(max_length=100, default='')
+class F1(RenderModel):
+    token = models.CharField(max_length=100, default="")
     url = models.CharField(max_length=100)
 
 
-class UntappedSettings(models.Model):
-    token = models.CharField(max_length=100, default='')
+class Weather(RenderModel):
+    token = models.CharField(max_length=100, default="")
     url = models.CharField(max_length=100)
 
 
-class StocksTrackerSettings(models.Model):
-    token = models.CharField(max_length=100, default='')
+class HomeAssistant(RenderModel):
+    token = models.CharField(max_length=100, default="")
+    url = models.CharField(max_length=100)
+
+
+class Untapped(RenderModel):
+    token = models.CharField(max_length=100, default="")
+    url = models.CharField(max_length=100)
+
+
+class StocksTracker(RenderModel):
+    token = models.CharField(max_length=100, default="")
+    url = models.CharField(max_length=100)
+
+
+class CyrptoTracker(RenderModel):
+    token = models.CharField(max_length=100, default="")
+    url = models.CharField(max_length=100)
+
+
+class Ical(RenderModel):
+    token = models.CharField(max_length=100, default="")
     url = models.CharField(max_length=100)
 
 
 class GeneralSettings(models.Model):
     timeout = models.FloatField(max_length=10)
-    sonarr = models.OneToOneField(
-        SonarrSettings,
-        on_delete=models.CASCADE,
-    )
-    radarr = models.OneToOneField(
-        RadarrSettings,
-        on_delete=models.CASCADE,
-    )
-    f1 = models.OneToOneField(
-        F1Settings,
-        on_delete=models.CASCADE,
-    )
-    wheater = models.OneToOneField(
-        WeatherSettings,
-        on_delete=models.CASCADE,
-    )
-    homeassitant = models.OneToOneField(
-        HomeAssistantSettings,
-        on_delete=models.CASCADE,
-    )
-    untapped = models.OneToOneField(
-        UntappedSettings,
-        on_delete=models.CASCADE,
-    )
-    stocks_tracker = models.OneToOneField(
-        StocksTrackerSettings,
-        on_delete=models.CASCADE,
-    )
+    random = models.BooleanField()
+    width = models.IntegerField(default="64")
+    height = models.IntegerField(default="64")
 
-    images = models.ManyToManyField(Image)
+    sonarr = models.ManyToManyField(Sonarr, blank=True)
+    radarr = models.ManyToManyField(Radarr, blank=True)
+    readarr = models.ManyToManyField(Readarr, blank=True)
+    lidarr = models.ManyToManyField(Lidarr, blank=True)
+
+    f1 = models.ManyToManyField(F1, blank=True)
+    wheater = models.ManyToManyField(Weather, blank=True)
+    homeassitant = models.ManyToManyField(HomeAssistant, blank=True)
+    untapped = models.ManyToManyField(Untapped, blank=True)
+    stocks_tracker = models.ManyToManyField(StocksTracker, blank=True)
+
+    images = models.ManyToManyField(Image, blank=True)
