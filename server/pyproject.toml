@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 django = "^5.0.4"
 channels = {extras = ["daphne"], version = "^4.1.0"}
 django-cors-headers = "^4.3.1"
@@ -18,7 +18,8 @@ homeassistant-api = "^4.2.2.post1"
 pyarr = "^5.2.0"
 untappd = "^0.5"
 icalendar = "^5.0.12"
-pillow = "^10.3.0"
+
+p5 = "^0.8.4"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.0"
