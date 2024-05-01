@@ -10,5 +10,7 @@ def draw():
    p5.text("LAX", (0, 10))
    p5.text("LHR", (0, 70))
    p5.text("TXL", (0, 100))
+   p5.save_frame("output.png")
+   exit()
    
-p5.run(sketch_setup=setup,sketch_draw=draw,renderer="skia")
+p5.run(sketch_setup=setup,sketch_draw=draw)
