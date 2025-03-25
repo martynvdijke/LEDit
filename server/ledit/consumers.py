@@ -31,10 +31,13 @@ class ChatConsumer(WebsocketConsumer):
             
         if object.random:
             random.shuffle(all)
+        
+        print(object.f1.exists(), object.untapped.exists())
             
         while True:
             for data_sources in all:
                 for data_source in data_sources:
+                    print(data_source)
                     data = data_source.get_png()
                     self.send(text_data=data)
 

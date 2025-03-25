@@ -1,6 +1,8 @@
 from django.db import models
 from .render_model import RenderModel
 import base64
+from .themes import F1_THEME, UNTAPPD_THEME
+
 
 class Image(RenderModel):
     image = models.ImageField(upload_to="custom_images")
@@ -25,6 +27,17 @@ class Sonarr(RenderModel):
     token = models.CharField(max_length=100, default="")
     url = models.CharField(max_length=100)
 
+    def get_png(self):
+        my_dict = {
+        "name": "Test Project",
+        "version": "1.0",
+        "status": "active",
+        "date": "2024-03-25"
+        }
+        image_bytes = self.render_dict(my_dict)
+        encoded_string = base64.b64encode(image_bytes)
+        data = f"{encoded_string}"
+        return data
 
 class Radarr(RenderModel):
     token = models.CharField(max_length=100, default="")
@@ -44,7 +57,16 @@ class Lidarr(RenderModel):
 class F1(RenderModel):
     token = models.CharField(max_length=100, default="")
     url = models.CharField(max_length=100)
-
+    def get_png(self):
+        my_dict = {
+            "Next Race": "Monaco GP",
+            "Time": "14:00",
+            "Leader": "Max Verstappen",
+            "Points": "125"
+        }
+        image_bytes = self.render_dict(my_dict, theme=F1_THEME)
+        encoded_string = base64.b64encode(image_bytes)
+        return f"{encoded_string}"
 
 class Weather(RenderModel):
     token = models.CharField(max_length=100, default="")
@@ -59,7 +81,16 @@ class HomeAssistant(RenderModel):
 class Untapped(RenderModel):
     token = models.CharField(max_length=100, default="")
     url = models.CharField(max_length=100)
-
+    def get_png(self):
+        my_dict = {
+            "Last Beer": "IPA",
+            "Rating": "4.5/5",
+            "ABV": "6.5%",
+            "Brewery": "Craft Bros"
+        }
+        image_bytes = self.render_dict(my_dict, theme=UNTAPPD_THEME)
+        encoded_string = base64.b64encode(image_bytes)
+        return f"{encoded_string}"
 
 class StocksTracker(RenderModel):
     token = models.CharField(max_length=100, default="")
