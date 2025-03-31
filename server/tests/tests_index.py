@@ -5,7 +5,6 @@ client = Client()
 
 
 class IndexView(TestCase):
-
     def test_index(self):
         print("test")
         response = client.get("/")

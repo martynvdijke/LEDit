@@ -1,34 +1,95 @@
 {% extends "base.html" %} {% block content %}
 <div class="container mt-5">
-  <h3>Welcome to live feed</h3>
-  <div class="row">
-  </div>
-  <img id="feed"/>
+    <h3>Welcome to live feed</h3>
+    <div class="row">
+        <div id="media-container">
+            <img id="feed"/>
+        </div>
+    </div>
 </div>
 
 {% block js_script %}
 <script>
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    const baseDelay = 1000;
 
-  function establishWebSocketConnection() {
-    const socket = new WebSocket("ws://" + window.location.host + "/ws/feed");
-    
-    socket.onopen = function(event) {
-        console.log('WebSocket connection established');
-    };
-    
-    socket.onmessage = function(event) {
-      var imgData = event.data.slice(1);
-      imgData = imgData.slice(1);
-      imgData = imgData.slice(0, -1);
-      document.getElementById("feed").src = "data:image/png;base64," + imgData;
-    };
-    
-    socket.onclose = function(event) {
-        console.log('WebSocket connection closed');
-    };
-  }
-  window.addEventListener('load', establishWebSocketConnection);
+    function createImageElement() {
+        const img = document.createElement('img');
+        img.id = 'feed';
+        return img;
+    }
 
+    function establishWebSocketConnection() {
+        const socket = new WebSocket("ws://" + window.location.host + "/ws/feed");
+        
+        socket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                const imgData = data.image.slice(2, -1);
+                const format = data.format.toLowerCase();
+                const mediaContainer = document.getElementById("media-container");
+                
+                if (format === 'mp4') {
+                    const video = document.createElement('video');
+                    video.autoplay = true;
+                    video.loop = false;  // Don't loop the video
+                    video.muted = true;
+                    video.style.width = '100%';
+                    video.style.height = 'auto';
+                    video.src = `data:video/mp4;base64,${imgData}`;
+                    
+                    // When video ends, switch back to image element
+                    video.onended = function() {
+                        const img = createImageElement();
+                        mediaContainer.replaceChild(img, video);
+                    };
+                    
+                    const currentElement = document.getElementById("feed") || mediaContainer.firstChild;
+                    mediaContainer.replaceChild(video, currentElement);
+                } else {
+                    // If we don't have an img element, create one
+                    if (!document.getElementById("feed")) {
+                        const img = createImageElement();
+                        mediaContainer.replaceChild(img, mediaContainer.firstChild);
+                    }
+                    document.getElementById("feed").src = `data:image/${format};base64,${imgData}`;
+                }
+            } catch (error) {
+                console.error('Error processing data:', error);
+            }
+        };
+        
+        socket.onopen = function(event) {
+            console.log('WebSocket connection established');
+            reconnectAttempts = 0; // Reset attempts on successful connection
+        };
+        
+        socket.onclose = function(event) {
+            console.log('WebSocket connection closed');
+            
+            if (reconnectAttempts < maxReconnectAttempts) {
+                const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+                console.log(`Attempting to reconnect in ${delay/1000} seconds...`);
+                
+                setTimeout(() => {
+                    reconnectAttempts++;
+                    establishWebSocketConnection();
+                }, delay);
+            } else {
+                console.error('Max reconnection attempts reached');
+                // Optionally show user-facing error message
+                document.getElementById("feed").insertAdjacentHTML('beforebegin', 
+                    '<div class="alert alert-danger">Connection lost. Please refresh the page.</div>');
+            }
+        };
 
+        socket.onerror = function(error) {
+            console.error('WebSocket error:', error);
+        };
+    }
+    
+    window.addEventListener('load', establishWebSocketConnection);
 </script>
-{% endblock %} {% endblock %}
+{% endblock %}
+{% endblock %}

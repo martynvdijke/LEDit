@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("ledit", "0002_generalsettings_random_alter_generalsettings_f1_and_more"),
     ]
