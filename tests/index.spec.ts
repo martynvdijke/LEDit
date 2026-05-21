@@ -32,4 +32,25 @@ test.describe('Index / Live Feed', () => {
     await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible();
   });
+
+  test('should show source and next labels', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('#source-label')).toBeVisible();
+    await expect(page.locator('#next-label')).toBeVisible();
+  });
+
+  test('should have feed control buttons', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('#btn-pause')).toBeVisible();
+    await expect(page.locator('#btn-skip')).toBeVisible();
+    await expect(page.locator('#btn-fullscreen')).toBeVisible();
+    await expect(page.locator('#btn-pause')).toHaveText('Pause');
+    await expect(page.locator('#btn-skip')).toHaveText('Skip');
+    await expect(page.locator('#btn-fullscreen')).toHaveText('Fullscreen');
+  });
+
+  test('should have matrix overlay canvas', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('#matrix-overlay')).toBeAttached();
+  });
 });

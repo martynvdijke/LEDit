@@ -5,6 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LEDit - Live Feed</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #matrix-overlay {
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            opacity: 0.15;
+        }
+        #media-container {
+            position: relative;
+            display: inline-block;
+        }
+        .feed-controls .btn {
+            margin-right: 0.25rem;
+        }
+        #status-text.connected { color: #198754; }
+        #status-text.disconnected { color: #dc3545; }
+        #status-text.receiving { color: #0d6efd; }
+        .fullscreen-active {
+            background: #000;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fullscreen-active #matrix-overlay { opacity: 0.08; }
+    </style>
 </head>
 <body>
     <div class="d-flex">
@@ -56,10 +87,20 @@
             <div class="row">
                 <div class="col-12 text-center">
                     <h1>LEDit Live Feed</h1>
-                    <div id="media-container" class="mt-4">
+                    <div class="d-flex justify-content-center align-items-center gap-3 mb-3">
+                        <span id="source-label" class="badge bg-primary fs-5">Waiting...</span>
+                        <span id="status-text" class="fs-6">Connecting...</span>
+                        <span id="next-label" class="badge bg-secondary fs-6">Next: --</span>
+                    </div>
+                    <div id="media-container" class="mt-2">
+                        <canvas id="matrix-overlay" width="400" height="400"></canvas>
                         <img id="media-display" src="" alt="LEDit Feed" style="max-width: 100%; display: none;">
                         <video id="video-display" autoplay muted style="max-width: 100%; display: none;"></video>
-                        <p id="status-text" class="text-muted">Connecting...</p>
+                    </div>
+                    <div class="feed-controls mt-3">
+                        <button id="btn-pause" class="btn btn-warning" onclick="togglePause()">Pause</button>
+                        <button id="btn-skip" class="btn btn-primary" onclick="skipFeed()">Skip</button>
+                        <button id="btn-fullscreen" class="btn btn-secondary" onclick="toggleFullscreen()">Fullscreen</button>
                     </div>
                 </div>
             </div>
@@ -70,9 +111,46 @@
         const imgEl = document.getElementById('media-display');
         const videoEl = document.getElementById('video-display');
         const statusEl = document.getElementById('status-text');
+        const sourceEl = document.getElementById('source-label');
+        const nextEl = document.getElementById('next-label');
+        const canvas = document.getElementById('matrix-overlay');
+        const ctx = canvas.getContext('2d');
         let ws = null;
         let reconnectAttempts = 0;
         const maxReconnect = 5;
+        let paused = false;
+        let fullscreen = false;
+
+        function drawMatrix(displayWidth) {
+            const w = 64;
+            const h = 64;
+            canvas.width = displayWidth;
+            canvas.height = displayWidth;
+            const cellSize = displayWidth / w;
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.3)';
+            ctx.lineWidth = 0.5;
+            for (let x = 0; x <= w; x++) {
+                ctx.beginPath();
+                ctx.moveTo(x * cellSize, 0);
+                ctx.lineTo(x * cellSize, displayWidth);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= h; y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, y * cellSize);
+                ctx.lineTo(displayWidth, y * cellSize);
+                ctx.stroke();
+            }
+        }
+
+        const statusObserver = new MutationObserver(function() {
+            const text = statusEl.textContent.toLowerCase();
+            statusEl.className = 'fs-6';
+            if (text.includes('connect')) statusEl.classList.add('connected');
+            else if (text.includes('disconnect')) statusEl.classList.add('disconnected');
+            else if (text.includes('receiv')) statusEl.classList.add('receiving');
+        });
+        statusObserver.observe(statusEl, { childList: true, characterData: true, subtree: true });
 
         function connect() {
             const host = window.location.host;
@@ -85,6 +163,12 @@
 
             ws.onmessage = function(event) {
                 const msg = JSON.parse(event.data);
+                if (msg.source) {
+                    sourceEl.textContent = msg.source;
+                }
+                if (msg.next) {
+                    nextEl.textContent = 'Next: ' + msg.next;
+                }
                 if (msg.format === 'MP4') {
                     imgEl.style.display = 'none';
                     videoEl.style.display = 'block';
@@ -93,17 +177,22 @@
                     videoEl.onended = function() {
                         videoEl.style.display = 'none';
                     };
-                } else {
+                    drawMatrix(videoEl.clientWidth || 400);
+                } else if (msg.format) {
                     videoEl.style.display = 'none';
                     videoEl.pause();
                     imgEl.style.display = 'block';
                     imgEl.src = 'data:image/' + msg.format.toLowerCase() + ';base64,' + msg.image;
+                    imgEl.onload = function() {
+                        drawMatrix(imgEl.clientWidth || 400);
+                    };
                 }
                 statusEl.textContent = 'Receiving';
             };
 
             ws.onclose = function() {
                 statusEl.textContent = 'Disconnected';
+                sourceEl.textContent = '--';
                 imgEl.style.display = 'none';
                 videoEl.style.display = 'none';
                 if (reconnectAttempts < maxReconnect) {
@@ -120,6 +209,36 @@
                 ws.close();
             };
         }
+
+        window.togglePause = function() {
+            if (!ws) return;
+            paused = !paused;
+            document.getElementById('btn-pause').textContent = paused ? 'Resume' : 'Pause';
+            ws.send(JSON.stringify({ action: paused ? 'pause' : 'resume' }));
+        };
+
+        window.skipFeed = function() {
+            if (!ws) return;
+            ws.send(JSON.stringify({ action: 'next' }));
+        };
+
+        window.toggleFullscreen = function() {
+            const container = document.querySelector('.container-fluid');
+            const feedSection = container.querySelector('.row');
+            if (!fullscreen) {
+                feedSection.classList.add('fullscreen-active');
+                document.querySelector('.d-flex > div:first-child').style.display = 'none';
+                document.querySelector('.d-flex > .container-fluid').style.padding = '0';
+                document.getElementById('btn-fullscreen').textContent = 'Exit Fullscreen';
+            } else {
+                feedSection.classList.remove('fullscreen-active');
+                document.querySelector('.d-flex > div:first-child').style.display = '';
+                document.querySelector('.d-flex > .container-fluid').style.padding = '';
+                document.getElementById('btn-fullscreen').textContent = 'Fullscreen';
+            }
+            fullscreen = !fullscreen;
+        };
+
         connect();
     })();
     </script>
