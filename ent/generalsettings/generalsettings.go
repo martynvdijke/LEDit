@@ -40,6 +40,8 @@ const (
 	EdgeCrypto = "crypto"
 	// EdgeSchedules holds the string denoting the schedules edge name in mutations.
 	EdgeSchedules = "schedules"
+	// EdgeDeviceSettings holds the string denoting the device_settings edge name in mutations.
+	EdgeDeviceSettings = "device_settings"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -112,6 +114,13 @@ const (
 	SchedulesInverseTable = "schedules"
 	// SchedulesColumn is the table column denoting the schedules relation/edge.
 	SchedulesColumn = "general_settings_schedules"
+	// DeviceSettingsTable is the table that holds the device_settings relation/edge.
+	DeviceSettingsTable = "device_settings"
+	// DeviceSettingsInverseTable is the table name for the DeviceSettings entity.
+	// It exists in this package in order to avoid circular dependency with the "devicesettings" package.
+	DeviceSettingsInverseTable = "device_settings"
+	// DeviceSettingsColumn is the table column denoting the device_settings relation/edge.
+	DeviceSettingsColumn = "general_settings_device_settings"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -307,6 +316,20 @@ func BySchedules(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newSchedulesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByDeviceSettingsCount orders the results by device_settings count.
+func ByDeviceSettingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDeviceSettingsStep(), opts...)
+	}
+}
+
+// ByDeviceSettings orders the results by device_settings terms.
+func ByDeviceSettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDeviceSettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -375,5 +398,12 @@ func newSchedulesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SchedulesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, SchedulesTable, SchedulesColumn),
+	)
+}
+func newDeviceSettingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DeviceSettingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DeviceSettingsTable, DeviceSettingsColumn),
 	)
 }

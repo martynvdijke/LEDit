@@ -186,6 +186,7 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 				log.Printf("WebSocket write error: %v", err)
 				return
 			}
+			TrackDisplay(sw.Name, timeout.Seconds())
 
 			// Wait for timeout or skip signal
 			deadline := time.Now().Add(timeout)

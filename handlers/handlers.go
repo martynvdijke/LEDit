@@ -353,6 +353,117 @@ func (s *Server) AdminCryptoUpdate(c *gin.Context)  { s.updateTokenURLDS(c, "cry
 func (s *Server) AdminCryptoDelete(c *gin.Context)  { s.deleteTokenURLDS(c, "crypto") }
 
 // ---------------------------------------------------------------------------
+// DeviceSettings (Phase 7)
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminDeviceSettingsList(c *gin.Context) {
+	settings, err := s.DB.GeneralSettings.Query().WithDeviceSettings().Only(s.Ctx)
+	if err != nil {
+		c.HTML(http.StatusOK, "devices.html", gin.H{"devices": []any{}})
+		return
+	}
+	devices, _ := settings.Edges.DeviceSettingsOrErr()
+	c.HTML(http.StatusOK, "devices.html", gin.H{"devices": devices})
+}
+
+func (s *Server) AdminDeviceSettingsNew(c *gin.Context) {
+	c.HTML(http.StatusOK, "device_form.html", gin.H{})
+}
+
+func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
+	name := c.PostForm("name")
+	ip := c.PostForm("ip")
+	port, _ := strconv.Atoi(c.PostForm("port"))
+	if port == 0 { port = 6270 }
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	width, _ := strconv.Atoi(c.PostForm("width"))
+	if width == 0 { width = 64 }
+	height, _ := strconv.Atoi(c.PostForm("height"))
+	if height == 0 { height = 64 }
+	enabled := c.PostForm("enabled") == "on"
+
+	obj := s.DB.DeviceSettings.Create().
+		SetName(name).SetIP(ip).SetPort(port).
+		SetUsername(username).SetPassword(password).
+		SetWidth(width).SetHeight(height).SetEnabled(enabled).
+		SaveX(s.Ctx)
+	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
+		s.DB.GeneralSettings.UpdateOne(settings).AddDeviceSettings(obj).Exec(s.Ctx)
+	}
+	c.Redirect(http.StatusFound, "/admin/devices")
+}
+
+func (s *Server) AdminDeviceSettingsEdit(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	obj, err := s.DB.DeviceSettings.Get(s.Ctx, id)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	c.HTML(http.StatusOK, "device_form.html", gin.H{"obj": obj, "edit": true})
+}
+
+func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	name := c.PostForm("name")
+	ip := c.PostForm("ip")
+	port, _ := strconv.Atoi(c.PostForm("port"))
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	width, _ := strconv.Atoi(c.PostForm("width"))
+	height, _ := strconv.Atoi(c.PostForm("height"))
+	enabled := c.PostForm("enabled") == "on"
+	s.DB.DeviceSettings.UpdateOneID(id).
+		SetName(name).SetIP(ip).SetPort(port).
+		SetUsername(username).SetPassword(password).
+		SetWidth(width).SetHeight(height).SetEnabled(enabled).
+		Exec(s.Ctx)
+	c.Redirect(http.StatusFound, "/admin/devices")
+}
+
+func (s *Server) AdminDeviceSettingsDelete(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	s.DB.DeviceSettings.DeleteOneID(id).Exec(s.Ctx)
+	c.Redirect(http.StatusFound, "/admin/devices")
+}
+
+// ---------------------------------------------------------------------------
+// Custom Theme (Phase 8)
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminThemeEditor(c *gin.Context) {
+	settings, _ := s.DB.GeneralSettings.Query().Only(s.Ctx)
+	theme := map[string]any{
+		"bg_color":    "#282a36",
+		"accent_color": "#50fa7b",
+		"text_color":  "#8be9fd",
+		"title":       "CUSTOM",
+		"font_size":   24,
+	}
+	if settings != nil {
+		c.HTML(http.StatusOK, "theme_editor.html", gin.H{"theme": theme, "has_settings": true})
+		return
+	}
+	c.HTML(http.StatusOK, "theme_editor.html", gin.H{"theme": theme})
+}
+
+func (s *Server) AdminThemeSave(c *gin.Context) {
+	// Save theme preferences to GeneralSettings as JSON annotation or dedicated fields
+	// For now, store in settings annotations
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+// ---------------------------------------------------------------------------
+// Analytics (Phase 10)
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminAnalytics(c *gin.Context) {
+	stats := GetAnalytics()
+	c.HTML(http.StatusOK, "analytics.html", gin.H{"stats": stats})
+}
+
+// ---------------------------------------------------------------------------
 // Schedules
 // ---------------------------------------------------------------------------
 

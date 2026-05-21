@@ -31,5 +31,6 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("videos", Video.Type),
 		edge.To("crypto", Crypto.Type),
 		edge.To("schedules", Schedule.Type),
+		edge.To("device_settings", DeviceSettings.Type),
 	}
 }

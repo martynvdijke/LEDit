@@ -52,9 +52,11 @@ type GeneralSettingsEdges struct {
 	Crypto []*Crypto `json:"crypto,omitempty"`
 	// Schedules holds the value of the schedules edge.
 	Schedules []*Schedule `json:"schedules,omitempty"`
+	// DeviceSettings holds the value of the device_settings edge.
+	DeviceSettings []*DeviceSettings `json:"device_settings,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [11]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -145,6 +147,15 @@ func (e GeneralSettingsEdges) SchedulesOrErr() ([]*Schedule, error) {
 		return e.Schedules, nil
 	}
 	return nil, &NotLoadedError{edge: "schedules"}
+}
+
+// DeviceSettingsOrErr returns the DeviceSettings value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) DeviceSettingsOrErr() ([]*DeviceSettings, error) {
+	if e.loadedTypes[10] {
+		return e.DeviceSettings, nil
+	}
+	return nil, &NotLoadedError{edge: "device_settings"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -264,6 +275,11 @@ func (_m *GeneralSettings) QueryCrypto() *CryptoQuery {
 // QuerySchedules queries the "schedules" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QuerySchedules() *ScheduleQuery {
 	return NewGeneralSettingsClient(_m.config).QuerySchedules(_m)
+}
+
+// QueryDeviceSettings queries the "device_settings" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryDeviceSettings() *DeviceSettingsQuery {
+	return NewGeneralSettingsClient(_m.config).QueryDeviceSettings(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

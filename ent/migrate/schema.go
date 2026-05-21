@@ -29,6 +29,33 @@ var (
 			},
 		},
 	}
+	// DeviceSettingsColumns holds the columns for the "device_settings" table.
+	DeviceSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Default: ""},
+		{Name: "ip", Type: field.TypeString, Default: ""},
+		{Name: "port", Type: field.TypeInt, Default: 6270},
+		{Name: "username", Type: field.TypeString, Default: ""},
+		{Name: "password", Type: field.TypeString, Default: ""},
+		{Name: "width", Type: field.TypeInt, Default: 64},
+		{Name: "height", Type: field.TypeInt, Default: 64},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "general_settings_device_settings", Type: field.TypeInt, Nullable: true},
+	}
+	// DeviceSettingsTable holds the schema information for the "device_settings" table.
+	DeviceSettingsTable = &schema.Table{
+		Name:       "device_settings",
+		Columns:    DeviceSettingsColumns,
+		PrimaryKey: []*schema.Column{DeviceSettingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "device_settings_general_settings_device_settings",
+				Columns:    []*schema.Column{DeviceSettingsColumns[9]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// F1sColumns holds the columns for the "f1s" table.
 	F1sColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -234,6 +261,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CryptosTable,
+		DeviceSettingsTable,
 		F1sTable,
 		GeneralSettingsTable,
 		HomeAssistantsTable,
@@ -249,6 +277,7 @@ var (
 
 func init() {
 	CryptosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	DeviceSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	F1sTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	HomeAssistantsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	ImagesTable.ForeignKeys[0].RefTable = GeneralSettingsTable

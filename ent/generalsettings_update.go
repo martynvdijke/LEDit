@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"ledit/ent/crypto"
+	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -264,6 +265,21 @@ func (_u *GeneralSettingsUpdate) AddSchedules(v ...*Schedule) *GeneralSettingsUp
 	return _u.AddScheduleIDs(ids...)
 }
 
+// AddDeviceSettingIDs adds the "device_settings" edge to the DeviceSettings entity by IDs.
+func (_u *GeneralSettingsUpdate) AddDeviceSettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddDeviceSettingIDs(ids...)
+	return _u
+}
+
+// AddDeviceSettings adds the "device_settings" edges to the DeviceSettings entity.
+func (_u *GeneralSettingsUpdate) AddDeviceSettings(v ...*DeviceSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDeviceSettingIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdate) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -477,6 +493,27 @@ func (_u *GeneralSettingsUpdate) RemoveSchedules(v ...*Schedule) *GeneralSetting
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveScheduleIDs(ids...)
+}
+
+// ClearDeviceSettings clears all "device_settings" edges to the DeviceSettings entity.
+func (_u *GeneralSettingsUpdate) ClearDeviceSettings() *GeneralSettingsUpdate {
+	_u.mutation.ClearDeviceSettings()
+	return _u
+}
+
+// RemoveDeviceSettingIDs removes the "device_settings" edge to DeviceSettings entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveDeviceSettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveDeviceSettingIDs(ids...)
+	return _u
+}
+
+// RemoveDeviceSettings removes "device_settings" edges to DeviceSettings entities.
+func (_u *GeneralSettingsUpdate) RemoveDeviceSettings(v ...*DeviceSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDeviceSettingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -986,6 +1023,51 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.DeviceSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DeviceSettingsTable,
+			Columns: []string{generalsettings.DeviceSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicesettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDeviceSettingsIDs(); len(nodes) > 0 && !_u.mutation.DeviceSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DeviceSettingsTable,
+			Columns: []string{generalsettings.DeviceSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicesettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DeviceSettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DeviceSettingsTable,
+			Columns: []string{generalsettings.DeviceSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicesettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -1233,6 +1315,21 @@ func (_u *GeneralSettingsUpdateOne) AddSchedules(v ...*Schedule) *GeneralSetting
 	return _u.AddScheduleIDs(ids...)
 }
 
+// AddDeviceSettingIDs adds the "device_settings" edge to the DeviceSettings entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddDeviceSettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddDeviceSettingIDs(ids...)
+	return _u
+}
+
+// AddDeviceSettings adds the "device_settings" edges to the DeviceSettings entity.
+func (_u *GeneralSettingsUpdateOne) AddDeviceSettings(v ...*DeviceSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDeviceSettingIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdateOne) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -1446,6 +1543,27 @@ func (_u *GeneralSettingsUpdateOne) RemoveSchedules(v ...*Schedule) *GeneralSett
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveScheduleIDs(ids...)
+}
+
+// ClearDeviceSettings clears all "device_settings" edges to the DeviceSettings entity.
+func (_u *GeneralSettingsUpdateOne) ClearDeviceSettings() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearDeviceSettings()
+	return _u
+}
+
+// RemoveDeviceSettingIDs removes the "device_settings" edge to DeviceSettings entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveDeviceSettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveDeviceSettingIDs(ids...)
+	return _u
+}
+
+// RemoveDeviceSettings removes "device_settings" edges to DeviceSettings entities.
+func (_u *GeneralSettingsUpdateOne) RemoveDeviceSettings(v ...*DeviceSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDeviceSettingIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -1978,6 +2096,51 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DeviceSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DeviceSettingsTable,
+			Columns: []string{generalsettings.DeviceSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicesettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDeviceSettingsIDs(); len(nodes) > 0 && !_u.mutation.DeviceSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DeviceSettingsTable,
+			Columns: []string{generalsettings.DeviceSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicesettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DeviceSettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DeviceSettingsTable,
+			Columns: []string{generalsettings.DeviceSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicesettings.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

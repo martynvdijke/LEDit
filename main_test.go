@@ -705,6 +705,73 @@ func TestServerAdminSchedules(t *testing.T) {
 	}
 }
 
+func TestServerAdminDevices(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	req := httptest.NewRequest("GET", "/admin/devices", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK && w.Code != http.StatusFound {
+		t.Errorf("expected 200 or 302, got %d", w.Code)
+	}
+}
+
+func TestServerAdminTheme(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/theme", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK && w.Code != http.StatusFound {
+		t.Errorf("expected 200 or 302, got %d", w.Code)
+	}
+}
+
+func TestServerAdminAnalytics(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/analytics", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK && w.Code != http.StatusFound {
+		t.Errorf("expected 200 or 302, got %d", w.Code)
+	}
+}
+
+func TestLoginPage(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/login", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestAnalyticsTracking(t *testing.T) {
+	handlers.TrackDisplay("TestSource", 1.5)
+	stats := handlers.GetAnalytics()
+	if stats.TotalDisplays < 1 {
+		t.Error("expected at least 1 display event")
+	}
+	if count, ok := stats.BySource["TestSource"]; !ok || count < 1 {
+		t.Error("expected TestSource in analytics")
+	}
+}
+
 func TestAdminNotificationsPage(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()

@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Crypto is the client for interacting with the Crypto builders.
 	Crypto *CryptoClient
+	// DeviceSettings is the client for interacting with the DeviceSettings builders.
+	DeviceSettings *DeviceSettingsClient
 	// F1 is the client for interacting with the F1 builders.
 	F1 *F1Client
 	// GeneralSettings is the client for interacting with the GeneralSettings builders.
@@ -166,6 +168,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Crypto = NewCryptoClient(tx.config)
+	tx.DeviceSettings = NewDeviceSettingsClient(tx.config)
 	tx.F1 = NewF1Client(tx.config)
 	tx.GeneralSettings = NewGeneralSettingsClient(tx.config)
 	tx.HomeAssistant = NewHomeAssistantClient(tx.config)

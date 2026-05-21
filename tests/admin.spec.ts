@@ -56,6 +56,9 @@ test.describe('Sidebar Navigation', () => {
     await expect(page.getByRole('link', { name: 'Add Crypto' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Notifications' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Schedules' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Devices' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Theme' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Analytics' })).toBeVisible();
   });
 
   test('should navigate to settings via sidebar', async ({ page }) => {

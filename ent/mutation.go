@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"ledit/ent/crypto"
+	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -34,6 +35,7 @@ const (
 
 	// Node types.
 	TypeCrypto          = "Crypto"
+	TypeDeviceSettings  = "DeviceSettings"
 	TypeF1              = "F1"
 	TypeGeneralSettings = "GeneralSettings"
 	TypeHomeAssistant   = "HomeAssistant"
@@ -426,6 +428,812 @@ func (m *CryptoMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Crypto edge %s", name)
 }
 
+// DeviceSettingsMutation represents an operation that mutates the DeviceSettings nodes in the graph.
+type DeviceSettingsMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	name          *string
+	ip            *string
+	port          *int
+	addport       *int
+	username      *string
+	password      *string
+	width         *int
+	addwidth      *int
+	height        *int
+	addheight     *int
+	enabled       *bool
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*DeviceSettings, error)
+	predicates    []predicate.DeviceSettings
+}
+
+var _ ent.Mutation = (*DeviceSettingsMutation)(nil)
+
+// devicesettingsOption allows management of the mutation configuration using functional options.
+type devicesettingsOption func(*DeviceSettingsMutation)
+
+// newDeviceSettingsMutation creates new mutation for the DeviceSettings entity.
+func newDeviceSettingsMutation(c config, op Op, opts ...devicesettingsOption) *DeviceSettingsMutation {
+	m := &DeviceSettingsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDeviceSettings,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDeviceSettingsID sets the ID field of the mutation.
+func withDeviceSettingsID(id int) devicesettingsOption {
+	return func(m *DeviceSettingsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DeviceSettings
+		)
+		m.oldValue = func(ctx context.Context) (*DeviceSettings, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DeviceSettings.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDeviceSettings sets the old DeviceSettings of the mutation.
+func withDeviceSettings(node *DeviceSettings) devicesettingsOption {
+	return func(m *DeviceSettingsMutation) {
+		m.oldValue = func(context.Context) (*DeviceSettings, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DeviceSettingsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DeviceSettingsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DeviceSettingsMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DeviceSettingsMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DeviceSettings.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *DeviceSettingsMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *DeviceSettingsMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *DeviceSettingsMutation) ResetName() {
+	m.name = nil
+}
+
+// SetIP sets the "ip" field.
+func (m *DeviceSettingsMutation) SetIP(s string) {
+	m.ip = &s
+}
+
+// IP returns the value of the "ip" field in the mutation.
+func (m *DeviceSettingsMutation) IP() (r string, exists bool) {
+	v := m.ip
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIP returns the old "ip" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldIP(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIP is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIP requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIP: %w", err)
+	}
+	return oldValue.IP, nil
+}
+
+// ResetIP resets all changes to the "ip" field.
+func (m *DeviceSettingsMutation) ResetIP() {
+	m.ip = nil
+}
+
+// SetPort sets the "port" field.
+func (m *DeviceSettingsMutation) SetPort(i int) {
+	m.port = &i
+	m.addport = nil
+}
+
+// Port returns the value of the "port" field in the mutation.
+func (m *DeviceSettingsMutation) Port() (r int, exists bool) {
+	v := m.port
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPort returns the old "port" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldPort(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPort is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPort requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPort: %w", err)
+	}
+	return oldValue.Port, nil
+}
+
+// AddPort adds i to the "port" field.
+func (m *DeviceSettingsMutation) AddPort(i int) {
+	if m.addport != nil {
+		*m.addport += i
+	} else {
+		m.addport = &i
+	}
+}
+
+// AddedPort returns the value that was added to the "port" field in this mutation.
+func (m *DeviceSettingsMutation) AddedPort() (r int, exists bool) {
+	v := m.addport
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPort resets all changes to the "port" field.
+func (m *DeviceSettingsMutation) ResetPort() {
+	m.port = nil
+	m.addport = nil
+}
+
+// SetUsername sets the "username" field.
+func (m *DeviceSettingsMutation) SetUsername(s string) {
+	m.username = &s
+}
+
+// Username returns the value of the "username" field in the mutation.
+func (m *DeviceSettingsMutation) Username() (r string, exists bool) {
+	v := m.username
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsername returns the old "username" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldUsername(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsername is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsername requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsername: %w", err)
+	}
+	return oldValue.Username, nil
+}
+
+// ResetUsername resets all changes to the "username" field.
+func (m *DeviceSettingsMutation) ResetUsername() {
+	m.username = nil
+}
+
+// SetPassword sets the "password" field.
+func (m *DeviceSettingsMutation) SetPassword(s string) {
+	m.password = &s
+}
+
+// Password returns the value of the "password" field in the mutation.
+func (m *DeviceSettingsMutation) Password() (r string, exists bool) {
+	v := m.password
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPassword returns the old "password" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldPassword(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPassword is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPassword requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPassword: %w", err)
+	}
+	return oldValue.Password, nil
+}
+
+// ResetPassword resets all changes to the "password" field.
+func (m *DeviceSettingsMutation) ResetPassword() {
+	m.password = nil
+}
+
+// SetWidth sets the "width" field.
+func (m *DeviceSettingsMutation) SetWidth(i int) {
+	m.width = &i
+	m.addwidth = nil
+}
+
+// Width returns the value of the "width" field in the mutation.
+func (m *DeviceSettingsMutation) Width() (r int, exists bool) {
+	v := m.width
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWidth returns the old "width" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldWidth(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWidth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWidth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWidth: %w", err)
+	}
+	return oldValue.Width, nil
+}
+
+// AddWidth adds i to the "width" field.
+func (m *DeviceSettingsMutation) AddWidth(i int) {
+	if m.addwidth != nil {
+		*m.addwidth += i
+	} else {
+		m.addwidth = &i
+	}
+}
+
+// AddedWidth returns the value that was added to the "width" field in this mutation.
+func (m *DeviceSettingsMutation) AddedWidth() (r int, exists bool) {
+	v := m.addwidth
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWidth resets all changes to the "width" field.
+func (m *DeviceSettingsMutation) ResetWidth() {
+	m.width = nil
+	m.addwidth = nil
+}
+
+// SetHeight sets the "height" field.
+func (m *DeviceSettingsMutation) SetHeight(i int) {
+	m.height = &i
+	m.addheight = nil
+}
+
+// Height returns the value of the "height" field in the mutation.
+func (m *DeviceSettingsMutation) Height() (r int, exists bool) {
+	v := m.height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHeight returns the old "height" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldHeight(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHeight: %w", err)
+	}
+	return oldValue.Height, nil
+}
+
+// AddHeight adds i to the "height" field.
+func (m *DeviceSettingsMutation) AddHeight(i int) {
+	if m.addheight != nil {
+		*m.addheight += i
+	} else {
+		m.addheight = &i
+	}
+}
+
+// AddedHeight returns the value that was added to the "height" field in this mutation.
+func (m *DeviceSettingsMutation) AddedHeight() (r int, exists bool) {
+	v := m.addheight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetHeight resets all changes to the "height" field.
+func (m *DeviceSettingsMutation) ResetHeight() {
+	m.height = nil
+	m.addheight = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *DeviceSettingsMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *DeviceSettingsMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *DeviceSettingsMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// Where appends a list predicates to the DeviceSettingsMutation builder.
+func (m *DeviceSettingsMutation) Where(ps ...predicate.DeviceSettings) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DeviceSettingsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DeviceSettingsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DeviceSettings, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DeviceSettingsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DeviceSettingsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DeviceSettings).
+func (m *DeviceSettingsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DeviceSettingsMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.name != nil {
+		fields = append(fields, devicesettings.FieldName)
+	}
+	if m.ip != nil {
+		fields = append(fields, devicesettings.FieldIP)
+	}
+	if m.port != nil {
+		fields = append(fields, devicesettings.FieldPort)
+	}
+	if m.username != nil {
+		fields = append(fields, devicesettings.FieldUsername)
+	}
+	if m.password != nil {
+		fields = append(fields, devicesettings.FieldPassword)
+	}
+	if m.width != nil {
+		fields = append(fields, devicesettings.FieldWidth)
+	}
+	if m.height != nil {
+		fields = append(fields, devicesettings.FieldHeight)
+	}
+	if m.enabled != nil {
+		fields = append(fields, devicesettings.FieldEnabled)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DeviceSettingsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case devicesettings.FieldName:
+		return m.Name()
+	case devicesettings.FieldIP:
+		return m.IP()
+	case devicesettings.FieldPort:
+		return m.Port()
+	case devicesettings.FieldUsername:
+		return m.Username()
+	case devicesettings.FieldPassword:
+		return m.Password()
+	case devicesettings.FieldWidth:
+		return m.Width()
+	case devicesettings.FieldHeight:
+		return m.Height()
+	case devicesettings.FieldEnabled:
+		return m.Enabled()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DeviceSettingsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case devicesettings.FieldName:
+		return m.OldName(ctx)
+	case devicesettings.FieldIP:
+		return m.OldIP(ctx)
+	case devicesettings.FieldPort:
+		return m.OldPort(ctx)
+	case devicesettings.FieldUsername:
+		return m.OldUsername(ctx)
+	case devicesettings.FieldPassword:
+		return m.OldPassword(ctx)
+	case devicesettings.FieldWidth:
+		return m.OldWidth(ctx)
+	case devicesettings.FieldHeight:
+		return m.OldHeight(ctx)
+	case devicesettings.FieldEnabled:
+		return m.OldEnabled(ctx)
+	}
+	return nil, fmt.Errorf("unknown DeviceSettings field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DeviceSettingsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case devicesettings.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case devicesettings.FieldIP:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIP(v)
+		return nil
+	case devicesettings.FieldPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPort(v)
+		return nil
+	case devicesettings.FieldUsername:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsername(v)
+		return nil
+	case devicesettings.FieldPassword:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPassword(v)
+		return nil
+	case devicesettings.FieldWidth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWidth(v)
+		return nil
+	case devicesettings.FieldHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHeight(v)
+		return nil
+	case devicesettings.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DeviceSettings field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DeviceSettingsMutation) AddedFields() []string {
+	var fields []string
+	if m.addport != nil {
+		fields = append(fields, devicesettings.FieldPort)
+	}
+	if m.addwidth != nil {
+		fields = append(fields, devicesettings.FieldWidth)
+	}
+	if m.addheight != nil {
+		fields = append(fields, devicesettings.FieldHeight)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DeviceSettingsMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case devicesettings.FieldPort:
+		return m.AddedPort()
+	case devicesettings.FieldWidth:
+		return m.AddedWidth()
+	case devicesettings.FieldHeight:
+		return m.AddedHeight()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DeviceSettingsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case devicesettings.FieldPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPort(v)
+		return nil
+	case devicesettings.FieldWidth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWidth(v)
+		return nil
+	case devicesettings.FieldHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddHeight(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DeviceSettings numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DeviceSettingsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DeviceSettingsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DeviceSettingsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown DeviceSettings nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DeviceSettingsMutation) ResetField(name string) error {
+	switch name {
+	case devicesettings.FieldName:
+		m.ResetName()
+		return nil
+	case devicesettings.FieldIP:
+		m.ResetIP()
+		return nil
+	case devicesettings.FieldPort:
+		m.ResetPort()
+		return nil
+	case devicesettings.FieldUsername:
+		m.ResetUsername()
+		return nil
+	case devicesettings.FieldPassword:
+		m.ResetPassword()
+		return nil
+	case devicesettings.FieldWidth:
+		m.ResetWidth()
+		return nil
+	case devicesettings.FieldHeight:
+		m.ResetHeight()
+		return nil
+	case devicesettings.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	}
+	return fmt.Errorf("unknown DeviceSettings field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DeviceSettingsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DeviceSettingsMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DeviceSettingsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DeviceSettingsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DeviceSettingsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DeviceSettingsMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DeviceSettingsMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown DeviceSettings unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DeviceSettingsMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown DeviceSettings edge %s", name)
+}
+
 // F1Mutation represents an operation that mutates the F1 nodes in the graph.
 type F1Mutation struct {
 	config
@@ -809,50 +1617,53 @@ func (m *F1Mutation) ResetEdge(name string) error {
 // GeneralSettingsMutation represents an operation that mutates the GeneralSettings nodes in the graph.
 type GeneralSettingsMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *int
-	timeout               *float64
-	addtimeout            *float64
-	random                *bool
-	width                 *int
-	addwidth              *int
-	height                *int
-	addheight             *int
-	clearedFields         map[string]struct{}
-	sonarr                map[int]struct{}
-	removedsonarr         map[int]struct{}
-	clearedsonarr         bool
-	radarr                map[int]struct{}
-	removedradarr         map[int]struct{}
-	clearedradarr         bool
-	f1                    map[int]struct{}
-	removedf1             map[int]struct{}
-	clearedf1             bool
-	weather               map[int]struct{}
-	removedweather        map[int]struct{}
-	clearedweather        bool
-	home_assistant        map[int]struct{}
-	removedhome_assistant map[int]struct{}
-	clearedhome_assistant bool
-	untappd               map[int]struct{}
-	removeduntappd        map[int]struct{}
-	cleareduntappd        bool
-	images                map[int]struct{}
-	removedimages         map[int]struct{}
-	clearedimages         bool
-	videos                map[int]struct{}
-	removedvideos         map[int]struct{}
-	clearedvideos         bool
-	crypto                map[int]struct{}
-	removedcrypto         map[int]struct{}
-	clearedcrypto         bool
-	schedules             map[int]struct{}
-	removedschedules      map[int]struct{}
-	clearedschedules      bool
-	done                  bool
-	oldValue              func(context.Context) (*GeneralSettings, error)
-	predicates            []predicate.GeneralSettings
+	op                     Op
+	typ                    string
+	id                     *int
+	timeout                *float64
+	addtimeout             *float64
+	random                 *bool
+	width                  *int
+	addwidth               *int
+	height                 *int
+	addheight              *int
+	clearedFields          map[string]struct{}
+	sonarr                 map[int]struct{}
+	removedsonarr          map[int]struct{}
+	clearedsonarr          bool
+	radarr                 map[int]struct{}
+	removedradarr          map[int]struct{}
+	clearedradarr          bool
+	f1                     map[int]struct{}
+	removedf1              map[int]struct{}
+	clearedf1              bool
+	weather                map[int]struct{}
+	removedweather         map[int]struct{}
+	clearedweather         bool
+	home_assistant         map[int]struct{}
+	removedhome_assistant  map[int]struct{}
+	clearedhome_assistant  bool
+	untappd                map[int]struct{}
+	removeduntappd         map[int]struct{}
+	cleareduntappd         bool
+	images                 map[int]struct{}
+	removedimages          map[int]struct{}
+	clearedimages          bool
+	videos                 map[int]struct{}
+	removedvideos          map[int]struct{}
+	clearedvideos          bool
+	crypto                 map[int]struct{}
+	removedcrypto          map[int]struct{}
+	clearedcrypto          bool
+	schedules              map[int]struct{}
+	removedschedules       map[int]struct{}
+	clearedschedules       bool
+	device_settings        map[int]struct{}
+	removeddevice_settings map[int]struct{}
+	cleareddevice_settings bool
+	done                   bool
+	oldValue               func(context.Context) (*GeneralSettings, error)
+	predicates             []predicate.GeneralSettings
 }
 
 var _ ent.Mutation = (*GeneralSettingsMutation)(nil)
@@ -1697,6 +2508,60 @@ func (m *GeneralSettingsMutation) ResetSchedules() {
 	m.removedschedules = nil
 }
 
+// AddDeviceSettingIDs adds the "device_settings" edge to the DeviceSettings entity by ids.
+func (m *GeneralSettingsMutation) AddDeviceSettingIDs(ids ...int) {
+	if m.device_settings == nil {
+		m.device_settings = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.device_settings[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDeviceSettings clears the "device_settings" edge to the DeviceSettings entity.
+func (m *GeneralSettingsMutation) ClearDeviceSettings() {
+	m.cleareddevice_settings = true
+}
+
+// DeviceSettingsCleared reports if the "device_settings" edge to the DeviceSettings entity was cleared.
+func (m *GeneralSettingsMutation) DeviceSettingsCleared() bool {
+	return m.cleareddevice_settings
+}
+
+// RemoveDeviceSettingIDs removes the "device_settings" edge to the DeviceSettings entity by IDs.
+func (m *GeneralSettingsMutation) RemoveDeviceSettingIDs(ids ...int) {
+	if m.removeddevice_settings == nil {
+		m.removeddevice_settings = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.device_settings, ids[i])
+		m.removeddevice_settings[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDeviceSettings returns the removed IDs of the "device_settings" edge to the DeviceSettings entity.
+func (m *GeneralSettingsMutation) RemovedDeviceSettingsIDs() (ids []int) {
+	for id := range m.removeddevice_settings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DeviceSettingsIDs returns the "device_settings" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) DeviceSettingsIDs() (ids []int) {
+	for id := range m.device_settings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDeviceSettings resets all changes to the "device_settings" edge.
+func (m *GeneralSettingsMutation) ResetDeviceSettings() {
+	m.device_settings = nil
+	m.cleareddevice_settings = false
+	m.removeddevice_settings = nil
+}
+
 // Where appends a list predicates to the GeneralSettingsMutation builder.
 func (m *GeneralSettingsMutation) Where(ps ...predicate.GeneralSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -1920,7 +2785,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -1950,6 +2815,9 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.schedules != nil {
 		edges = append(edges, generalsettings.EdgeSchedules)
+	}
+	if m.device_settings != nil {
+		edges = append(edges, generalsettings.EdgeDeviceSettings)
 	}
 	return edges
 }
@@ -2018,13 +2886,19 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeDeviceSettings:
+		ids := make([]ent.Value, 0, len(m.device_settings))
+		for id := range m.device_settings {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -2054,6 +2928,9 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removedschedules != nil {
 		edges = append(edges, generalsettings.EdgeSchedules)
+	}
+	if m.removeddevice_settings != nil {
+		edges = append(edges, generalsettings.EdgeDeviceSettings)
 	}
 	return edges
 }
@@ -2122,13 +2999,19 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeDeviceSettings:
+		ids := make([]ent.Value, 0, len(m.removeddevice_settings))
+		for id := range m.removeddevice_settings {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -2159,6 +3042,9 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	if m.clearedschedules {
 		edges = append(edges, generalsettings.EdgeSchedules)
 	}
+	if m.cleareddevice_settings {
+		edges = append(edges, generalsettings.EdgeDeviceSettings)
+	}
 	return edges
 }
 
@@ -2186,6 +3072,8 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedcrypto
 	case generalsettings.EdgeSchedules:
 		return m.clearedschedules
+	case generalsettings.EdgeDeviceSettings:
+		return m.cleareddevice_settings
 	}
 	return false
 }
@@ -2231,6 +3119,9 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 		return nil
 	case generalsettings.EdgeSchedules:
 		m.ResetSchedules()
+		return nil
+	case generalsettings.EdgeDeviceSettings:
+		m.ResetDeviceSettings()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings edge %s", name)

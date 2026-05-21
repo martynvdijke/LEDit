@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Analytics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="d-flex">
+        <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white" style="width: 250px; min-height: 100vh;">
+            <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none"><span class="fs-4">LEDit</span></a>
+            <hr>
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li><a href="/" class="nav-link text-white">Home</a></li>
+                <li><a href="/admin/" class="nav-link text-white">Dashboard</a></li>
+                <li><a href="/admin/settings" class="nav-link text-white">Settings</a></li>
+                <li><a href="/admin/schedules" class="nav-link text-white">Schedules</a></li>
+                <li><a href="/admin/devices" class="nav-link text-white">Devices</a></li>
+                <li><a href="/admin/theme" class="nav-link text-white">Theme</a></li>
+                <li><a href="/admin/analytics" class="nav-link text-white">Analytics</a></li>
+            </ul>
+        </div>
+        <div class="container-fluid p-4">
+            <h1>Analytics</h1>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Displays</h5>
+                            <p class="card-text display-6">{{.stats.TotalDisplays}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Server Uptime</h5>
+                            <p class="card-text display-6">{{.stats.Uptime}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="mt-4">Displays by Source</h2>
+            <ul class="list-group mt-3">
+                {{range $source, $count := .stats.BySource}}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{$source}}
+                    <span class="badge bg-primary rounded-pill">{{$count}}</span>
+                </li>
+                {{else}}
+                <li class="list-group-item text-muted">No data yet.</li>
+                {{end}}
+            </ul>
+
+            <h2 class="mt-4">Recent Displays</h2>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr><th>Source</th><th>Time</th></tr>
+                </thead>
+                <tbody>
+                    {{range .stats.Recent}}
+                    <tr><td>{{.Source}}</td><td>{{.Time.Format "15:04:05"}}</td></tr>
+                    {{else}}
+                    <tr><td colspan="2" class="text-muted">No recent displays.</td></tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

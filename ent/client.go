@@ -12,6 +12,7 @@ import (
 	"ledit/ent/migrate"
 
 	"ledit/ent/crypto"
+	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -36,6 +37,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Crypto is the client for interacting with the Crypto builders.
 	Crypto *CryptoClient
+	// DeviceSettings is the client for interacting with the DeviceSettings builders.
+	DeviceSettings *DeviceSettingsClient
 	// F1 is the client for interacting with the F1 builders.
 	F1 *F1Client
 	// GeneralSettings is the client for interacting with the GeneralSettings builders.
@@ -68,6 +71,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Crypto = NewCryptoClient(c.config)
+	c.DeviceSettings = NewDeviceSettingsClient(c.config)
 	c.F1 = NewF1Client(c.config)
 	c.GeneralSettings = NewGeneralSettingsClient(c.config)
 	c.HomeAssistant = NewHomeAssistantClient(c.config)
@@ -171,6 +175,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:             ctx,
 		config:          cfg,
 		Crypto:          NewCryptoClient(cfg),
+		DeviceSettings:  NewDeviceSettingsClient(cfg),
 		F1:              NewF1Client(cfg),
 		GeneralSettings: NewGeneralSettingsClient(cfg),
 		HomeAssistant:   NewHomeAssistantClient(cfg),
@@ -201,6 +206,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:             ctx,
 		config:          cfg,
 		Crypto:          NewCryptoClient(cfg),
+		DeviceSettings:  NewDeviceSettingsClient(cfg),
 		F1:              NewF1Client(cfg),
 		GeneralSettings: NewGeneralSettingsClient(cfg),
 		HomeAssistant:   NewHomeAssistantClient(cfg),
@@ -240,8 +246,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Crypto, c.F1, c.GeneralSettings, c.HomeAssistant, c.Image, c.Radarr,
-		c.Schedule, c.Sonarr, c.Untappd, c.Video, c.Weather,
+		c.Crypto, c.DeviceSettings, c.F1, c.GeneralSettings, c.HomeAssistant, c.Image,
+		c.Radarr, c.Schedule, c.Sonarr, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Use(hooks...)
 	}
@@ -251,8 +257,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Crypto, c.F1, c.GeneralSettings, c.HomeAssistant, c.Image, c.Radarr,
-		c.Schedule, c.Sonarr, c.Untappd, c.Video, c.Weather,
+		c.Crypto, c.DeviceSettings, c.F1, c.GeneralSettings, c.HomeAssistant, c.Image,
+		c.Radarr, c.Schedule, c.Sonarr, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -263,6 +269,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *CryptoMutation:
 		return c.Crypto.mutate(ctx, m)
+	case *DeviceSettingsMutation:
+		return c.DeviceSettings.mutate(ctx, m)
 	case *F1Mutation:
 		return c.F1.mutate(ctx, m)
 	case *GeneralSettingsMutation:
@@ -418,6 +426,139 @@ func (c *CryptoClient) mutate(ctx context.Context, m *CryptoMutation) (Value, er
 		return (&CryptoDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Crypto mutation op: %q", m.Op())
+	}
+}
+
+// DeviceSettingsClient is a client for the DeviceSettings schema.
+type DeviceSettingsClient struct {
+	config
+}
+
+// NewDeviceSettingsClient returns a client for the DeviceSettings from the given config.
+func NewDeviceSettingsClient(c config) *DeviceSettingsClient {
+	return &DeviceSettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `devicesettings.Hooks(f(g(h())))`.
+func (c *DeviceSettingsClient) Use(hooks ...Hook) {
+	c.hooks.DeviceSettings = append(c.hooks.DeviceSettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `devicesettings.Intercept(f(g(h())))`.
+func (c *DeviceSettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DeviceSettings = append(c.inters.DeviceSettings, interceptors...)
+}
+
+// Create returns a builder for creating a DeviceSettings entity.
+func (c *DeviceSettingsClient) Create() *DeviceSettingsCreate {
+	mutation := newDeviceSettingsMutation(c.config, OpCreate)
+	return &DeviceSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DeviceSettings entities.
+func (c *DeviceSettingsClient) CreateBulk(builders ...*DeviceSettingsCreate) *DeviceSettingsCreateBulk {
+	return &DeviceSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DeviceSettingsClient) MapCreateBulk(slice any, setFunc func(*DeviceSettingsCreate, int)) *DeviceSettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DeviceSettingsCreateBulk{err: fmt.Errorf("calling to DeviceSettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DeviceSettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DeviceSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DeviceSettings.
+func (c *DeviceSettingsClient) Update() *DeviceSettingsUpdate {
+	mutation := newDeviceSettingsMutation(c.config, OpUpdate)
+	return &DeviceSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DeviceSettingsClient) UpdateOne(_m *DeviceSettings) *DeviceSettingsUpdateOne {
+	mutation := newDeviceSettingsMutation(c.config, OpUpdateOne, withDeviceSettings(_m))
+	return &DeviceSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DeviceSettingsClient) UpdateOneID(id int) *DeviceSettingsUpdateOne {
+	mutation := newDeviceSettingsMutation(c.config, OpUpdateOne, withDeviceSettingsID(id))
+	return &DeviceSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DeviceSettings.
+func (c *DeviceSettingsClient) Delete() *DeviceSettingsDelete {
+	mutation := newDeviceSettingsMutation(c.config, OpDelete)
+	return &DeviceSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DeviceSettingsClient) DeleteOne(_m *DeviceSettings) *DeviceSettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DeviceSettingsClient) DeleteOneID(id int) *DeviceSettingsDeleteOne {
+	builder := c.Delete().Where(devicesettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DeviceSettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for DeviceSettings.
+func (c *DeviceSettingsClient) Query() *DeviceSettingsQuery {
+	return &DeviceSettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDeviceSettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DeviceSettings entity by its id.
+func (c *DeviceSettingsClient) Get(ctx context.Context, id int) (*DeviceSettings, error) {
+	return c.Query().Where(devicesettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DeviceSettingsClient) GetX(ctx context.Context, id int) *DeviceSettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DeviceSettingsClient) Hooks() []Hook {
+	return c.hooks.DeviceSettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *DeviceSettingsClient) Interceptors() []Interceptor {
+	return c.inters.DeviceSettings
+}
+
+func (c *DeviceSettingsClient) mutate(ctx context.Context, m *DeviceSettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DeviceSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DeviceSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DeviceSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DeviceSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DeviceSettings mutation op: %q", m.Op())
 	}
 }
 
@@ -815,6 +956,22 @@ func (c *GeneralSettingsClient) QuerySchedules(_m *GeneralSettings) *ScheduleQue
 			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
 			sqlgraph.To(schedule.Table, schedule.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.SchedulesTable, generalsettings.SchedulesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDeviceSettings queries the device_settings edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryDeviceSettings(_m *GeneralSettings) *DeviceSettingsQuery {
+	query := (&DeviceSettingsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(devicesettings.Table, devicesettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.DeviceSettingsTable, generalsettings.DeviceSettingsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1914,11 +2071,11 @@ func (c *WeatherClient) mutate(ctx context.Context, m *WeatherMutation) (Value, 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Crypto, F1, GeneralSettings, HomeAssistant, Image, Radarr, Schedule, Sonarr,
-		Untappd, Video, Weather []ent.Hook
+		Crypto, DeviceSettings, F1, GeneralSettings, HomeAssistant, Image, Radarr,
+		Schedule, Sonarr, Untappd, Video, Weather []ent.Hook
 	}
 	inters struct {
-		Crypto, F1, GeneralSettings, HomeAssistant, Image, Radarr, Schedule, Sonarr,
-		Untappd, Video, Weather []ent.Interceptor
+		Crypto, DeviceSettings, F1, GeneralSettings, HomeAssistant, Image, Radarr,
+		Schedule, Sonarr, Untappd, Video, Weather []ent.Interceptor
 	}
 )

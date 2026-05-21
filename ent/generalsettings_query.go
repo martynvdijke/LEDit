@@ -7,6 +7,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"ledit/ent/crypto"
+	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -29,20 +30,21 @@ import (
 // GeneralSettingsQuery is the builder for querying GeneralSettings entities.
 type GeneralSettingsQuery struct {
 	config
-	ctx               *QueryContext
-	order             []generalsettings.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.GeneralSettings
-	withSonarr        *SonarrQuery
-	withRadarr        *RadarrQuery
-	withF1            *F1Query
-	withWeather       *WeatherQuery
-	withHomeAssistant *HomeAssistantQuery
-	withUntappd       *UntappdQuery
-	withImages        *ImageQuery
-	withVideos        *VideoQuery
-	withCrypto        *CryptoQuery
-	withSchedules     *ScheduleQuery
+	ctx                *QueryContext
+	order              []generalsettings.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.GeneralSettings
+	withSonarr         *SonarrQuery
+	withRadarr         *RadarrQuery
+	withF1             *F1Query
+	withWeather        *WeatherQuery
+	withHomeAssistant  *HomeAssistantQuery
+	withUntappd        *UntappdQuery
+	withImages         *ImageQuery
+	withVideos         *VideoQuery
+	withCrypto         *CryptoQuery
+	withSchedules      *ScheduleQuery
+	withDeviceSettings *DeviceSettingsQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -299,6 +301,28 @@ func (_q *GeneralSettingsQuery) QuerySchedules() *ScheduleQuery {
 	return query
 }
 
+// QueryDeviceSettings chains the current query on the "device_settings" edge.
+func (_q *GeneralSettingsQuery) QueryDeviceSettings() *DeviceSettingsQuery {
+	query := (&DeviceSettingsClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(devicesettings.Table, devicesettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.DeviceSettingsTable, generalsettings.DeviceSettingsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first GeneralSettings entity from the query.
 // Returns a *NotFoundError when no GeneralSettings was found.
 func (_q *GeneralSettingsQuery) First(ctx context.Context) (*GeneralSettings, error) {
@@ -486,21 +510,22 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		return nil
 	}
 	return &GeneralSettingsQuery{
-		config:            _q.config,
-		ctx:               _q.ctx.Clone(),
-		order:             append([]generalsettings.OrderOption{}, _q.order...),
-		inters:            append([]Interceptor{}, _q.inters...),
-		predicates:        append([]predicate.GeneralSettings{}, _q.predicates...),
-		withSonarr:        _q.withSonarr.Clone(),
-		withRadarr:        _q.withRadarr.Clone(),
-		withF1:            _q.withF1.Clone(),
-		withWeather:       _q.withWeather.Clone(),
-		withHomeAssistant: _q.withHomeAssistant.Clone(),
-		withUntappd:       _q.withUntappd.Clone(),
-		withImages:        _q.withImages.Clone(),
-		withVideos:        _q.withVideos.Clone(),
-		withCrypto:        _q.withCrypto.Clone(),
-		withSchedules:     _q.withSchedules.Clone(),
+		config:             _q.config,
+		ctx:                _q.ctx.Clone(),
+		order:              append([]generalsettings.OrderOption{}, _q.order...),
+		inters:             append([]Interceptor{}, _q.inters...),
+		predicates:         append([]predicate.GeneralSettings{}, _q.predicates...),
+		withSonarr:         _q.withSonarr.Clone(),
+		withRadarr:         _q.withRadarr.Clone(),
+		withF1:             _q.withF1.Clone(),
+		withWeather:        _q.withWeather.Clone(),
+		withHomeAssistant:  _q.withHomeAssistant.Clone(),
+		withUntappd:        _q.withUntappd.Clone(),
+		withImages:         _q.withImages.Clone(),
+		withVideos:         _q.withVideos.Clone(),
+		withCrypto:         _q.withCrypto.Clone(),
+		withSchedules:      _q.withSchedules.Clone(),
+		withDeviceSettings: _q.withDeviceSettings.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -617,6 +642,17 @@ func (_q *GeneralSettingsQuery) WithSchedules(opts ...func(*ScheduleQuery)) *Gen
 	return _q
 }
 
+// WithDeviceSettings tells the query-builder to eager-load the nodes that are connected to
+// the "device_settings" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithDeviceSettings(opts ...func(*DeviceSettingsQuery)) *GeneralSettingsQuery {
+	query := (&DeviceSettingsClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDeviceSettings = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -695,7 +731,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [10]bool{
+		loadedTypes = [11]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -706,6 +742,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withVideos != nil,
 			_q.withCrypto != nil,
 			_q.withSchedules != nil,
+			_q.withDeviceSettings != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -793,6 +830,15 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := _q.loadSchedules(ctx, query, nodes,
 			func(n *GeneralSettings) { n.Edges.Schedules = []*Schedule{} },
 			func(n *GeneralSettings, e *Schedule) { n.Edges.Schedules = append(n.Edges.Schedules, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDeviceSettings; query != nil {
+		if err := _q.loadDeviceSettings(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.DeviceSettings = []*DeviceSettings{} },
+			func(n *GeneralSettings, e *DeviceSettings) {
+				n.Edges.DeviceSettings = append(n.Edges.DeviceSettings, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -1104,6 +1150,37 @@ func (_q *GeneralSettingsQuery) loadSchedules(ctx context.Context, query *Schedu
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_schedules" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadDeviceSettings(ctx context.Context, query *DeviceSettingsQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *DeviceSettings)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.DeviceSettings(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.DeviceSettingsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_device_settings
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_device_settings" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_device_settings" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

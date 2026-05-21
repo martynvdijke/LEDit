@@ -9,6 +9,9 @@ import (
 // Crypto is the predicate function for crypto builders.
 type Crypto func(*sql.Selector)
 
+// DeviceSettings is the predicate function for devicesettings builders.
+type DeviceSettings func(*sql.Selector)
+
 // F1 is the predicate function for f1 builders.
 type F1 func(*sql.Selector)
 

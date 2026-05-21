@@ -4,6 +4,7 @@ package ent
 
 import (
 	"ledit/ent/crypto"
+	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -29,6 +30,40 @@ func init() {
 	cryptoDescURL := cryptoFields[1].Descriptor()
 	// crypto.DefaultURL holds the default value on creation for the url field.
 	crypto.DefaultURL = cryptoDescURL.Default.(string)
+	devicesettingsFields := schema.DeviceSettings{}.Fields()
+	_ = devicesettingsFields
+	// devicesettingsDescName is the schema descriptor for name field.
+	devicesettingsDescName := devicesettingsFields[0].Descriptor()
+	// devicesettings.DefaultName holds the default value on creation for the name field.
+	devicesettings.DefaultName = devicesettingsDescName.Default.(string)
+	// devicesettingsDescIP is the schema descriptor for ip field.
+	devicesettingsDescIP := devicesettingsFields[1].Descriptor()
+	// devicesettings.DefaultIP holds the default value on creation for the ip field.
+	devicesettings.DefaultIP = devicesettingsDescIP.Default.(string)
+	// devicesettingsDescPort is the schema descriptor for port field.
+	devicesettingsDescPort := devicesettingsFields[2].Descriptor()
+	// devicesettings.DefaultPort holds the default value on creation for the port field.
+	devicesettings.DefaultPort = devicesettingsDescPort.Default.(int)
+	// devicesettingsDescUsername is the schema descriptor for username field.
+	devicesettingsDescUsername := devicesettingsFields[3].Descriptor()
+	// devicesettings.DefaultUsername holds the default value on creation for the username field.
+	devicesettings.DefaultUsername = devicesettingsDescUsername.Default.(string)
+	// devicesettingsDescPassword is the schema descriptor for password field.
+	devicesettingsDescPassword := devicesettingsFields[4].Descriptor()
+	// devicesettings.DefaultPassword holds the default value on creation for the password field.
+	devicesettings.DefaultPassword = devicesettingsDescPassword.Default.(string)
+	// devicesettingsDescWidth is the schema descriptor for width field.
+	devicesettingsDescWidth := devicesettingsFields[5].Descriptor()
+	// devicesettings.DefaultWidth holds the default value on creation for the width field.
+	devicesettings.DefaultWidth = devicesettingsDescWidth.Default.(int)
+	// devicesettingsDescHeight is the schema descriptor for height field.
+	devicesettingsDescHeight := devicesettingsFields[6].Descriptor()
+	// devicesettings.DefaultHeight holds the default value on creation for the height field.
+	devicesettings.DefaultHeight = devicesettingsDescHeight.Default.(int)
+	// devicesettingsDescEnabled is the schema descriptor for enabled field.
+	devicesettingsDescEnabled := devicesettingsFields[7].Descriptor()
+	// devicesettings.DefaultEnabled holds the default value on creation for the enabled field.
+	devicesettings.DefaultEnabled = devicesettingsDescEnabled.Default.(bool)
 	f1Fields := schema.F1{}.Fields()
 	_ = f1Fields
 	// f1DescToken is the schema descriptor for token field.

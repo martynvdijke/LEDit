@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"ledit/ent/crypto"
+	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -84,6 +85,7 @@ func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			crypto.Table:          crypto.ValidColumn,
+			devicesettings.Table:  devicesettings.ValidColumn,
 			f1.Table:              f1.ValidColumn,
 			generalsettings.Table: generalsettings.ValidColumn,
 			homeassistant.Table:   homeassistant.ValidColumn,

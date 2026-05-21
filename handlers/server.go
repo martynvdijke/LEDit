@@ -78,7 +78,12 @@ func (s *Server) setupRoutes() {
 		api.GET("/notifications", s.APINotificationHistory)
 	}
 
+	s.Router.GET("/login", s.LoginPage)
+	s.Router.POST("/login", s.LoginAction)
+	s.Router.GET("/logout", s.LogoutAction)
+
 	admin := s.Router.Group("/admin")
+	admin.Use(AuthMiddleware())
 	{
 		admin.GET("/", s.AdminDashboard)
 		admin.GET("/settings", s.AdminSettings)
@@ -155,5 +160,20 @@ func (s *Server) setupRoutes() {
 		admin.GET("/schedules/:id/edit", s.AdminScheduleEdit)
 		admin.POST("/schedules/:id/edit", s.AdminScheduleUpdate)
 		admin.POST("/schedules/:id/delete", s.AdminScheduleDelete)
+
+		// Devices (Phase 7)
+		admin.GET("/devices", s.AdminDeviceSettingsList)
+		admin.GET("/devices/new", s.AdminDeviceSettingsNew)
+		admin.POST("/devices/new", s.AdminDeviceSettingsCreate)
+		admin.GET("/devices/:id/edit", s.AdminDeviceSettingsEdit)
+		admin.POST("/devices/:id/edit", s.AdminDeviceSettingsUpdate)
+		admin.POST("/devices/:id/delete", s.AdminDeviceSettingsDelete)
+
+		// Theme (Phase 8)
+		admin.GET("/theme", s.AdminThemeEditor)
+		admin.POST("/theme", s.AdminThemeSave)
+
+		// Analytics (Phase 10)
+		admin.GET("/analytics", s.AdminAnalytics)
 	}
 }

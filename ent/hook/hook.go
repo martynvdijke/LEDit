@@ -20,6 +20,18 @@ func (f CryptoFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CryptoMutation", m)
 }
 
+// The DeviceSettingsFunc type is an adapter to allow the use of ordinary
+// function as DeviceSettings mutator.
+type DeviceSettingsFunc func(context.Context, *ent.DeviceSettingsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DeviceSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DeviceSettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DeviceSettingsMutation", m)
+}
+
 // The F1Func type is an adapter to allow the use of ordinary
 // function as F1 mutator.
 type F1Func func(context.Context, *ent.F1Mutation) (ent.Value, error)

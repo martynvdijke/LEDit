@@ -434,6 +434,29 @@ func HasSchedulesWith(preds ...predicate.Schedule) predicate.GeneralSettings {
 	})
 }
 
+// HasDeviceSettings applies the HasEdge predicate on the "device_settings" edge.
+func HasDeviceSettings() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DeviceSettingsTable, DeviceSettingsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDeviceSettingsWith applies the HasEdge predicate on the "device_settings" edge with a given conditions (other predicates).
+func HasDeviceSettingsWith(preds ...predicate.DeviceSettings) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newDeviceSettingsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.GeneralSettings) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.AndPredicates(predicates...))

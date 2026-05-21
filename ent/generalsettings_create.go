@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"ledit/ent/crypto"
+	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -217,6 +218,21 @@ func (_c *GeneralSettingsCreate) AddSchedules(v ...*Schedule) *GeneralSettingsCr
 		ids[i] = v[i].ID
 	}
 	return _c.AddScheduleIDs(ids...)
+}
+
+// AddDeviceSettingIDs adds the "device_settings" edge to the DeviceSettings entity by IDs.
+func (_c *GeneralSettingsCreate) AddDeviceSettingIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddDeviceSettingIDs(ids...)
+	return _c
+}
+
+// AddDeviceSettings adds the "device_settings" edges to the DeviceSettings entity.
+func (_c *GeneralSettingsCreate) AddDeviceSettings(v ...*DeviceSettings) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddDeviceSettingIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -473,6 +489,22 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DeviceSettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DeviceSettingsTable,
+			Columns: []string{generalsettings.DeviceSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicesettings.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
