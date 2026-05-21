@@ -39,10 +39,10 @@ func (w *WeatherDS) GetPNG() (*render.RenderedImage, error) {
 	}
 
 	data := map[string]string{
-		"location":   resp.Name,
-		"condition":  resp.Weather[0].Description,
-		"temp":       fmt.Sprintf("%.1f°C", resp.Main.Temp),
-		"humidity":   fmt.Sprintf("%d%%", resp.Main.Humidity),
+		"location":  resp.Name,
+		"condition": resp.Weather[0].Description,
+		"temp":      fmt.Sprintf("%.1f°C", resp.Main.Temp),
+		"humidity":  fmt.Sprintf("%d%%", resp.Main.Humidity),
 	}
 	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
 }

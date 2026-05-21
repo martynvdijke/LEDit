@@ -6,9 +6,9 @@ import (
 )
 
 type displayEvent struct {
-	Source    string    `json:"source"`
-	Time      time.Time `json:"time"`
-	Duration  float64   `json:"duration"`
+	Source   string    `json:"source"`
+	Time     time.Time `json:"time"`
+	Duration float64   `json:"duration"`
 }
 
 var (
@@ -31,10 +31,10 @@ func TrackDisplay(source string, duration float64) {
 }
 
 type AnalyticsStats struct {
-	TotalDisplays int                    `json:"total_displays"`
-	Uptime        string                 `json:"uptime"`
-	BySource      map[string]int         `json:"by_source"`
-	Recent        []displayEvent         `json:"recent"`
+	TotalDisplays int            `json:"total_displays"`
+	Uptime        string         `json:"uptime"`
+	BySource      map[string]int `json:"by_source"`
+	Recent        []displayEvent `json:"recent"`
 }
 
 func GetAnalytics() AnalyticsStats {

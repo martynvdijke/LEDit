@@ -45,6 +45,12 @@ test.describe('Sidebar Navigation', () => {
     await page.goto('/');
     await expect(page.getByRole('link', { name: 'Home' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Dashboard', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Schedules' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Devices' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Theme' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Analytics' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Notifications' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Add Sonarr' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Add Radarr' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Add F1' })).toBeVisible();
@@ -54,11 +60,6 @@ test.describe('Sidebar Navigation', () => {
     await expect(page.getByRole('link', { name: 'Add Image' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Add Video' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Add Crypto' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Notifications' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Schedules' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Devices' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Theme' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Analytics' })).toBeVisible();
   });
 
   test('should navigate to settings via sidebar', async ({ page }) => {
@@ -76,15 +77,15 @@ test.describe('Sidebar Navigation', () => {
 
 test.describe('Datasource Forms', () => {
   const datasources = [
-    { link: 'Add Sonarr', path: 'sonarr', title: 'New Sonarr Source' },
-    { link: 'Add Radarr', path: 'radarr', title: 'New Radarr Source' },
-    { link: 'Add F1', path: 'f1', title: 'New F1 Source' },
-    { link: 'Add Weather', path: 'weather', title: 'New Weather Source' },
-    { link: 'Add HA', path: 'homeassistant', title: 'New HomeAssistant Source' },
-    { link: 'Add Untappd', path: 'untappd', title: 'New Untappd Source' },
-    { link: 'Add Image', path: 'images', title: 'New Image Source' },
-    { link: 'Add Video', path: 'videos', title: 'New Video Source' },
-    { link: 'Add Crypto', path: 'crypto', title: 'New Crypto Source' },
+    { link: 'Add Sonarr', title: 'New Sonarr Source' },
+    { link: 'Add Radarr', title: 'New Radarr Source' },
+    { link: 'Add F1', title: 'New F1 Source' },
+    { link: 'Add Weather', title: 'New Weather Source' },
+    { link: 'Add HA', title: 'New HomeAssistant Source' },
+    { link: 'Add Untappd', title: 'New Untappd Source' },
+    { link: 'Add Image', title: 'New Image Source' },
+    { link: 'Add Video', title: 'New Video Source' },
+    { link: 'Add Crypto', title: 'New Crypto Source' },
   ];
 
   for (const ds of datasources) {
@@ -108,5 +109,80 @@ test.describe('Admin Dashboard Datasource Table', () => {
 
     await expect(page.locator('h2')).toContainText('Datasources');
     await expect(page.getByText('No datasources configured')).toBeVisible();
+  });
+});
+
+test.describe('Schedules', () => {
+  test('should load schedules page with empty state', async ({ page }) => {
+    await page.goto('/admin/schedules');
+    await expect(page.locator('h1')).toContainText('Schedules');
+    await expect(page.getByText('No schedules configured')).toBeVisible();
+  });
+
+  test('should show new schedule form', async ({ page }) => {
+    await page.goto('/admin/schedules/new');
+    await expect(page.locator('h1')).toContainText('New Schedule');
+    await expect(page.locator('#name')).toBeAttached();
+    await expect(page.locator('#cron')).toBeAttached();
+    await expect(page.locator('#enabled')).toBeAttached();
+    await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
+  });
+});
+
+test.describe('Devices', () => {
+  test('should load devices page with empty state', async ({ page }) => {
+    await page.goto('/admin/devices');
+    await expect(page.locator('h1')).toContainText('Devices');
+    await expect(page.getByText('No devices configured')).toBeVisible();
+  });
+
+  test('should show new device form', async ({ page }) => {
+    await page.goto('/admin/devices/new');
+    await expect(page.locator('h1')).toContainText('New Device');
+    await expect(page.locator('#name')).toBeAttached();
+    await expect(page.locator('#ip')).toBeAttached();
+    await expect(page.locator('#port')).toBeAttached();
+    await expect(page.locator('#width')).toBeAttached();
+    await expect(page.locator('#height')).toBeAttached();
+    await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
+  });
+});
+
+test.describe('Theme Editor', () => {
+  test('should load theme editor with color pickers', async ({ page }) => {
+    await page.goto('/admin/theme');
+    await expect(page.locator('h1')).toContainText('Theme Editor');
+    await expect(page.locator('#bg_color')).toBeAttached();
+    await expect(page.locator('#accent_color')).toBeAttached();
+    await expect(page.locator('#text_color')).toBeAttached();
+    await expect(page.locator('#title')).toBeAttached();
+    await expect(page.locator('#font_size')).toBeAttached();
+    await expect(page.getByRole('button', { name: 'Save Theme' })).toBeVisible();
+  });
+});
+
+test.describe('Analytics', () => {
+  test('should load analytics page', async ({ page }) => {
+    await page.goto('/admin/analytics');
+    await expect(page.locator('h1')).toContainText('Analytics');
+    await expect(page.getByText('Total Displays')).toBeVisible();
+    await expect(page.getByText('Server Uptime')).toBeVisible();
+  });
+});
+
+test.describe('Notifications', () => {
+  test('should load notifications page', async ({ page }) => {
+    await page.goto('/admin/notifications');
+    await expect(page.locator('h1')).toContainText('Notifications');
+  });
+});
+
+test.describe('Login Page', () => {
+  test('should load login page', async ({ page }) => {
+    await page.goto('/login');
+    await expect(page.locator('h1')).toContainText('LEDit Login');
+    await expect(page.locator('#username')).toBeAttached();
+    await expect(page.locator('#password')).toBeAttached();
+    await expect(page.getByRole('button', { name: 'Login' })).toBeVisible();
   });
 });

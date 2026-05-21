@@ -24,9 +24,9 @@ func (s *SonarrDS) GetPNG() (*render.RenderedImage, error) {
 	}
 
 	var series []struct {
-		Title      string `json:"title"`
-		Status     string `json:"status"`
-		NextAir    string `json:"nextAiring,omitempty"`
+		Title   string `json:"title"`
+		Status  string `json:"status"`
+		NextAir string `json:"nextAiring,omitempty"`
 	}
 	if err := json.Unmarshal(body, &series); err != nil || len(series) == 0 {
 		return fallbackSonarr(), nil

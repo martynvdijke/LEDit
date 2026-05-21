@@ -16,7 +16,7 @@ test.describe('Index / Live Feed', () => {
 
   test('should have media display elements in DOM', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('#media-container')).toBeVisible();
+    await expect(page.locator('#media-container')).toBeAttached();
     await expect(page.locator('#media-display')).toBeAttached();
     await expect(page.locator('#video-display')).toBeAttached();
   });

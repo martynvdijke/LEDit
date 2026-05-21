@@ -9,11 +9,11 @@ import (
 )
 
 type FeedController struct {
-	mu           sync.Mutex
-	Paused       bool
-	Skip         bool
-	CurrentName  string
-	NextName     string
+	mu          sync.Mutex
+	Paused      bool
+	Skip        bool
+	CurrentName string
+	NextName    string
 }
 
 var GlobalFeed = &FeedController{}
@@ -63,9 +63,9 @@ func (fc *FeedController) Status() map[string]any {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
 	return map[string]any{
-		"paused":   fc.Paused,
-		"current":  fc.CurrentName,
-		"next":     fc.NextName,
+		"paused":  fc.Paused,
+		"current": fc.CurrentName,
+		"next":    fc.NextName,
 	}
 }
 

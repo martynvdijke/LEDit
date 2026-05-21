@@ -262,13 +262,13 @@ func (s *Server) deleteTokenURLDS(c *gin.Context, endpoint string) {
 
 func datasourceTypeName(endpoint string) string {
 	names := map[string]string{
-		"sonarr":         "Sonarr",
-		"radarr":         "Radarr",
-		"f1":             "F1",
-		"weather":        "Weather",
-		"homeassistant":  "HomeAssistant",
-		"untappd":        "Untappd",
-		"crypto":         "Crypto",
+		"sonarr":        "Sonarr",
+		"radarr":        "Radarr",
+		"f1":            "F1",
+		"weather":       "Weather",
+		"homeassistant": "HomeAssistant",
+		"untappd":       "Untappd",
+		"crypto":        "Crypto",
 	}
 	if n, ok := names[endpoint]; ok {
 		return n
@@ -347,10 +347,10 @@ func (s *Server) AdminUntappdDelete(c *gin.Context) { s.deleteTokenURLDS(c, "unt
 // ---------------------------------------------------------------------------
 
 func (s *Server) AdminCryptoNew(c *gin.Context)    { s.renderForm(c, "Crypto", "crypto", false, nil) }
-func (s *Server) AdminCryptoCreate(c *gin.Context)  { s.createTokenURLDS(c, "crypto") }
-func (s *Server) AdminCryptoEdit(c *gin.Context)    { s.editTokenURLDS(c, "crypto") }
-func (s *Server) AdminCryptoUpdate(c *gin.Context)  { s.updateTokenURLDS(c, "crypto") }
-func (s *Server) AdminCryptoDelete(c *gin.Context)  { s.deleteTokenURLDS(c, "crypto") }
+func (s *Server) AdminCryptoCreate(c *gin.Context) { s.createTokenURLDS(c, "crypto") }
+func (s *Server) AdminCryptoEdit(c *gin.Context)   { s.editTokenURLDS(c, "crypto") }
+func (s *Server) AdminCryptoUpdate(c *gin.Context) { s.updateTokenURLDS(c, "crypto") }
+func (s *Server) AdminCryptoDelete(c *gin.Context) { s.deleteTokenURLDS(c, "crypto") }
 
 // ---------------------------------------------------------------------------
 // DeviceSettings (Phase 7)
@@ -374,13 +374,19 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 	name := c.PostForm("name")
 	ip := c.PostForm("ip")
 	port, _ := strconv.Atoi(c.PostForm("port"))
-	if port == 0 { port = 6270 }
+	if port == 0 {
+		port = 6270
+	}
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	width, _ := strconv.Atoi(c.PostForm("width"))
-	if width == 0 { width = 64 }
+	if width == 0 {
+		width = 64
+	}
 	height, _ := strconv.Atoi(c.PostForm("height"))
-	if height == 0 { height = 64 }
+	if height == 0 {
+		height = 64
+	}
 	enabled := c.PostForm("enabled") == "on"
 
 	obj := s.DB.DeviceSettings.Create().
@@ -435,11 +441,11 @@ func (s *Server) AdminDeviceSettingsDelete(c *gin.Context) {
 func (s *Server) AdminThemeEditor(c *gin.Context) {
 	settings, _ := s.DB.GeneralSettings.Query().Only(s.Ctx)
 	theme := map[string]any{
-		"bg_color":    "#282a36",
+		"bg_color":     "#282a36",
 		"accent_color": "#50fa7b",
-		"text_color":  "#8be9fd",
-		"title":       "CUSTOM",
-		"font_size":   24,
+		"text_color":   "#8be9fd",
+		"title":        "CUSTOM",
+		"font_size":    24,
 	}
 	if settings != nil {
 		c.HTML(http.StatusOK, "theme_editor.html", gin.H{"theme": theme, "has_settings": true})

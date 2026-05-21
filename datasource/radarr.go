@@ -25,8 +25,8 @@ func (r *RadarrDS) GetPNG() (*render.RenderedImage, error) {
 	}
 
 	var movies []struct {
-		Title    string `json:"title"`
-		Status   string `json:"status"`
+		Title  string `json:"title"`
+		Status string `json:"status"`
 	}
 	if err := json.Unmarshal(body, &movies); err != nil || len(movies) == 0 {
 		return fallbackRadarr(), nil

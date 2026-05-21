@@ -807,6 +807,234 @@ func TestDSNFunction(t *testing.T) {
 	}
 }
 
+func TestDeviceSettingsCreateEditDelete(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	body := bytes.NewBufferString("name=TestPi&ip=192.168.1.100&port=6270&enabled=on&width=64&height=32")
+	req := httptest.NewRequest("POST", "/admin/devices/new", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Errorf("device create: expected 302, got %d", w.Code)
+	}
+
+	settings := srv.DB.GeneralSettings.Query().WithDeviceSettings().OnlyX(testCtx)
+	devices, _ := settings.Edges.DeviceSettingsOrErr()
+	if len(devices) != 1 || devices[0].Name != "TestPi" {
+		t.Errorf("expected 1 device named TestPi, got %d", len(devices))
+	}
+
+	editReq := httptest.NewRequest("GET", "/admin/devices/1/edit", nil)
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, editReq)
+	if w2.Code != http.StatusOK {
+		t.Errorf("device edit: expected 200, got %d", w2.Code)
+	}
+
+	delReq := httptest.NewRequest("POST", "/admin/devices/1/delete", nil)
+	w3 := httptest.NewRecorder()
+	srv.ServeHTTP(w3, delReq)
+	if w3.Code != http.StatusFound {
+		t.Errorf("device delete: expected 302, got %d", w3.Code)
+	}
+
+	exists := srv.DB.DeviceSettings.Query().ExistX(testCtx)
+	if exists {
+		t.Error("expected device to be deleted")
+	}
+}
+
+func TestScheduleCreateAndEdit(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	body := bytes.NewBufferString("name=Evening&cron=18:00-22:00&enabled=on")
+	req := httptest.NewRequest("POST", "/admin/schedules/new", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Errorf("schedule create: expected 302, got %d", w.Code)
+	}
+
+	settings := srv.DB.GeneralSettings.Query().WithSchedules().OnlyX(testCtx)
+	schedules, _ := settings.Edges.SchedulesOrErr()
+	if len(schedules) != 1 || schedules[0].Name != "Evening" {
+		t.Errorf("expected 1 schedule named Evening, got %d", len(schedules))
+	}
+
+	editReq := httptest.NewRequest("GET", "/admin/schedules/1/edit", nil)
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, editReq)
+	if w2.Code != http.StatusOK {
+		t.Errorf("schedule edit: expected 200, got %d", w2.Code)
+	}
+
+	updateBody := bytes.NewBufferString("name=Night&cron=22:00-06:00&enabled=on")
+	updReq := httptest.NewRequest("POST", "/admin/schedules/1/edit", updateBody)
+	updReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w3 := httptest.NewRecorder()
+	srv.ServeHTTP(w3, updReq)
+	if w3.Code != http.StatusFound {
+		t.Errorf("schedule update: expected 302, got %d", w3.Code)
+	}
+
+	sched := srv.DB.Schedule.GetX(testCtx, 1)
+	if sched.Name != "Night" {
+		t.Errorf("expected name to be Night, got %s", sched.Name)
+	}
+}
+
+func TestLoginAction(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+
+	body := bytes.NewBufferString("username=admin&password=ledit")
+	req := httptest.NewRequest("POST", "/login", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Errorf("login: expected 302, got %d", w.Code)
+	}
+	if w.Header().Get("Set-Cookie") == "" {
+		t.Error("login should set session cookie")
+	}
+}
+
+func TestLoginActionInvalid(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+
+	body := bytes.NewBufferString("username=admin&password=wrong")
+	req := httptest.NewRequest("POST", "/login", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("failed login: expected 200 (shows form with error), got %d", w.Code)
+	}
+}
+
+func TestDSUpdateAndNewForm(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	// Test update
+	body := bytes.NewBufferString("token=newtoken&url=newurl")
+	req := httptest.NewRequest("POST", "/admin/datasources/sonarr/1/edit", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound && w.Code != http.StatusOK {
+		t.Errorf("update nonexistent: expected 302 or 200, got %d", w.Code)
+	}
+
+	// Test datasource_form for all types renders correctly
+	types := []string{"sonarr", "radarr", "f1", "weather", "homeassistant", "untappd", "images", "videos", "crypto"}
+	for _, ds := range types {
+		req2 := httptest.NewRequest("GET", "/admin/datasources/"+ds+"/new", nil)
+		w2 := httptest.NewRecorder()
+		srv.ServeHTTP(w2, req2)
+		if w2.Code != http.StatusOK {
+			t.Errorf("GET /admin/datasources/%s/new: expected 200, got %d", ds, w2.Code)
+		}
+	}
+}
+
+func TestAnalyticsGetStats(t *testing.T) {
+	prevCount := handlers.GetAnalytics().TotalDisplays
+
+	handlers.TrackDisplay("SourceA", 2.0)
+	handlers.TrackDisplay("SourceB", 1.0)
+	handlers.TrackDisplay("SourceA", 3.0)
+
+	stats := handlers.GetAnalytics()
+	if stats.TotalDisplays != prevCount+3 {
+		t.Errorf("expected %d total displays (prev %d + 3), got %d", prevCount+3, prevCount, stats.TotalDisplays)
+	}
+	if stats.BySource["SourceA"] == 0 {
+		t.Errorf("expected SourceA to have >0 displays")
+	}
+	if stats.BySource["SourceB"] == 0 {
+		t.Errorf("expected SourceB to have >0 displays")
+	}
+	if stats.Uptime == "" {
+		t.Error("expected non-empty uptime")
+	}
+	if len(stats.Recent) < 3 {
+		t.Errorf("expected at least 3 recent events, got %d", len(stats.Recent))
+	}
+}
+
+func TestFeedControllerPauseResume(t *testing.T) {
+	// Reset state first
+	handlers.GlobalFeed.Resume()
+	for handlers.GlobalFeed.ShouldSkip() {
+		// drain any pending skips
+	}
+
+	if handlers.GlobalFeed.IsPaused() {
+		t.Error("feed should not be paused initially")
+	}
+
+	handlers.GlobalFeed.Pause()
+	if !handlers.GlobalFeed.IsPaused() {
+		t.Error("feed should be paused after Pause()")
+	}
+
+	status := handlers.GlobalFeed.Status()
+	if s, ok := status["paused"].(bool); !ok || !s {
+		t.Error("Status() should return paused=true")
+	}
+
+	handlers.GlobalFeed.Resume()
+	if handlers.GlobalFeed.IsPaused() {
+		t.Error("feed should not be paused after Resume()")
+	}
+
+	handlers.GlobalFeed.Next()
+	if !handlers.GlobalFeed.ShouldSkip() {
+		t.Error("ShouldSkip should return true after Next()")
+	}
+	skipAfterDrain := handlers.GlobalFeed.ShouldSkip()
+	if skipAfterDrain {
+		t.Error("ShouldSkip should return false after first read (one-shot)")
+	}
+}
+
+func TestCryptoDSMultipleCoins(t *testing.T) {
+	s := &datasource.CryptoDS{Token: "bitcoin,ethereum,solana"}
+	img, err := s.GetPNG()
+	if err != nil {
+		t.Fatalf("CryptoDS with multiple coins failed: %v", err)
+	}
+	if img.Format != "PNG" {
+		t.Errorf("expected PNG format, got %s", img.Format)
+	}
+}
+
 func TestWebSocketUpgrade(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()

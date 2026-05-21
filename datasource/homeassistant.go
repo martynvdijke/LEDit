@@ -26,8 +26,8 @@ func (h *HomeAssistantDS) GetPNG() (*render.RenderedImage, error) {
 	}
 
 	var states []struct {
-		EntityID string          `json:"entity_id"`
-		State    string          `json:"state"`
+		EntityID string `json:"entity_id"`
+		State    string `json:"state"`
 	}
 	if err := json.Unmarshal(body, &states); err != nil || len(states) == 0 {
 		return fallbackHA(), nil
