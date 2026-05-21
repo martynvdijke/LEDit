@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
+	"ledit/ent/image"
+	"ledit/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/image"
-	"ledit/ent/predicate"
 )
 
 // ImageDelete is the builder for deleting a Image entity.

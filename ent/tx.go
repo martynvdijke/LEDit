@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// Crypto is the client for interacting with the Crypto builders.
+	Crypto *CryptoClient
 	// F1 is the client for interacting with the F1 builders.
 	F1 *F1Client
 	// GeneralSettings is the client for interacting with the GeneralSettings builders.
@@ -161,6 +163,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.Crypto = NewCryptoClient(tx.config)
 	tx.F1 = NewF1Client(tx.config)
 	tx.GeneralSettings = NewGeneralSettingsClient(tx.config)
 	tx.HomeAssistant = NewHomeAssistantClient(tx.config)
@@ -179,7 +182,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: F1.QueryXXX(), the query will be executed
+// applies a query, for example: Crypto.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

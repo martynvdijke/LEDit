@@ -11,10 +11,7 @@ import (
 
 	"ledit/ent/migrate"
 
-	"entgo.io/ent"
-	"entgo.io/ent/dialect"
-	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
+	"ledit/ent/crypto"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -24,6 +21,11 @@ import (
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
+
+	"entgo.io/ent"
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -31,6 +33,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Crypto is the client for interacting with the Crypto builders.
+	Crypto *CryptoClient
 	// F1 is the client for interacting with the F1 builders.
 	F1 *F1Client
 	// GeneralSettings is the client for interacting with the GeneralSettings builders.
@@ -60,6 +64,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Crypto = NewCryptoClient(c.config)
 	c.F1 = NewF1Client(c.config)
 	c.GeneralSettings = NewGeneralSettingsClient(c.config)
 	c.HomeAssistant = NewHomeAssistantClient(c.config)
@@ -161,6 +166,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		Crypto:          NewCryptoClient(cfg),
 		F1:              NewF1Client(cfg),
 		GeneralSettings: NewGeneralSettingsClient(cfg),
 		HomeAssistant:   NewHomeAssistantClient(cfg),
@@ -189,6 +195,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		Crypto:          NewCryptoClient(cfg),
 		F1:              NewF1Client(cfg),
 		GeneralSettings: NewGeneralSettingsClient(cfg),
 		HomeAssistant:   NewHomeAssistantClient(cfg),
@@ -204,7 +211,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		F1.
+//		Crypto.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -227,7 +234,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.F1, c.GeneralSettings, c.HomeAssistant, c.Image, c.Radarr, c.Sonarr,
+		c.Crypto, c.F1, c.GeneralSettings, c.HomeAssistant, c.Image, c.Radarr, c.Sonarr,
 		c.Untappd, c.Video, c.Weather,
 	} {
 		n.Use(hooks...)
@@ -238,7 +245,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.F1, c.GeneralSettings, c.HomeAssistant, c.Image, c.Radarr, c.Sonarr,
+		c.Crypto, c.F1, c.GeneralSettings, c.HomeAssistant, c.Image, c.Radarr, c.Sonarr,
 		c.Untappd, c.Video, c.Weather,
 	} {
 		n.Intercept(interceptors...)
@@ -248,6 +255,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *CryptoMutation:
+		return c.Crypto.mutate(ctx, m)
 	case *F1Mutation:
 		return c.F1.mutate(ctx, m)
 	case *GeneralSettingsMutation:
@@ -268,6 +277,139 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Weather.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// CryptoClient is a client for the Crypto schema.
+type CryptoClient struct {
+	config
+}
+
+// NewCryptoClient returns a client for the Crypto from the given config.
+func NewCryptoClient(c config) *CryptoClient {
+	return &CryptoClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `crypto.Hooks(f(g(h())))`.
+func (c *CryptoClient) Use(hooks ...Hook) {
+	c.hooks.Crypto = append(c.hooks.Crypto, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `crypto.Intercept(f(g(h())))`.
+func (c *CryptoClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Crypto = append(c.inters.Crypto, interceptors...)
+}
+
+// Create returns a builder for creating a Crypto entity.
+func (c *CryptoClient) Create() *CryptoCreate {
+	mutation := newCryptoMutation(c.config, OpCreate)
+	return &CryptoCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Crypto entities.
+func (c *CryptoClient) CreateBulk(builders ...*CryptoCreate) *CryptoCreateBulk {
+	return &CryptoCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CryptoClient) MapCreateBulk(slice any, setFunc func(*CryptoCreate, int)) *CryptoCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CryptoCreateBulk{err: fmt.Errorf("calling to CryptoClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CryptoCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CryptoCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Crypto.
+func (c *CryptoClient) Update() *CryptoUpdate {
+	mutation := newCryptoMutation(c.config, OpUpdate)
+	return &CryptoUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CryptoClient) UpdateOne(_m *Crypto) *CryptoUpdateOne {
+	mutation := newCryptoMutation(c.config, OpUpdateOne, withCrypto(_m))
+	return &CryptoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CryptoClient) UpdateOneID(id int) *CryptoUpdateOne {
+	mutation := newCryptoMutation(c.config, OpUpdateOne, withCryptoID(id))
+	return &CryptoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Crypto.
+func (c *CryptoClient) Delete() *CryptoDelete {
+	mutation := newCryptoMutation(c.config, OpDelete)
+	return &CryptoDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CryptoClient) DeleteOne(_m *Crypto) *CryptoDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CryptoClient) DeleteOneID(id int) *CryptoDeleteOne {
+	builder := c.Delete().Where(crypto.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CryptoDeleteOne{builder}
+}
+
+// Query returns a query builder for Crypto.
+func (c *CryptoClient) Query() *CryptoQuery {
+	return &CryptoQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCrypto},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Crypto entity by its id.
+func (c *CryptoClient) Get(ctx context.Context, id int) (*Crypto, error) {
+	return c.Query().Where(crypto.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CryptoClient) GetX(ctx context.Context, id int) *Crypto {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *CryptoClient) Hooks() []Hook {
+	return c.hooks.Crypto
+}
+
+// Interceptors returns the client interceptors.
+func (c *CryptoClient) Interceptors() []Interceptor {
+	return c.inters.Crypto
+}
+
+func (c *CryptoClient) mutate(ctx context.Context, m *CryptoMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CryptoCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CryptoUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CryptoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CryptoDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Crypto mutation op: %q", m.Op())
 	}
 }
 
@@ -633,6 +775,22 @@ func (c *GeneralSettingsClient) QueryVideos(_m *GeneralSettings) *VideoQuery {
 			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
 			sqlgraph.To(video.Table, video.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.VideosTable, generalsettings.VideosColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCrypto queries the crypto edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryCrypto(_m *GeneralSettings) *CryptoQuery {
+	query := (&CryptoClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(crypto.Table, crypto.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.CryptoTable, generalsettings.CryptoColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1599,11 +1757,11 @@ func (c *WeatherClient) mutate(ctx context.Context, m *WeatherMutation) (Value, 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		F1, GeneralSettings, HomeAssistant, Image, Radarr, Sonarr, Untappd, Video,
-		Weather []ent.Hook
+		Crypto, F1, GeneralSettings, HomeAssistant, Image, Radarr, Sonarr, Untappd,
+		Video, Weather []ent.Hook
 	}
 	inters struct {
-		F1, GeneralSettings, HomeAssistant, Image, Radarr, Sonarr, Untappd, Video,
-		Weather []ent.Interceptor
+		Crypto, F1, GeneralSettings, HomeAssistant, Image, Radarr, Sonarr, Untappd,
+		Video, Weather []ent.Interceptor
 	}
 )

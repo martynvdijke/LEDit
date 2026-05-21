@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
+	"ledit/ent/f1"
+	"ledit/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/f1"
-	"ledit/ent/predicate"
 )
 
 // F1Delete is the builder for deleting a F1 entity.

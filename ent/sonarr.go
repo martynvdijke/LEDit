@@ -4,11 +4,11 @@ package ent
 
 import (
 	"fmt"
+	"ledit/ent/sonarr"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"ledit/ent/sonarr"
 )
 
 // Sonarr is the model entity for the Sonarr schema.

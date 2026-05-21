@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/homeassistant"
+	"ledit/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/homeassistant"
-	"ledit/ent/predicate"
 )
 
 // HomeAssistantUpdate is the builder for updating HomeAssistant entities.

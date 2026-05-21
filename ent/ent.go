@@ -6,12 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
-	"sync"
-
-	"entgo.io/ent"
-	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
+	"ledit/ent/crypto"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -21,6 +16,12 @@ import (
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
+	"reflect"
+	"sync"
+
+	"entgo.io/ent"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -81,6 +82,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			crypto.Table:          crypto.ValidColumn,
 			f1.Table:              f1.ValidColumn,
 			generalsettings.Table: generalsettings.ValidColumn,
 			homeassistant.Table:   homeassistant.ValidColumn,

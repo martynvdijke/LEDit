@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/predicate"
+	"ledit/ent/sonarr"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/predicate"
-	"ledit/ent/sonarr"
 )
 
 // SonarrUpdate is the builder for updating Sonarr entities.

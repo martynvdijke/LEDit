@@ -4,11 +4,11 @@ package ent
 
 import (
 	"fmt"
+	"ledit/ent/generalsettings"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"ledit/ent/generalsettings"
 )
 
 // GeneralSettings is the model entity for the GeneralSettings schema.
@@ -48,9 +48,11 @@ type GeneralSettingsEdges struct {
 	Images []*Image `json:"images,omitempty"`
 	// Videos holds the value of the videos edge.
 	Videos []*Video `json:"videos,omitempty"`
+	// Crypto holds the value of the crypto edge.
+	Crypto []*Crypto `json:"crypto,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -123,6 +125,15 @@ func (e GeneralSettingsEdges) VideosOrErr() ([]*Video, error) {
 		return e.Videos, nil
 	}
 	return nil, &NotLoadedError{edge: "videos"}
+}
+
+// CryptoOrErr returns the Crypto value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) CryptoOrErr() ([]*Crypto, error) {
+	if e.loadedTypes[8] {
+		return e.Crypto, nil
+	}
+	return nil, &NotLoadedError{edge: "crypto"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -232,6 +243,11 @@ func (_m *GeneralSettings) QueryImages() *ImageQuery {
 // QueryVideos queries the "videos" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryVideos() *VideoQuery {
 	return NewGeneralSettingsClient(_m.config).QueryVideos(_m)
+}
+
+// QueryCrypto queries the "crypto" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryCrypto() *CryptoQuery {
+	return NewGeneralSettingsClient(_m.config).QueryCrypto(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

@@ -36,6 +36,8 @@ const (
 	EdgeImages = "images"
 	// EdgeVideos holds the string denoting the videos edge name in mutations.
 	EdgeVideos = "videos"
+	// EdgeCrypto holds the string denoting the crypto edge name in mutations.
+	EdgeCrypto = "crypto"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -94,6 +96,13 @@ const (
 	VideosInverseTable = "videos"
 	// VideosColumn is the table column denoting the videos relation/edge.
 	VideosColumn = "general_settings_videos"
+	// CryptoTable is the table that holds the crypto relation/edge.
+	CryptoTable = "cryptos"
+	// CryptoInverseTable is the table name for the Crypto entity.
+	// It exists in this package in order to avoid circular dependency with the "crypto" package.
+	CryptoInverseTable = "cryptos"
+	// CryptoColumn is the table column denoting the crypto relation/edge.
+	CryptoColumn = "general_settings_crypto"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -261,6 +270,20 @@ func ByVideos(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newVideosStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByCryptoCount orders the results by crypto count.
+func ByCryptoCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCryptoStep(), opts...)
+	}
+}
+
+// ByCrypto orders the results by crypto terms.
+func ByCrypto(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCryptoStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -315,5 +338,12 @@ func newVideosStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(VideosInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, VideosTable, VideosColumn),
+	)
+}
+func newCryptoStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CryptoInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CryptoTable, CryptoColumn),
 	)
 }

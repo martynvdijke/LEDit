@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/image"
+	"ledit/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/image"
-	"ledit/ent/predicate"
 )
 
 // ImageUpdate is the builder for updating Image entities.

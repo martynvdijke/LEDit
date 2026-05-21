@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
+	"ledit/ent/predicate"
+	"ledit/ent/radarr"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/predicate"
-	"ledit/ent/radarr"
 )
 
 // RadarrDelete is the builder for deleting a Radarr entity.

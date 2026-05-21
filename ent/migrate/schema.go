@@ -8,6 +8,27 @@ import (
 )
 
 var (
+	// CryptosColumns holds the columns for the "cryptos" table.
+	CryptosColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: "bitcoin, ethereum"},
+		{Name: "url", Type: field.TypeString, Default: ""},
+		{Name: "general_settings_crypto", Type: field.TypeInt, Nullable: true},
+	}
+	// CryptosTable holds the schema information for the "cryptos" table.
+	CryptosTable = &schema.Table{
+		Name:       "cryptos",
+		Columns:    CryptosColumns,
+		PrimaryKey: []*schema.Column{CryptosColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "cryptos_general_settings_crypto",
+				Columns:    []*schema.Column{CryptosColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// F1sColumns holds the columns for the "f1s" table.
 	F1sColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -190,6 +211,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CryptosTable,
 		F1sTable,
 		GeneralSettingsTable,
 		HomeAssistantsTable,
@@ -203,6 +225,7 @@ var (
 )
 
 func init() {
+	CryptosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	F1sTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	HomeAssistantsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	ImagesTable.ForeignKeys[0].RefTable = GeneralSettingsTable

@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
+	"ledit/ent/predicate"
+	"ledit/ent/weather"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/predicate"
-	"ledit/ent/weather"
 )
 
 // WeatherDelete is the builder for deleting a Weather entity.

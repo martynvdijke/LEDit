@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"ledit/ent/crypto"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -17,6 +18,16 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	cryptoFields := schema.Crypto{}.Fields()
+	_ = cryptoFields
+	// cryptoDescToken is the schema descriptor for token field.
+	cryptoDescToken := cryptoFields[0].Descriptor()
+	// crypto.DefaultToken holds the default value on creation for the token field.
+	crypto.DefaultToken = cryptoDescToken.Default.(string)
+	// cryptoDescURL is the schema descriptor for url field.
+	cryptoDescURL := cryptoFields[1].Descriptor()
+	// crypto.DefaultURL holds the default value on creation for the url field.
+	crypto.DefaultURL = cryptoDescURL.Default.(string)
 	f1Fields := schema.F1{}.Fields()
 	_ = f1Fields
 	// f1DescToken is the schema descriptor for token field.

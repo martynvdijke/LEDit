@@ -6,10 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/homeassistant"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/homeassistant"
 )
 
 // HomeAssistantCreate is the builder for creating a HomeAssistant entity.

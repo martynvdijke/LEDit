@@ -6,35 +6,35 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/crypto"
 	"ledit/ent/predicate"
-	"ledit/ent/untappd"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
 
-// UntappdUpdate is the builder for updating Untappd entities.
-type UntappdUpdate struct {
+// CryptoUpdate is the builder for updating Crypto entities.
+type CryptoUpdate struct {
 	config
 	hooks    []Hook
-	mutation *UntappdMutation
+	mutation *CryptoMutation
 }
 
-// Where appends a list predicates to the UntappdUpdate builder.
-func (_u *UntappdUpdate) Where(ps ...predicate.Untappd) *UntappdUpdate {
+// Where appends a list predicates to the CryptoUpdate builder.
+func (_u *CryptoUpdate) Where(ps ...predicate.Crypto) *CryptoUpdate {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // SetToken sets the "token" field.
-func (_u *UntappdUpdate) SetToken(v string) *UntappdUpdate {
+func (_u *CryptoUpdate) SetToken(v string) *CryptoUpdate {
 	_u.mutation.SetToken(v)
 	return _u
 }
 
 // SetNillableToken sets the "token" field if the given value is not nil.
-func (_u *UntappdUpdate) SetNillableToken(v *string) *UntappdUpdate {
+func (_u *CryptoUpdate) SetNillableToken(v *string) *CryptoUpdate {
 	if v != nil {
 		_u.SetToken(*v)
 	}
@@ -42,31 +42,31 @@ func (_u *UntappdUpdate) SetNillableToken(v *string) *UntappdUpdate {
 }
 
 // SetURL sets the "url" field.
-func (_u *UntappdUpdate) SetURL(v string) *UntappdUpdate {
+func (_u *CryptoUpdate) SetURL(v string) *CryptoUpdate {
 	_u.mutation.SetURL(v)
 	return _u
 }
 
 // SetNillableURL sets the "url" field if the given value is not nil.
-func (_u *UntappdUpdate) SetNillableURL(v *string) *UntappdUpdate {
+func (_u *CryptoUpdate) SetNillableURL(v *string) *CryptoUpdate {
 	if v != nil {
 		_u.SetURL(*v)
 	}
 	return _u
 }
 
-// Mutation returns the UntappdMutation object of the builder.
-func (_u *UntappdUpdate) Mutation() *UntappdMutation {
+// Mutation returns the CryptoMutation object of the builder.
+func (_u *CryptoUpdate) Mutation() *CryptoMutation {
 	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (_u *UntappdUpdate) Save(ctx context.Context) (int, error) {
+func (_u *CryptoUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *UntappdUpdate) SaveX(ctx context.Context) int {
+func (_u *CryptoUpdate) SaveX(ctx context.Context) int {
 	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -75,20 +75,20 @@ func (_u *UntappdUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (_u *UntappdUpdate) Exec(ctx context.Context) error {
+func (_u *CryptoUpdate) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *UntappdUpdate) ExecX(ctx context.Context) {
+func (_u *CryptoUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (_u *UntappdUpdate) sqlSave(ctx context.Context) (_node int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(untappd.Table, untappd.Columns, sqlgraph.NewFieldSpec(untappd.FieldID, field.TypeInt))
+func (_u *CryptoUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	_spec := sqlgraph.NewUpdateSpec(crypto.Table, crypto.Columns, sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -97,14 +97,14 @@ func (_u *UntappdUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 	}
 	if value, ok := _u.mutation.Token(); ok {
-		_spec.SetField(untappd.FieldToken, field.TypeString, value)
+		_spec.SetField(crypto.FieldToken, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.URL(); ok {
-		_spec.SetField(untappd.FieldURL, field.TypeString, value)
+		_spec.SetField(crypto.FieldURL, field.TypeString, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{untappd.Label}
+			err = &NotFoundError{crypto.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -114,22 +114,22 @@ func (_u *UntappdUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	return _node, nil
 }
 
-// UntappdUpdateOne is the builder for updating a single Untappd entity.
-type UntappdUpdateOne struct {
+// CryptoUpdateOne is the builder for updating a single Crypto entity.
+type CryptoUpdateOne struct {
 	config
 	fields   []string
 	hooks    []Hook
-	mutation *UntappdMutation
+	mutation *CryptoMutation
 }
 
 // SetToken sets the "token" field.
-func (_u *UntappdUpdateOne) SetToken(v string) *UntappdUpdateOne {
+func (_u *CryptoUpdateOne) SetToken(v string) *CryptoUpdateOne {
 	_u.mutation.SetToken(v)
 	return _u
 }
 
 // SetNillableToken sets the "token" field if the given value is not nil.
-func (_u *UntappdUpdateOne) SetNillableToken(v *string) *UntappdUpdateOne {
+func (_u *CryptoUpdateOne) SetNillableToken(v *string) *CryptoUpdateOne {
 	if v != nil {
 		_u.SetToken(*v)
 	}
@@ -137,44 +137,44 @@ func (_u *UntappdUpdateOne) SetNillableToken(v *string) *UntappdUpdateOne {
 }
 
 // SetURL sets the "url" field.
-func (_u *UntappdUpdateOne) SetURL(v string) *UntappdUpdateOne {
+func (_u *CryptoUpdateOne) SetURL(v string) *CryptoUpdateOne {
 	_u.mutation.SetURL(v)
 	return _u
 }
 
 // SetNillableURL sets the "url" field if the given value is not nil.
-func (_u *UntappdUpdateOne) SetNillableURL(v *string) *UntappdUpdateOne {
+func (_u *CryptoUpdateOne) SetNillableURL(v *string) *CryptoUpdateOne {
 	if v != nil {
 		_u.SetURL(*v)
 	}
 	return _u
 }
 
-// Mutation returns the UntappdMutation object of the builder.
-func (_u *UntappdUpdateOne) Mutation() *UntappdMutation {
+// Mutation returns the CryptoMutation object of the builder.
+func (_u *CryptoUpdateOne) Mutation() *CryptoMutation {
 	return _u.mutation
 }
 
-// Where appends a list predicates to the UntappdUpdate builder.
-func (_u *UntappdUpdateOne) Where(ps ...predicate.Untappd) *UntappdUpdateOne {
+// Where appends a list predicates to the CryptoUpdate builder.
+func (_u *CryptoUpdateOne) Where(ps ...predicate.Crypto) *CryptoUpdateOne {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (_u *UntappdUpdateOne) Select(field string, fields ...string) *UntappdUpdateOne {
+func (_u *CryptoUpdateOne) Select(field string, fields ...string) *CryptoUpdateOne {
 	_u.fields = append([]string{field}, fields...)
 	return _u
 }
 
-// Save executes the query and returns the updated Untappd entity.
-func (_u *UntappdUpdateOne) Save(ctx context.Context) (*Untappd, error) {
+// Save executes the query and returns the updated Crypto entity.
+func (_u *CryptoUpdateOne) Save(ctx context.Context) (*Crypto, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *UntappdUpdateOne) SaveX(ctx context.Context) *Untappd {
+func (_u *CryptoUpdateOne) SaveX(ctx context.Context) *Crypto {
 	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -183,33 +183,33 @@ func (_u *UntappdUpdateOne) SaveX(ctx context.Context) *Untappd {
 }
 
 // Exec executes the query on the entity.
-func (_u *UntappdUpdateOne) Exec(ctx context.Context) error {
+func (_u *CryptoUpdateOne) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *UntappdUpdateOne) ExecX(ctx context.Context) {
+func (_u *CryptoUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (_u *UntappdUpdateOne) sqlSave(ctx context.Context) (_node *Untappd, err error) {
-	_spec := sqlgraph.NewUpdateSpec(untappd.Table, untappd.Columns, sqlgraph.NewFieldSpec(untappd.FieldID, field.TypeInt))
+func (_u *CryptoUpdateOne) sqlSave(ctx context.Context) (_node *Crypto, err error) {
+	_spec := sqlgraph.NewUpdateSpec(crypto.Table, crypto.Columns, sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt))
 	id, ok := _u.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Untappd.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Crypto.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, untappd.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, crypto.FieldID)
 		for _, f := range fields {
-			if !untappd.ValidColumn(f) {
+			if !crypto.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != untappd.FieldID {
+			if f != crypto.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)
 			}
 		}
@@ -222,17 +222,17 @@ func (_u *UntappdUpdateOne) sqlSave(ctx context.Context) (_node *Untappd, err er
 		}
 	}
 	if value, ok := _u.mutation.Token(); ok {
-		_spec.SetField(untappd.FieldToken, field.TypeString, value)
+		_spec.SetField(crypto.FieldToken, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.URL(); ok {
-		_spec.SetField(untappd.FieldURL, field.TypeString, value)
+		_spec.SetField(crypto.FieldURL, field.TypeString, value)
 	}
-	_node = &Untappd{config: _u.config}
+	_node = &Crypto{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{untappd.Label}
+			err = &NotFoundError{crypto.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}

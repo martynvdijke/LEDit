@@ -6,27 +6,27 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"ledit/ent/sonarr"
+	"ledit/ent/crypto"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
 
-// SonarrCreate is the builder for creating a Sonarr entity.
-type SonarrCreate struct {
+// CryptoCreate is the builder for creating a Crypto entity.
+type CryptoCreate struct {
 	config
-	mutation *SonarrMutation
+	mutation *CryptoMutation
 	hooks    []Hook
 }
 
 // SetToken sets the "token" field.
-func (_c *SonarrCreate) SetToken(v string) *SonarrCreate {
+func (_c *CryptoCreate) SetToken(v string) *CryptoCreate {
 	_c.mutation.SetToken(v)
 	return _c
 }
 
 // SetNillableToken sets the "token" field if the given value is not nil.
-func (_c *SonarrCreate) SetNillableToken(v *string) *SonarrCreate {
+func (_c *CryptoCreate) SetNillableToken(v *string) *CryptoCreate {
 	if v != nil {
 		_c.SetToken(*v)
 	}
@@ -34,32 +34,32 @@ func (_c *SonarrCreate) SetNillableToken(v *string) *SonarrCreate {
 }
 
 // SetURL sets the "url" field.
-func (_c *SonarrCreate) SetURL(v string) *SonarrCreate {
+func (_c *CryptoCreate) SetURL(v string) *CryptoCreate {
 	_c.mutation.SetURL(v)
 	return _c
 }
 
 // SetNillableURL sets the "url" field if the given value is not nil.
-func (_c *SonarrCreate) SetNillableURL(v *string) *SonarrCreate {
+func (_c *CryptoCreate) SetNillableURL(v *string) *CryptoCreate {
 	if v != nil {
 		_c.SetURL(*v)
 	}
 	return _c
 }
 
-// Mutation returns the SonarrMutation object of the builder.
-func (_c *SonarrCreate) Mutation() *SonarrMutation {
+// Mutation returns the CryptoMutation object of the builder.
+func (_c *CryptoCreate) Mutation() *CryptoMutation {
 	return _c.mutation
 }
 
-// Save creates the Sonarr in the database.
-func (_c *SonarrCreate) Save(ctx context.Context) (*Sonarr, error) {
+// Save creates the Crypto in the database.
+func (_c *CryptoCreate) Save(ctx context.Context) (*Crypto, error) {
 	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (_c *SonarrCreate) SaveX(ctx context.Context) *Sonarr {
+func (_c *CryptoCreate) SaveX(ctx context.Context) *Crypto {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -68,42 +68,42 @@ func (_c *SonarrCreate) SaveX(ctx context.Context) *Sonarr {
 }
 
 // Exec executes the query.
-func (_c *SonarrCreate) Exec(ctx context.Context) error {
+func (_c *CryptoCreate) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *SonarrCreate) ExecX(ctx context.Context) {
+func (_c *CryptoCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *SonarrCreate) defaults() {
+func (_c *CryptoCreate) defaults() {
 	if _, ok := _c.mutation.Token(); !ok {
-		v := sonarr.DefaultToken
+		v := crypto.DefaultToken
 		_c.mutation.SetToken(v)
 	}
 	if _, ok := _c.mutation.URL(); !ok {
-		v := sonarr.DefaultURL
+		v := crypto.DefaultURL
 		_c.mutation.SetURL(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_c *SonarrCreate) check() error {
+func (_c *CryptoCreate) check() error {
 	if _, ok := _c.mutation.Token(); !ok {
-		return &ValidationError{Name: "token", err: errors.New(`ent: missing required field "Sonarr.token"`)}
+		return &ValidationError{Name: "token", err: errors.New(`ent: missing required field "Crypto.token"`)}
 	}
 	if _, ok := _c.mutation.URL(); !ok {
-		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Sonarr.url"`)}
+		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Crypto.url"`)}
 	}
 	return nil
 }
 
-func (_c *SonarrCreate) sqlSave(ctx context.Context) (*Sonarr, error) {
+func (_c *CryptoCreate) sqlSave(ctx context.Context) (*Crypto, error) {
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
@@ -121,43 +121,43 @@ func (_c *SonarrCreate) sqlSave(ctx context.Context) (*Sonarr, error) {
 	return _node, nil
 }
 
-func (_c *SonarrCreate) createSpec() (*Sonarr, *sqlgraph.CreateSpec) {
+func (_c *CryptoCreate) createSpec() (*Crypto, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Sonarr{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(sonarr.Table, sqlgraph.NewFieldSpec(sonarr.FieldID, field.TypeInt))
+		_node = &Crypto{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(crypto.Table, sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt))
 	)
 	if value, ok := _c.mutation.Token(); ok {
-		_spec.SetField(sonarr.FieldToken, field.TypeString, value)
+		_spec.SetField(crypto.FieldToken, field.TypeString, value)
 		_node.Token = value
 	}
 	if value, ok := _c.mutation.URL(); ok {
-		_spec.SetField(sonarr.FieldURL, field.TypeString, value)
+		_spec.SetField(crypto.FieldURL, field.TypeString, value)
 		_node.URL = value
 	}
 	return _node, _spec
 }
 
-// SonarrCreateBulk is the builder for creating many Sonarr entities in bulk.
-type SonarrCreateBulk struct {
+// CryptoCreateBulk is the builder for creating many Crypto entities in bulk.
+type CryptoCreateBulk struct {
 	config
 	err      error
-	builders []*SonarrCreate
+	builders []*CryptoCreate
 }
 
-// Save creates the Sonarr entities in the database.
-func (_c *SonarrCreateBulk) Save(ctx context.Context) ([]*Sonarr, error) {
+// Save creates the Crypto entities in the database.
+func (_c *CryptoCreateBulk) Save(ctx context.Context) ([]*Crypto, error) {
 	if _c.err != nil {
 		return nil, _c.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
-	nodes := make([]*Sonarr, len(_c.builders))
+	nodes := make([]*Crypto, len(_c.builders))
 	mutators := make([]Mutator, len(_c.builders))
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*SonarrMutation)
+				mutation, ok := m.(*CryptoMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -204,7 +204,7 @@ func (_c *SonarrCreateBulk) Save(ctx context.Context) ([]*Sonarr, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_c *SonarrCreateBulk) SaveX(ctx context.Context) []*Sonarr {
+func (_c *CryptoCreateBulk) SaveX(ctx context.Context) []*Crypto {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -213,13 +213,13 @@ func (_c *SonarrCreateBulk) SaveX(ctx context.Context) []*Sonarr {
 }
 
 // Exec executes the query.
-func (_c *SonarrCreateBulk) Exec(ctx context.Context) error {
+func (_c *CryptoCreateBulk) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *SonarrCreateBulk) ExecX(ctx context.Context) {
+func (_c *CryptoCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}

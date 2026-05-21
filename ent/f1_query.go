@@ -5,14 +5,14 @@ package ent
 import (
 	"context"
 	"fmt"
+	"ledit/ent/f1"
+	"ledit/ent/predicate"
 	"math"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/f1"
-	"ledit/ent/predicate"
 )
 
 // F1Query is the builder for querying F1 entities.

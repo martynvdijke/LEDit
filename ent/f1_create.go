@@ -6,10 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/f1"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/f1"
 )
 
 // F1Create is the builder for creating a F1 entity.

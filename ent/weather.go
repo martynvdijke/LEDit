@@ -4,11 +4,11 @@ package ent
 
 import (
 	"fmt"
+	"ledit/ent/weather"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"ledit/ent/weather"
 )
 
 // Weather is the model entity for the Weather schema.

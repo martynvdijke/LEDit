@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/predicate"
+	"ledit/ent/radarr"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/predicate"
-	"ledit/ent/radarr"
 )
 
 // RadarrUpdate is the builder for updating Radarr entities.

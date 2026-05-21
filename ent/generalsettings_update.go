@@ -6,10 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
-	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
+	"ledit/ent/crypto"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -20,6 +17,10 @@ import (
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
+
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 )
 
 // GeneralSettingsUpdate is the builder for updating GeneralSettings entities.
@@ -232,6 +233,21 @@ func (_u *GeneralSettingsUpdate) AddVideos(v ...*Video) *GeneralSettingsUpdate {
 	return _u.AddVideoIDs(ids...)
 }
 
+// AddCryptoIDs adds the "crypto" edge to the Crypto entity by IDs.
+func (_u *GeneralSettingsUpdate) AddCryptoIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddCryptoIDs(ids...)
+	return _u
+}
+
+// AddCrypto adds the "crypto" edges to the Crypto entity.
+func (_u *GeneralSettingsUpdate) AddCrypto(v ...*Crypto) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCryptoIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdate) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -403,6 +419,27 @@ func (_u *GeneralSettingsUpdate) RemoveVideos(v ...*Video) *GeneralSettingsUpdat
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveVideoIDs(ids...)
+}
+
+// ClearCrypto clears all "crypto" edges to the Crypto entity.
+func (_u *GeneralSettingsUpdate) ClearCrypto() *GeneralSettingsUpdate {
+	_u.mutation.ClearCrypto()
+	return _u
+}
+
+// RemoveCryptoIDs removes the "crypto" edge to Crypto entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveCryptoIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveCryptoIDs(ids...)
+	return _u
+}
+
+// RemoveCrypto removes "crypto" edges to Crypto entities.
+func (_u *GeneralSettingsUpdate) RemoveCrypto(v ...*Crypto) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCryptoIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -822,6 +859,51 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.CryptoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CryptoTable,
+			Columns: []string{generalsettings.CryptoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCryptoIDs(); len(nodes) > 0 && !_u.mutation.CryptoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CryptoTable,
+			Columns: []string{generalsettings.CryptoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CryptoIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CryptoTable,
+			Columns: []string{generalsettings.CryptoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -1039,6 +1121,21 @@ func (_u *GeneralSettingsUpdateOne) AddVideos(v ...*Video) *GeneralSettingsUpdat
 	return _u.AddVideoIDs(ids...)
 }
 
+// AddCryptoIDs adds the "crypto" edge to the Crypto entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddCryptoIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddCryptoIDs(ids...)
+	return _u
+}
+
+// AddCrypto adds the "crypto" edges to the Crypto entity.
+func (_u *GeneralSettingsUpdateOne) AddCrypto(v ...*Crypto) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCryptoIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdateOne) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -1210,6 +1307,27 @@ func (_u *GeneralSettingsUpdateOne) RemoveVideos(v ...*Video) *GeneralSettingsUp
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveVideoIDs(ids...)
+}
+
+// ClearCrypto clears all "crypto" edges to the Crypto entity.
+func (_u *GeneralSettingsUpdateOne) ClearCrypto() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearCrypto()
+	return _u
+}
+
+// RemoveCryptoIDs removes the "crypto" edge to Crypto entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveCryptoIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveCryptoIDs(ids...)
+	return _u
+}
+
+// RemoveCrypto removes "crypto" edges to Crypto entities.
+func (_u *GeneralSettingsUpdateOne) RemoveCrypto(v ...*Crypto) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCryptoIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -1652,6 +1770,51 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(video.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CryptoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CryptoTable,
+			Columns: []string{generalsettings.CryptoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCryptoIDs(); len(nodes) > 0 && !_u.mutation.CryptoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CryptoTable,
+			Columns: []string{generalsettings.CryptoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CryptoIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CryptoTable,
+			Columns: []string{generalsettings.CryptoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

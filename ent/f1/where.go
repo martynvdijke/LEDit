@@ -3,8 +3,9 @@
 package f1
 
 import (
-	"entgo.io/ent/dialect/sql"
 	"ledit/ent/predicate"
+
+	"entgo.io/ent/dialect/sql"
 )
 
 // ID filters vertices based on their ID field.

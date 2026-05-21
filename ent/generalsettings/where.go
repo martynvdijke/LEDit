@@ -3,9 +3,10 @@
 package generalsettings
 
 import (
+	"ledit/ent/predicate"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"ledit/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
@@ -379,6 +380,29 @@ func HasVideos() predicate.GeneralSettings {
 func HasVideosWith(preds ...predicate.Video) predicate.GeneralSettings {
 	return predicate.GeneralSettings(func(s *sql.Selector) {
 		step := newVideosStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCrypto applies the HasEdge predicate on the "crypto" edge.
+func HasCrypto() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CryptoTable, CryptoColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCryptoWith applies the HasEdge predicate on the "crypto" edge with a given conditions (other predicates).
+func HasCryptoWith(preds ...predicate.Crypto) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newCryptoStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

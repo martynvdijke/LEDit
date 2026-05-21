@@ -6,10 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/untappd"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/untappd"
 )
 
 // UntappdCreate is the builder for creating a Untappd entity.

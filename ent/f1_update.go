@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/f1"
+	"ledit/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/f1"
-	"ledit/ent/predicate"
 )
 
 // F1Update is the builder for updating F1 entities.

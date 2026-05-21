@@ -4,11 +4,11 @@ package ent
 
 import (
 	"fmt"
+	"ledit/ent/homeassistant"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"ledit/ent/homeassistant"
 )
 
 // HomeAssistant is the model entity for the HomeAssistant schema.

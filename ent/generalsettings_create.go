@@ -6,9 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
-	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
+	"ledit/ent/crypto"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -18,6 +16,9 @@ import (
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
+
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 )
 
 // GeneralSettingsCreate is the builder for creating a GeneralSettings entity.
@@ -185,6 +186,21 @@ func (_c *GeneralSettingsCreate) AddVideos(v ...*Video) *GeneralSettingsCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddVideoIDs(ids...)
+}
+
+// AddCryptoIDs adds the "crypto" edge to the Crypto entity by IDs.
+func (_c *GeneralSettingsCreate) AddCryptoIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddCryptoIDs(ids...)
+	return _c
+}
+
+// AddCrypto adds the "crypto" edges to the Crypto entity.
+func (_c *GeneralSettingsCreate) AddCrypto(v ...*Crypto) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCryptoIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -409,6 +425,22 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(video.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CryptoIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CryptoTable,
+			Columns: []string{generalsettings.CryptoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

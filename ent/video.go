@@ -4,11 +4,11 @@ package ent
 
 import (
 	"fmt"
+	"ledit/ent/video"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"ledit/ent/video"
 )
 
 // Video is the model entity for the Video schema.

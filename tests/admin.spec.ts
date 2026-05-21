@@ -53,6 +53,7 @@ test.describe('Sidebar Navigation', () => {
     await expect(page.getByRole('link', { name: 'Add Untappd' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Add Image' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Add Video' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Add Crypto' })).toBeVisible();
   });
 
   test('should navigate to settings via sidebar', async ({ page }) => {
@@ -78,6 +79,7 @@ test.describe('Datasource Forms', () => {
     { link: 'Add Untappd', path: 'untappd', title: 'New Untappd Source' },
     { link: 'Add Image', path: 'images', title: 'New Image Source' },
     { link: 'Add Video', path: 'videos', title: 'New Video Source' },
+    { link: 'Add Crypto', path: 'crypto', title: 'New Crypto Source' },
   ];
 
   for (const ds of datasources) {

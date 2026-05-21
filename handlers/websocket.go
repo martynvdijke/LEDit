@@ -84,6 +84,11 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 		sources = append(sources, &datasource.VideoDS{Path: vid.Path})
 	}
 
+	crypto, _ := settings.Edges.CryptoOrErr()
+	for _, c := range crypto {
+		sources = append(sources, &datasource.CryptoDS{Token: c.Token, URL: c.URL})
+	}
+
 	if settings.Random {
 		rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 		rng.Shuffle(len(sources), func(i, j int) {

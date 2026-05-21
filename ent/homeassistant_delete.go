@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
+	"ledit/ent/homeassistant"
+	"ledit/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/homeassistant"
-	"ledit/ent/predicate"
 )
 
 // HomeAssistantDelete is the builder for deleting a HomeAssistant entity.

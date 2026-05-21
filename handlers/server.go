@@ -128,5 +128,12 @@ func (s *Server) setupRoutes() {
 		admin.GET("/datasources/videos/:id/edit", s.AdminVideoEdit)
 		admin.POST("/datasources/videos/:id/edit", s.AdminVideoUpdate)
 		admin.POST("/datasources/videos/:id/delete", s.AdminVideoDelete)
+
+		// Crypto
+		admin.GET("/datasources/crypto/new", s.AdminCryptoNew)
+		admin.POST("/datasources/crypto/new", s.AdminCryptoCreate)
+		admin.GET("/datasources/crypto/:id/edit", s.AdminCryptoEdit)
+		admin.POST("/datasources/crypto/:id/edit", s.AdminCryptoUpdate)
+		admin.POST("/datasources/crypto/:id/delete", s.AdminCryptoDelete)
 	}
 }

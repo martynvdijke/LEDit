@@ -9,8 +9,9 @@ import (
 	// required by schema hooks.
 	_ "ledit/ent/runtime"
 
-	"entgo.io/ent/dialect/sql/schema"
 	"ledit/ent/migrate"
+
+	"entgo.io/ent/dialect/sql/schema"
 )
 
 type (

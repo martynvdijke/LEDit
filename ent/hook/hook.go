@@ -5,9 +5,20 @@ package hook
 import (
 	"context"
 	"fmt"
-
 	"ledit/ent"
 )
+
+// The CryptoFunc type is an adapter to allow the use of ordinary
+// function as Crypto mutator.
+type CryptoFunc func(context.Context, *ent.CryptoMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CryptoFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CryptoMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CryptoMutation", m)
+}
 
 // The F1Func type is an adapter to allow the use of ordinary
 // function as F1 mutator.

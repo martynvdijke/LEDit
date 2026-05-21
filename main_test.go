@@ -411,6 +411,31 @@ func TestServerAdminImageNew(t *testing.T) {
 	}
 }
 
+func TestCryptoDatasource(t *testing.T) {
+	s := &datasource.CryptoDS{Token: "bitcoin"}
+	img, err := s.GetPNG()
+	if err != nil {
+		t.Fatalf("Crypto GetPNG failed: %v", err)
+	}
+	if img.Format != "PNG" {
+		t.Errorf("expected PNG format, got %s", img.Format)
+	}
+}
+
+func TestServerAdminCryptoNew(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/datasources/crypto/new", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
 func TestServerAdminVideoNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
@@ -489,6 +514,7 @@ func TestServerAdminDatasourceCreateAndEditCycle(t *testing.T) {
 		{"weather", "wtoken", "wurl"},
 		{"homeassistant", "hatoken", "haurl"},
 		{"untappd", "utoken", "uurl"},
+		{"crypto", "bitcoin", ""},
 	}
 
 	for _, tt := range tests {
@@ -503,7 +529,7 @@ func TestServerAdminDatasourceCreateAndEditCycle(t *testing.T) {
 	}
 
 	settings := srv.DB.GeneralSettings.Query().
-		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
+		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithCrypto().
 		OnlyX(testCtx)
 
 	sonarr, _ := settings.Edges.SonarrOrErr()
@@ -512,6 +538,7 @@ func TestServerAdminDatasourceCreateAndEditCycle(t *testing.T) {
 	weather, _ := settings.Edges.WeatherOrErr()
 	ha, _ := settings.Edges.HomeAssistantOrErr()
 	untappd, _ := settings.Edges.UntappdOrErr()
+	crypto, _ := settings.Edges.CryptoOrErr()
 
 	if len(sonarr) != 1 || sonarr[0].Token != "stoken" {
 		t.Error("Sonarr not created correctly")
@@ -530,6 +557,9 @@ func TestServerAdminDatasourceCreateAndEditCycle(t *testing.T) {
 	}
 	if len(radarr) != 1 || radarr[0].Token != "rtoken" {
 		t.Error("Radarr not created correctly")
+	}
+	if len(crypto) != 1 || crypto[0].Token != "bitcoin" {
+		t.Error("Crypto not created correctly")
 	}
 }
 

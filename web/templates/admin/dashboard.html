@@ -47,6 +47,9 @@
                 <li>
                     <a href="/admin/datasources/videos/new" class="nav-link text-white">Add Video</a>
                 </li>
+                <li>
+                    <a href="/admin/datasources/crypto/new" class="nav-link text-white">Add Crypto</a>
+                </li>
             </ul>
         </div>
         <div class="container-fluid p-4">
@@ -122,6 +125,14 @@
                         <div class="card-body">
                             <h5 class="card-title">Videos</h5>
                             <p class="card-text display-6">{{.video_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Crypto</h5>
+                            <p class="card-text display-6">{{.crypto_count}}</p>
                         </div>
                     </div>
                 </div>

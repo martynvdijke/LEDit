@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
+	"ledit/ent/predicate"
+	"ledit/ent/untappd"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/predicate"
-	"ledit/ent/untappd"
 )
 
 // UntappdDelete is the builder for deleting a Untappd entity.

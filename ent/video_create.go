@@ -6,10 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/video"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/video"
 )
 
 // VideoCreate is the builder for creating a Video entity.

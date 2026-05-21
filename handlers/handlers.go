@@ -16,7 +16,7 @@ func (s *Server) IndexHandler(c *gin.Context) {
 }
 
 func (s *Server) AdminDashboard(c *gin.Context) {
-	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().Only(s.Ctx)
+	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().Only(s.Ctx)
 
 	stats := gin.H{
 		"has_settings": err == nil,
@@ -30,6 +30,7 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		untappdItems, _ := settings.Edges.UntappdOrErr()
 		imageItems, _ := settings.Edges.ImagesOrErr()
 		videoItems, _ := settings.Edges.VideosOrErr()
+		cryptoItems, _ := settings.Edges.CryptoOrErr()
 
 		type sourceEntry struct {
 			ID       int
@@ -64,6 +65,9 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		for _, vid := range videoItems {
 			sources = append(sources, sourceEntry{ID: vid.ID, Type: "Video", Endpoint: "videos", Path: vid.Path})
 		}
+		for _, cr := range cryptoItems {
+			sources = append(sources, sourceEntry{ID: cr.ID, Type: "Crypto", Endpoint: "crypto", Token: cr.Token, URL: cr.URL})
+		}
 
 		stats = gin.H{
 			"has_settings":  true,
@@ -77,7 +81,8 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 			"untappd_count": len(untappdItems),
 			"image_count":   len(imageItems),
 			"video_count":   len(videoItems),
-			"total_sources": len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems),
+			"crypto_count":  len(cryptoItems),
+			"total_sources": len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems),
 		}
 	}
 	c.HTML(http.StatusOK, "dashboard.html", stats)
@@ -150,6 +155,8 @@ func (s *Server) createTokenURLDS(c *gin.Context, endpoint string) {
 		obj = s.DB.HomeAssistant.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
 	case "untappd":
 		obj = s.DB.Untappd.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
+	case "crypto":
+		obj = s.DB.Crypto.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
 	}
 
 	addEdge(endpoint, s, obj)
@@ -175,6 +182,8 @@ func addEdge(endpoint string, s *Server, obj any) {
 		upd.AddHomeAssistant(obj.(*ent.HomeAssistant))
 	case "untappd":
 		upd.AddUntappd(obj.(*ent.Untappd))
+	case "crypto":
+		upd.AddCrypto(obj.(*ent.Crypto))
 	}
 	upd.Exec(s.Ctx)
 }
@@ -197,6 +206,8 @@ func (s *Server) editTokenURLDS(c *gin.Context, endpoint string) {
 		obj, err = s.DB.HomeAssistant.Get(s.Ctx, id)
 	case "untappd":
 		obj, err = s.DB.Untappd.Get(s.Ctx, id)
+	case "crypto":
+		obj, err = s.DB.Crypto.Get(s.Ctx, id)
 	}
 	if err != nil {
 		c.Redirect(http.StatusFound, "/admin/")
@@ -222,6 +233,8 @@ func (s *Server) updateTokenURLDS(c *gin.Context, endpoint string) {
 		s.DB.HomeAssistant.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
 	case "untappd":
 		s.DB.Untappd.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
+	case "crypto":
+		s.DB.Crypto.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
 	}
 	c.Redirect(http.StatusFound, "/admin/")
 }
@@ -241,18 +254,21 @@ func (s *Server) deleteTokenURLDS(c *gin.Context, endpoint string) {
 		s.DB.HomeAssistant.DeleteOneID(id).Exec(s.Ctx)
 	case "untappd":
 		s.DB.Untappd.DeleteOneID(id).Exec(s.Ctx)
+	case "crypto":
+		s.DB.Crypto.DeleteOneID(id).Exec(s.Ctx)
 	}
 	c.Redirect(http.StatusFound, "/admin/")
 }
 
 func datasourceTypeName(endpoint string) string {
 	names := map[string]string{
-		"sonarr":        "Sonarr",
-		"radarr":        "Radarr",
-		"f1":            "F1",
-		"weather":       "Weather",
-		"homeassistant": "HomeAssistant",
-		"untappd":       "Untappd",
+		"sonarr":         "Sonarr",
+		"radarr":         "Radarr",
+		"f1":             "F1",
+		"weather":        "Weather",
+		"homeassistant":  "HomeAssistant",
+		"untappd":        "Untappd",
+		"crypto":         "Crypto",
 	}
 	if n, ok := names[endpoint]; ok {
 		return n
@@ -325,6 +341,16 @@ func (s *Server) AdminUntappdCreate(c *gin.Context) { s.createTokenURLDS(c, "unt
 func (s *Server) AdminUntappdEdit(c *gin.Context)   { s.editTokenURLDS(c, "untappd") }
 func (s *Server) AdminUntappdUpdate(c *gin.Context) { s.updateTokenURLDS(c, "untappd") }
 func (s *Server) AdminUntappdDelete(c *gin.Context) { s.deleteTokenURLDS(c, "untappd") }
+
+// ---------------------------------------------------------------------------
+// Crypto
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminCryptoNew(c *gin.Context)    { s.renderForm(c, "Crypto", "crypto", false, nil) }
+func (s *Server) AdminCryptoCreate(c *gin.Context)  { s.createTokenURLDS(c, "crypto") }
+func (s *Server) AdminCryptoEdit(c *gin.Context)    { s.editTokenURLDS(c, "crypto") }
+func (s *Server) AdminCryptoUpdate(c *gin.Context)  { s.updateTokenURLDS(c, "crypto") }
+func (s *Server) AdminCryptoDelete(c *gin.Context)  { s.deleteTokenURLDS(c, "crypto") }
 
 // ---------------------------------------------------------------------------
 // Image (file upload)

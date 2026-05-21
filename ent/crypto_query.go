@@ -5,7 +5,7 @@ package ent
 import (
 	"context"
 	"fmt"
-	"ledit/ent/homeassistant"
+	"ledit/ent/crypto"
 	"ledit/ent/predicate"
 	"math"
 
@@ -15,65 +15,65 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// HomeAssistantQuery is the builder for querying HomeAssistant entities.
-type HomeAssistantQuery struct {
+// CryptoQuery is the builder for querying Crypto entities.
+type CryptoQuery struct {
 	config
 	ctx        *QueryContext
-	order      []homeassistant.OrderOption
+	order      []crypto.OrderOption
 	inters     []Interceptor
-	predicates []predicate.HomeAssistant
+	predicates []predicate.Crypto
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the HomeAssistantQuery builder.
-func (_q *HomeAssistantQuery) Where(ps ...predicate.HomeAssistant) *HomeAssistantQuery {
+// Where adds a new predicate for the CryptoQuery builder.
+func (_q *CryptoQuery) Where(ps ...predicate.Crypto) *CryptoQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *HomeAssistantQuery) Limit(limit int) *HomeAssistantQuery {
+func (_q *CryptoQuery) Limit(limit int) *CryptoQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *HomeAssistantQuery) Offset(offset int) *HomeAssistantQuery {
+func (_q *CryptoQuery) Offset(offset int) *CryptoQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *HomeAssistantQuery) Unique(unique bool) *HomeAssistantQuery {
+func (_q *CryptoQuery) Unique(unique bool) *CryptoQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *HomeAssistantQuery) Order(o ...homeassistant.OrderOption) *HomeAssistantQuery {
+func (_q *CryptoQuery) Order(o ...crypto.OrderOption) *CryptoQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
-// First returns the first HomeAssistant entity from the query.
-// Returns a *NotFoundError when no HomeAssistant was found.
-func (_q *HomeAssistantQuery) First(ctx context.Context) (*HomeAssistant, error) {
+// First returns the first Crypto entity from the query.
+// Returns a *NotFoundError when no Crypto was found.
+func (_q *CryptoQuery) First(ctx context.Context) (*Crypto, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{homeassistant.Label}
+		return nil, &NotFoundError{crypto.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *HomeAssistantQuery) FirstX(ctx context.Context) *HomeAssistant {
+func (_q *CryptoQuery) FirstX(ctx context.Context) *Crypto {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -81,22 +81,22 @@ func (_q *HomeAssistantQuery) FirstX(ctx context.Context) *HomeAssistant {
 	return node
 }
 
-// FirstID returns the first HomeAssistant ID from the query.
-// Returns a *NotFoundError when no HomeAssistant ID was found.
-func (_q *HomeAssistantQuery) FirstID(ctx context.Context) (id int, err error) {
+// FirstID returns the first Crypto ID from the query.
+// Returns a *NotFoundError when no Crypto ID was found.
+func (_q *CryptoQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{homeassistant.Label}
+		err = &NotFoundError{crypto.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *HomeAssistantQuery) FirstIDX(ctx context.Context) int {
+func (_q *CryptoQuery) FirstIDX(ctx context.Context) int {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -104,10 +104,10 @@ func (_q *HomeAssistantQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns a single HomeAssistant entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one HomeAssistant entity is found.
-// Returns a *NotFoundError when no HomeAssistant entities are found.
-func (_q *HomeAssistantQuery) Only(ctx context.Context) (*HomeAssistant, error) {
+// Only returns a single Crypto entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one Crypto entity is found.
+// Returns a *NotFoundError when no Crypto entities are found.
+func (_q *CryptoQuery) Only(ctx context.Context) (*Crypto, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -116,14 +116,14 @@ func (_q *HomeAssistantQuery) Only(ctx context.Context) (*HomeAssistant, error) 
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{homeassistant.Label}
+		return nil, &NotFoundError{crypto.Label}
 	default:
-		return nil, &NotSingularError{homeassistant.Label}
+		return nil, &NotSingularError{crypto.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *HomeAssistantQuery) OnlyX(ctx context.Context) *HomeAssistant {
+func (_q *CryptoQuery) OnlyX(ctx context.Context) *Crypto {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -131,10 +131,10 @@ func (_q *HomeAssistantQuery) OnlyX(ctx context.Context) *HomeAssistant {
 	return node
 }
 
-// OnlyID is like Only, but returns the only HomeAssistant ID in the query.
-// Returns a *NotSingularError when more than one HomeAssistant ID is found.
+// OnlyID is like Only, but returns the only Crypto ID in the query.
+// Returns a *NotSingularError when more than one Crypto ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *HomeAssistantQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *CryptoQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -143,15 +143,15 @@ func (_q *HomeAssistantQuery) OnlyID(ctx context.Context) (id int, err error) {
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{homeassistant.Label}
+		err = &NotFoundError{crypto.Label}
 	default:
-		err = &NotSingularError{homeassistant.Label}
+		err = &NotSingularError{crypto.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *HomeAssistantQuery) OnlyIDX(ctx context.Context) int {
+func (_q *CryptoQuery) OnlyIDX(ctx context.Context) int {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -159,18 +159,18 @@ func (_q *HomeAssistantQuery) OnlyIDX(ctx context.Context) int {
 	return id
 }
 
-// All executes the query and returns a list of HomeAssistants.
-func (_q *HomeAssistantQuery) All(ctx context.Context) ([]*HomeAssistant, error) {
+// All executes the query and returns a list of Cryptos.
+func (_q *CryptoQuery) All(ctx context.Context) ([]*Crypto, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*HomeAssistant, *HomeAssistantQuery]()
-	return withInterceptors[[]*HomeAssistant](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*Crypto, *CryptoQuery]()
+	return withInterceptors[[]*Crypto](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *HomeAssistantQuery) AllX(ctx context.Context) []*HomeAssistant {
+func (_q *CryptoQuery) AllX(ctx context.Context) []*Crypto {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -178,20 +178,20 @@ func (_q *HomeAssistantQuery) AllX(ctx context.Context) []*HomeAssistant {
 	return nodes
 }
 
-// IDs executes the query and returns a list of HomeAssistant IDs.
-func (_q *HomeAssistantQuery) IDs(ctx context.Context) (ids []int, err error) {
+// IDs executes the query and returns a list of Crypto IDs.
+func (_q *CryptoQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(homeassistant.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(crypto.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *HomeAssistantQuery) IDsX(ctx context.Context) []int {
+func (_q *CryptoQuery) IDsX(ctx context.Context) []int {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -200,16 +200,16 @@ func (_q *HomeAssistantQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (_q *HomeAssistantQuery) Count(ctx context.Context) (int, error) {
+func (_q *CryptoQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*HomeAssistantQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*CryptoQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *HomeAssistantQuery) CountX(ctx context.Context) int {
+func (_q *CryptoQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -218,7 +218,7 @@ func (_q *HomeAssistantQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *HomeAssistantQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *CryptoQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -231,7 +231,7 @@ func (_q *HomeAssistantQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *HomeAssistantQuery) ExistX(ctx context.Context) bool {
+func (_q *CryptoQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -239,18 +239,18 @@ func (_q *HomeAssistantQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the HomeAssistantQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the CryptoQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *HomeAssistantQuery) Clone() *HomeAssistantQuery {
+func (_q *CryptoQuery) Clone() *CryptoQuery {
 	if _q == nil {
 		return nil
 	}
-	return &HomeAssistantQuery{
+	return &CryptoQuery{
 		config:     _q.config,
 		ctx:        _q.ctx.Clone(),
-		order:      append([]homeassistant.OrderOption{}, _q.order...),
+		order:      append([]crypto.OrderOption{}, _q.order...),
 		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.HomeAssistant{}, _q.predicates...),
+		predicates: append([]predicate.Crypto{}, _q.predicates...),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -267,15 +267,15 @@ func (_q *HomeAssistantQuery) Clone() *HomeAssistantQuery {
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.HomeAssistant.Query().
-//		GroupBy(homeassistant.FieldToken).
+//	client.Crypto.Query().
+//		GroupBy(crypto.FieldToken).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *HomeAssistantQuery) GroupBy(field string, fields ...string) *HomeAssistantGroupBy {
+func (_q *CryptoQuery) GroupBy(field string, fields ...string) *CryptoGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &HomeAssistantGroupBy{build: _q}
+	grbuild := &CryptoGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = homeassistant.Label
+	grbuild.label = crypto.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -289,23 +289,23 @@ func (_q *HomeAssistantQuery) GroupBy(field string, fields ...string) *HomeAssis
 //		Token string `json:"token,omitempty"`
 //	}
 //
-//	client.HomeAssistant.Query().
-//		Select(homeassistant.FieldToken).
+//	client.Crypto.Query().
+//		Select(crypto.FieldToken).
 //		Scan(ctx, &v)
-func (_q *HomeAssistantQuery) Select(fields ...string) *HomeAssistantSelect {
+func (_q *CryptoQuery) Select(fields ...string) *CryptoSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &HomeAssistantSelect{HomeAssistantQuery: _q}
-	sbuild.label = homeassistant.Label
+	sbuild := &CryptoSelect{CryptoQuery: _q}
+	sbuild.label = crypto.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a HomeAssistantSelect configured with the given aggregations.
-func (_q *HomeAssistantQuery) Aggregate(fns ...AggregateFunc) *HomeAssistantSelect {
+// Aggregate returns a CryptoSelect configured with the given aggregations.
+func (_q *CryptoQuery) Aggregate(fns ...AggregateFunc) *CryptoSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *HomeAssistantQuery) prepareQuery(ctx context.Context) error {
+func (_q *CryptoQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -317,7 +317,7 @@ func (_q *HomeAssistantQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !homeassistant.ValidColumn(f) {
+		if !crypto.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -331,20 +331,20 @@ func (_q *HomeAssistantQuery) prepareQuery(ctx context.Context) error {
 	return nil
 }
 
-func (_q *HomeAssistantQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*HomeAssistant, error) {
+func (_q *CryptoQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Crypto, error) {
 	var (
-		nodes   = []*HomeAssistant{}
+		nodes   = []*Crypto{}
 		withFKs = _q.withFKs
 		_spec   = _q.querySpec()
 	)
 	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, homeassistant.ForeignKeys...)
+		_spec.Node.Columns = append(_spec.Node.Columns, crypto.ForeignKeys...)
 	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*HomeAssistant).scanValues(nil, columns)
+		return (*Crypto).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &HomeAssistant{config: _q.config}
+		node := &Crypto{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
@@ -360,7 +360,7 @@ func (_q *HomeAssistantQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
-func (_q *HomeAssistantQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *CryptoQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
 	_spec.Node.Columns = _q.ctx.Fields
 	if len(_q.ctx.Fields) > 0 {
@@ -369,8 +369,8 @@ func (_q *HomeAssistantQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *HomeAssistantQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(homeassistant.Table, homeassistant.Columns, sqlgraph.NewFieldSpec(homeassistant.FieldID, field.TypeInt))
+func (_q *CryptoQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(crypto.Table, crypto.Columns, sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -379,9 +379,9 @@ func (_q *HomeAssistantQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, homeassistant.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, crypto.FieldID)
 		for i := range fields {
-			if fields[i] != homeassistant.FieldID {
+			if fields[i] != crypto.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
@@ -409,12 +409,12 @@ func (_q *HomeAssistantQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *HomeAssistantQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *CryptoQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(homeassistant.Table)
+	t1 := builder.Table(crypto.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = homeassistant.Columns
+		columns = crypto.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -441,28 +441,28 @@ func (_q *HomeAssistantQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// HomeAssistantGroupBy is the group-by builder for HomeAssistant entities.
-type HomeAssistantGroupBy struct {
+// CryptoGroupBy is the group-by builder for Crypto entities.
+type CryptoGroupBy struct {
 	selector
-	build *HomeAssistantQuery
+	build *CryptoQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *HomeAssistantGroupBy) Aggregate(fns ...AggregateFunc) *HomeAssistantGroupBy {
+func (_g *CryptoGroupBy) Aggregate(fns ...AggregateFunc) *CryptoGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *HomeAssistantGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *CryptoGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*HomeAssistantQuery, *HomeAssistantGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*CryptoQuery, *CryptoGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *HomeAssistantGroupBy) sqlScan(ctx context.Context, root *HomeAssistantQuery, v any) error {
+func (_g *CryptoGroupBy) sqlScan(ctx context.Context, root *CryptoQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -489,28 +489,28 @@ func (_g *HomeAssistantGroupBy) sqlScan(ctx context.Context, root *HomeAssistant
 	return sql.ScanSlice(rows, v)
 }
 
-// HomeAssistantSelect is the builder for selecting fields of HomeAssistant entities.
-type HomeAssistantSelect struct {
-	*HomeAssistantQuery
+// CryptoSelect is the builder for selecting fields of Crypto entities.
+type CryptoSelect struct {
+	*CryptoQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *HomeAssistantSelect) Aggregate(fns ...AggregateFunc) *HomeAssistantSelect {
+func (_s *CryptoSelect) Aggregate(fns ...AggregateFunc) *CryptoSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *HomeAssistantSelect) Scan(ctx context.Context, v any) error {
+func (_s *CryptoSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*HomeAssistantQuery, *HomeAssistantSelect](ctx, _s.HomeAssistantQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*CryptoQuery, *CryptoSelect](ctx, _s.CryptoQuery, _s, _s.inters, v)
 }
 
-func (_s *HomeAssistantSelect) sqlScan(ctx context.Context, root *HomeAssistantQuery, v any) error {
+func (_s *CryptoSelect) sqlScan(ctx context.Context, root *CryptoQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {

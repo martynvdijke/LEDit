@@ -4,34 +4,34 @@ package ent
 
 import (
 	"context"
+	"ledit/ent/crypto"
 	"ledit/ent/predicate"
-	"ledit/ent/sonarr"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
 
-// SonarrDelete is the builder for deleting a Sonarr entity.
-type SonarrDelete struct {
+// CryptoDelete is the builder for deleting a Crypto entity.
+type CryptoDelete struct {
 	config
 	hooks    []Hook
-	mutation *SonarrMutation
+	mutation *CryptoMutation
 }
 
-// Where appends a list predicates to the SonarrDelete builder.
-func (_d *SonarrDelete) Where(ps ...predicate.Sonarr) *SonarrDelete {
+// Where appends a list predicates to the CryptoDelete builder.
+func (_d *CryptoDelete) Where(ps ...predicate.Crypto) *CryptoDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *SonarrDelete) Exec(ctx context.Context) (int, error) {
+func (_d *CryptoDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *SonarrDelete) ExecX(ctx context.Context) int {
+func (_d *CryptoDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -39,8 +39,8 @@ func (_d *SonarrDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *SonarrDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(sonarr.Table, sqlgraph.NewFieldSpec(sonarr.FieldID, field.TypeInt))
+func (_d *CryptoDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(crypto.Table, sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt))
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -56,32 +56,32 @@ func (_d *SonarrDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// SonarrDeleteOne is the builder for deleting a single Sonarr entity.
-type SonarrDeleteOne struct {
-	_d *SonarrDelete
+// CryptoDeleteOne is the builder for deleting a single Crypto entity.
+type CryptoDeleteOne struct {
+	_d *CryptoDelete
 }
 
-// Where appends a list predicates to the SonarrDelete builder.
-func (_d *SonarrDeleteOne) Where(ps ...predicate.Sonarr) *SonarrDeleteOne {
+// Where appends a list predicates to the CryptoDelete builder.
+func (_d *CryptoDeleteOne) Where(ps ...predicate.Crypto) *CryptoDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *SonarrDeleteOne) Exec(ctx context.Context) error {
+func (_d *CryptoDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{sonarr.Label}
+		return &NotFoundError{crypto.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *SonarrDeleteOne) ExecX(ctx context.Context) {
+func (_d *CryptoDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

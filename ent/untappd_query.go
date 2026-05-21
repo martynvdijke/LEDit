@@ -5,14 +5,14 @@ package ent
 import (
 	"context"
 	"fmt"
+	"ledit/ent/predicate"
+	"ledit/ent/untappd"
 	"math"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"ledit/ent/predicate"
-	"ledit/ent/untappd"
 )
 
 // UntappdQuery is the builder for querying Untappd entities.
