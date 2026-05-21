@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -98,7 +99,31 @@ func (s *Server) APIFeedPriority(c *gin.Context) {
 	priorityMu.Lock()
 	priorityMessages = append(priorityMessages, req)
 	priorityMu.Unlock()
+	AddNotification(req.Title, req.Message)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func (s *Server) APIWebhookNotify(c *gin.Context) {
+	var req priorityMsg
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	priorityMu.Lock()
+	priorityMessages = append(priorityMessages, req)
+	priorityMu.Unlock()
+	AddNotification(req.Title, req.Message)
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func (s *Server) APINotificationHistory(c *gin.Context) {
+	c.JSON(http.StatusOK, GetNotificationHistory())
+}
+
+func (s *Server) AdminNotifications(c *gin.Context) {
+	c.HTML(http.StatusOK, "notifications.html", gin.H{
+		"notifications": GetNotificationHistory(),
+	})
 }
 
 type priorityMsg struct {
@@ -109,7 +134,16 @@ type priorityMsg struct {
 var (
 	priorityMu       sync.Mutex
 	priorityMessages []priorityMsg
+	notifHistory     []notifEntry
+	notifID          int
 )
+
+type notifEntry struct {
+	ID      int    `json:"id"`
+	Title   string `json:"title"`
+	Message string `json:"message"`
+	Time    string `json:"time"`
+}
 
 func PopPriorityMessage() *priorityMsg {
 	priorityMu.Lock()
@@ -120,4 +154,29 @@ func PopPriorityMessage() *priorityMsg {
 	msg := priorityMessages[0]
 	priorityMessages = priorityMessages[1:]
 	return &msg
+}
+
+func AddNotification(title, message string) {
+	priorityMu.Lock()
+	defer priorityMu.Unlock()
+	notifID++
+	t := time.Now().Format("15:04:05")
+	notifHistory = append(notifHistory, notifEntry{
+		ID:      notifID,
+		Title:   title,
+		Message: message,
+		Time:    t,
+	})
+	// Keep last 50
+	if len(notifHistory) > 50 {
+		notifHistory = notifHistory[len(notifHistory)-50:]
+	}
+}
+
+func GetNotificationHistory() []notifEntry {
+	priorityMu.Lock()
+	defer priorityMu.Unlock()
+	out := make([]notifEntry, len(notifHistory))
+	copy(out, notifHistory)
+	return out
 }

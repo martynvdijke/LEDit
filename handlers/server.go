@@ -74,6 +74,8 @@ func (s *Server) setupRoutes() {
 		api.POST("/feed/pause", s.APIFeedPause)
 		api.POST("/feed/resume", s.APIFeedResume)
 		api.POST("/feed/priority", s.APIFeedPriority)
+		api.POST("/webhook/notify", s.APIWebhookNotify)
+		api.GET("/notifications", s.APINotificationHistory)
 	}
 
 	admin := s.Router.Group("/admin")
@@ -81,6 +83,7 @@ func (s *Server) setupRoutes() {
 		admin.GET("/", s.AdminDashboard)
 		admin.GET("/settings", s.AdminSettings)
 		admin.POST("/settings", s.AdminSettingsSave)
+		admin.GET("/notifications", s.AdminNotifications)
 
 		// Sonarr
 		admin.GET("/datasources/sonarr/new", s.AdminSonarrNew)

@@ -641,6 +641,52 @@ func TestAPIFeedPauseResume(t *testing.T) {
 	}
 }
 
+func TestAPIWebhookNotify(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	body := bytes.NewBufferString(`{"title":"Test","message":"Hello"}`)
+	req := httptest.NewRequest("POST", "/api/webhook/notify", body)
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestAPINotificationHistory(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/api/notifications", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	var notifs []map[string]any
+	json.Unmarshal(w.Body.Bytes(), &notifs)
+	if notifs == nil {
+		t.Error("expected notification list")
+	}
+}
+
+func TestAdminNotificationsPage(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/notifications", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
 func TestAPIFeedNext(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
