@@ -1,0 +1,20 @@
+name: Renovate
+on:
+  schedule:
+    - cron: '0 8 * * 1-5' # 09:00 UTC+1
+    - cron: '0 11 * * 1-5' # 12:00 UTC+1
+    - cron: '0 14 * * 1-5' # 15:00 UTC+1
+  workflow_dispatch:
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v46.1.14
+        with:
+          configurationFile: renovate.json
+          token: ${{ secrets.RENOVATE_TOKEN }}
