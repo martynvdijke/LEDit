@@ -5,7 +5,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -32,13 +31,6 @@ type WSHub struct {
 
 func NewWSHub(client *ent.Client) *WSHub {
 	return &WSHub{Client: client}
-}
-
-type feedState struct {
-	mu         sync.Mutex
-	paused     bool
-	skip       bool
-	currentIdx int
 }
 
 func (h *WSHub) HandleWS(c *gin.Context) {
@@ -116,7 +108,6 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 	}
 
 	timeout := time.Duration(settings.Timeout * float64(time.Second))
-	state := &feedState{}
 
 	// Read control messages in a goroutine
 	done := make(chan struct{})
@@ -136,40 +127,45 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 			if err := json.Unmarshal(msg, &cmd); err != nil {
 				continue
 			}
-			state.mu.Lock()
 			switch cmd["action"] {
 			case "next":
-				state.skip = true
+				GlobalFeed.Next()
 			case "pause":
-				state.paused = true
+				GlobalFeed.Pause()
 			case "resume":
-				state.paused = false
+				GlobalFeed.Resume()
 			}
-			state.mu.Unlock()
 		}
 	}()
 
 	for {
 		for i, sw := range sources {
-			state.currentIdx = i
+			// Check for priority messages
+			if pm := PopPriorityMessage(); pm != nil {
+				msg := map[string]string{
+					"format":  "PNG",
+					"source":  "NOTIFICATION",
+					"message": pm.Message,
+				}
+				data, _ := json.Marshal(msg)
+				conn.WriteMessage(websocket.TextMessage, data)
+				time.Sleep(timeout)
+				continue
+			}
 
 			// Compute next source name
 			nextName := ""
-			nextIdx := (i + 1) % len(sources)
 			if settings.Random {
 				nextName = sources[rand.Intn(len(sources))].Name
 			} else {
+				nextIdx := (i + 1) % len(sources)
 				nextName = sources[nextIdx].Name
 			}
 
+			GlobalFeed.SetCurrent(sw.Name, nextName)
+
 			// Wait if paused
-			for {
-				state.mu.Lock()
-				p := state.paused
-				state.mu.Unlock()
-				if !p {
-					break
-				}
+			for GlobalFeed.IsPaused() {
 				time.Sleep(100 * time.Millisecond)
 			}
 
@@ -194,13 +190,9 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 			// Wait for timeout or skip signal
 			deadline := time.Now().Add(timeout)
 			for time.Now().Before(deadline) {
-				state.mu.Lock()
-				if state.skip {
-					state.skip = false
-					state.mu.Unlock()
+				if GlobalFeed.ShouldSkip() {
 					break
 				}
-				state.mu.Unlock()
 				time.Sleep(50 * time.Millisecond)
 			}
 		}

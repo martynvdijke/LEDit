@@ -67,6 +67,15 @@ func (s *Server) setupRoutes() {
 	s.Router.GET("/", s.IndexHandler)
 	s.Router.GET("/ws/feed", s.WSHub.HandleWS)
 
+	api := s.Router.Group("/api")
+	{
+		api.GET("/feed/current", s.APIFeedStatus)
+		api.POST("/feed/next", s.APIFeedNext)
+		api.POST("/feed/pause", s.APIFeedPause)
+		api.POST("/feed/resume", s.APIFeedResume)
+		api.POST("/feed/priority", s.APIFeedPriority)
+	}
+
 	admin := s.Router.Group("/admin")
 	{
 		admin.GET("/", s.AdminDashboard)

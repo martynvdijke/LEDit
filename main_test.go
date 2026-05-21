@@ -587,6 +587,75 @@ func TestServerPostSettings(t *testing.T) {
 	}
 }
 
+func TestAPIFeedStatus(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/api/feed/current", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	var resp map[string]any
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	if resp["paused"] != false {
+		t.Error("expected paused to be false")
+	}
+}
+
+func TestAPIFeedPauseResume(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+
+	body := bytes.NewBufferString(`{}`)
+	body2 := bytes.NewBufferString(`{}`)
+
+	req := httptest.NewRequest("POST", "/api/feed/pause", body)
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+
+	req2 := httptest.NewRequest("GET", "/api/feed/current", nil)
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, req2)
+	var resp map[string]any
+	json.Unmarshal(w2.Body.Bytes(), &resp)
+	if resp["paused"] != true {
+		t.Error("expected paused to be true after Pause")
+	}
+
+	req3 := httptest.NewRequest("POST", "/api/feed/resume", body2)
+	req3.Header.Set("Content-Type", "application/json")
+	w3 := httptest.NewRecorder()
+	srv.ServeHTTP(w3, req3)
+	if w3.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w3.Code)
+	}
+}
+
+func TestAPIFeedNext(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	body := bytes.NewBufferString(`{}`)
+	req := httptest.NewRequest("POST", "/api/feed/next", body)
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
 func TestDSNFunction(t *testing.T) {
 	dsn := db.DSN()
 	if dsn == "" {
