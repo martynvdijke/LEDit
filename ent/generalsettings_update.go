@@ -13,6 +13,7 @@ import (
 	"ledit/ent/image"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
+	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
@@ -248,6 +249,21 @@ func (_u *GeneralSettingsUpdate) AddCrypto(v ...*Crypto) *GeneralSettingsUpdate 
 	return _u.AddCryptoIDs(ids...)
 }
 
+// AddScheduleIDs adds the "schedules" edge to the Schedule entity by IDs.
+func (_u *GeneralSettingsUpdate) AddScheduleIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddScheduleIDs(ids...)
+	return _u
+}
+
+// AddSchedules adds the "schedules" edges to the Schedule entity.
+func (_u *GeneralSettingsUpdate) AddSchedules(v ...*Schedule) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddScheduleIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdate) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -440,6 +456,27 @@ func (_u *GeneralSettingsUpdate) RemoveCrypto(v ...*Crypto) *GeneralSettingsUpda
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveCryptoIDs(ids...)
+}
+
+// ClearSchedules clears all "schedules" edges to the Schedule entity.
+func (_u *GeneralSettingsUpdate) ClearSchedules() *GeneralSettingsUpdate {
+	_u.mutation.ClearSchedules()
+	return _u
+}
+
+// RemoveScheduleIDs removes the "schedules" edge to Schedule entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveScheduleIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveScheduleIDs(ids...)
+	return _u
+}
+
+// RemoveSchedules removes "schedules" edges to Schedule entities.
+func (_u *GeneralSettingsUpdate) RemoveSchedules(v ...*Schedule) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveScheduleIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -904,6 +941,51 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.SchedulesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SchedulesTable,
+			Columns: []string{generalsettings.SchedulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSchedulesIDs(); len(nodes) > 0 && !_u.mutation.SchedulesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SchedulesTable,
+			Columns: []string{generalsettings.SchedulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SchedulesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SchedulesTable,
+			Columns: []string{generalsettings.SchedulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -1136,6 +1218,21 @@ func (_u *GeneralSettingsUpdateOne) AddCrypto(v ...*Crypto) *GeneralSettingsUpda
 	return _u.AddCryptoIDs(ids...)
 }
 
+// AddScheduleIDs adds the "schedules" edge to the Schedule entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddScheduleIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddScheduleIDs(ids...)
+	return _u
+}
+
+// AddSchedules adds the "schedules" edges to the Schedule entity.
+func (_u *GeneralSettingsUpdateOne) AddSchedules(v ...*Schedule) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddScheduleIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdateOne) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -1328,6 +1425,27 @@ func (_u *GeneralSettingsUpdateOne) RemoveCrypto(v ...*Crypto) *GeneralSettingsU
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveCryptoIDs(ids...)
+}
+
+// ClearSchedules clears all "schedules" edges to the Schedule entity.
+func (_u *GeneralSettingsUpdateOne) ClearSchedules() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearSchedules()
+	return _u
+}
+
+// RemoveScheduleIDs removes the "schedules" edge to Schedule entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveScheduleIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveScheduleIDs(ids...)
+	return _u
+}
+
+// RemoveSchedules removes "schedules" edges to Schedule entities.
+func (_u *GeneralSettingsUpdateOne) RemoveSchedules(v ...*Schedule) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveScheduleIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -1815,6 +1933,51 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SchedulesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SchedulesTable,
+			Columns: []string{generalsettings.SchedulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSchedulesIDs(); len(nodes) > 0 && !_u.mutation.SchedulesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SchedulesTable,
+			Columns: []string{generalsettings.SchedulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SchedulesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SchedulesTable,
+			Columns: []string{generalsettings.SchedulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

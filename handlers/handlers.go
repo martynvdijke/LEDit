@@ -353,6 +353,60 @@ func (s *Server) AdminCryptoUpdate(c *gin.Context)  { s.updateTokenURLDS(c, "cry
 func (s *Server) AdminCryptoDelete(c *gin.Context)  { s.deleteTokenURLDS(c, "crypto") }
 
 // ---------------------------------------------------------------------------
+// Schedules
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminScheduleList(c *gin.Context) {
+	settings, err := s.DB.GeneralSettings.Query().WithSchedules().Only(s.Ctx)
+	if err != nil {
+		c.HTML(http.StatusOK, "schedules.html", gin.H{"schedules": []any{}})
+		return
+	}
+	schedules, _ := settings.Edges.SchedulesOrErr()
+	c.HTML(http.StatusOK, "schedules.html", gin.H{"schedules": schedules})
+}
+
+func (s *Server) AdminScheduleNew(c *gin.Context) {
+	c.HTML(http.StatusOK, "schedule_form.html", gin.H{})
+}
+
+func (s *Server) AdminScheduleCreate(c *gin.Context) {
+	name := c.PostForm("name")
+	cron := c.PostForm("cron")
+	enabled := c.PostForm("enabled") == "on"
+	obj := s.DB.Schedule.Create().SetName(name).SetCron(cron).SetEnabled(enabled).SaveX(s.Ctx)
+	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
+		s.DB.GeneralSettings.UpdateOne(settings).AddSchedules(obj).Exec(s.Ctx)
+	}
+	c.Redirect(http.StatusFound, "/admin/schedules")
+}
+
+func (s *Server) AdminScheduleEdit(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	obj, err := s.DB.Schedule.Get(s.Ctx, id)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/admin/schedules")
+		return
+	}
+	c.HTML(http.StatusOK, "schedule_form.html", gin.H{"obj": obj, "edit": true})
+}
+
+func (s *Server) AdminScheduleUpdate(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	name := c.PostForm("name")
+	cron := c.PostForm("cron")
+	enabled := c.PostForm("enabled") == "on"
+	s.DB.Schedule.UpdateOneID(id).SetName(name).SetCron(cron).SetEnabled(enabled).Exec(s.Ctx)
+	c.Redirect(http.StatusFound, "/admin/schedules")
+}
+
+func (s *Server) AdminScheduleDelete(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	s.DB.Schedule.DeleteOneID(id).Exec(s.Ctx)
+	c.Redirect(http.StatusFound, "/admin/schedules")
+}
+
+// ---------------------------------------------------------------------------
 // Image (file upload)
 // ---------------------------------------------------------------------------
 

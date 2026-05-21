@@ -12,6 +12,7 @@ import (
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/radarr"
+	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
@@ -201,6 +202,21 @@ func (_c *GeneralSettingsCreate) AddCrypto(v ...*Crypto) *GeneralSettingsCreate 
 		ids[i] = v[i].ID
 	}
 	return _c.AddCryptoIDs(ids...)
+}
+
+// AddScheduleIDs adds the "schedules" edge to the Schedule entity by IDs.
+func (_c *GeneralSettingsCreate) AddScheduleIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddScheduleIDs(ids...)
+	return _c
+}
+
+// AddSchedules adds the "schedules" edges to the Schedule entity.
+func (_c *GeneralSettingsCreate) AddSchedules(v ...*Schedule) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddScheduleIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -441,6 +457,22 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(crypto.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SchedulesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SchedulesTable,
+			Columns: []string{generalsettings.SchedulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

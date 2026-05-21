@@ -147,5 +147,13 @@ func (s *Server) setupRoutes() {
 		admin.GET("/datasources/crypto/:id/edit", s.AdminCryptoEdit)
 		admin.POST("/datasources/crypto/:id/edit", s.AdminCryptoUpdate)
 		admin.POST("/datasources/crypto/:id/delete", s.AdminCryptoDelete)
+
+		// Schedules
+		admin.GET("/schedules", s.AdminScheduleList)
+		admin.GET("/schedules/new", s.AdminScheduleNew)
+		admin.POST("/schedules/new", s.AdminScheduleCreate)
+		admin.GET("/schedules/:id/edit", s.AdminScheduleEdit)
+		admin.POST("/schedules/:id/edit", s.AdminScheduleUpdate)
+		admin.POST("/schedules/:id/delete", s.AdminScheduleDelete)
 	}
 }

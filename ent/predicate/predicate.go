@@ -24,6 +24,9 @@ type Image func(*sql.Selector)
 // Radarr is the predicate function for radarr builders.
 type Radarr func(*sql.Selector)
 
+// Schedule is the predicate function for schedule builders.
+type Schedule func(*sql.Selector)
+
 // Sonarr is the predicate function for sonarr builders.
 type Sonarr func(*sql.Selector)
 

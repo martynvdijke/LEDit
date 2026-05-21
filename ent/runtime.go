@@ -8,6 +8,7 @@ import (
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
 	"ledit/ent/radarr"
+	"ledit/ent/schedule"
 	"ledit/ent/schema"
 	"ledit/ent/sonarr"
 	"ledit/ent/untappd"
@@ -68,6 +69,20 @@ func init() {
 	radarrDescURL := radarrFields[1].Descriptor()
 	// radarr.DefaultURL holds the default value on creation for the url field.
 	radarr.DefaultURL = radarrDescURL.Default.(string)
+	scheduleFields := schema.Schedule{}.Fields()
+	_ = scheduleFields
+	// scheduleDescName is the schema descriptor for name field.
+	scheduleDescName := scheduleFields[0].Descriptor()
+	// schedule.DefaultName holds the default value on creation for the name field.
+	schedule.DefaultName = scheduleDescName.Default.(string)
+	// scheduleDescCron is the schema descriptor for cron field.
+	scheduleDescCron := scheduleFields[1].Descriptor()
+	// schedule.DefaultCron holds the default value on creation for the cron field.
+	schedule.DefaultCron = scheduleDescCron.Default.(string)
+	// scheduleDescEnabled is the schema descriptor for enabled field.
+	scheduleDescEnabled := scheduleFields[2].Descriptor()
+	// schedule.DefaultEnabled holds the default value on creation for the enabled field.
+	schedule.DefaultEnabled = scheduleDescEnabled.Default.(bool)
 	sonarrFields := schema.Sonarr{}.Fields()
 	_ = sonarrFields
 	// sonarrDescToken is the schema descriptor for token field.

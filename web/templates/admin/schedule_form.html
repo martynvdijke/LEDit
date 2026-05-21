@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} {{.type}}</title>
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Schedule</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -59,31 +59,22 @@
             </ul>
         </div>
         <div class="container-fluid p-4">
-            <h1>{{if .edit}}Edit{{else}}New{{end}} {{.type}} Source</h1>
-            <form method="POST" action="/admin/datasources/{{.endpoint}}{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4" {{if .is_media}}enctype="multipart/form-data"{{end}}>
-                {{if .is_media}}
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Schedule</h1>
+            <form method="POST" action="/admin/schedules{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4">
                 <div class="mb-3">
-                    <label for="file" class="form-label">File</label>
-                    <input type="file" class="form-control" id="file" name="file" accept="{{.extensions}}" {{if not .edit}}required{{end}}>
-                    {{if .edit}}<small class="text-muted">Leave empty to keep current file</small>{{end}}
-                </div>
-                {{if .obj.Path}}
-                <div class="mb-3">
-                    <p>Current: <a href="/{{.obj.Path}}">{{.obj.Path}}</a></p>
-                </div>
-                {{end}}
-                {{else}}
-                <div class="mb-3">
-                    <label for="token" class="form-label">API Token</label>
-                    <input type="text" class="form-control" id="token" name="token" value="{{if .obj}}{{.obj.Token}}{{end}}">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{if .obj}}{{.obj.Name}}{{end}}" required>
                 </div>
                 <div class="mb-3">
-                    <label for="url" class="form-label">URL</label>
-                    <input type="text" class="form-control" id="url" name="url" value="{{if .obj}}{{.obj.URL}}{{end}}">
+                    <label for="cron" class="form-label">Time Range (e.g. 08:00-12:00)</label>
+                    <input type="text" class="form-control" id="cron" name="cron" value="{{if .obj}}{{.obj.Cron}}{{end}}" placeholder="08:00-12:00">
                 </div>
-                {{end}}
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if not .edit}}checked{{else if .obj.Enabled}}checked{{end}}>
+                    <label for="enabled" class="form-check-label">Enabled</label>
+                </div>
                 <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
-                <a href="/admin/" class="btn btn-secondary">Cancel</a>
+                <a href="/admin/schedules" class="btn btn-secondary">Cancel</a>
             </form>
         </div>
     </div>

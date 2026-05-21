@@ -674,6 +674,37 @@ func TestAPINotificationHistory(t *testing.T) {
 	}
 }
 
+func TestServerAdminSchedules(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	req := httptest.NewRequest("GET", "/admin/schedules", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+
+	body := bytes.NewBufferString("name=Morning&cron=08:00-12:00&enabled=on")
+	req2 := httptest.NewRequest("POST", "/admin/schedules/new", body)
+	req2.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, req2)
+	if w2.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w2.Code)
+	}
+
+	exists := srv.DB.Schedule.Query().ExistX(testCtx)
+	if !exists {
+		t.Error("expected schedule to exist")
+	}
+}
+
 func TestAdminNotificationsPage(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()

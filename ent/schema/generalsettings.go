@@ -30,5 +30,6 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("images", Image.Type),
 		edge.To("videos", Video.Type),
 		edge.To("crypto", Crypto.Type),
+		edge.To("schedules", Schedule.Type),
 	}
 }

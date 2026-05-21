@@ -50,9 +50,11 @@ type GeneralSettingsEdges struct {
 	Videos []*Video `json:"videos,omitempty"`
 	// Crypto holds the value of the crypto edge.
 	Crypto []*Crypto `json:"crypto,omitempty"`
+	// Schedules holds the value of the schedules edge.
+	Schedules []*Schedule `json:"schedules,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [10]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -134,6 +136,15 @@ func (e GeneralSettingsEdges) CryptoOrErr() ([]*Crypto, error) {
 		return e.Crypto, nil
 	}
 	return nil, &NotLoadedError{edge: "crypto"}
+}
+
+// SchedulesOrErr returns the Schedules value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) SchedulesOrErr() ([]*Schedule, error) {
+	if e.loadedTypes[9] {
+		return e.Schedules, nil
+	}
+	return nil, &NotLoadedError{edge: "schedules"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -248,6 +259,11 @@ func (_m *GeneralSettings) QueryVideos() *VideoQuery {
 // QueryCrypto queries the "crypto" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryCrypto() *CryptoQuery {
 	return NewGeneralSettingsClient(_m.config).QueryCrypto(_m)
+}
+
+// QuerySchedules queries the "schedules" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QuerySchedules() *ScheduleQuery {
+	return NewGeneralSettingsClient(_m.config).QuerySchedules(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

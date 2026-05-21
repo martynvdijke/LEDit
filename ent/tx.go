@@ -24,6 +24,8 @@ type Tx struct {
 	Image *ImageClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
+	// Schedule is the client for interacting with the Schedule builders.
+	Schedule *ScheduleClient
 	// Sonarr is the client for interacting with the Sonarr builders.
 	Sonarr *SonarrClient
 	// Untappd is the client for interacting with the Untappd builders.
@@ -169,6 +171,7 @@ func (tx *Tx) init() {
 	tx.HomeAssistant = NewHomeAssistantClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
 	tx.Radarr = NewRadarrClient(tx.config)
+	tx.Schedule = NewScheduleClient(tx.config)
 	tx.Sonarr = NewSonarrClient(tx.config)
 	tx.Untappd = NewUntappdClient(tx.config)
 	tx.Video = NewVideoClient(tx.config)

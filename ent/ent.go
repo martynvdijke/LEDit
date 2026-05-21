@@ -12,6 +12,7 @@ import (
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/radarr"
+	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
@@ -88,6 +89,7 @@ func checkColumn(t, c string) error {
 			homeassistant.Table:   homeassistant.ValidColumn,
 			image.Table:           image.ValidColumn,
 			radarr.Table:          radarr.ValidColumn,
+			schedule.Table:        schedule.ValidColumn,
 			sonarr.Table:          sonarr.ValidColumn,
 			untappd.Table:         untappd.ValidColumn,
 			video.Table:           video.ValidColumn,
