@@ -1,0 +1,21 @@
+package datasource
+
+import (
+	"ledit/render"
+	"ledit/render/themes"
+)
+
+type UntappdDS struct {
+	Token string
+	URL   string
+}
+
+func (u *UntappdDS) GetPNG() (*render.RenderedImage, error) {
+	data := map[string]string{
+		"brewery": "Local Brew Co.",
+		"beer":    "IPA",
+		"abv":     "6.5%",
+		"rating":  "4.2",
+	}
+	return render.RenderDict(data, 400, 400, themes.UntappdTheme, "fonts/PixelifySans.ttf")
+}

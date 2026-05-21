@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  ledit:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ledit-data:/app/data
+    container_name: ledit
+
+volumes:
+  ledit-data:

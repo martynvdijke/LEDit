@@ -1,0 +1,62 @@
+version: '3'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  install:
+    desc: Install all dependencies
+    cmds:
+      - go mod download
+
+  fmt:
+    desc: Format code (Go)
+    cmds:
+      - go fmt ./...
+
+  test:
+    desc: Run Go unit and database tests
+    cmds:
+      - go test -v ./...
+
+  build:
+    desc: Build the Go binary
+    cmds:
+      - go build -o ledit .
+
+  run:
+    desc: Run the application
+    cmds:
+      - go run .
+
+  dev:
+    desc: Run with hot-reload (Air)
+    cmds:
+      - air
+
+  docker:build:
+    desc: Build Docker image
+    cmds:
+      - docker build . -t ledit:local
+
+  clean:
+    desc: Clean build artifacts and local database
+    cmds:
+      - rm -f ledit
+      - rm -rf data/
+
+  pre-push:
+    desc: Run all checks before pushing
+    cmds:
+      - task: fmt
+      - task: test
+      - task: build
+
+  all:
+    desc: Run format, test, and build
+    cmds:
+      - task: fmt
+      - task: test
+      - task: build
