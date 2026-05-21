@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
 	"ledit/ent"
-	"entgo.io/ent/dialect/sql"
 )
 
 type Server struct {
@@ -72,15 +72,61 @@ func (s *Server) setupRoutes() {
 		admin.GET("/", s.AdminDashboard)
 		admin.GET("/settings", s.AdminSettings)
 		admin.POST("/settings", s.AdminSettingsSave)
+
+		// Sonarr
 		admin.GET("/datasources/sonarr/new", s.AdminSonarrNew)
 		admin.POST("/datasources/sonarr/new", s.AdminSonarrCreate)
 		admin.GET("/datasources/sonarr/:id/edit", s.AdminSonarrEdit)
 		admin.POST("/datasources/sonarr/:id/edit", s.AdminSonarrUpdate)
 		admin.POST("/datasources/sonarr/:id/delete", s.AdminSonarrDelete)
+
+		// Radarr
 		admin.GET("/datasources/radarr/new", s.AdminRadarrNew)
 		admin.POST("/datasources/radarr/new", s.AdminRadarrCreate)
 		admin.GET("/datasources/radarr/:id/edit", s.AdminRadarrEdit)
 		admin.POST("/datasources/radarr/:id/edit", s.AdminRadarrUpdate)
 		admin.POST("/datasources/radarr/:id/delete", s.AdminRadarrDelete)
+
+		// F1
+		admin.GET("/datasources/f1/new", s.AdminF1New)
+		admin.POST("/datasources/f1/new", s.AdminF1Create)
+		admin.GET("/datasources/f1/:id/edit", s.AdminF1Edit)
+		admin.POST("/datasources/f1/:id/edit", s.AdminF1Update)
+		admin.POST("/datasources/f1/:id/delete", s.AdminF1Delete)
+
+		// Weather
+		admin.GET("/datasources/weather/new", s.AdminWeatherNew)
+		admin.POST("/datasources/weather/new", s.AdminWeatherCreate)
+		admin.GET("/datasources/weather/:id/edit", s.AdminWeatherEdit)
+		admin.POST("/datasources/weather/:id/edit", s.AdminWeatherUpdate)
+		admin.POST("/datasources/weather/:id/delete", s.AdminWeatherDelete)
+
+		// HomeAssistant
+		admin.GET("/datasources/homeassistant/new", s.AdminHomeAssistantNew)
+		admin.POST("/datasources/homeassistant/new", s.AdminHomeAssistantCreate)
+		admin.GET("/datasources/homeassistant/:id/edit", s.AdminHomeAssistantEdit)
+		admin.POST("/datasources/homeassistant/:id/edit", s.AdminHomeAssistantUpdate)
+		admin.POST("/datasources/homeassistant/:id/delete", s.AdminHomeAssistantDelete)
+
+		// Untappd
+		admin.GET("/datasources/untappd/new", s.AdminUntappdNew)
+		admin.POST("/datasources/untappd/new", s.AdminUntappdCreate)
+		admin.GET("/datasources/untappd/:id/edit", s.AdminUntappdEdit)
+		admin.POST("/datasources/untappd/:id/edit", s.AdminUntappdUpdate)
+		admin.POST("/datasources/untappd/:id/delete", s.AdminUntappdDelete)
+
+		// Images
+		admin.GET("/datasources/images/new", s.AdminImageNew)
+		admin.POST("/datasources/images/new", s.AdminImageCreate)
+		admin.GET("/datasources/images/:id/edit", s.AdminImageEdit)
+		admin.POST("/datasources/images/:id/edit", s.AdminImageUpdate)
+		admin.POST("/datasources/images/:id/delete", s.AdminImageDelete)
+
+		// Videos
+		admin.GET("/datasources/videos/new", s.AdminVideoNew)
+		admin.POST("/datasources/videos/new", s.AdminVideoCreate)
+		admin.GET("/datasources/videos/:id/edit", s.AdminVideoEdit)
+		admin.POST("/datasources/videos/:id/edit", s.AdminVideoUpdate)
+		admin.POST("/datasources/videos/:id/delete", s.AdminVideoDelete)
 	}
 }

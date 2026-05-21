@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"ledit/ent"
 	"ledit/ent/generalsettings"
 )
 
@@ -19,26 +22,62 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		"has_settings": err == nil,
 	}
 	if err == nil {
-		sonarrCount, _ := settings.Edges.SonarrOrErr()
-		radarrCount, _ := settings.Edges.RadarrOrErr()
-		f1Count, _ := settings.Edges.F1OrErr()
-		weatherCount, _ := settings.Edges.WeatherOrErr()
-		haCount, _ := settings.Edges.HomeAssistantOrErr()
-		untappdCount, _ := settings.Edges.UntappdOrErr()
-		imageCount, _ := settings.Edges.ImagesOrErr()
-		videoCount, _ := settings.Edges.VideosOrErr()
+		sonarrItems, _ := settings.Edges.SonarrOrErr()
+		radarrItems, _ := settings.Edges.RadarrOrErr()
+		f1Items, _ := settings.Edges.F1OrErr()
+		weatherItems, _ := settings.Edges.WeatherOrErr()
+		haItems, _ := settings.Edges.HomeAssistantOrErr()
+		untappdItems, _ := settings.Edges.UntappdOrErr()
+		imageItems, _ := settings.Edges.ImagesOrErr()
+		videoItems, _ := settings.Edges.VideosOrErr()
+
+		type sourceEntry struct {
+			ID       int
+			Type     string
+			Endpoint string
+			Token    string
+			URL      string
+			Path     string
+		}
+		var sources []sourceEntry
+		for _, s := range sonarrItems {
+			sources = append(sources, sourceEntry{ID: s.ID, Type: "Sonarr", Endpoint: "sonarr", Token: s.Token, URL: s.URL})
+		}
+		for _, r := range radarrItems {
+			sources = append(sources, sourceEntry{ID: r.ID, Type: "Radarr", Endpoint: "radarr", Token: r.Token, URL: r.URL})
+		}
+		for _, f := range f1Items {
+			sources = append(sources, sourceEntry{ID: f.ID, Type: "F1", Endpoint: "f1", Token: f.Token, URL: f.URL})
+		}
+		for _, w := range weatherItems {
+			sources = append(sources, sourceEntry{ID: w.ID, Type: "Weather", Endpoint: "weather", Token: w.Token, URL: w.URL})
+		}
+		for _, h := range haItems {
+			sources = append(sources, sourceEntry{ID: h.ID, Type: "HomeAssistant", Endpoint: "homeassistant", Token: h.Token, URL: h.URL})
+		}
+		for _, u := range untappdItems {
+			sources = append(sources, sourceEntry{ID: u.ID, Type: "Untappd", Endpoint: "untappd", Token: u.Token, URL: u.URL})
+		}
+		for _, img := range imageItems {
+			sources = append(sources, sourceEntry{ID: img.ID, Type: "Image", Endpoint: "images", Path: img.Path})
+		}
+		for _, vid := range videoItems {
+			sources = append(sources, sourceEntry{ID: vid.ID, Type: "Video", Endpoint: "videos", Path: vid.Path})
+		}
+
 		stats = gin.H{
 			"has_settings":  true,
 			"settings":      settings,
-			"sonarr_count":  len(sonarrCount),
-			"radarr_count":  len(radarrCount),
-			"f1_count":      len(f1Count),
-			"weather_count": len(weatherCount),
-			"ha_count":      len(haCount),
-			"untappd_count": len(untappdCount),
-			"image_count":   len(imageCount),
-			"video_count":   len(videoCount),
-			"total_sources": len(sonarrCount) + len(radarrCount) + len(f1Count) + len(weatherCount) + len(haCount) + len(untappdCount) + len(imageCount) + len(videoCount),
+			"sources":       sources,
+			"sonarr_count":  len(sonarrItems),
+			"radarr_count":  len(radarrItems),
+			"f1_count":      len(f1Items),
+			"weather_count": len(weatherItems),
+			"ha_count":      len(haItems),
+			"untappd_count": len(untappdItems),
+			"image_count":   len(imageItems),
+			"video_count":   len(videoItems),
+			"total_sources": len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems),
 		}
 	}
 	c.HTML(http.StatusOK, "dashboard.html", stats)
@@ -50,7 +89,7 @@ func (s *Server) AdminSettings(c *gin.Context) {
 		settings = nil
 	}
 	c.HTML(http.StatusOK, "settings.html", gin.H{
-		"settings": settings,
+		"settings":    settings,
 		"hasSettings": settings != nil,
 	})
 }
@@ -80,92 +119,343 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/admin/")
 }
 
-func (s *Server) AdminSonarrNew(c *gin.Context) {
+// ---------------------------------------------------------------------------
+// Generic helpers for token/url datasources
+// ---------------------------------------------------------------------------
+
+func (s *Server) renderForm(c *gin.Context, dsType, endpoint string, edit bool, obj any) {
 	c.HTML(http.StatusOK, "datasource_form.html", gin.H{
-		"type":     "Sonarr",
-		"endpoint": "sonarr",
+		"type":     dsType,
+		"endpoint": endpoint,
+		"obj":      obj,
+		"edit":     edit,
 	})
 }
 
-func (s *Server) AdminSonarrCreate(c *gin.Context) {
+func (s *Server) createTokenURLDS(c *gin.Context, endpoint string) {
 	token := c.PostForm("token")
 	url := c.PostForm("url")
-	obj := s.DB.Sonarr.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
-	settings, _ := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx)
-	if settings != nil {
-		s.DB.GeneralSettings.UpdateOne(settings).AddSonarr(obj).Exec(s.Ctx)
+
+	var obj any
+	switch endpoint {
+	case "sonarr":
+		obj = s.DB.Sonarr.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
+	case "radarr":
+		obj = s.DB.Radarr.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
+	case "f1":
+		obj = s.DB.F1.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
+	case "weather":
+		obj = s.DB.Weather.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
+	case "homeassistant":
+		obj = s.DB.HomeAssistant.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
+	case "untappd":
+		obj = s.DB.Untappd.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
 	}
+
+	addEdge(endpoint, s, obj)
 	c.Redirect(http.StatusFound, "/admin/")
 }
 
-func (s *Server) AdminSonarrEdit(c *gin.Context) {
+func addEdge(endpoint string, s *Server, obj any) {
+	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx)
+	if err != nil || settings == nil {
+		return
+	}
+	upd := s.DB.GeneralSettings.UpdateOne(settings)
+	switch endpoint {
+	case "sonarr":
+		upd.AddSonarr(obj.(*ent.Sonarr))
+	case "radarr":
+		upd.AddRadarr(obj.(*ent.Radarr))
+	case "f1":
+		upd.AddF1(obj.(*ent.F1))
+	case "weather":
+		upd.AddWeather(obj.(*ent.Weather))
+	case "homeassistant":
+		upd.AddHomeAssistant(obj.(*ent.HomeAssistant))
+	case "untappd":
+		upd.AddUntappd(obj.(*ent.Untappd))
+	}
+	upd.Exec(s.Ctx)
+}
+
+func (s *Server) editTokenURLDS(c *gin.Context, endpoint string) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	obj, err := s.DB.Sonarr.Get(s.Ctx, id)
+	dsType := datasourceTypeName(endpoint)
+	var obj any
+	var err error
+	switch endpoint {
+	case "sonarr":
+		obj, err = s.DB.Sonarr.Get(s.Ctx, id)
+	case "radarr":
+		obj, err = s.DB.Radarr.Get(s.Ctx, id)
+	case "f1":
+		obj, err = s.DB.F1.Get(s.Ctx, id)
+	case "weather":
+		obj, err = s.DB.Weather.Get(s.Ctx, id)
+	case "homeassistant":
+		obj, err = s.DB.HomeAssistant.Get(s.Ctx, id)
+	case "untappd":
+		obj, err = s.DB.Untappd.Get(s.Ctx, id)
+	}
 	if err != nil {
 		c.Redirect(http.StatusFound, "/admin/")
 		return
 	}
-	c.HTML(http.StatusOK, "datasource_form.html", gin.H{
-		"type":     "Sonarr",
-		"endpoint": "sonarr",
-		"obj":      obj,
-		"edit":     true,
-	})
+	s.renderForm(c, dsType, endpoint, true, obj)
 }
 
-func (s *Server) AdminSonarrUpdate(c *gin.Context) {
+func (s *Server) updateTokenURLDS(c *gin.Context, endpoint string) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	s.DB.Sonarr.UpdateOneID(id).SetToken(c.PostForm("token")).SetURL(c.PostForm("url")).Exec(s.Ctx)
+	token := c.PostForm("token")
+	url := c.PostForm("url")
+	switch endpoint {
+	case "sonarr":
+		s.DB.Sonarr.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
+	case "radarr":
+		s.DB.Radarr.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
+	case "f1":
+		s.DB.F1.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
+	case "weather":
+		s.DB.Weather.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
+	case "homeassistant":
+		s.DB.HomeAssistant.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
+	case "untappd":
+		s.DB.Untappd.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
+	}
 	c.Redirect(http.StatusFound, "/admin/")
 }
 
-func (s *Server) AdminSonarrDelete(c *gin.Context) {
+func (s *Server) deleteTokenURLDS(c *gin.Context, endpoint string) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	s.DB.Sonarr.DeleteOneID(id).Exec(s.Ctx)
+	switch endpoint {
+	case "sonarr":
+		s.DB.Sonarr.DeleteOneID(id).Exec(s.Ctx)
+	case "radarr":
+		s.DB.Radarr.DeleteOneID(id).Exec(s.Ctx)
+	case "f1":
+		s.DB.F1.DeleteOneID(id).Exec(s.Ctx)
+	case "weather":
+		s.DB.Weather.DeleteOneID(id).Exec(s.Ctx)
+	case "homeassistant":
+		s.DB.HomeAssistant.DeleteOneID(id).Exec(s.Ctx)
+	case "untappd":
+		s.DB.Untappd.DeleteOneID(id).Exec(s.Ctx)
+	}
 	c.Redirect(http.StatusFound, "/admin/")
 }
+
+func datasourceTypeName(endpoint string) string {
+	names := map[string]string{
+		"sonarr":        "Sonarr",
+		"radarr":        "Radarr",
+		"f1":            "F1",
+		"weather":       "Weather",
+		"homeassistant": "HomeAssistant",
+		"untappd":       "Untappd",
+	}
+	if n, ok := names[endpoint]; ok {
+		return n
+	}
+	return endpoint
+}
+
+// ---------------------------------------------------------------------------
+// Sonarr
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminSonarrNew(c *gin.Context) {
+	s.renderForm(c, "Sonarr", "sonarr", false, nil)
+}
+func (s *Server) AdminSonarrCreate(c *gin.Context) { s.createTokenURLDS(c, "sonarr") }
+func (s *Server) AdminSonarrEdit(c *gin.Context)   { s.editTokenURLDS(c, "sonarr") }
+func (s *Server) AdminSonarrUpdate(c *gin.Context) { s.updateTokenURLDS(c, "sonarr") }
+func (s *Server) AdminSonarrDelete(c *gin.Context) { s.deleteTokenURLDS(c, "sonarr") }
+
+// ---------------------------------------------------------------------------
+// Radarr
+// ---------------------------------------------------------------------------
 
 func (s *Server) AdminRadarrNew(c *gin.Context) {
+	s.renderForm(c, "Radarr", "radarr", false, nil)
+}
+func (s *Server) AdminRadarrCreate(c *gin.Context) { s.createTokenURLDS(c, "radarr") }
+func (s *Server) AdminRadarrEdit(c *gin.Context)   { s.editTokenURLDS(c, "radarr") }
+func (s *Server) AdminRadarrUpdate(c *gin.Context) { s.updateTokenURLDS(c, "radarr") }
+func (s *Server) AdminRadarrDelete(c *gin.Context) { s.deleteTokenURLDS(c, "radarr") }
+
+// ---------------------------------------------------------------------------
+// F1
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminF1New(c *gin.Context)    { s.renderForm(c, "F1", "f1", false, nil) }
+func (s *Server) AdminF1Create(c *gin.Context) { s.createTokenURLDS(c, "f1") }
+func (s *Server) AdminF1Edit(c *gin.Context)   { s.editTokenURLDS(c, "f1") }
+func (s *Server) AdminF1Update(c *gin.Context) { s.updateTokenURLDS(c, "f1") }
+func (s *Server) AdminF1Delete(c *gin.Context) { s.deleteTokenURLDS(c, "f1") }
+
+// ---------------------------------------------------------------------------
+// Weather
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminWeatherNew(c *gin.Context)    { s.renderForm(c, "Weather", "weather", false, nil) }
+func (s *Server) AdminWeatherCreate(c *gin.Context) { s.createTokenURLDS(c, "weather") }
+func (s *Server) AdminWeatherEdit(c *gin.Context)   { s.editTokenURLDS(c, "weather") }
+func (s *Server) AdminWeatherUpdate(c *gin.Context) { s.updateTokenURLDS(c, "weather") }
+func (s *Server) AdminWeatherDelete(c *gin.Context) { s.deleteTokenURLDS(c, "weather") }
+
+// ---------------------------------------------------------------------------
+// HomeAssistant
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminHomeAssistantNew(c *gin.Context) {
+	s.renderForm(c, "HomeAssistant", "homeassistant", false, nil)
+}
+func (s *Server) AdminHomeAssistantCreate(c *gin.Context) { s.createTokenURLDS(c, "homeassistant") }
+func (s *Server) AdminHomeAssistantEdit(c *gin.Context)   { s.editTokenURLDS(c, "homeassistant") }
+func (s *Server) AdminHomeAssistantUpdate(c *gin.Context) { s.updateTokenURLDS(c, "homeassistant") }
+func (s *Server) AdminHomeAssistantDelete(c *gin.Context) { s.deleteTokenURLDS(c, "homeassistant") }
+
+// ---------------------------------------------------------------------------
+// Untappd
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminUntappdNew(c *gin.Context)    { s.renderForm(c, "Untappd", "untappd", false, nil) }
+func (s *Server) AdminUntappdCreate(c *gin.Context) { s.createTokenURLDS(c, "untappd") }
+func (s *Server) AdminUntappdEdit(c *gin.Context)   { s.editTokenURLDS(c, "untappd") }
+func (s *Server) AdminUntappdUpdate(c *gin.Context) { s.updateTokenURLDS(c, "untappd") }
+func (s *Server) AdminUntappdDelete(c *gin.Context) { s.deleteTokenURLDS(c, "untappd") }
+
+// ---------------------------------------------------------------------------
+// Image (file upload)
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminImageNew(c *gin.Context) {
 	c.HTML(http.StatusOK, "datasource_form.html", gin.H{
-		"type":     "Radarr",
-		"endpoint": "radarr",
+		"type":       "Image",
+		"endpoint":   "images",
+		"is_media":   true,
+		"extensions": ".png,.jpg,.jpeg,.gif",
 	})
 }
 
-func (s *Server) AdminRadarrCreate(c *gin.Context) {
-	token := c.PostForm("token")
-	url := c.PostForm("url")
-	obj := s.DB.Radarr.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
+func (s *Server) AdminImageCreate(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.String(http.StatusBadRequest, "File upload required")
+		return
+	}
+	path := filepath.Join("web", "media", "custom_images", file.Filename)
+	if err := c.SaveUploadedFile(file, path); err != nil {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to save file: %v", err))
+		return
+	}
+	obj := s.DB.Image.Create().SetPath(path).SaveX(s.Ctx)
 	settings, _ := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx)
 	if settings != nil {
-		s.DB.GeneralSettings.UpdateOne(settings).AddRadarr(obj).Exec(s.Ctx)
+		s.DB.GeneralSettings.UpdateOne(settings).AddImages(obj).Exec(s.Ctx)
 	}
 	c.Redirect(http.StatusFound, "/admin/")
 }
 
-func (s *Server) AdminRadarrEdit(c *gin.Context) {
+func (s *Server) AdminImageEdit(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	obj, err := s.DB.Radarr.Get(s.Ctx, id)
+	obj, err := s.DB.Image.Get(s.Ctx, id)
 	if err != nil {
 		c.Redirect(http.StatusFound, "/admin/")
 		return
 	}
 	c.HTML(http.StatusOK, "datasource_form.html", gin.H{
-		"type":     "Radarr",
-		"endpoint": "radarr",
-		"obj":      obj,
-		"edit":     true,
+		"type":       "Image",
+		"endpoint":   "images",
+		"obj":        obj,
+		"edit":       true,
+		"is_media":   true,
+		"extensions": ".png,.jpg,.jpeg,.gif",
 	})
 }
 
-func (s *Server) AdminRadarrUpdate(c *gin.Context) {
+func (s *Server) AdminImageUpdate(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	s.DB.Radarr.UpdateOneID(id).SetToken(c.PostForm("token")).SetURL(c.PostForm("url")).Exec(s.Ctx)
+	file, err := c.FormFile("file")
+	if err == nil {
+		path := filepath.Join("web", "media", "custom_images", file.Filename)
+		if err := c.SaveUploadedFile(file, path); err == nil {
+			s.DB.Image.UpdateOneID(id).SetPath(path).Exec(s.Ctx)
+		}
+	}
 	c.Redirect(http.StatusFound, "/admin/")
 }
 
-func (s *Server) AdminRadarrDelete(c *gin.Context) {
+func (s *Server) AdminImageDelete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	s.DB.Radarr.DeleteOneID(id).Exec(s.Ctx)
+	s.DB.Image.DeleteOneID(id).Exec(s.Ctx)
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+// ---------------------------------------------------------------------------
+// Video (file upload)
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminVideoNew(c *gin.Context) {
+	c.HTML(http.StatusOK, "datasource_form.html", gin.H{
+		"type":       "Video",
+		"endpoint":   "videos",
+		"is_media":   true,
+		"extensions": ".mp4,.webm,.avi",
+	})
+}
+
+func (s *Server) AdminVideoCreate(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.String(http.StatusBadRequest, "File upload required")
+		return
+	}
+	path := filepath.Join("web", "media", "custom_videos", file.Filename)
+	if err := c.SaveUploadedFile(file, path); err != nil {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to save file: %v", err))
+		return
+	}
+	obj := s.DB.Video.Create().SetPath(path).SaveX(s.Ctx)
+	settings, _ := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx)
+	if settings != nil {
+		s.DB.GeneralSettings.UpdateOne(settings).AddVideos(obj).Exec(s.Ctx)
+	}
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+func (s *Server) AdminVideoEdit(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	obj, err := s.DB.Video.Get(s.Ctx, id)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/admin/")
+		return
+	}
+	c.HTML(http.StatusOK, "datasource_form.html", gin.H{
+		"type":       "Video",
+		"endpoint":   "videos",
+		"obj":        obj,
+		"edit":       true,
+		"is_media":   true,
+		"extensions": ".mp4,.webm,.avi",
+	})
+}
+
+func (s *Server) AdminVideoUpdate(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	file, err := c.FormFile("file")
+	if err == nil {
+		path := filepath.Join("web", "media", "custom_videos", file.Filename)
+		if err := c.SaveUploadedFile(file, path); err == nil {
+			s.DB.Video.UpdateOneID(id).SetPath(path).Exec(s.Ctx)
+		}
+	}
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+func (s *Server) AdminVideoDelete(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	s.DB.Video.DeleteOneID(id).Exec(s.Ctx)
 	c.Redirect(http.StatusFound, "/admin/")
 }

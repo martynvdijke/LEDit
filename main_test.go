@@ -21,10 +21,10 @@ import (
 	"ledit/render"
 	"ledit/render/themes"
 
-	_ "github.com/mattn/go-sqlite3"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"github.com/gorilla/websocket"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var testCtx = context.Background()
@@ -241,9 +241,9 @@ func TestRenderDictF1Theme(t *testing.T) {
 
 func TestRenderDictUntappdTheme(t *testing.T) {
 	data := map[string]string{
-		"beer":  "IPA",
-		"abv":   "6.5",
-		"brew":  "Local",
+		"beer": "IPA",
+		"abv":  "6.5",
+		"brew": "Local",
 	}
 	result, err := render.RenderDict(data, 400, 400, themes.UntappdTheme, "fonts/PixelifySans.ttf")
 	if err != nil {
@@ -338,6 +338,198 @@ func TestServerAdminSonarrNew(t *testing.T) {
 
 	if w.Code != http.StatusOK {
 		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestServerAdminF1New(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/datasources/f1/new", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestServerAdminWeatherNew(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/datasources/weather/new", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestServerAdminHomeAssistantNew(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/datasources/homeassistant/new", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestServerAdminUntappdNew(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/datasources/untappd/new", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestServerAdminImageNew(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/datasources/images/new", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestServerAdminVideoNew(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/datasources/videos/new", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestServerAdminF1CreateAndEditAndDelete(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	body := bytes.NewBufferString("token=f1token&url=http://f1api")
+	req := httptest.NewRequest("POST", "/admin/datasources/f1/new", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+
+	settings := srv.DB.GeneralSettings.Query().WithF1().OnlyX(testCtx)
+	f1s, _ := settings.Edges.F1OrErr()
+	if len(f1s) != 1 || f1s[0].Token != "f1token" {
+		t.Errorf("expected 1 F1 source with token f1token, got %d %v", len(f1s), f1s)
+	}
+
+	editReq := httptest.NewRequest("GET", "/admin/datasources/f1/1/edit", nil)
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, editReq)
+	if w2.Code != http.StatusOK {
+		t.Errorf("expected 200 for edit, got %d", w2.Code)
+	}
+
+	delReq := httptest.NewRequest("POST", "/admin/datasources/f1/1/delete", nil)
+	w3 := httptest.NewRecorder()
+	srv.ServeHTTP(w3, delReq)
+	if w3.Code != http.StatusFound {
+		t.Errorf("expected 302 for delete, got %d", w3.Code)
+	}
+
+	exists := srv.DB.F1.Query().ExistX(testCtx)
+	if exists {
+		t.Error("expected F1 source to be deleted")
+	}
+}
+
+func TestServerAdminDatasourceCreateAndEditCycle(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	tests := []struct {
+		endpoint string
+		token    string
+		url      string
+	}{
+		{"sonarr", "stoken", "surl"},
+		{"radarr", "rtoken", "rurl"},
+		{"f1", "ftoken", "furl"},
+		{"weather", "wtoken", "wurl"},
+		{"homeassistant", "hatoken", "haurl"},
+		{"untappd", "utoken", "uurl"},
+	}
+
+	for _, tt := range tests {
+		body := bytes.NewBufferString("token=" + tt.token + "&url=" + tt.url)
+		req := httptest.NewRequest("POST", "/admin/datasources/"+tt.endpoint+"/new", body)
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		w := httptest.NewRecorder()
+		srv.ServeHTTP(w, req)
+		if w.Code != http.StatusFound {
+			t.Errorf("%s create: expected 302, got %d", tt.endpoint, w.Code)
+		}
+	}
+
+	settings := srv.DB.GeneralSettings.Query().
+		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
+		OnlyX(testCtx)
+
+	sonarr, _ := settings.Edges.SonarrOrErr()
+	radarr, _ := settings.Edges.RadarrOrErr()
+	f1, _ := settings.Edges.F1OrErr()
+	weather, _ := settings.Edges.WeatherOrErr()
+	ha, _ := settings.Edges.HomeAssistantOrErr()
+	untappd, _ := settings.Edges.UntappdOrErr()
+
+	if len(sonarr) != 1 || sonarr[0].Token != "stoken" {
+		t.Error("Sonarr not created correctly")
+	}
+	if len(f1) != 1 || f1[0].Token != "ftoken" {
+		t.Error("F1 not created correctly")
+	}
+	if len(weather) != 1 || weather[0].Token != "wtoken" {
+		t.Error("Weather not created correctly")
+	}
+	if len(ha) != 1 || ha[0].Token != "hatoken" {
+		t.Error("HomeAssistant not created correctly")
+	}
+	if len(untappd) != 1 || untappd[0].Token != "utoken" {
+		t.Error("Untappd not created correctly")
+	}
+	if len(radarr) != 1 || radarr[0].Token != "rtoken" {
+		t.Error("Radarr not created correctly")
 	}
 }
 

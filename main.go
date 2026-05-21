@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
+	"entgo.io/ent/dialect/sql"
+	_ "github.com/mattn/go-sqlite3"
 	"ledit/db"
 	"ledit/handlers"
-	_ "github.com/mattn/go-sqlite3"
-	"entgo.io/ent/dialect/sql"
 )
 
 func main() {
