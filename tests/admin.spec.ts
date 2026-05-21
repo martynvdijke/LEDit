@@ -1,0 +1,63 @@
+import { test, expect } from '@playwright/test';
+
+test.describe('Admin Dashboard', () => {
+  test('should load the admin dashboard', async ({ page }) => {
+    await page.goto('/admin/');
+    await expect(page.locator('h1')).toContainText('Admin Dashboard');
+  });
+
+  test('should show no settings message when unconfigured', async ({ page }) => {
+    await page.goto('/admin/');
+    await expect(page.getByText('No settings configured yet')).toBeVisible();
+  });
+
+  test('should have settings link in the page', async ({ page }) => {
+    await page.goto('/admin/');
+    await expect(page.getByRole('link', { name: 'Configure settings' })).toBeVisible();
+  });
+});
+
+test.describe('Admin Settings', () => {
+  test('should load the settings page with form fields', async ({ page }) => {
+    await page.goto('/admin/settings');
+    await expect(page.locator('h1')).toContainText('General Settings');
+    await expect(page.locator('#timeout')).toBeAttached();
+    await expect(page.locator('#random')).toBeAttached();
+    await expect(page.locator('#width')).toBeAttached();
+    await expect(page.locator('#height')).toBeAttached();
+    await expect(page.locator('label[for="random"]')).toHaveText('Random order');
+  });
+
+  test('should submit the settings form', async ({ page }) => {
+    await page.goto('/admin/settings');
+    await page.locator('#timeout').fill('3');
+    await page.locator('#random').check();
+    await page.locator('#width').fill('64');
+    await page.locator('#height').fill('64');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await page.waitForURL('/admin/');
+    await expect(page.locator('h1')).toContainText('Admin Dashboard');
+  });
+});
+
+test.describe('Sidebar Navigation', () => {
+  test('sidebar navigation links should be present', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('link', { name: 'Home' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Dashboard', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Add Sonarr' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Add Radarr' })).toBeVisible();
+  });
+
+  test('should navigate to settings via sidebar', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('link', { name: 'Settings' }).click();
+    await expect(page).toHaveURL('/admin/settings');
+  });
+
+  test('should navigate to admin via sidebar', async ({ page }) => {
+    await page.goto('/admin/settings');
+    await page.getByRole('link', { name: 'Dashboard', exact: true }).click();
+    await expect(page).toHaveURL('/admin/');
+  });
+});

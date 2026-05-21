@@ -46,9 +46,12 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 
 func (s *Server) AdminSettings(c *gin.Context) {
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx)
+	if err != nil {
+		settings = nil
+	}
 	c.HTML(http.StatusOK, "settings.html", gin.H{
 		"settings": settings,
-		"error":    err != nil,
+		"hasSettings": settings != nil,
 	})
 }
 

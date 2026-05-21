@@ -7,9 +7,11 @@ tasks:
       - task --list
 
   install:
-    desc: Install all dependencies
+    desc: Install all dependencies (Go + Node + Playwright)
     cmds:
       - go mod download
+      - npm install
+      - npx playwright install --with-deps chromium
 
   fmt:
     desc: Format code (Go)
@@ -21,6 +23,10 @@ tasks:
     cmds:
       - go test -v ./...
 
+  test:e2e:
+    desc: Run Playwright end-to-end tests
+    cmds:
+      - npx playwright test
   build:
     desc: Build the Go binary
     cmds:
