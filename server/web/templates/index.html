@@ -1,0 +1,75 @@
+{{template "base" .}}
+{{define "title"}}LEDit Live Feed{{end}}
+{{define "content"}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1>LEDit Live Feed</h1>
+            <div id="media-container" class="mt-4">
+                <img id="media-display" src="" alt="LEDit Feed" style="max-width: 100%; display: none;">
+                <video id="video-display" autoplay muted style="max-width: 100%; display: none;"></video>
+                <p id="status-text" class="text-muted">Connecting...</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+(function() {
+    const imgEl = document.getElementById('media-display');
+    const videoEl = document.getElementById('video-display');
+    const statusEl = document.getElementById('status-text');
+    let ws = null;
+    let reconnectAttempts = 0;
+    const maxReconnect = 5;
+
+    function connect() {
+        const host = window.location.host;
+        ws = new WebSocket('ws://' + host + '/ws/feed');
+
+        ws.onopen = function() {
+            statusEl.textContent = 'Connected';
+            reconnectAttempts = 0;
+        };
+
+        ws.onmessage = function(event) {
+            const msg = JSON.parse(event.data);
+            if (msg.format === 'MP4') {
+                imgEl.style.display = 'none';
+                videoEl.style.display = 'block';
+                videoEl.src = 'data:video/mp4;base64,' + msg.image;
+                videoEl.play();
+                videoEl.onended = function() {
+                    videoEl.style.display = 'none';
+                };
+            } else {
+                videoEl.style.display = 'none';
+                videoEl.pause();
+                imgEl.style.display = 'block';
+                imgEl.src = 'data:image/' + msg.format.toLowerCase() + ';base64,' + msg.image;
+            }
+            statusEl.textContent = 'Receiving';
+        };
+
+        ws.onclose = function() {
+            statusEl.textContent = 'Disconnected';
+            imgEl.style.display = 'none';
+            videoEl.style.display = 'none';
+            if (reconnectAttempts < maxReconnect) {
+                reconnectAttempts++;
+                const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+                statusEl.textContent = 'Reconnecting in ' + (delay / 1000) + 's...';
+                setTimeout(connect, delay);
+            } else {
+                statusEl.textContent = 'Connection failed';
+            }
+        };
+
+        ws.onerror = function() {
+            ws.close();
+        };
+    }
+
+    connect();
+})();
+</script>
+{{end}}

@@ -1,0 +1,17 @@
+{{template "base" .}}
+{{define "title"}}{{if .edit}}Edit{{else}}New{{end}} {{.type}}{{end}}
+{{define "content"}}
+<h1>{{if .edit}}Edit{{else}}New{{end}} {{.type}} Source</h1>
+<form method="POST" action="/admin/datasources/{{.endpoint}}{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4">
+    <div class="mb-3">
+        <label for="token" class="form-label">API Token</label>
+        <input type="text" class="form-control" id="token" name="token" value="{{if .obj}}{{.obj.Token}}{{end}}">
+    </div>
+    <div class="mb-3">
+        <label for="url" class="form-label">URL</label>
+        <input type="text" class="form-control" id="url" name="url" value="{{if .obj}}{{.obj.URL}}{{end}}">
+    </div>
+    <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+    <a href="/admin/" class="btn btn-secondary">Cancel</a>
+</form>
+{{end}}
