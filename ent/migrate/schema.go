@@ -8,6 +8,27 @@ import (
 )
 
 var (
+	// CalendarsColumns holds the columns for the "calendars" table.
+	CalendarsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "url", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString, Default: ""},
+		{Name: "general_settings_calendars", Type: field.TypeInt, Nullable: true},
+	}
+	// CalendarsTable holds the schema information for the "calendars" table.
+	CalendarsTable = &schema.Table{
+		Name:       "calendars",
+		Columns:    CalendarsColumns,
+		PrimaryKey: []*schema.Column{CalendarsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "calendars_general_settings_calendars",
+				Columns:    []*schema.Column{CalendarsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// CryptosColumns holds the columns for the "cryptos" table.
 	CryptosColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -153,6 +174,27 @@ var (
 			},
 		},
 	}
+	// RssFeedsColumns holds the columns for the "rss_feeds" table.
+	RssFeedsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "url", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString, Default: ""},
+		{Name: "general_settings_rss_feeds", Type: field.TypeInt, Nullable: true},
+	}
+	// RssFeedsTable holds the schema information for the "rss_feeds" table.
+	RssFeedsTable = &schema.Table{
+		Name:       "rss_feeds",
+		Columns:    RssFeedsColumns,
+		PrimaryKey: []*schema.Column{RssFeedsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "rss_feeds_general_settings_rss_feeds",
+				Columns:    []*schema.Column{RssFeedsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// SchedulesColumns holds the columns for the "schedules" table.
 	SchedulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -191,6 +233,50 @@ var (
 			{
 				Symbol:     "sonarrs_general_settings_sonarr",
 				Columns:    []*schema.Column{SonarrsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// StocksColumns holds the columns for the "stocks" table.
+	StocksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: "AAPL,MSFT,GOOGL"},
+		{Name: "url", Type: field.TypeString, Default: ""},
+		{Name: "general_settings_stocks", Type: field.TypeInt, Nullable: true},
+	}
+	// StocksTable holds the schema information for the "stocks" table.
+	StocksTable = &schema.Table{
+		Name:       "stocks",
+		Columns:    StocksColumns,
+		PrimaryKey: []*schema.Column{StocksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "stocks_general_settings_stocks",
+				Columns:    []*schema.Column{StocksColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// TextSlidesColumns holds the columns for the "text_slides" table.
+	TextSlidesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "content", Type: field.TypeString},
+		{Name: "color", Type: field.TypeString, Default: "#FFFFFF"},
+		{Name: "bg_color", Type: field.TypeString, Default: "#000000"},
+		{Name: "font_size", Type: field.TypeInt, Default: 32},
+		{Name: "general_settings_text_slides", Type: field.TypeInt, Nullable: true},
+	}
+	// TextSlidesTable holds the schema information for the "text_slides" table.
+	TextSlidesTable = &schema.Table{
+		Name:       "text_slides",
+		Columns:    TextSlidesColumns,
+		PrimaryKey: []*schema.Column{TextSlidesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "text_slides_general_settings_text_slides",
+				Columns:    []*schema.Column{TextSlidesColumns[5]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -260,6 +346,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CalendarsTable,
 		CryptosTable,
 		DeviceSettingsTable,
 		F1sTable,
@@ -267,8 +354,11 @@ var (
 		HomeAssistantsTable,
 		ImagesTable,
 		RadarrsTable,
+		RssFeedsTable,
 		SchedulesTable,
 		SonarrsTable,
+		StocksTable,
+		TextSlidesTable,
 		UntappdsTable,
 		VideosTable,
 		WeathersTable,
@@ -276,14 +366,18 @@ var (
 )
 
 func init() {
+	CalendarsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	CryptosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	DeviceSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	F1sTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	HomeAssistantsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	ImagesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RadarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	RssFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SchedulesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SonarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	StocksTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	TextSlidesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UntappdsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	VideosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	WeathersTable.ForeignKeys[0].RefTable = GeneralSettingsTable

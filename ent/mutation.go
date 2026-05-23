@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
@@ -14,8 +15,11 @@ import (
 	"ledit/ent/image"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
+	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/stock"
+	"ledit/ent/textslide"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
@@ -34,6 +38,7 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeCalendar        = "Calendar"
 	TypeCrypto          = "Crypto"
 	TypeDeviceSettings  = "DeviceSettings"
 	TypeF1              = "F1"
@@ -41,12 +46,395 @@ const (
 	TypeHomeAssistant   = "HomeAssistant"
 	TypeImage           = "Image"
 	TypeRadarr          = "Radarr"
+	TypeRssFeed         = "RssFeed"
 	TypeSchedule        = "Schedule"
 	TypeSonarr          = "Sonarr"
+	TypeStock           = "Stock"
+	TypeTextSlide       = "TextSlide"
 	TypeUntappd         = "Untappd"
 	TypeVideo           = "Video"
 	TypeWeather         = "Weather"
 )
+
+// CalendarMutation represents an operation that mutates the Calendar nodes in the graph.
+type CalendarMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	url           *string
+	name          *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Calendar, error)
+	predicates    []predicate.Calendar
+}
+
+var _ ent.Mutation = (*CalendarMutation)(nil)
+
+// calendarOption allows management of the mutation configuration using functional options.
+type calendarOption func(*CalendarMutation)
+
+// newCalendarMutation creates new mutation for the Calendar entity.
+func newCalendarMutation(c config, op Op, opts ...calendarOption) *CalendarMutation {
+	m := &CalendarMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCalendar,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCalendarID sets the ID field of the mutation.
+func withCalendarID(id int) calendarOption {
+	return func(m *CalendarMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Calendar
+		)
+		m.oldValue = func(ctx context.Context) (*Calendar, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Calendar.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCalendar sets the old Calendar of the mutation.
+func withCalendar(node *Calendar) calendarOption {
+	return func(m *CalendarMutation) {
+		m.oldValue = func(context.Context) (*Calendar, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CalendarMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CalendarMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CalendarMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CalendarMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Calendar.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetURL sets the "url" field.
+func (m *CalendarMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *CalendarMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Calendar entity.
+// If the Calendar object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CalendarMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *CalendarMutation) ResetURL() {
+	m.url = nil
+}
+
+// SetName sets the "name" field.
+func (m *CalendarMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *CalendarMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Calendar entity.
+// If the Calendar object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CalendarMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *CalendarMutation) ResetName() {
+	m.name = nil
+}
+
+// Where appends a list predicates to the CalendarMutation builder.
+func (m *CalendarMutation) Where(ps ...predicate.Calendar) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the CalendarMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *CalendarMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Calendar, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *CalendarMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *CalendarMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Calendar).
+func (m *CalendarMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CalendarMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.url != nil {
+		fields = append(fields, calendar.FieldURL)
+	}
+	if m.name != nil {
+		fields = append(fields, calendar.FieldName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CalendarMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case calendar.FieldURL:
+		return m.URL()
+	case calendar.FieldName:
+		return m.Name()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CalendarMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case calendar.FieldURL:
+		return m.OldURL(ctx)
+	case calendar.FieldName:
+		return m.OldName(ctx)
+	}
+	return nil, fmt.Errorf("unknown Calendar field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CalendarMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case calendar.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	case calendar.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Calendar field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CalendarMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CalendarMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CalendarMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Calendar numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CalendarMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CalendarMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CalendarMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Calendar nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CalendarMutation) ResetField(name string) error {
+	switch name {
+	case calendar.FieldURL:
+		m.ResetURL()
+		return nil
+	case calendar.FieldName:
+		m.ResetName()
+		return nil
+	}
+	return fmt.Errorf("unknown Calendar field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CalendarMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CalendarMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CalendarMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CalendarMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CalendarMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CalendarMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CalendarMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Calendar unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CalendarMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Calendar edge %s", name)
+}
 
 // CryptoMutation represents an operation that mutates the Crypto nodes in the graph.
 type CryptoMutation struct {
@@ -1661,6 +2049,18 @@ type GeneralSettingsMutation struct {
 	device_settings        map[int]struct{}
 	removeddevice_settings map[int]struct{}
 	cleareddevice_settings bool
+	rss_feeds              map[int]struct{}
+	removedrss_feeds       map[int]struct{}
+	clearedrss_feeds       bool
+	calendars              map[int]struct{}
+	removedcalendars       map[int]struct{}
+	clearedcalendars       bool
+	stocks                 map[int]struct{}
+	removedstocks          map[int]struct{}
+	clearedstocks          bool
+	text_slides            map[int]struct{}
+	removedtext_slides     map[int]struct{}
+	clearedtext_slides     bool
 	done                   bool
 	oldValue               func(context.Context) (*GeneralSettings, error)
 	predicates             []predicate.GeneralSettings
@@ -2562,6 +2962,222 @@ func (m *GeneralSettingsMutation) ResetDeviceSettings() {
 	m.removeddevice_settings = nil
 }
 
+// AddRssFeedIDs adds the "rss_feeds" edge to the RssFeed entity by ids.
+func (m *GeneralSettingsMutation) AddRssFeedIDs(ids ...int) {
+	if m.rss_feeds == nil {
+		m.rss_feeds = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.rss_feeds[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRssFeeds clears the "rss_feeds" edge to the RssFeed entity.
+func (m *GeneralSettingsMutation) ClearRssFeeds() {
+	m.clearedrss_feeds = true
+}
+
+// RssFeedsCleared reports if the "rss_feeds" edge to the RssFeed entity was cleared.
+func (m *GeneralSettingsMutation) RssFeedsCleared() bool {
+	return m.clearedrss_feeds
+}
+
+// RemoveRssFeedIDs removes the "rss_feeds" edge to the RssFeed entity by IDs.
+func (m *GeneralSettingsMutation) RemoveRssFeedIDs(ids ...int) {
+	if m.removedrss_feeds == nil {
+		m.removedrss_feeds = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.rss_feeds, ids[i])
+		m.removedrss_feeds[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRssFeeds returns the removed IDs of the "rss_feeds" edge to the RssFeed entity.
+func (m *GeneralSettingsMutation) RemovedRssFeedsIDs() (ids []int) {
+	for id := range m.removedrss_feeds {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RssFeedsIDs returns the "rss_feeds" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) RssFeedsIDs() (ids []int) {
+	for id := range m.rss_feeds {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRssFeeds resets all changes to the "rss_feeds" edge.
+func (m *GeneralSettingsMutation) ResetRssFeeds() {
+	m.rss_feeds = nil
+	m.clearedrss_feeds = false
+	m.removedrss_feeds = nil
+}
+
+// AddCalendarIDs adds the "calendars" edge to the Calendar entity by ids.
+func (m *GeneralSettingsMutation) AddCalendarIDs(ids ...int) {
+	if m.calendars == nil {
+		m.calendars = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.calendars[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCalendars clears the "calendars" edge to the Calendar entity.
+func (m *GeneralSettingsMutation) ClearCalendars() {
+	m.clearedcalendars = true
+}
+
+// CalendarsCleared reports if the "calendars" edge to the Calendar entity was cleared.
+func (m *GeneralSettingsMutation) CalendarsCleared() bool {
+	return m.clearedcalendars
+}
+
+// RemoveCalendarIDs removes the "calendars" edge to the Calendar entity by IDs.
+func (m *GeneralSettingsMutation) RemoveCalendarIDs(ids ...int) {
+	if m.removedcalendars == nil {
+		m.removedcalendars = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.calendars, ids[i])
+		m.removedcalendars[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCalendars returns the removed IDs of the "calendars" edge to the Calendar entity.
+func (m *GeneralSettingsMutation) RemovedCalendarsIDs() (ids []int) {
+	for id := range m.removedcalendars {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CalendarsIDs returns the "calendars" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) CalendarsIDs() (ids []int) {
+	for id := range m.calendars {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCalendars resets all changes to the "calendars" edge.
+func (m *GeneralSettingsMutation) ResetCalendars() {
+	m.calendars = nil
+	m.clearedcalendars = false
+	m.removedcalendars = nil
+}
+
+// AddStockIDs adds the "stocks" edge to the Stock entity by ids.
+func (m *GeneralSettingsMutation) AddStockIDs(ids ...int) {
+	if m.stocks == nil {
+		m.stocks = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.stocks[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStocks clears the "stocks" edge to the Stock entity.
+func (m *GeneralSettingsMutation) ClearStocks() {
+	m.clearedstocks = true
+}
+
+// StocksCleared reports if the "stocks" edge to the Stock entity was cleared.
+func (m *GeneralSettingsMutation) StocksCleared() bool {
+	return m.clearedstocks
+}
+
+// RemoveStockIDs removes the "stocks" edge to the Stock entity by IDs.
+func (m *GeneralSettingsMutation) RemoveStockIDs(ids ...int) {
+	if m.removedstocks == nil {
+		m.removedstocks = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.stocks, ids[i])
+		m.removedstocks[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStocks returns the removed IDs of the "stocks" edge to the Stock entity.
+func (m *GeneralSettingsMutation) RemovedStocksIDs() (ids []int) {
+	for id := range m.removedstocks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StocksIDs returns the "stocks" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) StocksIDs() (ids []int) {
+	for id := range m.stocks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStocks resets all changes to the "stocks" edge.
+func (m *GeneralSettingsMutation) ResetStocks() {
+	m.stocks = nil
+	m.clearedstocks = false
+	m.removedstocks = nil
+}
+
+// AddTextSlideIDs adds the "text_slides" edge to the TextSlide entity by ids.
+func (m *GeneralSettingsMutation) AddTextSlideIDs(ids ...int) {
+	if m.text_slides == nil {
+		m.text_slides = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.text_slides[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTextSlides clears the "text_slides" edge to the TextSlide entity.
+func (m *GeneralSettingsMutation) ClearTextSlides() {
+	m.clearedtext_slides = true
+}
+
+// TextSlidesCleared reports if the "text_slides" edge to the TextSlide entity was cleared.
+func (m *GeneralSettingsMutation) TextSlidesCleared() bool {
+	return m.clearedtext_slides
+}
+
+// RemoveTextSlideIDs removes the "text_slides" edge to the TextSlide entity by IDs.
+func (m *GeneralSettingsMutation) RemoveTextSlideIDs(ids ...int) {
+	if m.removedtext_slides == nil {
+		m.removedtext_slides = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.text_slides, ids[i])
+		m.removedtext_slides[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTextSlides returns the removed IDs of the "text_slides" edge to the TextSlide entity.
+func (m *GeneralSettingsMutation) RemovedTextSlidesIDs() (ids []int) {
+	for id := range m.removedtext_slides {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TextSlidesIDs returns the "text_slides" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) TextSlidesIDs() (ids []int) {
+	for id := range m.text_slides {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTextSlides resets all changes to the "text_slides" edge.
+func (m *GeneralSettingsMutation) ResetTextSlides() {
+	m.text_slides = nil
+	m.clearedtext_slides = false
+	m.removedtext_slides = nil
+}
+
 // Where appends a list predicates to the GeneralSettingsMutation builder.
 func (m *GeneralSettingsMutation) Where(ps ...predicate.GeneralSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -2785,7 +3401,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 15)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -2818,6 +3434,18 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.device_settings != nil {
 		edges = append(edges, generalsettings.EdgeDeviceSettings)
+	}
+	if m.rss_feeds != nil {
+		edges = append(edges, generalsettings.EdgeRssFeeds)
+	}
+	if m.calendars != nil {
+		edges = append(edges, generalsettings.EdgeCalendars)
+	}
+	if m.stocks != nil {
+		edges = append(edges, generalsettings.EdgeStocks)
+	}
+	if m.text_slides != nil {
+		edges = append(edges, generalsettings.EdgeTextSlides)
 	}
 	return edges
 }
@@ -2892,13 +3520,37 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeRssFeeds:
+		ids := make([]ent.Value, 0, len(m.rss_feeds))
+		for id := range m.rss_feeds {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeCalendars:
+		ids := make([]ent.Value, 0, len(m.calendars))
+		for id := range m.calendars {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeStocks:
+		ids := make([]ent.Value, 0, len(m.stocks))
+		for id := range m.stocks {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeTextSlides:
+		ids := make([]ent.Value, 0, len(m.text_slides))
+		for id := range m.text_slides {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 15)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -2931,6 +3583,18 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removeddevice_settings != nil {
 		edges = append(edges, generalsettings.EdgeDeviceSettings)
+	}
+	if m.removedrss_feeds != nil {
+		edges = append(edges, generalsettings.EdgeRssFeeds)
+	}
+	if m.removedcalendars != nil {
+		edges = append(edges, generalsettings.EdgeCalendars)
+	}
+	if m.removedstocks != nil {
+		edges = append(edges, generalsettings.EdgeStocks)
+	}
+	if m.removedtext_slides != nil {
+		edges = append(edges, generalsettings.EdgeTextSlides)
 	}
 	return edges
 }
@@ -3005,13 +3669,37 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeRssFeeds:
+		ids := make([]ent.Value, 0, len(m.removedrss_feeds))
+		for id := range m.removedrss_feeds {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeCalendars:
+		ids := make([]ent.Value, 0, len(m.removedcalendars))
+		for id := range m.removedcalendars {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeStocks:
+		ids := make([]ent.Value, 0, len(m.removedstocks))
+		for id := range m.removedstocks {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeTextSlides:
+		ids := make([]ent.Value, 0, len(m.removedtext_slides))
+		for id := range m.removedtext_slides {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 15)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -3045,6 +3733,18 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	if m.cleareddevice_settings {
 		edges = append(edges, generalsettings.EdgeDeviceSettings)
 	}
+	if m.clearedrss_feeds {
+		edges = append(edges, generalsettings.EdgeRssFeeds)
+	}
+	if m.clearedcalendars {
+		edges = append(edges, generalsettings.EdgeCalendars)
+	}
+	if m.clearedstocks {
+		edges = append(edges, generalsettings.EdgeStocks)
+	}
+	if m.clearedtext_slides {
+		edges = append(edges, generalsettings.EdgeTextSlides)
+	}
 	return edges
 }
 
@@ -3074,6 +3774,14 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedschedules
 	case generalsettings.EdgeDeviceSettings:
 		return m.cleareddevice_settings
+	case generalsettings.EdgeRssFeeds:
+		return m.clearedrss_feeds
+	case generalsettings.EdgeCalendars:
+		return m.clearedcalendars
+	case generalsettings.EdgeStocks:
+		return m.clearedstocks
+	case generalsettings.EdgeTextSlides:
+		return m.clearedtext_slides
 	}
 	return false
 }
@@ -3122,6 +3830,18 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 		return nil
 	case generalsettings.EdgeDeviceSettings:
 		m.ResetDeviceSettings()
+		return nil
+	case generalsettings.EdgeRssFeeds:
+		m.ResetRssFeeds()
+		return nil
+	case generalsettings.EdgeCalendars:
+		m.ResetCalendars()
+		return nil
+	case generalsettings.EdgeStocks:
+		m.ResetStocks()
+		return nil
+	case generalsettings.EdgeTextSlides:
+		m.ResetTextSlides()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings edge %s", name)
@@ -4213,6 +4933,386 @@ func (m *RadarrMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Radarr edge %s", name)
 }
 
+// RssFeedMutation represents an operation that mutates the RssFeed nodes in the graph.
+type RssFeedMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	url           *string
+	name          *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*RssFeed, error)
+	predicates    []predicate.RssFeed
+}
+
+var _ ent.Mutation = (*RssFeedMutation)(nil)
+
+// rssfeedOption allows management of the mutation configuration using functional options.
+type rssfeedOption func(*RssFeedMutation)
+
+// newRssFeedMutation creates new mutation for the RssFeed entity.
+func newRssFeedMutation(c config, op Op, opts ...rssfeedOption) *RssFeedMutation {
+	m := &RssFeedMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRssFeed,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRssFeedID sets the ID field of the mutation.
+func withRssFeedID(id int) rssfeedOption {
+	return func(m *RssFeedMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *RssFeed
+		)
+		m.oldValue = func(ctx context.Context) (*RssFeed, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().RssFeed.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRssFeed sets the old RssFeed of the mutation.
+func withRssFeed(node *RssFeed) rssfeedOption {
+	return func(m *RssFeedMutation) {
+		m.oldValue = func(context.Context) (*RssFeed, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RssFeedMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RssFeedMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *RssFeedMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *RssFeedMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().RssFeed.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetURL sets the "url" field.
+func (m *RssFeedMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *RssFeedMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the RssFeed entity.
+// If the RssFeed object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RssFeedMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *RssFeedMutation) ResetURL() {
+	m.url = nil
+}
+
+// SetName sets the "name" field.
+func (m *RssFeedMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *RssFeedMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the RssFeed entity.
+// If the RssFeed object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RssFeedMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *RssFeedMutation) ResetName() {
+	m.name = nil
+}
+
+// Where appends a list predicates to the RssFeedMutation builder.
+func (m *RssFeedMutation) Where(ps ...predicate.RssFeed) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the RssFeedMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *RssFeedMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.RssFeed, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *RssFeedMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *RssFeedMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (RssFeed).
+func (m *RssFeedMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RssFeedMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.url != nil {
+		fields = append(fields, rssfeed.FieldURL)
+	}
+	if m.name != nil {
+		fields = append(fields, rssfeed.FieldName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RssFeedMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case rssfeed.FieldURL:
+		return m.URL()
+	case rssfeed.FieldName:
+		return m.Name()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RssFeedMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case rssfeed.FieldURL:
+		return m.OldURL(ctx)
+	case rssfeed.FieldName:
+		return m.OldName(ctx)
+	}
+	return nil, fmt.Errorf("unknown RssFeed field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RssFeedMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case rssfeed.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	case rssfeed.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RssFeed field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RssFeedMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RssFeedMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RssFeedMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown RssFeed numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RssFeedMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RssFeedMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RssFeedMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown RssFeed nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RssFeedMutation) ResetField(name string) error {
+	switch name {
+	case rssfeed.FieldURL:
+		m.ResetURL()
+		return nil
+	case rssfeed.FieldName:
+		m.ResetName()
+		return nil
+	}
+	return fmt.Errorf("unknown RssFeed field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RssFeedMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RssFeedMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RssFeedMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RssFeedMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RssFeedMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RssFeedMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RssFeedMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown RssFeed unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RssFeedMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown RssFeed edge %s", name)
+}
+
 // ScheduleMutation represents an operation that mutates the Schedule nodes in the graph.
 type ScheduleMutation struct {
 	config
@@ -5025,6 +6125,910 @@ func (m *SonarrMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *SonarrMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Sonarr edge %s", name)
+}
+
+// StockMutation represents an operation that mutates the Stock nodes in the graph.
+type StockMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	token         *string
+	url           *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Stock, error)
+	predicates    []predicate.Stock
+}
+
+var _ ent.Mutation = (*StockMutation)(nil)
+
+// stockOption allows management of the mutation configuration using functional options.
+type stockOption func(*StockMutation)
+
+// newStockMutation creates new mutation for the Stock entity.
+func newStockMutation(c config, op Op, opts ...stockOption) *StockMutation {
+	m := &StockMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeStock,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withStockID sets the ID field of the mutation.
+func withStockID(id int) stockOption {
+	return func(m *StockMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Stock
+		)
+		m.oldValue = func(ctx context.Context) (*Stock, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Stock.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withStock sets the old Stock of the mutation.
+func withStock(node *Stock) stockOption {
+	return func(m *StockMutation) {
+		m.oldValue = func(context.Context) (*Stock, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m StockMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m StockMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *StockMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *StockMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Stock.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetToken sets the "token" field.
+func (m *StockMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *StockMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the Stock entity.
+// If the Stock object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StockMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *StockMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetURL sets the "url" field.
+func (m *StockMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *StockMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Stock entity.
+// If the Stock object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StockMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *StockMutation) ResetURL() {
+	m.url = nil
+}
+
+// Where appends a list predicates to the StockMutation builder.
+func (m *StockMutation) Where(ps ...predicate.Stock) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the StockMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *StockMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Stock, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *StockMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *StockMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Stock).
+func (m *StockMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *StockMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.token != nil {
+		fields = append(fields, stock.FieldToken)
+	}
+	if m.url != nil {
+		fields = append(fields, stock.FieldURL)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *StockMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case stock.FieldToken:
+		return m.Token()
+	case stock.FieldURL:
+		return m.URL()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *StockMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case stock.FieldToken:
+		return m.OldToken(ctx)
+	case stock.FieldURL:
+		return m.OldURL(ctx)
+	}
+	return nil, fmt.Errorf("unknown Stock field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StockMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case stock.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case stock.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Stock field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *StockMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *StockMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StockMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Stock numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *StockMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *StockMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *StockMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Stock nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *StockMutation) ResetField(name string) error {
+	switch name {
+	case stock.FieldToken:
+		m.ResetToken()
+		return nil
+	case stock.FieldURL:
+		m.ResetURL()
+		return nil
+	}
+	return fmt.Errorf("unknown Stock field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *StockMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *StockMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *StockMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *StockMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *StockMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *StockMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *StockMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Stock unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *StockMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Stock edge %s", name)
+}
+
+// TextSlideMutation represents an operation that mutates the TextSlide nodes in the graph.
+type TextSlideMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	content       *string
+	color         *string
+	bg_color      *string
+	font_size     *int
+	addfont_size  *int
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*TextSlide, error)
+	predicates    []predicate.TextSlide
+}
+
+var _ ent.Mutation = (*TextSlideMutation)(nil)
+
+// textslideOption allows management of the mutation configuration using functional options.
+type textslideOption func(*TextSlideMutation)
+
+// newTextSlideMutation creates new mutation for the TextSlide entity.
+func newTextSlideMutation(c config, op Op, opts ...textslideOption) *TextSlideMutation {
+	m := &TextSlideMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTextSlide,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTextSlideID sets the ID field of the mutation.
+func withTextSlideID(id int) textslideOption {
+	return func(m *TextSlideMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TextSlide
+		)
+		m.oldValue = func(ctx context.Context) (*TextSlide, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TextSlide.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTextSlide sets the old TextSlide of the mutation.
+func withTextSlide(node *TextSlide) textslideOption {
+	return func(m *TextSlideMutation) {
+		m.oldValue = func(context.Context) (*TextSlide, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TextSlideMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TextSlideMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TextSlideMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TextSlideMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TextSlide.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetContent sets the "content" field.
+func (m *TextSlideMutation) SetContent(s string) {
+	m.content = &s
+}
+
+// Content returns the value of the "content" field in the mutation.
+func (m *TextSlideMutation) Content() (r string, exists bool) {
+	v := m.content
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContent returns the old "content" field's value of the TextSlide entity.
+// If the TextSlide object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TextSlideMutation) OldContent(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContent: %w", err)
+	}
+	return oldValue.Content, nil
+}
+
+// ResetContent resets all changes to the "content" field.
+func (m *TextSlideMutation) ResetContent() {
+	m.content = nil
+}
+
+// SetColor sets the "color" field.
+func (m *TextSlideMutation) SetColor(s string) {
+	m.color = &s
+}
+
+// Color returns the value of the "color" field in the mutation.
+func (m *TextSlideMutation) Color() (r string, exists bool) {
+	v := m.color
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldColor returns the old "color" field's value of the TextSlide entity.
+// If the TextSlide object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TextSlideMutation) OldColor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldColor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldColor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldColor: %w", err)
+	}
+	return oldValue.Color, nil
+}
+
+// ResetColor resets all changes to the "color" field.
+func (m *TextSlideMutation) ResetColor() {
+	m.color = nil
+}
+
+// SetBgColor sets the "bg_color" field.
+func (m *TextSlideMutation) SetBgColor(s string) {
+	m.bg_color = &s
+}
+
+// BgColor returns the value of the "bg_color" field in the mutation.
+func (m *TextSlideMutation) BgColor() (r string, exists bool) {
+	v := m.bg_color
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBgColor returns the old "bg_color" field's value of the TextSlide entity.
+// If the TextSlide object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TextSlideMutation) OldBgColor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBgColor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBgColor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBgColor: %w", err)
+	}
+	return oldValue.BgColor, nil
+}
+
+// ResetBgColor resets all changes to the "bg_color" field.
+func (m *TextSlideMutation) ResetBgColor() {
+	m.bg_color = nil
+}
+
+// SetFontSize sets the "font_size" field.
+func (m *TextSlideMutation) SetFontSize(i int) {
+	m.font_size = &i
+	m.addfont_size = nil
+}
+
+// FontSize returns the value of the "font_size" field in the mutation.
+func (m *TextSlideMutation) FontSize() (r int, exists bool) {
+	v := m.font_size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFontSize returns the old "font_size" field's value of the TextSlide entity.
+// If the TextSlide object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TextSlideMutation) OldFontSize(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFontSize is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFontSize requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFontSize: %w", err)
+	}
+	return oldValue.FontSize, nil
+}
+
+// AddFontSize adds i to the "font_size" field.
+func (m *TextSlideMutation) AddFontSize(i int) {
+	if m.addfont_size != nil {
+		*m.addfont_size += i
+	} else {
+		m.addfont_size = &i
+	}
+}
+
+// AddedFontSize returns the value that was added to the "font_size" field in this mutation.
+func (m *TextSlideMutation) AddedFontSize() (r int, exists bool) {
+	v := m.addfont_size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFontSize resets all changes to the "font_size" field.
+func (m *TextSlideMutation) ResetFontSize() {
+	m.font_size = nil
+	m.addfont_size = nil
+}
+
+// Where appends a list predicates to the TextSlideMutation builder.
+func (m *TextSlideMutation) Where(ps ...predicate.TextSlide) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TextSlideMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TextSlideMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TextSlide, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TextSlideMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TextSlideMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TextSlide).
+func (m *TextSlideMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TextSlideMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.content != nil {
+		fields = append(fields, textslide.FieldContent)
+	}
+	if m.color != nil {
+		fields = append(fields, textslide.FieldColor)
+	}
+	if m.bg_color != nil {
+		fields = append(fields, textslide.FieldBgColor)
+	}
+	if m.font_size != nil {
+		fields = append(fields, textslide.FieldFontSize)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TextSlideMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case textslide.FieldContent:
+		return m.Content()
+	case textslide.FieldColor:
+		return m.Color()
+	case textslide.FieldBgColor:
+		return m.BgColor()
+	case textslide.FieldFontSize:
+		return m.FontSize()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TextSlideMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case textslide.FieldContent:
+		return m.OldContent(ctx)
+	case textslide.FieldColor:
+		return m.OldColor(ctx)
+	case textslide.FieldBgColor:
+		return m.OldBgColor(ctx)
+	case textslide.FieldFontSize:
+		return m.OldFontSize(ctx)
+	}
+	return nil, fmt.Errorf("unknown TextSlide field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TextSlideMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case textslide.FieldContent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContent(v)
+		return nil
+	case textslide.FieldColor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetColor(v)
+		return nil
+	case textslide.FieldBgColor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBgColor(v)
+		return nil
+	case textslide.FieldFontSize:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFontSize(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TextSlide field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TextSlideMutation) AddedFields() []string {
+	var fields []string
+	if m.addfont_size != nil {
+		fields = append(fields, textslide.FieldFontSize)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TextSlideMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case textslide.FieldFontSize:
+		return m.AddedFontSize()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TextSlideMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case textslide.FieldFontSize:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFontSize(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TextSlide numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TextSlideMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TextSlideMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TextSlideMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown TextSlide nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TextSlideMutation) ResetField(name string) error {
+	switch name {
+	case textslide.FieldContent:
+		m.ResetContent()
+		return nil
+	case textslide.FieldColor:
+		m.ResetColor()
+		return nil
+	case textslide.FieldBgColor:
+		m.ResetBgColor()
+		return nil
+	case textslide.FieldFontSize:
+		m.ResetFontSize()
+		return nil
+	}
+	return fmt.Errorf("unknown TextSlide field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TextSlideMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TextSlideMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TextSlideMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TextSlideMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TextSlideMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TextSlideMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TextSlideMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown TextSlide unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TextSlideMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown TextSlide edge %s", name)
 }
 
 // UntappdMutation represents an operation that mutates the Untappd nodes in the graph.

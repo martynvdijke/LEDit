@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
@@ -13,8 +14,11 @@ import (
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/radarr"
+	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/stock"
+	"ledit/ent/textslide"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
@@ -84,6 +88,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			calendar.Table:        calendar.ValidColumn,
 			crypto.Table:          crypto.ValidColumn,
 			devicesettings.Table:  devicesettings.ValidColumn,
 			f1.Table:              f1.ValidColumn,
@@ -91,8 +96,11 @@ func checkColumn(t, c string) error {
 			homeassistant.Table:   homeassistant.ValidColumn,
 			image.Table:           image.ValidColumn,
 			radarr.Table:          radarr.ValidColumn,
+			rssfeed.Table:         rssfeed.ValidColumn,
 			schedule.Table:        schedule.ValidColumn,
 			sonarr.Table:          sonarr.ValidColumn,
+			stock.Table:           stock.ValidColumn,
+			textslide.Table:       textslide.ValidColumn,
 			untappd.Table:         untappd.ValidColumn,
 			video.Table:           video.ValidColumn,
 			weather.Table:         weather.ValidColumn,

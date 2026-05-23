@@ -3,15 +3,19 @@
 package ent
 
 import (
+	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
 	"ledit/ent/radarr"
+	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/schema"
 	"ledit/ent/sonarr"
+	"ledit/ent/stock"
+	"ledit/ent/textslide"
 	"ledit/ent/untappd"
 	"ledit/ent/weather"
 )
@@ -20,6 +24,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	calendarFields := schema.Calendar{}.Fields()
+	_ = calendarFields
+	// calendarDescName is the schema descriptor for name field.
+	calendarDescName := calendarFields[1].Descriptor()
+	// calendar.DefaultName holds the default value on creation for the name field.
+	calendar.DefaultName = calendarDescName.Default.(string)
 	cryptoFields := schema.Crypto{}.Fields()
 	_ = cryptoFields
 	// cryptoDescToken is the schema descriptor for token field.
@@ -104,6 +114,12 @@ func init() {
 	radarrDescURL := radarrFields[1].Descriptor()
 	// radarr.DefaultURL holds the default value on creation for the url field.
 	radarr.DefaultURL = radarrDescURL.Default.(string)
+	rssfeedFields := schema.RssFeed{}.Fields()
+	_ = rssfeedFields
+	// rssfeedDescName is the schema descriptor for name field.
+	rssfeedDescName := rssfeedFields[1].Descriptor()
+	// rssfeed.DefaultName holds the default value on creation for the name field.
+	rssfeed.DefaultName = rssfeedDescName.Default.(string)
 	scheduleFields := schema.Schedule{}.Fields()
 	_ = scheduleFields
 	// scheduleDescName is the schema descriptor for name field.
@@ -128,6 +144,30 @@ func init() {
 	sonarrDescURL := sonarrFields[1].Descriptor()
 	// sonarr.DefaultURL holds the default value on creation for the url field.
 	sonarr.DefaultURL = sonarrDescURL.Default.(string)
+	stockFields := schema.Stock{}.Fields()
+	_ = stockFields
+	// stockDescToken is the schema descriptor for token field.
+	stockDescToken := stockFields[0].Descriptor()
+	// stock.DefaultToken holds the default value on creation for the token field.
+	stock.DefaultToken = stockDescToken.Default.(string)
+	// stockDescURL is the schema descriptor for url field.
+	stockDescURL := stockFields[1].Descriptor()
+	// stock.DefaultURL holds the default value on creation for the url field.
+	stock.DefaultURL = stockDescURL.Default.(string)
+	textslideFields := schema.TextSlide{}.Fields()
+	_ = textslideFields
+	// textslideDescColor is the schema descriptor for color field.
+	textslideDescColor := textslideFields[1].Descriptor()
+	// textslide.DefaultColor holds the default value on creation for the color field.
+	textslide.DefaultColor = textslideDescColor.Default.(string)
+	// textslideDescBgColor is the schema descriptor for bg_color field.
+	textslideDescBgColor := textslideFields[2].Descriptor()
+	// textslide.DefaultBgColor holds the default value on creation for the bg_color field.
+	textslide.DefaultBgColor = textslideDescBgColor.Default.(string)
+	// textslideDescFontSize is the schema descriptor for font_size field.
+	textslideDescFontSize := textslideFields[3].Descriptor()
+	// textslide.DefaultFontSize holds the default value on creation for the font_size field.
+	textslide.DefaultFontSize = textslideDescFontSize.Default.(int)
 	untappdFields := schema.Untappd{}.Fields()
 	_ = untappdFields
 	// untappdDescToken is the schema descriptor for token field.

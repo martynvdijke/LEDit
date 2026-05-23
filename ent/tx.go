@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// Calendar is the client for interacting with the Calendar builders.
+	Calendar *CalendarClient
 	// Crypto is the client for interacting with the Crypto builders.
 	Crypto *CryptoClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
@@ -26,10 +28,16 @@ type Tx struct {
 	Image *ImageClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
+	// RssFeed is the client for interacting with the RssFeed builders.
+	RssFeed *RssFeedClient
 	// Schedule is the client for interacting with the Schedule builders.
 	Schedule *ScheduleClient
 	// Sonarr is the client for interacting with the Sonarr builders.
 	Sonarr *SonarrClient
+	// Stock is the client for interacting with the Stock builders.
+	Stock *StockClient
+	// TextSlide is the client for interacting with the TextSlide builders.
+	TextSlide *TextSlideClient
 	// Untappd is the client for interacting with the Untappd builders.
 	Untappd *UntappdClient
 	// Video is the client for interacting with the Video builders.
@@ -167,6 +175,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.Calendar = NewCalendarClient(tx.config)
 	tx.Crypto = NewCryptoClient(tx.config)
 	tx.DeviceSettings = NewDeviceSettingsClient(tx.config)
 	tx.F1 = NewF1Client(tx.config)
@@ -174,8 +183,11 @@ func (tx *Tx) init() {
 	tx.HomeAssistant = NewHomeAssistantClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
 	tx.Radarr = NewRadarrClient(tx.config)
+	tx.RssFeed = NewRssFeedClient(tx.config)
 	tx.Schedule = NewScheduleClient(tx.config)
 	tx.Sonarr = NewSonarrClient(tx.config)
+	tx.Stock = NewStockClient(tx.config)
+	tx.TextSlide = NewTextSlideClient(tx.config)
 	tx.Untappd = NewUntappdClient(tx.config)
 	tx.Video = NewVideoClient(tx.config)
 	tx.Weather = NewWeatherClient(tx.config)
@@ -188,7 +200,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Crypto.QueryXXX(), the query will be executed
+// applies a query, for example: Calendar.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

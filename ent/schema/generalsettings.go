@@ -32,5 +32,9 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("crypto", Crypto.Type),
 		edge.To("schedules", Schedule.Type),
 		edge.To("device_settings", DeviceSettings.Type),
+		edge.To("rss_feeds", RssFeed.Type),
+		edge.To("calendars", Calendar.Type),
+		edge.To("stocks", Stock.Type),
+		edge.To("text_slides", TextSlide.Type),
 	}
 }

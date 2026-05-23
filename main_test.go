@@ -515,6 +515,9 @@ func TestServerAdminDatasourceCreateAndEditCycle(t *testing.T) {
 		{"homeassistant", "hatoken", "haurl"},
 		{"untappd", "utoken", "uurl"},
 		{"crypto", "bitcoin", ""},
+		{"stock", "aapl", "https://finance.yahoo.com"},
+		{"rssfeed", "", "http://example.com/rss"},
+		{"calendar", "", "http://example.com/cal"},
 	}
 
 	for _, tt := range tests {
@@ -528,8 +531,19 @@ func TestServerAdminDatasourceCreateAndEditCycle(t *testing.T) {
 		}
 	}
 
+	// Create a textslide (different fields)
+	tsBody := bytes.NewBufferString("content=TestSlide&color=%23FFFFFF&bg_color=%23000000&font_size=32")
+	tsReq := httptest.NewRequest("POST", "/admin/textslides/new", tsBody)
+	tsReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	tsW := httptest.NewRecorder()
+	srv.ServeHTTP(tsW, tsReq)
+	if tsW.Code != http.StatusFound {
+		t.Errorf("textslide create: expected 302, got %d", tsW.Code)
+	}
+
 	settings := srv.DB.GeneralSettings.Query().
 		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithCrypto().
+		WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
 		OnlyX(testCtx)
 
 	sonarr, _ := settings.Edges.SonarrOrErr()
@@ -539,6 +553,10 @@ func TestServerAdminDatasourceCreateAndEditCycle(t *testing.T) {
 	ha, _ := settings.Edges.HomeAssistantOrErr()
 	untappd, _ := settings.Edges.UntappdOrErr()
 	crypto, _ := settings.Edges.CryptoOrErr()
+	stocks, _ := settings.Edges.StocksOrErr()
+	rssFeeds, _ := settings.Edges.RssFeedsOrErr()
+	calendars, _ := settings.Edges.CalendarsOrErr()
+	textSlides, _ := settings.Edges.TextSlidesOrErr()
 
 	if len(sonarr) != 1 || sonarr[0].Token != "stoken" {
 		t.Error("Sonarr not created correctly")
@@ -560,6 +578,18 @@ func TestServerAdminDatasourceCreateAndEditCycle(t *testing.T) {
 	}
 	if len(crypto) != 1 || crypto[0].Token != "bitcoin" {
 		t.Error("Crypto not created correctly")
+	}
+	if len(stocks) != 1 || stocks[0].Token != "aapl" {
+		t.Error("Stock not created correctly")
+	}
+	if len(rssFeeds) != 1 || rssFeeds[0].URL != "http://example.com/rss" {
+		t.Error("RssFeed not created correctly")
+	}
+	if len(calendars) != 1 || calendars[0].URL != "http://example.com/cal" {
+		t.Error("Calendar not created correctly")
+	}
+	if len(textSlides) != 1 || textSlides[0].Content != "TestSlide" {
+		t.Error("TextSlide not created correctly")
 	}
 }
 
@@ -952,7 +982,7 @@ func TestDSUpdateAndNewForm(t *testing.T) {
 	}
 
 	// Test datasource_form for all types renders correctly
-	types := []string{"sonarr", "radarr", "f1", "weather", "homeassistant", "untappd", "images", "videos", "crypto"}
+	types := []string{"sonarr", "radarr", "f1", "weather", "homeassistant", "untappd", "images", "videos", "crypto", "stock", "rssfeed", "calendar"}
 	for _, ds := range types {
 		req2 := httptest.NewRequest("GET", "/admin/datasources/"+ds+"/new", nil)
 		w2 := httptest.NewRecorder()
@@ -960,6 +990,14 @@ func TestDSUpdateAndNewForm(t *testing.T) {
 		if w2.Code != http.StatusOK {
 			t.Errorf("GET /admin/datasources/%s/new: expected 200, got %d", ds, w2.Code)
 		}
+	}
+
+	// Test textslide form renders correctly
+	tsReq := httptest.NewRequest("GET", "/admin/textslides/new", nil)
+	tsW := httptest.NewRecorder()
+	srv.ServeHTTP(tsW, tsReq)
+	if tsW.Code != http.StatusOK {
+		t.Errorf("GET /admin/textslides/new: expected 200, got %d", tsW.Code)
 	}
 }
 
@@ -1066,5 +1104,298 @@ func TestWebSocketUpgrade(t *testing.T) {
 	json.Unmarshal(msg, &result)
 	if result["format"] != "PNG" && result["format"] != "MP4" && result["error"] != "no datasources configured" {
 		t.Errorf("expected PNG/MP4 format or error message, got %v", result)
+	}
+}
+
+func TestSystemStatsDatasource(t *testing.T) {
+	s := &datasource.SystemStatsDS{}
+	img, err := s.GetPNG()
+	if err != nil {
+		t.Fatalf("SystemStats GetPNG failed: %v", err)
+	}
+	if img.Format != "PNG" {
+		t.Errorf("expected PNG format, got %s", img.Format)
+	}
+	if len(img.Data) == 0 {
+		t.Error("expected non-empty image data")
+	}
+}
+
+func TestRssFeedDatasource(t *testing.T) {
+	s := &datasource.RssFeedDS{URL: "", Name: "TestFeed"}
+	img, err := s.GetPNG()
+	if err != nil {
+		t.Fatalf("RssFeed GetPNG failed: %v", err)
+	}
+	if img.Format != "PNG" {
+		t.Errorf("expected PNG format, got %s", img.Format)
+	}
+}
+
+func TestCalendarDatasource(t *testing.T) {
+	s := &datasource.CalendarDS{URL: "", Name: "TestCal"}
+	img, err := s.GetPNG()
+	if err != nil {
+		t.Fatalf("Calendar GetPNG failed: %v", err)
+	}
+	if img.Format != "PNG" {
+		t.Errorf("expected PNG format, got %s", img.Format)
+	}
+}
+
+func TestStockDatasource(t *testing.T) {
+	s := &datasource.StockDS{Token: "", URL: ""}
+	img, err := s.GetPNG()
+	if err != nil {
+		t.Fatalf("Stock GetPNG failed: %v", err)
+	}
+	if img.Format != "PNG" {
+		t.Errorf("expected PNG format, got %s", img.Format)
+	}
+}
+
+func TestTextSlideDatasource(t *testing.T) {
+	s := &datasource.TextSlideDS{Content: "Hello World", Color: "#FFFFFF", BgColor: "#000000", FontSize: 32}
+	img, err := s.GetPNG()
+	if err != nil {
+		t.Fatalf("TextSlide GetPNG failed: %v", err)
+	}
+	if img.Format != "PNG" {
+		t.Errorf("expected PNG format, got %s", img.Format)
+	}
+	if len(img.Data) == 0 {
+		t.Error("expected non-empty image data")
+	}
+}
+
+func TestServerAdminStockNew(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/datasources/stock/new", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestServerAdminRSSNew(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/datasources/rssfeed/new", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestServerAdminCalendarNew(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/datasources/calendar/new", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestServerAdminTextSlideNew(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	req := httptest.NewRequest("GET", "/admin/textslides/new", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestServerAdminStockCreateAndEditAndDelete(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	body := bytes.NewBufferString("token=aapl&url=https://finance.yahoo.com")
+	req := httptest.NewRequest("POST", "/admin/datasources/stock/new", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+
+	settings := srv.DB.GeneralSettings.Query().WithStocks().OnlyX(testCtx)
+	stocks, _ := settings.Edges.StocksOrErr()
+	if len(stocks) != 1 || stocks[0].Token != "aapl" {
+		t.Errorf("expected 1 stock with token aapl, got %d %v", len(stocks), stocks)
+	}
+
+	editReq := httptest.NewRequest("GET", "/admin/datasources/stock/1/edit", nil)
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, editReq)
+	if w2.Code != http.StatusOK {
+		t.Errorf("expected 200 for edit, got %d", w2.Code)
+	}
+
+	delReq := httptest.NewRequest("POST", "/admin/datasources/stock/1/delete", nil)
+	w3 := httptest.NewRecorder()
+	srv.ServeHTTP(w3, delReq)
+	if w3.Code != http.StatusFound {
+		t.Errorf("expected 302 for delete, got %d", w3.Code)
+	}
+
+	exists := srv.DB.Stock.Query().ExistX(testCtx)
+	if exists {
+		t.Error("expected stock to be deleted")
+	}
+}
+
+func TestServerAdminRSSCreateAndEditAndDelete(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	body := bytes.NewBufferString("url=http://example.com/rss&name=NewsFeed")
+	req := httptest.NewRequest("POST", "/admin/datasources/rssfeed/new", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+
+	settings := srv.DB.GeneralSettings.Query().WithRssFeeds().OnlyX(testCtx)
+	feeds, _ := settings.Edges.RssFeedsOrErr()
+	if len(feeds) != 1 || feeds[0].Name != "NewsFeed" || feeds[0].URL != "http://example.com/rss" {
+		t.Errorf("expected 1 feed with name NewsFeed, got %d %v", len(feeds), feeds)
+	}
+
+	editReq := httptest.NewRequest("GET", "/admin/datasources/rssfeed/1/edit", nil)
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, editReq)
+	if w2.Code != http.StatusOK {
+		t.Errorf("expected 200 for edit, got %d", w2.Code)
+	}
+
+	delReq := httptest.NewRequest("POST", "/admin/datasources/rssfeed/1/delete", nil)
+	w3 := httptest.NewRecorder()
+	srv.ServeHTTP(w3, delReq)
+	if w3.Code != http.StatusFound {
+		t.Errorf("expected 302 for delete, got %d", w3.Code)
+	}
+
+	exists := srv.DB.RssFeed.Query().ExistX(testCtx)
+	if exists {
+		t.Error("expected RSS feed to be deleted")
+	}
+}
+
+func TestServerAdminCalendarCreateAndEditAndDelete(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	body := bytes.NewBufferString("url=http://example.com/cal&name=MyCalendar")
+	req := httptest.NewRequest("POST", "/admin/datasources/calendar/new", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+
+	settings := srv.DB.GeneralSettings.Query().WithCalendars().OnlyX(testCtx)
+	calendars, _ := settings.Edges.CalendarsOrErr()
+	if len(calendars) != 1 || calendars[0].Name != "MyCalendar" || calendars[0].URL != "http://example.com/cal" {
+		t.Errorf("expected 1 calendar with name MyCalendar, got %d %v", len(calendars), calendars)
+	}
+
+	editReq := httptest.NewRequest("GET", "/admin/datasources/calendar/1/edit", nil)
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, editReq)
+	if w2.Code != http.StatusOK {
+		t.Errorf("expected 200 for edit, got %d", w2.Code)
+	}
+
+	delReq := httptest.NewRequest("POST", "/admin/datasources/calendar/1/delete", nil)
+	w3 := httptest.NewRecorder()
+	srv.ServeHTTP(w3, delReq)
+	if w3.Code != http.StatusFound {
+		t.Errorf("expected 302 for delete, got %d", w3.Code)
+	}
+
+	exists := srv.DB.Calendar.Query().ExistX(testCtx)
+	if exists {
+		t.Error("expected calendar to be deleted")
+	}
+}
+
+func TestServerAdminTextSlideCreateAndEditAndDelete(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	body := bytes.NewBufferString("content=Hello&color=%23FFFFFF&bg_color=%23000000&font_size=32")
+	req := httptest.NewRequest("POST", "/admin/textslides/new", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+
+	settings := srv.DB.GeneralSettings.Query().WithTextSlides().OnlyX(testCtx)
+	slides, _ := settings.Edges.TextSlidesOrErr()
+	if len(slides) != 1 || slides[0].Content != "Hello" {
+		t.Errorf("expected 1 text slide with content Hello, got %d %v", len(slides), slides)
+	}
+
+	editReq := httptest.NewRequest("GET", "/admin/textslides/1/edit", nil)
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, editReq)
+	if w2.Code != http.StatusOK {
+		t.Errorf("expected 200 for edit, got %d", w2.Code)
+	}
+
+	delReq := httptest.NewRequest("POST", "/admin/textslides/1/delete", nil)
+	w3 := httptest.NewRecorder()
+	srv.ServeHTTP(w3, delReq)
+	if w3.Code != http.StatusFound {
+		t.Errorf("expected 302 for delete, got %d", w3.Code)
+	}
+
+	exists := srv.DB.TextSlide.Query().ExistX(testCtx)
+	if exists {
+		t.Error("expected text slide to be deleted")
 	}
 }

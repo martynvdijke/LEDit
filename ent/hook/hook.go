@@ -8,6 +8,18 @@ import (
 	"ledit/ent"
 )
 
+// The CalendarFunc type is an adapter to allow the use of ordinary
+// function as Calendar mutator.
+type CalendarFunc func(context.Context, *ent.CalendarMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CalendarFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CalendarMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CalendarMutation", m)
+}
+
 // The CryptoFunc type is an adapter to allow the use of ordinary
 // function as Crypto mutator.
 type CryptoFunc func(context.Context, *ent.CryptoMutation) (ent.Value, error)
@@ -92,6 +104,18 @@ func (f RadarrFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RadarrMutation", m)
 }
 
+// The RssFeedFunc type is an adapter to allow the use of ordinary
+// function as RssFeed mutator.
+type RssFeedFunc func(context.Context, *ent.RssFeedMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RssFeedFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RssFeedMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RssFeedMutation", m)
+}
+
 // The ScheduleFunc type is an adapter to allow the use of ordinary
 // function as Schedule mutator.
 type ScheduleFunc func(context.Context, *ent.ScheduleMutation) (ent.Value, error)
@@ -114,6 +138,30 @@ func (f SonarrFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SonarrMutation", m)
+}
+
+// The StockFunc type is an adapter to allow the use of ordinary
+// function as Stock mutator.
+type StockFunc func(context.Context, *ent.StockMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f StockFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.StockMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StockMutation", m)
+}
+
+// The TextSlideFunc type is an adapter to allow the use of ordinary
+// function as TextSlide mutator.
+type TextSlideFunc func(context.Context, *ent.TextSlideMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TextSlideFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TextSlideMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TextSlideMutation", m)
 }
 
 // The UntappdFunc type is an adapter to allow the use of ordinary

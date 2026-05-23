@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Calendar is the predicate function for calendar builders.
+type Calendar func(*sql.Selector)
+
 // Crypto is the predicate function for crypto builders.
 type Crypto func(*sql.Selector)
 
@@ -27,11 +30,20 @@ type Image func(*sql.Selector)
 // Radarr is the predicate function for radarr builders.
 type Radarr func(*sql.Selector)
 
+// RssFeed is the predicate function for rssfeed builders.
+type RssFeed func(*sql.Selector)
+
 // Schedule is the predicate function for schedule builders.
 type Schedule func(*sql.Selector)
 
 // Sonarr is the predicate function for sonarr builders.
 type Sonarr func(*sql.Selector)
+
+// Stock is the predicate function for stock builders.
+type Stock func(*sql.Selector)
+
+// TextSlide is the predicate function for textslide builders.
+type TextSlide func(*sql.Selector)
 
 // Untappd is the predicate function for untappd builders.
 type Untappd func(*sql.Selector)

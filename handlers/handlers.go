@@ -16,7 +16,7 @@ func (s *Server) IndexHandler(c *gin.Context) {
 }
 
 func (s *Server) AdminDashboard(c *gin.Context) {
-	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().Only(s.Ctx)
+	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().Only(s.Ctx)
 
 	stats := gin.H{
 		"has_settings": err == nil,
@@ -31,6 +31,10 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		imageItems, _ := settings.Edges.ImagesOrErr()
 		videoItems, _ := settings.Edges.VideosOrErr()
 		cryptoItems, _ := settings.Edges.CryptoOrErr()
+		rssItems, _ := settings.Edges.RssFeedsOrErr()
+		calendarItems, _ := settings.Edges.CalendarsOrErr()
+		stockItems, _ := settings.Edges.StocksOrErr()
+		textSlideItems, _ := settings.Edges.TextSlidesOrErr()
 
 		type sourceEntry struct {
 			ID       int
@@ -38,7 +42,10 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 			Endpoint string
 			Token    string
 			URL      string
+			Name     string
 			Path     string
+			Content  string
+			Color    string
 		}
 		var sources []sourceEntry
 		for _, s := range sonarrItems {
@@ -68,21 +75,37 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		for _, cr := range cryptoItems {
 			sources = append(sources, sourceEntry{ID: cr.ID, Type: "Crypto", Endpoint: "crypto", Token: cr.Token, URL: cr.URL})
 		}
+		for _, rs := range rssItems {
+			sources = append(sources, sourceEntry{ID: rs.ID, Type: "RSS Feed", Endpoint: "rssfeed", URL: rs.URL, Name: rs.Name})
+		}
+		for _, cl := range calendarItems {
+			sources = append(sources, sourceEntry{ID: cl.ID, Type: "Calendar", Endpoint: "calendar", URL: cl.URL, Name: cl.Name})
+		}
+		for _, st := range stockItems {
+			sources = append(sources, sourceEntry{ID: st.ID, Type: "Stock", Endpoint: "stock", Token: st.Token, URL: st.URL})
+		}
+		for _, ts := range textSlideItems {
+			sources = append(sources, sourceEntry{ID: ts.ID, Type: "Text Slide", Endpoint: "textslides", Content: ts.Content, Color: ts.Color})
+		}
 
 		stats = gin.H{
-			"has_settings":  true,
-			"settings":      settings,
-			"sources":       sources,
-			"sonarr_count":  len(sonarrItems),
-			"radarr_count":  len(radarrItems),
-			"f1_count":      len(f1Items),
-			"weather_count": len(weatherItems),
-			"ha_count":      len(haItems),
-			"untappd_count": len(untappdItems),
-			"image_count":   len(imageItems),
-			"video_count":   len(videoItems),
-			"crypto_count":  len(cryptoItems),
-			"total_sources": len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems),
+			"has_settings":    true,
+			"settings":        settings,
+			"sources":         sources,
+			"sonarr_count":    len(sonarrItems),
+			"radarr_count":    len(radarrItems),
+			"f1_count":        len(f1Items),
+			"weather_count":   len(weatherItems),
+			"ha_count":        len(haItems),
+			"untappd_count":   len(untappdItems),
+			"image_count":     len(imageItems),
+			"video_count":     len(videoItems),
+			"crypto_count":    len(cryptoItems),
+			"rssfeed_count":   len(rssItems),
+			"calendar_count":  len(calendarItems),
+			"stock_count":     len(stockItems),
+			"textslide_count": len(textSlideItems),
+			"total_sources":   len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems),
 		}
 	}
 	c.HTML(http.StatusOK, "dashboard.html", stats)
@@ -157,6 +180,8 @@ func (s *Server) createTokenURLDS(c *gin.Context, endpoint string) {
 		obj = s.DB.Untappd.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
 	case "crypto":
 		obj = s.DB.Crypto.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
+	case "stock":
+		obj = s.DB.Stock.Create().SetToken(token).SetURL(url).SaveX(s.Ctx)
 	}
 
 	addEdge(endpoint, s, obj)
@@ -184,6 +209,8 @@ func addEdge(endpoint string, s *Server, obj any) {
 		upd.AddUntappd(obj.(*ent.Untappd))
 	case "crypto":
 		upd.AddCrypto(obj.(*ent.Crypto))
+	case "stock":
+		upd.AddStocks(obj.(*ent.Stock))
 	}
 	upd.Exec(s.Ctx)
 }
@@ -208,6 +235,8 @@ func (s *Server) editTokenURLDS(c *gin.Context, endpoint string) {
 		obj, err = s.DB.Untappd.Get(s.Ctx, id)
 	case "crypto":
 		obj, err = s.DB.Crypto.Get(s.Ctx, id)
+	case "stock":
+		obj, err = s.DB.Stock.Get(s.Ctx, id)
 	}
 	if err != nil {
 		c.Redirect(http.StatusFound, "/admin/")
@@ -235,6 +264,8 @@ func (s *Server) updateTokenURLDS(c *gin.Context, endpoint string) {
 		s.DB.Untappd.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
 	case "crypto":
 		s.DB.Crypto.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
+	case "stock":
+		s.DB.Stock.UpdateOneID(id).SetToken(token).SetURL(url).Exec(s.Ctx)
 	}
 	c.Redirect(http.StatusFound, "/admin/")
 }
@@ -256,6 +287,8 @@ func (s *Server) deleteTokenURLDS(c *gin.Context, endpoint string) {
 		s.DB.Untappd.DeleteOneID(id).Exec(s.Ctx)
 	case "crypto":
 		s.DB.Crypto.DeleteOneID(id).Exec(s.Ctx)
+	case "stock":
+		s.DB.Stock.DeleteOneID(id).Exec(s.Ctx)
 	}
 	c.Redirect(http.StatusFound, "/admin/")
 }
@@ -269,6 +302,7 @@ func datasourceTypeName(endpoint string) string {
 		"homeassistant": "HomeAssistant",
 		"untappd":       "Untappd",
 		"crypto":        "Crypto",
+		"stock":         "Stock",
 	}
 	if n, ok := names[endpoint]; ok {
 		return n
@@ -351,6 +385,16 @@ func (s *Server) AdminCryptoCreate(c *gin.Context) { s.createTokenURLDS(c, "cryp
 func (s *Server) AdminCryptoEdit(c *gin.Context)   { s.editTokenURLDS(c, "crypto") }
 func (s *Server) AdminCryptoUpdate(c *gin.Context) { s.updateTokenURLDS(c, "crypto") }
 func (s *Server) AdminCryptoDelete(c *gin.Context) { s.deleteTokenURLDS(c, "crypto") }
+
+// ---------------------------------------------------------------------------
+// Stock
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminStockNew(c *gin.Context)    { s.renderForm(c, "Stock", "stock", false, nil) }
+func (s *Server) AdminStockCreate(c *gin.Context) { s.createTokenURLDS(c, "stock") }
+func (s *Server) AdminStockEdit(c *gin.Context)   { s.editTokenURLDS(c, "stock") }
+func (s *Server) AdminStockUpdate(c *gin.Context) { s.updateTokenURLDS(c, "stock") }
+func (s *Server) AdminStockDelete(c *gin.Context) { s.deleteTokenURLDS(c, "stock") }
 
 // ---------------------------------------------------------------------------
 // DeviceSettings (Phase 7)
@@ -654,5 +698,154 @@ func (s *Server) AdminVideoUpdate(c *gin.Context) {
 func (s *Server) AdminVideoDelete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	s.DB.Video.DeleteOneID(id).Exec(s.Ctx)
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+// ---------------------------------------------------------------------------
+// RSS Feed
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminRssFeedNew(c *gin.Context) {
+	c.HTML(http.StatusOK, "datasource_form.html", gin.H{
+		"type":     "RSS Feed",
+		"endpoint": "rssfeed",
+		"has_name": true,
+	})
+}
+
+func (s *Server) AdminRssFeedCreate(c *gin.Context) {
+	url := c.PostForm("url")
+	name := c.PostForm("name")
+	obj := s.DB.RssFeed.Create().SetURL(url).SetName(name).SaveX(s.Ctx)
+	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
+		s.DB.GeneralSettings.UpdateOne(settings).AddRssFeeds(obj).Exec(s.Ctx)
+	}
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+func (s *Server) AdminRssFeedEdit(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	obj, err := s.DB.RssFeed.Get(s.Ctx, id)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/admin/")
+		return
+	}
+	c.HTML(http.StatusOK, "datasource_form.html", gin.H{
+		"type":     "RSS Feed",
+		"endpoint": "rssfeed",
+		"obj":      obj,
+		"edit":     true,
+		"has_name": true,
+	})
+}
+
+func (s *Server) AdminRssFeedUpdate(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	url := c.PostForm("url")
+	name := c.PostForm("name")
+	s.DB.RssFeed.UpdateOneID(id).SetURL(url).SetName(name).Exec(s.Ctx)
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+func (s *Server) AdminRssFeedDelete(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	s.DB.RssFeed.DeleteOneID(id).Exec(s.Ctx)
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+// ---------------------------------------------------------------------------
+// Calendar
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminCalendarNew(c *gin.Context) {
+	c.HTML(http.StatusOK, "datasource_form.html", gin.H{
+		"type":     "Calendar",
+		"endpoint": "calendar",
+		"has_name": true,
+	})
+}
+
+func (s *Server) AdminCalendarCreate(c *gin.Context) {
+	url := c.PostForm("url")
+	name := c.PostForm("name")
+	obj := s.DB.Calendar.Create().SetURL(url).SetName(name).SaveX(s.Ctx)
+	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
+		s.DB.GeneralSettings.UpdateOne(settings).AddCalendars(obj).Exec(s.Ctx)
+	}
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+func (s *Server) AdminCalendarEdit(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	obj, err := s.DB.Calendar.Get(s.Ctx, id)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/admin/")
+		return
+	}
+	c.HTML(http.StatusOK, "datasource_form.html", gin.H{
+		"type":     "Calendar",
+		"endpoint": "calendar",
+		"obj":      obj,
+		"edit":     true,
+		"has_name": true,
+	})
+}
+
+func (s *Server) AdminCalendarUpdate(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	url := c.PostForm("url")
+	name := c.PostForm("name")
+	s.DB.Calendar.UpdateOneID(id).SetURL(url).SetName(name).Exec(s.Ctx)
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+func (s *Server) AdminCalendarDelete(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	s.DB.Calendar.DeleteOneID(id).Exec(s.Ctx)
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+func (s *Server) AdminTextSlideNew(c *gin.Context) {
+	c.HTML(http.StatusOK, "textslide_form.html", gin.H{})
+}
+
+func (s *Server) AdminTextSlideCreate(c *gin.Context) {
+	content := c.PostForm("content")
+	color := c.PostForm("color")
+	bgColor := c.PostForm("bg_color")
+	fontSize, _ := strconv.Atoi(c.DefaultPostForm("font_size", "32"))
+	obj := s.DB.TextSlide.Create().SetContent(content).SetColor(color).SetBgColor(bgColor).SetFontSize(fontSize).SaveX(s.Ctx)
+	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
+		s.DB.GeneralSettings.UpdateOne(settings).AddTextSlides(obj).Exec(s.Ctx)
+	}
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+func (s *Server) AdminTextSlideEdit(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	obj, err := s.DB.TextSlide.Get(s.Ctx, id)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/admin/")
+		return
+	}
+	c.HTML(http.StatusOK, "textslide_form.html", gin.H{
+		"obj":  obj,
+		"edit": true,
+	})
+}
+
+func (s *Server) AdminTextSlideUpdate(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	content := c.PostForm("content")
+	color := c.PostForm("color")
+	bgColor := c.PostForm("bg_color")
+	fontSize, _ := strconv.Atoi(c.DefaultPostForm("font_size", "32"))
+	s.DB.TextSlide.UpdateOneID(id).SetContent(content).SetColor(color).SetBgColor(bgColor).SetFontSize(fontSize).Exec(s.Ctx)
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+func (s *Server) AdminTextSlideDelete(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	s.DB.TextSlide.DeleteOneID(id).Exec(s.Ctx)
 	c.Redirect(http.StatusFound, "/admin/")
 }

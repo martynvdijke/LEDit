@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LEDit - Live Feed</title>
+    <link rel="manifest" href="/static/pwa/manifest.json">
+    <meta name="theme-color" content="#212529">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="LEDit">
+    <link rel="apple-touch-icon" href="/static/pwa/icon-192.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         #matrix-overlay {
@@ -35,6 +41,63 @@
             justify-content: center;
         }
         .fullscreen-active #matrix-overlay { opacity: 0.08; }
+
+        /* Clock overlay */
+        #clock-overlay {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            z-index: 20;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(0,255,0,0.6);
+            pointer-events: none;
+            opacity: 0.85;
+            letter-spacing: 2px;
+        }
+        .fullscreen-active #clock-overlay {
+            font-size: 2.4rem;
+        }
+
+        /* Marquee text */
+        #marquee-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            padding: 4px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        #marquee-text {
+            display: inline-block;
+            animation: marquee-scroll 15s linear infinite;
+            padding-left: 100%;
+        }
+        @keyframes marquee-scroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        .fullscreen-active #marquee-container {
+            font-size: 1.4rem;
+            padding: 8px 0;
+        }
+
+        /* Image fade transitions */
+        #media-display {
+            transition: opacity 0.4s ease-in-out;
+        }
+        #media-display.fade-out {
+            opacity: 0;
+        }
     </style>
 </head>
 <body>
@@ -96,6 +159,18 @@
                 <li>
                     <a href="/admin/datasources/crypto/new" class="nav-link text-white">Add Crypto</a>
                 </li>
+                <li>
+                    <a href="/admin/datasources/stock/new" class="nav-link text-white">Add Stock</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/rssfeed/new" class="nav-link text-white">Add RSS</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/calendar/new" class="nav-link text-white">Add Calendar</a>
+                </li>
+                <li>
+                    <a href="/admin/textslides/new" class="nav-link text-white">Add Text Slide</a>
+                </li>
             </ul>
         </div>
         <div class="container-fluid p-4">
@@ -109,6 +184,8 @@
                     </div>
                     <div id="media-container" class="mt-2" style="min-height: 100px">
                         <canvas id="matrix-overlay" width="400" height="400"></canvas>
+                        <div id="clock-overlay"></div>
+                        <div id="marquee-container"><span id="marquee-text">LEDit Live</span></div>
                         <img id="media-display" src="" alt="LEDit Feed" style="max-width: 100%; display: none;">
                         <video id="video-display" autoplay muted style="max-width: 100%; display: none;"></video>
                     </div>
@@ -130,11 +207,24 @@
         const nextEl = document.getElementById('next-label');
         const canvas = document.getElementById('matrix-overlay');
         const ctx = canvas.getContext('2d');
+        const clockEl = document.getElementById('clock-overlay');
+        const marqueeEl = document.getElementById('marquee-text');
         let ws = null;
         let reconnectAttempts = 0;
         const maxReconnect = 5;
         let paused = false;
         let fullscreen = false;
+
+        // Update clock overlay every second
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            clockEl.textContent = h + ':' + m + ':' + s;
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
 
         function drawMatrix(displayWidth) {
             const w = 64;
@@ -180,6 +270,7 @@
                 const msg = JSON.parse(event.data);
                 if (msg.source) {
                     sourceEl.textContent = msg.source;
+                    marqueeEl.textContent = ' ' + msg.source + ' | LEDit Live Feed ';
                 }
                 if (msg.next) {
                     nextEl.textContent = 'Next: ' + msg.next;
@@ -196,11 +287,16 @@
                 } else if (msg.format) {
                     videoEl.style.display = 'none';
                     videoEl.pause();
-                    imgEl.style.display = 'block';
-                    imgEl.src = 'data:image/' + msg.format.toLowerCase() + ';base64,' + msg.image;
-                    imgEl.onload = function() {
-                        drawMatrix(imgEl.clientWidth || 400);
-                    };
+                    // Fade transition for images
+                    imgEl.classList.add('fade-out');
+                    setTimeout(function() {
+                        imgEl.style.display = 'block';
+                        imgEl.src = 'data:image/' + msg.format.toLowerCase() + ';base64,' + msg.image;
+                        imgEl.onload = function() {
+                            imgEl.classList.remove('fade-out');
+                            drawMatrix(imgEl.clientWidth || 400);
+                        };
+                    }, 200);
                 }
                 statusEl.textContent = 'Receiving';
             };
@@ -259,6 +355,11 @@
         document.getElementById('btn-fullscreen').addEventListener('click', window.toggleFullscreen);
 
         connect();
+
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/pwa/sw.js');
+        }
     })();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

@@ -11,6 +11,7 @@ import (
 
 	"ledit/ent/migrate"
 
+	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
@@ -18,8 +19,11 @@ import (
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/radarr"
+	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/stock"
+	"ledit/ent/textslide"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
@@ -35,6 +39,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Calendar is the client for interacting with the Calendar builders.
+	Calendar *CalendarClient
 	// Crypto is the client for interacting with the Crypto builders.
 	Crypto *CryptoClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
@@ -49,10 +55,16 @@ type Client struct {
 	Image *ImageClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
+	// RssFeed is the client for interacting with the RssFeed builders.
+	RssFeed *RssFeedClient
 	// Schedule is the client for interacting with the Schedule builders.
 	Schedule *ScheduleClient
 	// Sonarr is the client for interacting with the Sonarr builders.
 	Sonarr *SonarrClient
+	// Stock is the client for interacting with the Stock builders.
+	Stock *StockClient
+	// TextSlide is the client for interacting with the TextSlide builders.
+	TextSlide *TextSlideClient
 	// Untappd is the client for interacting with the Untappd builders.
 	Untappd *UntappdClient
 	// Video is the client for interacting with the Video builders.
@@ -70,6 +82,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Calendar = NewCalendarClient(c.config)
 	c.Crypto = NewCryptoClient(c.config)
 	c.DeviceSettings = NewDeviceSettingsClient(c.config)
 	c.F1 = NewF1Client(c.config)
@@ -77,8 +90,11 @@ func (c *Client) init() {
 	c.HomeAssistant = NewHomeAssistantClient(c.config)
 	c.Image = NewImageClient(c.config)
 	c.Radarr = NewRadarrClient(c.config)
+	c.RssFeed = NewRssFeedClient(c.config)
 	c.Schedule = NewScheduleClient(c.config)
 	c.Sonarr = NewSonarrClient(c.config)
+	c.Stock = NewStockClient(c.config)
+	c.TextSlide = NewTextSlideClient(c.config)
 	c.Untappd = NewUntappdClient(c.config)
 	c.Video = NewVideoClient(c.config)
 	c.Weather = NewWeatherClient(c.config)
@@ -174,6 +190,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		Calendar:        NewCalendarClient(cfg),
 		Crypto:          NewCryptoClient(cfg),
 		DeviceSettings:  NewDeviceSettingsClient(cfg),
 		F1:              NewF1Client(cfg),
@@ -181,8 +198,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		HomeAssistant:   NewHomeAssistantClient(cfg),
 		Image:           NewImageClient(cfg),
 		Radarr:          NewRadarrClient(cfg),
+		RssFeed:         NewRssFeedClient(cfg),
 		Schedule:        NewScheduleClient(cfg),
 		Sonarr:          NewSonarrClient(cfg),
+		Stock:           NewStockClient(cfg),
+		TextSlide:       NewTextSlideClient(cfg),
 		Untappd:         NewUntappdClient(cfg),
 		Video:           NewVideoClient(cfg),
 		Weather:         NewWeatherClient(cfg),
@@ -205,6 +225,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		Calendar:        NewCalendarClient(cfg),
 		Crypto:          NewCryptoClient(cfg),
 		DeviceSettings:  NewDeviceSettingsClient(cfg),
 		F1:              NewF1Client(cfg),
@@ -212,8 +233,11 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		HomeAssistant:   NewHomeAssistantClient(cfg),
 		Image:           NewImageClient(cfg),
 		Radarr:          NewRadarrClient(cfg),
+		RssFeed:         NewRssFeedClient(cfg),
 		Schedule:        NewScheduleClient(cfg),
 		Sonarr:          NewSonarrClient(cfg),
+		Stock:           NewStockClient(cfg),
+		TextSlide:       NewTextSlideClient(cfg),
 		Untappd:         NewUntappdClient(cfg),
 		Video:           NewVideoClient(cfg),
 		Weather:         NewWeatherClient(cfg),
@@ -223,7 +247,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Crypto.
+//		Calendar.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -246,8 +270,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Crypto, c.DeviceSettings, c.F1, c.GeneralSettings, c.HomeAssistant, c.Image,
-		c.Radarr, c.Schedule, c.Sonarr, c.Untappd, c.Video, c.Weather,
+		c.Calendar, c.Crypto, c.DeviceSettings, c.F1, c.GeneralSettings,
+		c.HomeAssistant, c.Image, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
+		c.TextSlide, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Use(hooks...)
 	}
@@ -257,8 +282,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Crypto, c.DeviceSettings, c.F1, c.GeneralSettings, c.HomeAssistant, c.Image,
-		c.Radarr, c.Schedule, c.Sonarr, c.Untappd, c.Video, c.Weather,
+		c.Calendar, c.Crypto, c.DeviceSettings, c.F1, c.GeneralSettings,
+		c.HomeAssistant, c.Image, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
+		c.TextSlide, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -267,6 +293,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *CalendarMutation:
+		return c.Calendar.mutate(ctx, m)
 	case *CryptoMutation:
 		return c.Crypto.mutate(ctx, m)
 	case *DeviceSettingsMutation:
@@ -281,10 +309,16 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Image.mutate(ctx, m)
 	case *RadarrMutation:
 		return c.Radarr.mutate(ctx, m)
+	case *RssFeedMutation:
+		return c.RssFeed.mutate(ctx, m)
 	case *ScheduleMutation:
 		return c.Schedule.mutate(ctx, m)
 	case *SonarrMutation:
 		return c.Sonarr.mutate(ctx, m)
+	case *StockMutation:
+		return c.Stock.mutate(ctx, m)
+	case *TextSlideMutation:
+		return c.TextSlide.mutate(ctx, m)
 	case *UntappdMutation:
 		return c.Untappd.mutate(ctx, m)
 	case *VideoMutation:
@@ -293,6 +327,139 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Weather.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// CalendarClient is a client for the Calendar schema.
+type CalendarClient struct {
+	config
+}
+
+// NewCalendarClient returns a client for the Calendar from the given config.
+func NewCalendarClient(c config) *CalendarClient {
+	return &CalendarClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `calendar.Hooks(f(g(h())))`.
+func (c *CalendarClient) Use(hooks ...Hook) {
+	c.hooks.Calendar = append(c.hooks.Calendar, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `calendar.Intercept(f(g(h())))`.
+func (c *CalendarClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Calendar = append(c.inters.Calendar, interceptors...)
+}
+
+// Create returns a builder for creating a Calendar entity.
+func (c *CalendarClient) Create() *CalendarCreate {
+	mutation := newCalendarMutation(c.config, OpCreate)
+	return &CalendarCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Calendar entities.
+func (c *CalendarClient) CreateBulk(builders ...*CalendarCreate) *CalendarCreateBulk {
+	return &CalendarCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CalendarClient) MapCreateBulk(slice any, setFunc func(*CalendarCreate, int)) *CalendarCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CalendarCreateBulk{err: fmt.Errorf("calling to CalendarClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CalendarCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CalendarCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Calendar.
+func (c *CalendarClient) Update() *CalendarUpdate {
+	mutation := newCalendarMutation(c.config, OpUpdate)
+	return &CalendarUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CalendarClient) UpdateOne(_m *Calendar) *CalendarUpdateOne {
+	mutation := newCalendarMutation(c.config, OpUpdateOne, withCalendar(_m))
+	return &CalendarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CalendarClient) UpdateOneID(id int) *CalendarUpdateOne {
+	mutation := newCalendarMutation(c.config, OpUpdateOne, withCalendarID(id))
+	return &CalendarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Calendar.
+func (c *CalendarClient) Delete() *CalendarDelete {
+	mutation := newCalendarMutation(c.config, OpDelete)
+	return &CalendarDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CalendarClient) DeleteOne(_m *Calendar) *CalendarDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CalendarClient) DeleteOneID(id int) *CalendarDeleteOne {
+	builder := c.Delete().Where(calendar.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CalendarDeleteOne{builder}
+}
+
+// Query returns a query builder for Calendar.
+func (c *CalendarClient) Query() *CalendarQuery {
+	return &CalendarQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCalendar},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Calendar entity by its id.
+func (c *CalendarClient) Get(ctx context.Context, id int) (*Calendar, error) {
+	return c.Query().Where(calendar.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CalendarClient) GetX(ctx context.Context, id int) *Calendar {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *CalendarClient) Hooks() []Hook {
+	return c.hooks.Calendar
+}
+
+// Interceptors returns the client interceptors.
+func (c *CalendarClient) Interceptors() []Interceptor {
+	return c.inters.Calendar
+}
+
+func (c *CalendarClient) mutate(ctx context.Context, m *CalendarMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CalendarCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CalendarUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CalendarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CalendarDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Calendar mutation op: %q", m.Op())
 	}
 }
 
@@ -979,6 +1146,70 @@ func (c *GeneralSettingsClient) QueryDeviceSettings(_m *GeneralSettings) *Device
 	return query
 }
 
+// QueryRssFeeds queries the rss_feeds edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryRssFeeds(_m *GeneralSettings) *RssFeedQuery {
+	query := (&RssFeedClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(rssfeed.Table, rssfeed.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.RssFeedsTable, generalsettings.RssFeedsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCalendars queries the calendars edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryCalendars(_m *GeneralSettings) *CalendarQuery {
+	query := (&CalendarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(calendar.Table, calendar.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.CalendarsTable, generalsettings.CalendarsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStocks queries the stocks edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryStocks(_m *GeneralSettings) *StockQuery {
+	query := (&StockClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(stock.Table, stock.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.StocksTable, generalsettings.StocksColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTextSlides queries the text_slides edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryTextSlides(_m *GeneralSettings) *TextSlideQuery {
+	query := (&TextSlideClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(textslide.Table, textslide.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.TextSlidesTable, generalsettings.TextSlidesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GeneralSettingsClient) Hooks() []Hook {
 	return c.hooks.GeneralSettings
@@ -1403,6 +1634,139 @@ func (c *RadarrClient) mutate(ctx context.Context, m *RadarrMutation) (Value, er
 	}
 }
 
+// RssFeedClient is a client for the RssFeed schema.
+type RssFeedClient struct {
+	config
+}
+
+// NewRssFeedClient returns a client for the RssFeed from the given config.
+func NewRssFeedClient(c config) *RssFeedClient {
+	return &RssFeedClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `rssfeed.Hooks(f(g(h())))`.
+func (c *RssFeedClient) Use(hooks ...Hook) {
+	c.hooks.RssFeed = append(c.hooks.RssFeed, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `rssfeed.Intercept(f(g(h())))`.
+func (c *RssFeedClient) Intercept(interceptors ...Interceptor) {
+	c.inters.RssFeed = append(c.inters.RssFeed, interceptors...)
+}
+
+// Create returns a builder for creating a RssFeed entity.
+func (c *RssFeedClient) Create() *RssFeedCreate {
+	mutation := newRssFeedMutation(c.config, OpCreate)
+	return &RssFeedCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of RssFeed entities.
+func (c *RssFeedClient) CreateBulk(builders ...*RssFeedCreate) *RssFeedCreateBulk {
+	return &RssFeedCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *RssFeedClient) MapCreateBulk(slice any, setFunc func(*RssFeedCreate, int)) *RssFeedCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &RssFeedCreateBulk{err: fmt.Errorf("calling to RssFeedClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*RssFeedCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &RssFeedCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for RssFeed.
+func (c *RssFeedClient) Update() *RssFeedUpdate {
+	mutation := newRssFeedMutation(c.config, OpUpdate)
+	return &RssFeedUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RssFeedClient) UpdateOne(_m *RssFeed) *RssFeedUpdateOne {
+	mutation := newRssFeedMutation(c.config, OpUpdateOne, withRssFeed(_m))
+	return &RssFeedUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RssFeedClient) UpdateOneID(id int) *RssFeedUpdateOne {
+	mutation := newRssFeedMutation(c.config, OpUpdateOne, withRssFeedID(id))
+	return &RssFeedUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for RssFeed.
+func (c *RssFeedClient) Delete() *RssFeedDelete {
+	mutation := newRssFeedMutation(c.config, OpDelete)
+	return &RssFeedDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RssFeedClient) DeleteOne(_m *RssFeed) *RssFeedDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RssFeedClient) DeleteOneID(id int) *RssFeedDeleteOne {
+	builder := c.Delete().Where(rssfeed.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RssFeedDeleteOne{builder}
+}
+
+// Query returns a query builder for RssFeed.
+func (c *RssFeedClient) Query() *RssFeedQuery {
+	return &RssFeedQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRssFeed},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a RssFeed entity by its id.
+func (c *RssFeedClient) Get(ctx context.Context, id int) (*RssFeed, error) {
+	return c.Query().Where(rssfeed.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RssFeedClient) GetX(ctx context.Context, id int) *RssFeed {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *RssFeedClient) Hooks() []Hook {
+	return c.hooks.RssFeed
+}
+
+// Interceptors returns the client interceptors.
+func (c *RssFeedClient) Interceptors() []Interceptor {
+	return c.inters.RssFeed
+}
+
+func (c *RssFeedClient) mutate(ctx context.Context, m *RssFeedMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RssFeedCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RssFeedUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RssFeedUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RssFeedDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown RssFeed mutation op: %q", m.Op())
+	}
+}
+
 // ScheduleClient is a client for the Schedule schema.
 type ScheduleClient struct {
 	config
@@ -1666,6 +2030,272 @@ func (c *SonarrClient) mutate(ctx context.Context, m *SonarrMutation) (Value, er
 		return (&SonarrDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Sonarr mutation op: %q", m.Op())
+	}
+}
+
+// StockClient is a client for the Stock schema.
+type StockClient struct {
+	config
+}
+
+// NewStockClient returns a client for the Stock from the given config.
+func NewStockClient(c config) *StockClient {
+	return &StockClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `stock.Hooks(f(g(h())))`.
+func (c *StockClient) Use(hooks ...Hook) {
+	c.hooks.Stock = append(c.hooks.Stock, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `stock.Intercept(f(g(h())))`.
+func (c *StockClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Stock = append(c.inters.Stock, interceptors...)
+}
+
+// Create returns a builder for creating a Stock entity.
+func (c *StockClient) Create() *StockCreate {
+	mutation := newStockMutation(c.config, OpCreate)
+	return &StockCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Stock entities.
+func (c *StockClient) CreateBulk(builders ...*StockCreate) *StockCreateBulk {
+	return &StockCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *StockClient) MapCreateBulk(slice any, setFunc func(*StockCreate, int)) *StockCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &StockCreateBulk{err: fmt.Errorf("calling to StockClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*StockCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &StockCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Stock.
+func (c *StockClient) Update() *StockUpdate {
+	mutation := newStockMutation(c.config, OpUpdate)
+	return &StockUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StockClient) UpdateOne(_m *Stock) *StockUpdateOne {
+	mutation := newStockMutation(c.config, OpUpdateOne, withStock(_m))
+	return &StockUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StockClient) UpdateOneID(id int) *StockUpdateOne {
+	mutation := newStockMutation(c.config, OpUpdateOne, withStockID(id))
+	return &StockUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Stock.
+func (c *StockClient) Delete() *StockDelete {
+	mutation := newStockMutation(c.config, OpDelete)
+	return &StockDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *StockClient) DeleteOne(_m *Stock) *StockDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *StockClient) DeleteOneID(id int) *StockDeleteOne {
+	builder := c.Delete().Where(stock.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StockDeleteOne{builder}
+}
+
+// Query returns a query builder for Stock.
+func (c *StockClient) Query() *StockQuery {
+	return &StockQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeStock},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Stock entity by its id.
+func (c *StockClient) Get(ctx context.Context, id int) (*Stock, error) {
+	return c.Query().Where(stock.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StockClient) GetX(ctx context.Context, id int) *Stock {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *StockClient) Hooks() []Hook {
+	return c.hooks.Stock
+}
+
+// Interceptors returns the client interceptors.
+func (c *StockClient) Interceptors() []Interceptor {
+	return c.inters.Stock
+}
+
+func (c *StockClient) mutate(ctx context.Context, m *StockMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&StockCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&StockUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&StockUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&StockDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Stock mutation op: %q", m.Op())
+	}
+}
+
+// TextSlideClient is a client for the TextSlide schema.
+type TextSlideClient struct {
+	config
+}
+
+// NewTextSlideClient returns a client for the TextSlide from the given config.
+func NewTextSlideClient(c config) *TextSlideClient {
+	return &TextSlideClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `textslide.Hooks(f(g(h())))`.
+func (c *TextSlideClient) Use(hooks ...Hook) {
+	c.hooks.TextSlide = append(c.hooks.TextSlide, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `textslide.Intercept(f(g(h())))`.
+func (c *TextSlideClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TextSlide = append(c.inters.TextSlide, interceptors...)
+}
+
+// Create returns a builder for creating a TextSlide entity.
+func (c *TextSlideClient) Create() *TextSlideCreate {
+	mutation := newTextSlideMutation(c.config, OpCreate)
+	return &TextSlideCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TextSlide entities.
+func (c *TextSlideClient) CreateBulk(builders ...*TextSlideCreate) *TextSlideCreateBulk {
+	return &TextSlideCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TextSlideClient) MapCreateBulk(slice any, setFunc func(*TextSlideCreate, int)) *TextSlideCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TextSlideCreateBulk{err: fmt.Errorf("calling to TextSlideClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TextSlideCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TextSlideCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TextSlide.
+func (c *TextSlideClient) Update() *TextSlideUpdate {
+	mutation := newTextSlideMutation(c.config, OpUpdate)
+	return &TextSlideUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TextSlideClient) UpdateOne(_m *TextSlide) *TextSlideUpdateOne {
+	mutation := newTextSlideMutation(c.config, OpUpdateOne, withTextSlide(_m))
+	return &TextSlideUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TextSlideClient) UpdateOneID(id int) *TextSlideUpdateOne {
+	mutation := newTextSlideMutation(c.config, OpUpdateOne, withTextSlideID(id))
+	return &TextSlideUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TextSlide.
+func (c *TextSlideClient) Delete() *TextSlideDelete {
+	mutation := newTextSlideMutation(c.config, OpDelete)
+	return &TextSlideDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TextSlideClient) DeleteOne(_m *TextSlide) *TextSlideDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TextSlideClient) DeleteOneID(id int) *TextSlideDeleteOne {
+	builder := c.Delete().Where(textslide.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TextSlideDeleteOne{builder}
+}
+
+// Query returns a query builder for TextSlide.
+func (c *TextSlideClient) Query() *TextSlideQuery {
+	return &TextSlideQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTextSlide},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TextSlide entity by its id.
+func (c *TextSlideClient) Get(ctx context.Context, id int) (*TextSlide, error) {
+	return c.Query().Where(textslide.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TextSlideClient) GetX(ctx context.Context, id int) *TextSlide {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TextSlideClient) Hooks() []Hook {
+	return c.hooks.TextSlide
+}
+
+// Interceptors returns the client interceptors.
+func (c *TextSlideClient) Interceptors() []Interceptor {
+	return c.inters.TextSlide
+}
+
+func (c *TextSlideClient) mutate(ctx context.Context, m *TextSlideMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TextSlideCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TextSlideUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TextSlideUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TextSlideDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TextSlide mutation op: %q", m.Op())
 	}
 }
 
@@ -2071,11 +2701,13 @@ func (c *WeatherClient) mutate(ctx context.Context, m *WeatherMutation) (Value, 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Crypto, DeviceSettings, F1, GeneralSettings, HomeAssistant, Image, Radarr,
-		Schedule, Sonarr, Untappd, Video, Weather []ent.Hook
+		Calendar, Crypto, DeviceSettings, F1, GeneralSettings, HomeAssistant, Image,
+		Radarr, RssFeed, Schedule, Sonarr, Stock, TextSlide, Untappd, Video,
+		Weather []ent.Hook
 	}
 	inters struct {
-		Crypto, DeviceSettings, F1, GeneralSettings, HomeAssistant, Image, Radarr,
-		Schedule, Sonarr, Untappd, Video, Weather []ent.Interceptor
+		Calendar, Crypto, DeviceSettings, F1, GeneralSettings, HomeAssistant, Image,
+		Radarr, RssFeed, Schedule, Sonarr, Stock, TextSlide, Untappd, Video,
+		Weather []ent.Interceptor
 	}
 )

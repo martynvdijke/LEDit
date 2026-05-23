@@ -65,6 +65,18 @@
                 <li>
                     <a href="/admin/datasources/crypto/new" class="nav-link text-white">Add Crypto</a>
                 </li>
+                <li>
+                    <a href="/admin/datasources/stock/new" class="nav-link text-white">Add Stock</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/rssfeed/new" class="nav-link text-white">Add RSS</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/calendar/new" class="nav-link text-white">Add Calendar</a>
+                </li>
+                <li>
+                    <a href="/admin/textslides/new" class="nav-link text-white">Add Text Slide</a>
+                </li>
             </ul>
         </div>
         <div class="container-fluid p-4">
@@ -81,6 +93,15 @@
                     <p>Current: <a href="/{{.obj.Path}}">{{.obj.Path}}</a></p>
                 </div>
                 {{end}}
+                {{else if .has_name}}
+                <div class="mb-3">
+                    <label for="name" class="form-label">Display Name</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{if .obj}}{{.obj.Name}}{{end}}">
+                </div>
+                <div class="mb-3">
+                    <label for="url" class="form-label">URL / Feed URL</label>
+                    <input type="text" class="form-control" id="url" name="url" value="{{if .obj}}{{.obj.URL}}{{end}}">
+                </div>
                 {{else}}
                 <div class="mb-3">
                     <label for="token" class="form-label">API Token</label>

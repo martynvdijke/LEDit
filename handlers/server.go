@@ -173,6 +173,34 @@ func (s *Server) setupRoutes() {
 		admin.GET("/theme", s.AdminThemeEditor)
 		admin.POST("/theme", s.AdminThemeSave)
 
+		// Stock
+		admin.GET("/datasources/stock/new", s.AdminStockNew)
+		admin.POST("/datasources/stock/new", s.AdminStockCreate)
+		admin.GET("/datasources/stock/:id/edit", s.AdminStockEdit)
+		admin.POST("/datasources/stock/:id/edit", s.AdminStockUpdate)
+		admin.POST("/datasources/stock/:id/delete", s.AdminStockDelete)
+
+		// RSS Feed
+		admin.GET("/datasources/rssfeed/new", s.AdminRssFeedNew)
+		admin.POST("/datasources/rssfeed/new", s.AdminRssFeedCreate)
+		admin.GET("/datasources/rssfeed/:id/edit", s.AdminRssFeedEdit)
+		admin.POST("/datasources/rssfeed/:id/edit", s.AdminRssFeedUpdate)
+		admin.POST("/datasources/rssfeed/:id/delete", s.AdminRssFeedDelete)
+
+		// Calendar
+		admin.GET("/datasources/calendar/new", s.AdminCalendarNew)
+		admin.POST("/datasources/calendar/new", s.AdminCalendarCreate)
+		admin.GET("/datasources/calendar/:id/edit", s.AdminCalendarEdit)
+		admin.POST("/datasources/calendar/:id/edit", s.AdminCalendarUpdate)
+		admin.POST("/datasources/calendar/:id/delete", s.AdminCalendarDelete)
+
+		// Text Slides (Phase 4)
+		admin.GET("/textslides/new", s.AdminTextSlideNew)
+		admin.POST("/textslides/new", s.AdminTextSlideCreate)
+		admin.GET("/textslides/:id/edit", s.AdminTextSlideEdit)
+		admin.POST("/textslides/:id/edit", s.AdminTextSlideUpdate)
+		admin.POST("/textslides/:id/delete", s.AdminTextSlideDelete)
+
 		// Analytics (Phase 10)
 		admin.GET("/analytics", s.AdminAnalytics)
 	}

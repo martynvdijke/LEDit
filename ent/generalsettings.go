@@ -54,9 +54,17 @@ type GeneralSettingsEdges struct {
 	Schedules []*Schedule `json:"schedules,omitempty"`
 	// DeviceSettings holds the value of the device_settings edge.
 	DeviceSettings []*DeviceSettings `json:"device_settings,omitempty"`
+	// RssFeeds holds the value of the rss_feeds edge.
+	RssFeeds []*RssFeed `json:"rss_feeds,omitempty"`
+	// Calendars holds the value of the calendars edge.
+	Calendars []*Calendar `json:"calendars,omitempty"`
+	// Stocks holds the value of the stocks edge.
+	Stocks []*Stock `json:"stocks,omitempty"`
+	// TextSlides holds the value of the text_slides edge.
+	TextSlides []*TextSlide `json:"text_slides,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [11]bool
+	loadedTypes [15]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -156,6 +164,42 @@ func (e GeneralSettingsEdges) DeviceSettingsOrErr() ([]*DeviceSettings, error) {
 		return e.DeviceSettings, nil
 	}
 	return nil, &NotLoadedError{edge: "device_settings"}
+}
+
+// RssFeedsOrErr returns the RssFeeds value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) RssFeedsOrErr() ([]*RssFeed, error) {
+	if e.loadedTypes[11] {
+		return e.RssFeeds, nil
+	}
+	return nil, &NotLoadedError{edge: "rss_feeds"}
+}
+
+// CalendarsOrErr returns the Calendars value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) CalendarsOrErr() ([]*Calendar, error) {
+	if e.loadedTypes[12] {
+		return e.Calendars, nil
+	}
+	return nil, &NotLoadedError{edge: "calendars"}
+}
+
+// StocksOrErr returns the Stocks value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) StocksOrErr() ([]*Stock, error) {
+	if e.loadedTypes[13] {
+		return e.Stocks, nil
+	}
+	return nil, &NotLoadedError{edge: "stocks"}
+}
+
+// TextSlidesOrErr returns the TextSlides value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) TextSlidesOrErr() ([]*TextSlide, error) {
+	if e.loadedTypes[14] {
+		return e.TextSlides, nil
+	}
+	return nil, &NotLoadedError{edge: "text_slides"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -280,6 +324,26 @@ func (_m *GeneralSettings) QuerySchedules() *ScheduleQuery {
 // QueryDeviceSettings queries the "device_settings" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryDeviceSettings() *DeviceSettingsQuery {
 	return NewGeneralSettingsClient(_m.config).QueryDeviceSettings(_m)
+}
+
+// QueryRssFeeds queries the "rss_feeds" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryRssFeeds() *RssFeedQuery {
+	return NewGeneralSettingsClient(_m.config).QueryRssFeeds(_m)
+}
+
+// QueryCalendars queries the "calendars" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryCalendars() *CalendarQuery {
+	return NewGeneralSettingsClient(_m.config).QueryCalendars(_m)
+}
+
+// QueryStocks queries the "stocks" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryStocks() *StockQuery {
+	return NewGeneralSettingsClient(_m.config).QueryStocks(_m)
+}
+
+// QueryTextSlides queries the "text_slides" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryTextSlides() *TextSlideQuery {
+	return NewGeneralSettingsClient(_m.config).QueryTextSlides(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

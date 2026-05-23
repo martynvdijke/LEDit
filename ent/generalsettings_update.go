@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
@@ -14,8 +15,11 @@ import (
 	"ledit/ent/image"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
+	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/stock"
+	"ledit/ent/textslide"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
@@ -280,6 +284,66 @@ func (_u *GeneralSettingsUpdate) AddDeviceSettings(v ...*DeviceSettings) *Genera
 	return _u.AddDeviceSettingIDs(ids...)
 }
 
+// AddRssFeedIDs adds the "rss_feeds" edge to the RssFeed entity by IDs.
+func (_u *GeneralSettingsUpdate) AddRssFeedIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddRssFeedIDs(ids...)
+	return _u
+}
+
+// AddRssFeeds adds the "rss_feeds" edges to the RssFeed entity.
+func (_u *GeneralSettingsUpdate) AddRssFeeds(v ...*RssFeed) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRssFeedIDs(ids...)
+}
+
+// AddCalendarIDs adds the "calendars" edge to the Calendar entity by IDs.
+func (_u *GeneralSettingsUpdate) AddCalendarIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddCalendarIDs(ids...)
+	return _u
+}
+
+// AddCalendars adds the "calendars" edges to the Calendar entity.
+func (_u *GeneralSettingsUpdate) AddCalendars(v ...*Calendar) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCalendarIDs(ids...)
+}
+
+// AddStockIDs adds the "stocks" edge to the Stock entity by IDs.
+func (_u *GeneralSettingsUpdate) AddStockIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddStockIDs(ids...)
+	return _u
+}
+
+// AddStocks adds the "stocks" edges to the Stock entity.
+func (_u *GeneralSettingsUpdate) AddStocks(v ...*Stock) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStockIDs(ids...)
+}
+
+// AddTextSlideIDs adds the "text_slides" edge to the TextSlide entity by IDs.
+func (_u *GeneralSettingsUpdate) AddTextSlideIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddTextSlideIDs(ids...)
+	return _u
+}
+
+// AddTextSlides adds the "text_slides" edges to the TextSlide entity.
+func (_u *GeneralSettingsUpdate) AddTextSlides(v ...*TextSlide) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTextSlideIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdate) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -514,6 +578,90 @@ func (_u *GeneralSettingsUpdate) RemoveDeviceSettings(v ...*DeviceSettings) *Gen
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveDeviceSettingIDs(ids...)
+}
+
+// ClearRssFeeds clears all "rss_feeds" edges to the RssFeed entity.
+func (_u *GeneralSettingsUpdate) ClearRssFeeds() *GeneralSettingsUpdate {
+	_u.mutation.ClearRssFeeds()
+	return _u
+}
+
+// RemoveRssFeedIDs removes the "rss_feeds" edge to RssFeed entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveRssFeedIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveRssFeedIDs(ids...)
+	return _u
+}
+
+// RemoveRssFeeds removes "rss_feeds" edges to RssFeed entities.
+func (_u *GeneralSettingsUpdate) RemoveRssFeeds(v ...*RssFeed) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRssFeedIDs(ids...)
+}
+
+// ClearCalendars clears all "calendars" edges to the Calendar entity.
+func (_u *GeneralSettingsUpdate) ClearCalendars() *GeneralSettingsUpdate {
+	_u.mutation.ClearCalendars()
+	return _u
+}
+
+// RemoveCalendarIDs removes the "calendars" edge to Calendar entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveCalendarIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveCalendarIDs(ids...)
+	return _u
+}
+
+// RemoveCalendars removes "calendars" edges to Calendar entities.
+func (_u *GeneralSettingsUpdate) RemoveCalendars(v ...*Calendar) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCalendarIDs(ids...)
+}
+
+// ClearStocks clears all "stocks" edges to the Stock entity.
+func (_u *GeneralSettingsUpdate) ClearStocks() *GeneralSettingsUpdate {
+	_u.mutation.ClearStocks()
+	return _u
+}
+
+// RemoveStockIDs removes the "stocks" edge to Stock entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveStockIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveStockIDs(ids...)
+	return _u
+}
+
+// RemoveStocks removes "stocks" edges to Stock entities.
+func (_u *GeneralSettingsUpdate) RemoveStocks(v ...*Stock) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStockIDs(ids...)
+}
+
+// ClearTextSlides clears all "text_slides" edges to the TextSlide entity.
+func (_u *GeneralSettingsUpdate) ClearTextSlides() *GeneralSettingsUpdate {
+	_u.mutation.ClearTextSlides()
+	return _u
+}
+
+// RemoveTextSlideIDs removes the "text_slides" edge to TextSlide entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveTextSlideIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveTextSlideIDs(ids...)
+	return _u
+}
+
+// RemoveTextSlides removes "text_slides" edges to TextSlide entities.
+func (_u *GeneralSettingsUpdate) RemoveTextSlides(v ...*TextSlide) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTextSlideIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1068,6 +1216,186 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.RssFeedsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.RssFeedsTable,
+			Columns: []string{generalsettings.RssFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(rssfeed.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRssFeedsIDs(); len(nodes) > 0 && !_u.mutation.RssFeedsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.RssFeedsTable,
+			Columns: []string{generalsettings.RssFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(rssfeed.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RssFeedsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.RssFeedsTable,
+			Columns: []string{generalsettings.RssFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(rssfeed.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CalendarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CalendarsTable,
+			Columns: []string{generalsettings.CalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(calendar.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCalendarsIDs(); len(nodes) > 0 && !_u.mutation.CalendarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CalendarsTable,
+			Columns: []string{generalsettings.CalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(calendar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CalendarsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CalendarsTable,
+			Columns: []string{generalsettings.CalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(calendar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.StocksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.StocksTable,
+			Columns: []string{generalsettings.StocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stock.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStocksIDs(); len(nodes) > 0 && !_u.mutation.StocksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.StocksTable,
+			Columns: []string{generalsettings.StocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stock.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StocksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.StocksTable,
+			Columns: []string{generalsettings.StocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stock.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TextSlidesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TextSlidesTable,
+			Columns: []string{generalsettings.TextSlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(textslide.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTextSlidesIDs(); len(nodes) > 0 && !_u.mutation.TextSlidesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TextSlidesTable,
+			Columns: []string{generalsettings.TextSlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(textslide.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TextSlidesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TextSlidesTable,
+			Columns: []string{generalsettings.TextSlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(textslide.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -1330,6 +1658,66 @@ func (_u *GeneralSettingsUpdateOne) AddDeviceSettings(v ...*DeviceSettings) *Gen
 	return _u.AddDeviceSettingIDs(ids...)
 }
 
+// AddRssFeedIDs adds the "rss_feeds" edge to the RssFeed entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddRssFeedIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddRssFeedIDs(ids...)
+	return _u
+}
+
+// AddRssFeeds adds the "rss_feeds" edges to the RssFeed entity.
+func (_u *GeneralSettingsUpdateOne) AddRssFeeds(v ...*RssFeed) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRssFeedIDs(ids...)
+}
+
+// AddCalendarIDs adds the "calendars" edge to the Calendar entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddCalendarIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddCalendarIDs(ids...)
+	return _u
+}
+
+// AddCalendars adds the "calendars" edges to the Calendar entity.
+func (_u *GeneralSettingsUpdateOne) AddCalendars(v ...*Calendar) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCalendarIDs(ids...)
+}
+
+// AddStockIDs adds the "stocks" edge to the Stock entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddStockIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddStockIDs(ids...)
+	return _u
+}
+
+// AddStocks adds the "stocks" edges to the Stock entity.
+func (_u *GeneralSettingsUpdateOne) AddStocks(v ...*Stock) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStockIDs(ids...)
+}
+
+// AddTextSlideIDs adds the "text_slides" edge to the TextSlide entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddTextSlideIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddTextSlideIDs(ids...)
+	return _u
+}
+
+// AddTextSlides adds the "text_slides" edges to the TextSlide entity.
+func (_u *GeneralSettingsUpdateOne) AddTextSlides(v ...*TextSlide) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTextSlideIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdateOne) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -1564,6 +1952,90 @@ func (_u *GeneralSettingsUpdateOne) RemoveDeviceSettings(v ...*DeviceSettings) *
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveDeviceSettingIDs(ids...)
+}
+
+// ClearRssFeeds clears all "rss_feeds" edges to the RssFeed entity.
+func (_u *GeneralSettingsUpdateOne) ClearRssFeeds() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearRssFeeds()
+	return _u
+}
+
+// RemoveRssFeedIDs removes the "rss_feeds" edge to RssFeed entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveRssFeedIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveRssFeedIDs(ids...)
+	return _u
+}
+
+// RemoveRssFeeds removes "rss_feeds" edges to RssFeed entities.
+func (_u *GeneralSettingsUpdateOne) RemoveRssFeeds(v ...*RssFeed) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRssFeedIDs(ids...)
+}
+
+// ClearCalendars clears all "calendars" edges to the Calendar entity.
+func (_u *GeneralSettingsUpdateOne) ClearCalendars() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearCalendars()
+	return _u
+}
+
+// RemoveCalendarIDs removes the "calendars" edge to Calendar entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveCalendarIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveCalendarIDs(ids...)
+	return _u
+}
+
+// RemoveCalendars removes "calendars" edges to Calendar entities.
+func (_u *GeneralSettingsUpdateOne) RemoveCalendars(v ...*Calendar) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCalendarIDs(ids...)
+}
+
+// ClearStocks clears all "stocks" edges to the Stock entity.
+func (_u *GeneralSettingsUpdateOne) ClearStocks() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearStocks()
+	return _u
+}
+
+// RemoveStockIDs removes the "stocks" edge to Stock entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveStockIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveStockIDs(ids...)
+	return _u
+}
+
+// RemoveStocks removes "stocks" edges to Stock entities.
+func (_u *GeneralSettingsUpdateOne) RemoveStocks(v ...*Stock) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStockIDs(ids...)
+}
+
+// ClearTextSlides clears all "text_slides" edges to the TextSlide entity.
+func (_u *GeneralSettingsUpdateOne) ClearTextSlides() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearTextSlides()
+	return _u
+}
+
+// RemoveTextSlideIDs removes the "text_slides" edge to TextSlide entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveTextSlideIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveTextSlideIDs(ids...)
+	return _u
+}
+
+// RemoveTextSlides removes "text_slides" edges to TextSlide entities.
+func (_u *GeneralSettingsUpdateOne) RemoveTextSlides(v ...*TextSlide) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTextSlideIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -2141,6 +2613,186 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(devicesettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.RssFeedsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.RssFeedsTable,
+			Columns: []string{generalsettings.RssFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(rssfeed.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRssFeedsIDs(); len(nodes) > 0 && !_u.mutation.RssFeedsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.RssFeedsTable,
+			Columns: []string{generalsettings.RssFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(rssfeed.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RssFeedsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.RssFeedsTable,
+			Columns: []string{generalsettings.RssFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(rssfeed.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CalendarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CalendarsTable,
+			Columns: []string{generalsettings.CalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(calendar.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCalendarsIDs(); len(nodes) > 0 && !_u.mutation.CalendarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CalendarsTable,
+			Columns: []string{generalsettings.CalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(calendar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CalendarsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CalendarsTable,
+			Columns: []string{generalsettings.CalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(calendar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.StocksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.StocksTable,
+			Columns: []string{generalsettings.StocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stock.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStocksIDs(); len(nodes) > 0 && !_u.mutation.StocksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.StocksTable,
+			Columns: []string{generalsettings.StocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stock.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StocksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.StocksTable,
+			Columns: []string{generalsettings.StocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stock.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TextSlidesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TextSlidesTable,
+			Columns: []string{generalsettings.TextSlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(textslide.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTextSlidesIDs(); len(nodes) > 0 && !_u.mutation.TextSlidesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TextSlidesTable,
+			Columns: []string{generalsettings.TextSlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(textslide.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TextSlidesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TextSlidesTable,
+			Columns: []string{generalsettings.TextSlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(textslide.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

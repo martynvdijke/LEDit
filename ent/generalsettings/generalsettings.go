@@ -42,6 +42,14 @@ const (
 	EdgeSchedules = "schedules"
 	// EdgeDeviceSettings holds the string denoting the device_settings edge name in mutations.
 	EdgeDeviceSettings = "device_settings"
+	// EdgeRssFeeds holds the string denoting the rss_feeds edge name in mutations.
+	EdgeRssFeeds = "rss_feeds"
+	// EdgeCalendars holds the string denoting the calendars edge name in mutations.
+	EdgeCalendars = "calendars"
+	// EdgeStocks holds the string denoting the stocks edge name in mutations.
+	EdgeStocks = "stocks"
+	// EdgeTextSlides holds the string denoting the text_slides edge name in mutations.
+	EdgeTextSlides = "text_slides"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -121,6 +129,34 @@ const (
 	DeviceSettingsInverseTable = "device_settings"
 	// DeviceSettingsColumn is the table column denoting the device_settings relation/edge.
 	DeviceSettingsColumn = "general_settings_device_settings"
+	// RssFeedsTable is the table that holds the rss_feeds relation/edge.
+	RssFeedsTable = "rss_feeds"
+	// RssFeedsInverseTable is the table name for the RssFeed entity.
+	// It exists in this package in order to avoid circular dependency with the "rssfeed" package.
+	RssFeedsInverseTable = "rss_feeds"
+	// RssFeedsColumn is the table column denoting the rss_feeds relation/edge.
+	RssFeedsColumn = "general_settings_rss_feeds"
+	// CalendarsTable is the table that holds the calendars relation/edge.
+	CalendarsTable = "calendars"
+	// CalendarsInverseTable is the table name for the Calendar entity.
+	// It exists in this package in order to avoid circular dependency with the "calendar" package.
+	CalendarsInverseTable = "calendars"
+	// CalendarsColumn is the table column denoting the calendars relation/edge.
+	CalendarsColumn = "general_settings_calendars"
+	// StocksTable is the table that holds the stocks relation/edge.
+	StocksTable = "stocks"
+	// StocksInverseTable is the table name for the Stock entity.
+	// It exists in this package in order to avoid circular dependency with the "stock" package.
+	StocksInverseTable = "stocks"
+	// StocksColumn is the table column denoting the stocks relation/edge.
+	StocksColumn = "general_settings_stocks"
+	// TextSlidesTable is the table that holds the text_slides relation/edge.
+	TextSlidesTable = "text_slides"
+	// TextSlidesInverseTable is the table name for the TextSlide entity.
+	// It exists in this package in order to avoid circular dependency with the "textslide" package.
+	TextSlidesInverseTable = "text_slides"
+	// TextSlidesColumn is the table column denoting the text_slides relation/edge.
+	TextSlidesColumn = "general_settings_text_slides"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -330,6 +366,62 @@ func ByDeviceSettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newDeviceSettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByRssFeedsCount orders the results by rss_feeds count.
+func ByRssFeedsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRssFeedsStep(), opts...)
+	}
+}
+
+// ByRssFeeds orders the results by rss_feeds terms.
+func ByRssFeeds(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRssFeedsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByCalendarsCount orders the results by calendars count.
+func ByCalendarsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCalendarsStep(), opts...)
+	}
+}
+
+// ByCalendars orders the results by calendars terms.
+func ByCalendars(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCalendarsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByStocksCount orders the results by stocks count.
+func ByStocksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStocksStep(), opts...)
+	}
+}
+
+// ByStocks orders the results by stocks terms.
+func ByStocks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStocksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByTextSlidesCount orders the results by text_slides count.
+func ByTextSlidesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTextSlidesStep(), opts...)
+	}
+}
+
+// ByTextSlides orders the results by text_slides terms.
+func ByTextSlides(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTextSlidesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -405,5 +497,33 @@ func newDeviceSettingsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DeviceSettingsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, DeviceSettingsTable, DeviceSettingsColumn),
+	)
+}
+func newRssFeedsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RssFeedsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RssFeedsTable, RssFeedsColumn),
+	)
+}
+func newCalendarsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CalendarsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CalendarsTable, CalendarsColumn),
+	)
+}
+func newStocksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StocksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, StocksTable, StocksColumn),
+	)
+}
+func newTextSlidesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TextSlidesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TextSlidesTable, TextSlidesColumn),
 	)
 }

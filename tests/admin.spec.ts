@@ -60,6 +60,10 @@ test.describe('Sidebar Navigation', () => {
     await expect(page.getByRole('link', { name: 'Add Image' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Add Video' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Add Crypto' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Add Stock' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Add RSS' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Add Calendar' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Add Text Slide' })).toBeVisible();
   });
 
   test('should navigate to settings via sidebar', async ({ page }) => {
@@ -86,6 +90,10 @@ test.describe('Datasource Forms', () => {
     { link: 'Add Image', title: 'New Image Source' },
     { link: 'Add Video', title: 'New Video Source' },
     { link: 'Add Crypto', title: 'New Crypto Source' },
+    { link: 'Add Stock', title: 'New Stock Source' },
+    { link: 'Add RSS', title: 'New RSS Feed Source' },
+    { link: 'Add Calendar', title: 'New Calendar Source' },
+    { link: 'Add Text Slide', title: 'New Text Slide' },
   ];
 
   for (const ds of datasources) {

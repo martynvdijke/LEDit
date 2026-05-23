@@ -9,6 +9,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
@@ -104,6 +106,94 @@ func RenderDict(dataDict map[string]string, width, height int, theme Theme, font
 		return nil, err
 	}
 	return &RenderedImage{Format: "PNG", Data: buf.Bytes()}, nil
+}
+
+func RenderText(text string, width, height int, bgColor, textColor string, fontSize float64, fontPath string) (*RenderedImage, error) {
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+
+	bg := parseHexColor(bgColor, color.RGBA{0, 0, 0, 255})
+	tc := parseHexColor(textColor, color.RGBA{255, 255, 255, 255})
+
+	draw.Draw(img, img.Bounds(), &image.Uniform{bg}, image.Point{}, draw.Src)
+
+	face, fontErr := loadFont(fontPath, fontSize)
+	if fontErr != nil {
+		// Fallback: simple rendering without font
+		drawStringSimple(img, text, 20, height/2, tc)
+	} else {
+		defer face.Close()
+
+		// Word wrap: split into lines that fit within width
+		lines := wordWrap(text, face, width-40)
+
+		// Calculate total text height
+		totalHeight := len(lines) * int(fontSize+8)
+		startY := (height / 2) - (totalHeight / 2) + int(fontSize)
+
+		for i, line := range lines {
+			// Measure line width for centering
+			lineWidth := font.MeasureString(face, line)
+			xOff := (fixed.I(width) - lineWidth) / 2
+			if xOff.Ceil() < 0 {
+				xOff = fixed.I(10)
+			}
+			d := &font.Drawer{
+				Dst:  img,
+				Src:  image.NewUniform(tc),
+				Face: face,
+				Dot:  fixed.Point26_6{X: xOff, Y: fixed.I(startY + i*(int(fontSize)+8))},
+			}
+			d.DrawString(line)
+		}
+	}
+
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		return nil, err
+	}
+	return &RenderedImage{Format: "PNG", Data: buf.Bytes()}, nil
+}
+
+func parseHexColor(hex string, fallback color.RGBA) color.RGBA {
+	if len(hex) < 6 {
+		return fallback
+	}
+	hex = strings.TrimPrefix(hex, "#")
+	if len(hex) != 6 {
+		return fallback
+	}
+	r, _ := strconv.ParseUint(hex[0:2], 16, 8)
+	g, _ := strconv.ParseUint(hex[2:4], 16, 8)
+	b, _ := strconv.ParseUint(hex[4:6], 16, 8)
+	return color.RGBA{uint8(r), uint8(g), uint8(b), 255}
+}
+
+func wordWrap(text string, face font.Face, maxWidth int) []string {
+	var lines []string
+	words := strings.Fields(text)
+	if len(words) == 0 {
+		return []string{text}
+	}
+
+	current := ""
+	for _, word := range words {
+		testLine := current
+		if testLine != "" {
+			testLine += " "
+		}
+		testLine += word
+		w := font.MeasureString(face, testLine).Ceil()
+		if w > maxWidth && current != "" {
+			lines = append(lines, current)
+			current = word
+		} else {
+			current = testLine
+		}
+	}
+	if current != "" {
+		lines = append(lines, current)
+	}
+	return lines
 }
 
 func fillRect(img *image.RGBA, x1, y1, x2, y2 int, c color.Color) {

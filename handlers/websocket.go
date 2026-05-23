@@ -41,7 +41,7 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(c.Request.Context())
+	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().Only(c.Request.Context())
 	if err != nil {
 		log.Printf("Failed to load settings: %v", err)
 		return
@@ -92,6 +92,29 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 	crypto, _ := settings.Edges.CryptoOrErr()
 	for _, cr := range crypto {
 		sources = append(sources, sourceWithName{Name: "Crypto", Source: &datasource.CryptoDS{Token: cr.Token, URL: cr.URL}})
+	}
+
+	stocks, _ := settings.Edges.StocksOrErr()
+	for _, st := range stocks {
+		sources = append(sources, sourceWithName{Name: "Stock", Source: &datasource.StockDS{Token: st.Token, URL: st.URL}})
+	}
+
+	// Built-in: System Stats (always available, no config)
+	sources = append(sources, sourceWithName{Name: "System Stats", Source: &datasource.SystemStatsDS{}})
+
+	rssFeeds, _ := settings.Edges.RssFeedsOrErr()
+	for _, rs := range rssFeeds {
+		sources = append(sources, sourceWithName{Name: "RSS: " + rs.Name, Source: &datasource.RssFeedDS{URL: rs.URL, Name: rs.Name}})
+	}
+
+	calendars, _ := settings.Edges.CalendarsOrErr()
+	for _, cl := range calendars {
+		sources = append(sources, sourceWithName{Name: "Calendar: " + cl.Name, Source: &datasource.CalendarDS{URL: cl.URL, Name: cl.Name}})
+	}
+
+	textSlides, _ := settings.Edges.TextSlidesOrErr()
+	for _, ts := range textSlides {
+		sources = append(sources, sourceWithName{Name: "Text: " + ts.Content, Source: &datasource.TextSlideDS{Content: ts.Content, Color: ts.Color, BgColor: ts.BgColor, FontSize: ts.FontSize}})
 	}
 
 	if settings.Random {

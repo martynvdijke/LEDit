@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
@@ -14,8 +15,11 @@ import (
 	"ledit/ent/image"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
+	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/stock"
+	"ledit/ent/textslide"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
@@ -45,6 +49,10 @@ type GeneralSettingsQuery struct {
 	withCrypto         *CryptoQuery
 	withSchedules      *ScheduleQuery
 	withDeviceSettings *DeviceSettingsQuery
+	withRssFeeds       *RssFeedQuery
+	withCalendars      *CalendarQuery
+	withStocks         *StockQuery
+	withTextSlides     *TextSlideQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -323,6 +331,94 @@ func (_q *GeneralSettingsQuery) QueryDeviceSettings() *DeviceSettingsQuery {
 	return query
 }
 
+// QueryRssFeeds chains the current query on the "rss_feeds" edge.
+func (_q *GeneralSettingsQuery) QueryRssFeeds() *RssFeedQuery {
+	query := (&RssFeedClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(rssfeed.Table, rssfeed.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.RssFeedsTable, generalsettings.RssFeedsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCalendars chains the current query on the "calendars" edge.
+func (_q *GeneralSettingsQuery) QueryCalendars() *CalendarQuery {
+	query := (&CalendarClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(calendar.Table, calendar.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.CalendarsTable, generalsettings.CalendarsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryStocks chains the current query on the "stocks" edge.
+func (_q *GeneralSettingsQuery) QueryStocks() *StockQuery {
+	query := (&StockClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(stock.Table, stock.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.StocksTable, generalsettings.StocksColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTextSlides chains the current query on the "text_slides" edge.
+func (_q *GeneralSettingsQuery) QueryTextSlides() *TextSlideQuery {
+	query := (&TextSlideClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(textslide.Table, textslide.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.TextSlidesTable, generalsettings.TextSlidesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first GeneralSettings entity from the query.
 // Returns a *NotFoundError when no GeneralSettings was found.
 func (_q *GeneralSettingsQuery) First(ctx context.Context) (*GeneralSettings, error) {
@@ -526,6 +622,10 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		withCrypto:         _q.withCrypto.Clone(),
 		withSchedules:      _q.withSchedules.Clone(),
 		withDeviceSettings: _q.withDeviceSettings.Clone(),
+		withRssFeeds:       _q.withRssFeeds.Clone(),
+		withCalendars:      _q.withCalendars.Clone(),
+		withStocks:         _q.withStocks.Clone(),
+		withTextSlides:     _q.withTextSlides.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -653,6 +753,50 @@ func (_q *GeneralSettingsQuery) WithDeviceSettings(opts ...func(*DeviceSettingsQ
 	return _q
 }
 
+// WithRssFeeds tells the query-builder to eager-load the nodes that are connected to
+// the "rss_feeds" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithRssFeeds(opts ...func(*RssFeedQuery)) *GeneralSettingsQuery {
+	query := (&RssFeedClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withRssFeeds = query
+	return _q
+}
+
+// WithCalendars tells the query-builder to eager-load the nodes that are connected to
+// the "calendars" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithCalendars(opts ...func(*CalendarQuery)) *GeneralSettingsQuery {
+	query := (&CalendarClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withCalendars = query
+	return _q
+}
+
+// WithStocks tells the query-builder to eager-load the nodes that are connected to
+// the "stocks" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithStocks(opts ...func(*StockQuery)) *GeneralSettingsQuery {
+	query := (&StockClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withStocks = query
+	return _q
+}
+
+// WithTextSlides tells the query-builder to eager-load the nodes that are connected to
+// the "text_slides" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithTextSlides(opts ...func(*TextSlideQuery)) *GeneralSettingsQuery {
+	query := (&TextSlideClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTextSlides = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -731,7 +875,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [11]bool{
+		loadedTypes = [15]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -743,6 +887,10 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withCrypto != nil,
 			_q.withSchedules != nil,
 			_q.withDeviceSettings != nil,
+			_q.withRssFeeds != nil,
+			_q.withCalendars != nil,
+			_q.withStocks != nil,
+			_q.withTextSlides != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -839,6 +987,34 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			func(n *GeneralSettings, e *DeviceSettings) {
 				n.Edges.DeviceSettings = append(n.Edges.DeviceSettings, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withRssFeeds; query != nil {
+		if err := _q.loadRssFeeds(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.RssFeeds = []*RssFeed{} },
+			func(n *GeneralSettings, e *RssFeed) { n.Edges.RssFeeds = append(n.Edges.RssFeeds, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withCalendars; query != nil {
+		if err := _q.loadCalendars(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Calendars = []*Calendar{} },
+			func(n *GeneralSettings, e *Calendar) { n.Edges.Calendars = append(n.Edges.Calendars, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withStocks; query != nil {
+		if err := _q.loadStocks(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Stocks = []*Stock{} },
+			func(n *GeneralSettings, e *Stock) { n.Edges.Stocks = append(n.Edges.Stocks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTextSlides; query != nil {
+		if err := _q.loadTextSlides(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.TextSlides = []*TextSlide{} },
+			func(n *GeneralSettings, e *TextSlide) { n.Edges.TextSlides = append(n.Edges.TextSlides, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1181,6 +1357,130 @@ func (_q *GeneralSettingsQuery) loadDeviceSettings(ctx context.Context, query *D
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_device_settings" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadRssFeeds(ctx context.Context, query *RssFeedQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *RssFeed)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.RssFeed(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.RssFeedsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_rss_feeds
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_rss_feeds" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_rss_feeds" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadCalendars(ctx context.Context, query *CalendarQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Calendar)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Calendar(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.CalendarsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_calendars
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_calendars" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_calendars" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadStocks(ctx context.Context, query *StockQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Stock)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Stock(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.StocksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_stocks
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_stocks" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_stocks" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadTextSlides(ctx context.Context, query *TextSlideQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *TextSlide)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.TextSlide(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.TextSlidesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_text_slides
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_text_slides" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_text_slides" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -457,6 +457,98 @@ func HasDeviceSettingsWith(preds ...predicate.DeviceSettings) predicate.GeneralS
 	})
 }
 
+// HasRssFeeds applies the HasEdge predicate on the "rss_feeds" edge.
+func HasRssFeeds() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RssFeedsTable, RssFeedsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRssFeedsWith applies the HasEdge predicate on the "rss_feeds" edge with a given conditions (other predicates).
+func HasRssFeedsWith(preds ...predicate.RssFeed) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newRssFeedsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCalendars applies the HasEdge predicate on the "calendars" edge.
+func HasCalendars() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CalendarsTable, CalendarsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCalendarsWith applies the HasEdge predicate on the "calendars" edge with a given conditions (other predicates).
+func HasCalendarsWith(preds ...predicate.Calendar) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newCalendarsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasStocks applies the HasEdge predicate on the "stocks" edge.
+func HasStocks() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, StocksTable, StocksColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStocksWith applies the HasEdge predicate on the "stocks" edge with a given conditions (other predicates).
+func HasStocksWith(preds ...predicate.Stock) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newStocksStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTextSlides applies the HasEdge predicate on the "text_slides" edge.
+func HasTextSlides() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TextSlidesTable, TextSlidesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTextSlidesWith applies the HasEdge predicate on the "text_slides" edge with a given conditions (other predicates).
+func HasTextSlidesWith(preds ...predicate.TextSlide) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newTextSlidesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.GeneralSettings) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.AndPredicates(predicates...))

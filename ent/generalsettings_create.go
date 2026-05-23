@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/f1"
@@ -13,8 +14,11 @@ import (
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/radarr"
+	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/stock"
+	"ledit/ent/textslide"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
@@ -233,6 +237,66 @@ func (_c *GeneralSettingsCreate) AddDeviceSettings(v ...*DeviceSettings) *Genera
 		ids[i] = v[i].ID
 	}
 	return _c.AddDeviceSettingIDs(ids...)
+}
+
+// AddRssFeedIDs adds the "rss_feeds" edge to the RssFeed entity by IDs.
+func (_c *GeneralSettingsCreate) AddRssFeedIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddRssFeedIDs(ids...)
+	return _c
+}
+
+// AddRssFeeds adds the "rss_feeds" edges to the RssFeed entity.
+func (_c *GeneralSettingsCreate) AddRssFeeds(v ...*RssFeed) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddRssFeedIDs(ids...)
+}
+
+// AddCalendarIDs adds the "calendars" edge to the Calendar entity by IDs.
+func (_c *GeneralSettingsCreate) AddCalendarIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddCalendarIDs(ids...)
+	return _c
+}
+
+// AddCalendars adds the "calendars" edges to the Calendar entity.
+func (_c *GeneralSettingsCreate) AddCalendars(v ...*Calendar) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCalendarIDs(ids...)
+}
+
+// AddStockIDs adds the "stocks" edge to the Stock entity by IDs.
+func (_c *GeneralSettingsCreate) AddStockIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddStockIDs(ids...)
+	return _c
+}
+
+// AddStocks adds the "stocks" edges to the Stock entity.
+func (_c *GeneralSettingsCreate) AddStocks(v ...*Stock) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStockIDs(ids...)
+}
+
+// AddTextSlideIDs adds the "text_slides" edge to the TextSlide entity by IDs.
+func (_c *GeneralSettingsCreate) AddTextSlideIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddTextSlideIDs(ids...)
+	return _c
+}
+
+// AddTextSlides adds the "text_slides" edges to the TextSlide entity.
+func (_c *GeneralSettingsCreate) AddTextSlides(v ...*TextSlide) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddTextSlideIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -505,6 +569,70 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(devicesettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.RssFeedsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.RssFeedsTable,
+			Columns: []string{generalsettings.RssFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(rssfeed.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CalendarsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CalendarsTable,
+			Columns: []string{generalsettings.CalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(calendar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.StocksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.StocksTable,
+			Columns: []string{generalsettings.StocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stock.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TextSlidesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TextSlidesTable,
+			Columns: []string{generalsettings.TextSlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(textslide.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
