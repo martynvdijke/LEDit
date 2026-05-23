@@ -113,9 +113,9 @@
                         <video id="video-display" autoplay muted style="max-width: 100%; display: none;"></video>
                     </div>
                     <div class="feed-controls mt-3">
-                        <button id="btn-pause" class="btn btn-warning" onclick="togglePause()">Pause</button>
-                        <button id="btn-skip" class="btn btn-primary" onclick="skipFeed()">Skip</button>
-                        <button id="btn-fullscreen" class="btn btn-secondary" onclick="toggleFullscreen()">Fullscreen</button>
+                        <button id="btn-pause" class="btn btn-warning">Pause</button>
+                        <button id="btn-skip" class="btn btn-primary">Skip</button>
+                        <button id="btn-fullscreen" class="btn btn-secondary">Fullscreen</button>
                     </div>
                 </div>
             </div>
@@ -253,6 +253,10 @@
             }
             fullscreen = !fullscreen;
         };
+
+        document.getElementById('btn-pause').addEventListener('click', window.togglePause);
+        document.getElementById('btn-skip').addEventListener('click', window.skipFeed);
+        document.getElementById('btn-fullscreen').addEventListener('click', window.toggleFullscreen);
 
         connect();
     })();
