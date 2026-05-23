@@ -4,7 +4,12 @@
   "semanticCommits": "enabled",
   "separateMajorMinor": true,
   "separateMultipleMajor": true,
+  "rebaseWhen": "behind-base-branch",
   "packageRules": [
+    {
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "automerge": true
+    },
     {
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "all non-major dependencies",
