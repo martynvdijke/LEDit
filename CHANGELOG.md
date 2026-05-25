@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/martynvdijke/LEDit/compare/v1.0.0...v1.0.1) (2026-05-25)
+
+
+### Bug Fixes
+
+* bump builder image to golang:1.26-alpine for go 1.26.3 compat ([93efde7](https://github.com/martynvdijke/LEDit/commit/93efde7a4707140d8c3972a8692d3d009e75cf1b))
+
 # 1.0.0 (2026-05-25)
 
 
