@@ -28,6 +28,5 @@
   "automerge": true,
   "automergeType": "pr",
   "platformAutomerge": true,
-  "stalePr": true,
-  "stalePrAge": 7
+  "stalePr": true
 }
