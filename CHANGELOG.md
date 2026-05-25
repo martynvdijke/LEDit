@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/martynvdijke/LEDit/compare/v1.0.2...v1.0.3) (2026-05-25)
+
+
+### Bug Fixes
+
+* remove stalePr from renovate.json (removed in Renovate v37) ([04c6a5e](https://github.com/martynvdijke/LEDit/commit/04c6a5e5fe3b67e4cce2a0944f78f264d367733e))
+
 ## [1.0.2](https://github.com/martynvdijke/LEDit/compare/v1.0.1...v1.0.2) (2026-05-25)
 
 
