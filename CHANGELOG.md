@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/martynvdijke/LEDit/compare/v1.0.1...v1.0.2) (2026-05-25)
+
+
+### Bug Fixes
+
+* add packages: write permission to release job for GHCR push ([dc0ad62](https://github.com/martynvdijke/LEDit/commit/dc0ad62a1c3eaa06319825180f9245141c37a4b9))
+
 ## [1.0.1](https://github.com/martynvdijke/LEDit/compare/v1.0.0...v1.0.1) (2026-05-25)
 
 
