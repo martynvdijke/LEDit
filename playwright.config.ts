@@ -22,7 +22,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'rm -rf data && go run .',
+    command: 'rm -rf data && ./ledit',
     url: 'http://localhost:8080',
     reuseExistingServer: false,
   },

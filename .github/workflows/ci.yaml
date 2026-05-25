@@ -47,8 +47,14 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium firefox
 
-      - name: Run Playwright tests
-        run: npm run test:e2e
+      - name: Build Go binary
+        run: go build -o ledit .
+
+      - name: Run Playwright tests (Chromium)
+        run: npx playwright test --project=chromium-desktop
+
+      - name: Run Playwright tests (Firefox)
+        run: npx playwright test --project=firefox-desktop
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
@@ -56,6 +62,3 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-
-      - name: Build
-        run: go build -o ledit .
