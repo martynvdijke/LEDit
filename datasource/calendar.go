@@ -1,0 +1,79 @@
+package datasource
+
+import (
+	"fmt"
+	"strings"
+
+	"ledit/render"
+)
+
+type CalendarDS struct {
+	URL  string
+	Name string
+}
+
+func (c *CalendarDS) GetPNG() (*render.RenderedImage, error) {
+	body, err := apiGet(c.URL, "", nil)
+	if err != nil {
+		return fallbackCalendar(c.Name), nil
+	}
+
+	events := parseICal(string(body))
+	if len(events) == 0 {
+		return fallbackCalendar(c.Name), nil
+	}
+
+	data := map[string]string{}
+	title := "CALENDAR"
+	if c.Name != "" {
+		title = c.Name
+	}
+	data["source"] = title
+
+	for i, ev := range events {
+		if i >= 4 {
+			break
+		}
+		key := fmt.Sprintf("%d", i+1)
+		val := ev
+		if len(val) > 28 {
+			val = val[:28] + "..."
+		}
+		data[key] = val
+	}
+
+	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+}
+
+func parseICal(ical string) []string {
+	var events []string
+	lines := strings.Split(ical, "\n")
+	var summary string
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "SUMMARY:") {
+			summary = strings.TrimPrefix(line, "SUMMARY:")
+		} else if strings.HasPrefix(line, "DTSTART") {
+			if summary != "" {
+				events = append(events, summary)
+				summary = ""
+			}
+		}
+	}
+	if summary != "" {
+		events = append(events, summary)
+	}
+	return events
+}
+
+func fallbackCalendar(name string) *render.RenderedImage {
+	data := map[string]string{
+		"source": "CALENDAR",
+		"status": "unavailable",
+	}
+	if name != "" {
+		data["source"] = name
+	}
+	img, _ := render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return img
+}

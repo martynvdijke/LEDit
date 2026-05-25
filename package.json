@@ -1,0 +1,12 @@
+{
+  "name": "ledit",
+  "version": "0.1.0",
+  "description": "A LED matrix infotainment system",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.15.0"
+  }
+}

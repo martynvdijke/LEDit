@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} {{.type}}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="d-flex">
+        <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white" style="width: 250px; min-height: 100vh;">
+            <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none">
+                <span class="fs-4">LEDit</span>
+            </a>
+            <hr>
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li class="nav-item">
+                    <a href="/" class="nav-link text-white">Home</a>
+                </li>
+                <li>
+                    <a href="/admin/" class="nav-link text-white">Dashboard</a>
+                </li>
+                <li>
+                    <a href="/admin/settings" class="nav-link text-white">Settings</a>
+                </li>
+                <li>
+                    <a href="/admin/schedules" class="nav-link text-white">Schedules</a>
+                </li>
+                <li>
+                    <a href="/admin/devices" class="nav-link text-white">Devices</a>
+                </li>
+                <li>
+                    <a href="/admin/theme" class="nav-link text-white">Theme</a>
+                </li>
+                <li>
+                    <a href="/admin/analytics" class="nav-link text-white">Analytics</a>
+                </li>
+                <li>
+                    <a href="/admin/notifications" class="nav-link text-white">Notifications</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/sonarr/new" class="nav-link text-white">Add Sonarr</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/radarr/new" class="nav-link text-white">Add Radarr</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/f1/new" class="nav-link text-white">Add F1</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/weather/new" class="nav-link text-white">Add Weather</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/homeassistant/new" class="nav-link text-white">Add HA</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/untappd/new" class="nav-link text-white">Add Untappd</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/images/new" class="nav-link text-white">Add Image</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/videos/new" class="nav-link text-white">Add Video</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/crypto/new" class="nav-link text-white">Add Crypto</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/stock/new" class="nav-link text-white">Add Stock</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/rssfeed/new" class="nav-link text-white">Add RSS</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/calendar/new" class="nav-link text-white">Add Calendar</a>
+                </li>
+                <li>
+                    <a href="/admin/textslides/new" class="nav-link text-white">Add Text Slide</a>
+                </li>
+            </ul>
+        </div>
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} {{.type}} Source</h1>
+            <form method="POST" action="/admin/datasources/{{.endpoint}}{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4" {{if .is_media}}enctype="multipart/form-data"{{end}}>
+                {{if .is_media}}
+                <div class="mb-3">
+                    <label for="file" class="form-label">File</label>
+                    <input type="file" class="form-control" id="file" name="file" accept="{{.extensions}}" {{if not .edit}}required{{end}}>
+                    {{if .edit}}<small class="text-muted">Leave empty to keep current file</small>{{end}}
+                </div>
+                {{if .obj.Path}}
+                <div class="mb-3">
+                    <p>Current: <a href="/{{.obj.Path}}">{{.obj.Path}}</a></p>
+                </div>
+                {{end}}
+                {{else if .has_name}}
+                <div class="mb-3">
+                    <label for="name" class="form-label">Display Name</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{if .obj}}{{.obj.Name}}{{end}}">
+                </div>
+                <div class="mb-3">
+                    <label for="url" class="form-label">URL / Feed URL</label>
+                    <input type="text" class="form-control" id="url" name="url" value="{{if .obj}}{{.obj.URL}}{{end}}">
+                </div>
+                {{else}}
+                <div class="mb-3">
+                    <label for="token" class="form-label">API Token</label>
+                    <input type="text" class="form-control" id="token" name="token" value="{{if .obj}}{{.obj.Token}}{{end}}">
+                </div>
+                <div class="mb-3">
+                    <label for="url" class="form-label">URL</label>
+                    <input type="text" class="form-control" id="url" name="url" value="{{if .obj}}{{.obj.URL}}{{end}}">
+                </div>
+                {{end}}
+                <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                <a href="/admin/" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

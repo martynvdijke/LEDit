@@ -1,0 +1,19 @@
+[project]
+name = "ledit-client"
+version = "0.1.0"
+description = "A LED matrix infotainment system client"
+authors = [{ name = "Martyn van Dijke", email = "martijnvdijke600@gmail.com" }]
+requires-python = "~=3.11"
+readme = "README.md"
+license = "MIT"
+
+[dependency-groups]
+dev = [
+    "invoke>=2.2.0",
+    "pytest>=8.3.5",
+    "ruff>=0.11.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

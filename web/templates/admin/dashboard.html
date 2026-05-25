@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="d-flex">
+        <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white" style="width: 250px; min-height: 100vh;">
+            <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none">
+                <span class="fs-4">LEDit</span>
+            </a>
+            <hr>
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li class="nav-item">
+                    <a href="/" class="nav-link text-white">Home</a>
+                </li>
+                <li>
+                    <a href="/admin/" class="nav-link text-white">Dashboard</a>
+                </li>
+                <li>
+                    <a href="/admin/settings" class="nav-link text-white">Settings</a>
+                </li>
+                <li>
+                    <a href="/admin/schedules" class="nav-link text-white">Schedules</a>
+                </li>
+                <li>
+                    <a href="/admin/devices" class="nav-link text-white">Devices</a>
+                </li>
+                <li>
+                    <a href="/admin/theme" class="nav-link text-white">Theme</a>
+                </li>
+                <li>
+                    <a href="/admin/analytics" class="nav-link text-white">Analytics</a>
+                </li>
+                <li>
+                    <a href="/admin/notifications" class="nav-link text-white">Notifications</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/sonarr/new" class="nav-link text-white">Add Sonarr</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/radarr/new" class="nav-link text-white">Add Radarr</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/f1/new" class="nav-link text-white">Add F1</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/weather/new" class="nav-link text-white">Add Weather</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/homeassistant/new" class="nav-link text-white">Add HA</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/untappd/new" class="nav-link text-white">Add Untappd</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/images/new" class="nav-link text-white">Add Image</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/videos/new" class="nav-link text-white">Add Video</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/crypto/new" class="nav-link text-white">Add Crypto</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/stock/new" class="nav-link text-white">Add Stock</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/rssfeed/new" class="nav-link text-white">Add RSS</a>
+                </li>
+                <li>
+                    <a href="/admin/datasources/calendar/new" class="nav-link text-white">Add Calendar</a>
+                </li>
+                <li>
+                    <a href="/admin/textslides/new" class="nav-link text-white">Add Text Slide</a>
+                </li>
+            </ul>
+        </div>
+        <div class="container-fluid p-4">
+            <h1>Admin Dashboard</h1>
+            {{if .has_settings}}
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Sources</h5>
+                            <p class="card-text display-6">{{.total_sources}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Sonarr</h5>
+                            <p class="card-text display-6">{{.sonarr_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Radarr</h5>
+                            <p class="card-text display-6">{{.radarr_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">F1</h5>
+                            <p class="card-text display-6">{{.f1_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-secondary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Weather</h5>
+                            <p class="card-text display-6">{{.weather_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-dark mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">HA</h5>
+                            <p class="card-text display-6">{{.ha_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Untappd</h5>
+                            <p class="card-text display-6">{{.untappd_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Images</h5>
+                            <p class="card-text display-6">{{.image_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Videos</h5>
+                            <p class="card-text display-6">{{.video_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Crypto</h5>
+                            <p class="card-text display-6">{{.crypto_count}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="mt-5">Datasources</h2>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Token / Path</th>
+                        <th>URL</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .sources}}
+                    <tr>
+                        <td>{{.ID}}</td>
+                        <td>{{.Type}}</td>
+                        <td>{{if .Token}}{{.Token}}{{else}}{{.Path}}{{end}}</td>
+                        <td>{{.URL}}</td>
+                        <td>
+                            <a href="/admin/datasources/{{.Endpoint}}/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            <form method="POST" action="/admin/datasources/{{.Endpoint}}/{{.ID}}/delete" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="5" class="text-muted">No datasources configured.</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            {{else}}
+            <p class="text-muted mt-4">No settings configured yet. <a href="/admin/settings">Configure settings</a></p>
+            {{end}}
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
