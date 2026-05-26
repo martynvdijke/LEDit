@@ -511,15 +511,15 @@ wheels = [
 
 [[package]]
 name = "django-bootstrap5"
-version = "23.4"
+version = "26.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "5.2.14", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "django", version = "6.0.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/85/21/b245532712dc59167fbe3553523cfb9599c9e3d23aa803d856842d83dc93/django-bootstrap5-23.4.tar.gz", hash = "sha256:fbf9942a17e1f48b4142e78df9e85afb65e4066a20e38ec7c497d36ae5ef7256", size = 53555, upload-time = "2023-12-28T14:27:36.607Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f8/31/bd9e6acdf959d5e19757026c206a6bdfceec3001ee85bb1f9799ce304f87/django_bootstrap5-26.2.tar.gz", hash = "sha256:12331059c8230ba372ffaad990a706151e1ad8f721a870aa2e862cf6746f0d33", size = 51468, upload-time = "2026-02-08T11:47:19.067Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ff/07/037a435b774dfae9c114a16b89967c7bae673284b89baa7142a927556806/django_bootstrap5-23.4-py3-none-any.whl", hash = "sha256:5181bf1e97afae6211e963f28f48d4a90c937a3b036b3f752f52260f0029f3bc", size = 25137, upload-time = "2023-12-28T14:27:34.971Z" },
+    { url = "https://files.pythonhosted.org/packages/7a/79/d4b547849a86f450b1f1fb77f306da5d7844aba45f4aa10450d375fc26f5/django_bootstrap5-26.2-py3-none-any.whl", hash = "sha256:179af37c59f4e9b1070fc650f30961c5d903c2c0ad60280ad5b63ed394f68658", size = 26851, upload-time = "2026-02-08T11:47:20.198Z" },
 ]
 
 [[package]]
@@ -812,7 +812,7 @@ dev = [
 requires-dist = [
     { name = "channels", extras = ["daphne"], specifier = ">=4.1.0,<5" },
     { name = "django", specifier = ">=5.1.7" },
-    { name = "django-bootstrap5", specifier = "~=23.4" },
+    { name = "django-bootstrap5", specifier = "~=26.2" },
     { name = "django-cors-headers", specifier = ">=4.3.1,<5" },
     { name = "django-filer", specifier = ">=3.1.1,<4" },
     { name = "djangorestframework", specifier = ">=3.15.1,<4" },
