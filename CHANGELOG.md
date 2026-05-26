@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/martynvdijke/LEDit/compare/v1.0.4...v1.1.0) (2026-05-26)
+
+
+### Features
+
+* remove orphaned Python Django code and empty Go scaffolding ([2b76a66](https://github.com/martynvdijke/LEDit/commit/2b76a664eee0571b5b39af66317e56f5bc6cd6d4))
+
 ## [1.0.4](https://github.com/martynvdijke/LEDit/compare/v1.0.3...v1.0.4) (2026-05-26)
 
 
