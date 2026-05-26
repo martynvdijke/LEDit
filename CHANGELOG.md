@@ -5,6 +5,13 @@
 
 * invalid timezone UTC+1, use Europe/Amsterdam instead ([8463b7d](https://github.com/martynvdijke/LEDit/commit/8463b7d105694941bf572e8573603b41f6dd3445))
 
+## [1.0.4](https://github.com/martynvdijke/LEDit/compare/v1.0.3...v1.0.4) (2026-05-26)
+
+
+### Bug Fixes
+
+* invalid timezone UTC+1, use Europe/Amsterdam instead ([8463b7d](https://github.com/martynvdijke/LEDit/commit/8463b7d105694941bf572e8573603b41f6dd3445))
+
 ## [1.0.3](https://github.com/martynvdijke/LEDit/compare/v1.0.2...v1.0.3) (2026-05-25)
 
 
