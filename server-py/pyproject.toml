@@ -15,7 +15,7 @@ dependencies = [
     "homeassistant-api>=5",
     "pyarr>=5.2.0,<6",
     "untappd>=0.5,<0.6",
-    "icalendar>=5.0.12,<6",
+    "icalendar>=7.1.2,<8",
     "django>=5.1.7",
 ]
 
