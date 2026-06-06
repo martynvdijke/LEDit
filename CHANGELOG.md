@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/martynvdijke/LEDit/compare/v1.2.0...v1.3.0) (2026-06-06)
+
+
+### Features
+
+* add Umami self-hosted analytics support with admin settings ([2011a66](https://github.com/martynvdijke/LEDit/commit/2011a66fb650fa5913e9d6faf27adb53d34f662b))
+
 # [1.2.0](https://github.com/martynvdijke/LEDit/compare/v1.1.0...v1.2.0) (2026-06-06)
 
 
