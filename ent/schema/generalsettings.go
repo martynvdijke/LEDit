@@ -38,5 +38,6 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("text_slides", TextSlide.Type),
 		edge.To("email_settings", EmailSettings.Type),
 		edge.To("ai_settings", AISettings.Type),
+		edge.To("umami_settings", UmamiSettings.Type),
 	}
 }

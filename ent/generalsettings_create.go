@@ -21,6 +21,7 @@ import (
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
 	"ledit/ent/textslide"
+	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
@@ -329,6 +330,21 @@ func (_c *GeneralSettingsCreate) AddAiSettings(v ...*AISettings) *GeneralSetting
 		ids[i] = v[i].ID
 	}
 	return _c.AddAiSettingIDs(ids...)
+}
+
+// AddUmamiSettingIDs adds the "umami_settings" edge to the UmamiSettings entity by IDs.
+func (_c *GeneralSettingsCreate) AddUmamiSettingIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddUmamiSettingIDs(ids...)
+	return _c
+}
+
+// AddUmamiSettings adds the "umami_settings" edges to the UmamiSettings entity.
+func (_c *GeneralSettingsCreate) AddUmamiSettings(v ...*UmamiSettings) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddUmamiSettingIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -697,6 +713,22 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(aisettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.UmamiSettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UmamiSettingsTable,
+			Columns: []string{generalsettings.UmamiSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(umamisettings.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

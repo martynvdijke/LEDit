@@ -212,6 +212,18 @@ func (f TextSlideFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TextSlideMutation", m)
 }
 
+// The UmamiSettingsFunc type is an adapter to allow the use of ordinary
+// function as UmamiSettings mutator.
+type UmamiSettingsFunc func(context.Context, *ent.UmamiSettingsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UmamiSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UmamiSettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UmamiSettingsMutation", m)
+}
+
 // The UntappdFunc type is an adapter to allow the use of ordinary
 // function as Untappd mutator.
 type UntappdFunc func(context.Context, *ent.UntappdMutation) (ent.Value, error)

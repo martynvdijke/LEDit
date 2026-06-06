@@ -54,6 +54,8 @@ const (
 	EdgeEmailSettings = "email_settings"
 	// EdgeAiSettings holds the string denoting the ai_settings edge name in mutations.
 	EdgeAiSettings = "ai_settings"
+	// EdgeUmamiSettings holds the string denoting the umami_settings edge name in mutations.
+	EdgeUmamiSettings = "umami_settings"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -175,6 +177,13 @@ const (
 	AiSettingsInverseTable = "ai_settings"
 	// AiSettingsColumn is the table column denoting the ai_settings relation/edge.
 	AiSettingsColumn = "general_settings_ai_settings"
+	// UmamiSettingsTable is the table that holds the umami_settings relation/edge.
+	UmamiSettingsTable = "umami_settings"
+	// UmamiSettingsInverseTable is the table name for the UmamiSettings entity.
+	// It exists in this package in order to avoid circular dependency with the "umamisettings" package.
+	UmamiSettingsInverseTable = "umami_settings"
+	// UmamiSettingsColumn is the table column denoting the umami_settings relation/edge.
+	UmamiSettingsColumn = "general_settings_umami_settings"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -468,6 +477,20 @@ func ByAiSettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAiSettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByUmamiSettingsCount orders the results by umami_settings count.
+func ByUmamiSettingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUmamiSettingsStep(), opts...)
+	}
+}
+
+// ByUmamiSettings orders the results by umami_settings terms.
+func ByUmamiSettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUmamiSettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -585,5 +608,12 @@ func newAiSettingsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AiSettingsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, AiSettingsTable, AiSettingsColumn),
+	)
+}
+func newUmamiSettingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UmamiSettingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, UmamiSettingsTable, UmamiSettingsColumn),
 	)
 }

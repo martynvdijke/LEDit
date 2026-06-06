@@ -57,6 +57,9 @@ type Stock func(*sql.Selector)
 // TextSlide is the predicate function for textslide builders.
 type TextSlide func(*sql.Selector)
 
+// UmamiSettings is the predicate function for umamisettings builders.
+type UmamiSettings func(*sql.Selector)
+
 // Untappd is the predicate function for untappd builders.
 type Untappd func(*sql.Selector)
 

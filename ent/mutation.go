@@ -24,6 +24,7 @@ import (
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
 	"ledit/ent/textslide"
+	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
@@ -60,6 +61,7 @@ const (
 	TypeSonarr          = "Sonarr"
 	TypeStock           = "Stock"
 	TypeTextSlide       = "TextSlide"
+	TypeUmamiSettings   = "UmamiSettings"
 	TypeUntappd         = "Untappd"
 	TypeVideo           = "Video"
 	TypeWeather         = "Weather"
@@ -3230,6 +3232,9 @@ type GeneralSettingsMutation struct {
 	ai_settings            map[int]struct{}
 	removedai_settings     map[int]struct{}
 	clearedai_settings     bool
+	umami_settings         map[int]struct{}
+	removedumami_settings  map[int]struct{}
+	clearedumami_settings  bool
 	done                   bool
 	oldValue               func(context.Context) (*GeneralSettings, error)
 	predicates             []predicate.GeneralSettings
@@ -4455,6 +4460,60 @@ func (m *GeneralSettingsMutation) ResetAiSettings() {
 	m.removedai_settings = nil
 }
 
+// AddUmamiSettingIDs adds the "umami_settings" edge to the UmamiSettings entity by ids.
+func (m *GeneralSettingsMutation) AddUmamiSettingIDs(ids ...int) {
+	if m.umami_settings == nil {
+		m.umami_settings = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.umami_settings[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUmamiSettings clears the "umami_settings" edge to the UmamiSettings entity.
+func (m *GeneralSettingsMutation) ClearUmamiSettings() {
+	m.clearedumami_settings = true
+}
+
+// UmamiSettingsCleared reports if the "umami_settings" edge to the UmamiSettings entity was cleared.
+func (m *GeneralSettingsMutation) UmamiSettingsCleared() bool {
+	return m.clearedumami_settings
+}
+
+// RemoveUmamiSettingIDs removes the "umami_settings" edge to the UmamiSettings entity by IDs.
+func (m *GeneralSettingsMutation) RemoveUmamiSettingIDs(ids ...int) {
+	if m.removedumami_settings == nil {
+		m.removedumami_settings = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.umami_settings, ids[i])
+		m.removedumami_settings[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUmamiSettings returns the removed IDs of the "umami_settings" edge to the UmamiSettings entity.
+func (m *GeneralSettingsMutation) RemovedUmamiSettingsIDs() (ids []int) {
+	for id := range m.removedumami_settings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UmamiSettingsIDs returns the "umami_settings" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) UmamiSettingsIDs() (ids []int) {
+	for id := range m.umami_settings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUmamiSettings resets all changes to the "umami_settings" edge.
+func (m *GeneralSettingsMutation) ResetUmamiSettings() {
+	m.umami_settings = nil
+	m.clearedumami_settings = false
+	m.removedumami_settings = nil
+}
+
 // Where appends a list predicates to the GeneralSettingsMutation builder.
 func (m *GeneralSettingsMutation) Where(ps ...predicate.GeneralSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -4678,7 +4737,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 18)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -4729,6 +4788,9 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.ai_settings != nil {
 		edges = append(edges, generalsettings.EdgeAiSettings)
+	}
+	if m.umami_settings != nil {
+		edges = append(edges, generalsettings.EdgeUmamiSettings)
 	}
 	return edges
 }
@@ -4839,13 +4901,19 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeUmamiSettings:
+		ids := make([]ent.Value, 0, len(m.umami_settings))
+		for id := range m.umami_settings {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 18)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -4896,6 +4964,9 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removedai_settings != nil {
 		edges = append(edges, generalsettings.EdgeAiSettings)
+	}
+	if m.removedumami_settings != nil {
+		edges = append(edges, generalsettings.EdgeUmamiSettings)
 	}
 	return edges
 }
@@ -5006,13 +5077,19 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeUmamiSettings:
+		ids := make([]ent.Value, 0, len(m.removedumami_settings))
+		for id := range m.removedumami_settings {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 18)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -5064,6 +5141,9 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	if m.clearedai_settings {
 		edges = append(edges, generalsettings.EdgeAiSettings)
 	}
+	if m.clearedumami_settings {
+		edges = append(edges, generalsettings.EdgeUmamiSettings)
+	}
 	return edges
 }
 
@@ -5105,6 +5185,8 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedemail_settings
 	case generalsettings.EdgeAiSettings:
 		return m.clearedai_settings
+	case generalsettings.EdgeUmamiSettings:
+		return m.clearedumami_settings
 	}
 	return false
 }
@@ -5171,6 +5253,9 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 		return nil
 	case generalsettings.EdgeAiSettings:
 		m.ResetAiSettings()
+		return nil
+	case generalsettings.EdgeUmamiSettings:
+		m.ResetUmamiSettings()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings edge %s", name)
@@ -9553,6 +9638,446 @@ func (m *TextSlideMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *TextSlideMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown TextSlide edge %s", name)
+}
+
+// UmamiSettingsMutation represents an operation that mutates the UmamiSettings nodes in the graph.
+type UmamiSettingsMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	endpoint      *string
+	website_id    *string
+	enable        *bool
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*UmamiSettings, error)
+	predicates    []predicate.UmamiSettings
+}
+
+var _ ent.Mutation = (*UmamiSettingsMutation)(nil)
+
+// umamisettingsOption allows management of the mutation configuration using functional options.
+type umamisettingsOption func(*UmamiSettingsMutation)
+
+// newUmamiSettingsMutation creates new mutation for the UmamiSettings entity.
+func newUmamiSettingsMutation(c config, op Op, opts ...umamisettingsOption) *UmamiSettingsMutation {
+	m := &UmamiSettingsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeUmamiSettings,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withUmamiSettingsID sets the ID field of the mutation.
+func withUmamiSettingsID(id int) umamisettingsOption {
+	return func(m *UmamiSettingsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *UmamiSettings
+		)
+		m.oldValue = func(ctx context.Context) (*UmamiSettings, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().UmamiSettings.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withUmamiSettings sets the old UmamiSettings of the mutation.
+func withUmamiSettings(node *UmamiSettings) umamisettingsOption {
+	return func(m *UmamiSettingsMutation) {
+		m.oldValue = func(context.Context) (*UmamiSettings, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m UmamiSettingsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m UmamiSettingsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of UmamiSettings entities.
+func (m *UmamiSettingsMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *UmamiSettingsMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *UmamiSettingsMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().UmamiSettings.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetEndpoint sets the "endpoint" field.
+func (m *UmamiSettingsMutation) SetEndpoint(s string) {
+	m.endpoint = &s
+}
+
+// Endpoint returns the value of the "endpoint" field in the mutation.
+func (m *UmamiSettingsMutation) Endpoint() (r string, exists bool) {
+	v := m.endpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEndpoint returns the old "endpoint" field's value of the UmamiSettings entity.
+// If the UmamiSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UmamiSettingsMutation) OldEndpoint(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEndpoint: %w", err)
+	}
+	return oldValue.Endpoint, nil
+}
+
+// ResetEndpoint resets all changes to the "endpoint" field.
+func (m *UmamiSettingsMutation) ResetEndpoint() {
+	m.endpoint = nil
+}
+
+// SetWebsiteID sets the "website_id" field.
+func (m *UmamiSettingsMutation) SetWebsiteID(s string) {
+	m.website_id = &s
+}
+
+// WebsiteID returns the value of the "website_id" field in the mutation.
+func (m *UmamiSettingsMutation) WebsiteID() (r string, exists bool) {
+	v := m.website_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWebsiteID returns the old "website_id" field's value of the UmamiSettings entity.
+// If the UmamiSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UmamiSettingsMutation) OldWebsiteID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWebsiteID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWebsiteID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWebsiteID: %w", err)
+	}
+	return oldValue.WebsiteID, nil
+}
+
+// ResetWebsiteID resets all changes to the "website_id" field.
+func (m *UmamiSettingsMutation) ResetWebsiteID() {
+	m.website_id = nil
+}
+
+// SetEnable sets the "enable" field.
+func (m *UmamiSettingsMutation) SetEnable(b bool) {
+	m.enable = &b
+}
+
+// Enable returns the value of the "enable" field in the mutation.
+func (m *UmamiSettingsMutation) Enable() (r bool, exists bool) {
+	v := m.enable
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnable returns the old "enable" field's value of the UmamiSettings entity.
+// If the UmamiSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UmamiSettingsMutation) OldEnable(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnable is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnable requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnable: %w", err)
+	}
+	return oldValue.Enable, nil
+}
+
+// ResetEnable resets all changes to the "enable" field.
+func (m *UmamiSettingsMutation) ResetEnable() {
+	m.enable = nil
+}
+
+// Where appends a list predicates to the UmamiSettingsMutation builder.
+func (m *UmamiSettingsMutation) Where(ps ...predicate.UmamiSettings) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the UmamiSettingsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *UmamiSettingsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.UmamiSettings, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *UmamiSettingsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *UmamiSettingsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (UmamiSettings).
+func (m *UmamiSettingsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *UmamiSettingsMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.endpoint != nil {
+		fields = append(fields, umamisettings.FieldEndpoint)
+	}
+	if m.website_id != nil {
+		fields = append(fields, umamisettings.FieldWebsiteID)
+	}
+	if m.enable != nil {
+		fields = append(fields, umamisettings.FieldEnable)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *UmamiSettingsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case umamisettings.FieldEndpoint:
+		return m.Endpoint()
+	case umamisettings.FieldWebsiteID:
+		return m.WebsiteID()
+	case umamisettings.FieldEnable:
+		return m.Enable()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *UmamiSettingsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case umamisettings.FieldEndpoint:
+		return m.OldEndpoint(ctx)
+	case umamisettings.FieldWebsiteID:
+		return m.OldWebsiteID(ctx)
+	case umamisettings.FieldEnable:
+		return m.OldEnable(ctx)
+	}
+	return nil, fmt.Errorf("unknown UmamiSettings field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UmamiSettingsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case umamisettings.FieldEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEndpoint(v)
+		return nil
+	case umamisettings.FieldWebsiteID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWebsiteID(v)
+		return nil
+	case umamisettings.FieldEnable:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnable(v)
+		return nil
+	}
+	return fmt.Errorf("unknown UmamiSettings field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *UmamiSettingsMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *UmamiSettingsMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UmamiSettingsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown UmamiSettings numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *UmamiSettingsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *UmamiSettingsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *UmamiSettingsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown UmamiSettings nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *UmamiSettingsMutation) ResetField(name string) error {
+	switch name {
+	case umamisettings.FieldEndpoint:
+		m.ResetEndpoint()
+		return nil
+	case umamisettings.FieldWebsiteID:
+		m.ResetWebsiteID()
+		return nil
+	case umamisettings.FieldEnable:
+		m.ResetEnable()
+		return nil
+	}
+	return fmt.Errorf("unknown UmamiSettings field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *UmamiSettingsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *UmamiSettingsMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *UmamiSettingsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *UmamiSettingsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *UmamiSettingsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *UmamiSettingsMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *UmamiSettingsMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown UmamiSettings unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *UmamiSettingsMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown UmamiSettings edge %s", name)
 }
 
 // UntappdMutation represents an operation that mutates the Untappd nodes in the graph.

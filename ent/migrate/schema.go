@@ -367,6 +367,28 @@ var (
 			},
 		},
 	}
+	// UmamiSettingsColumns holds the columns for the "umami_settings" table.
+	UmamiSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "endpoint", Type: field.TypeString},
+		{Name: "website_id", Type: field.TypeString},
+		{Name: "enable", Type: field.TypeBool, Default: false},
+		{Name: "general_settings_umami_settings", Type: field.TypeInt, Nullable: true},
+	}
+	// UmamiSettingsTable holds the schema information for the "umami_settings" table.
+	UmamiSettingsTable = &schema.Table{
+		Name:       "umami_settings",
+		Columns:    UmamiSettingsColumns,
+		PrimaryKey: []*schema.Column{UmamiSettingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "umami_settings_general_settings_umami_settings",
+				Columns:    []*schema.Column{UmamiSettingsColumns[4]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UntappdsColumns holds the columns for the "untappds" table.
 	UntappdsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -448,6 +470,7 @@ var (
 		SonarrsTable,
 		StocksTable,
 		TextSlidesTable,
+		UmamiSettingsTable,
 		UntappdsTable,
 		VideosTable,
 		WeathersTable,
@@ -469,6 +492,7 @@ func init() {
 	SonarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	StocksTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	TextSlidesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	UmamiSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UntappdsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	VideosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	WeathersTable.ForeignKeys[0].RefTable = GeneralSettingsTable

@@ -28,6 +28,7 @@ import (
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
 	"ledit/ent/textslide"
+	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
@@ -77,6 +78,8 @@ type Client struct {
 	Stock *StockClient
 	// TextSlide is the client for interacting with the TextSlide builders.
 	TextSlide *TextSlideClient
+	// UmamiSettings is the client for interacting with the UmamiSettings builders.
+	UmamiSettings *UmamiSettingsClient
 	// Untappd is the client for interacting with the Untappd builders.
 	Untappd *UntappdClient
 	// Video is the client for interacting with the Video builders.
@@ -111,6 +114,7 @@ func (c *Client) init() {
 	c.Sonarr = NewSonarrClient(c.config)
 	c.Stock = NewStockClient(c.config)
 	c.TextSlide = NewTextSlideClient(c.config)
+	c.UmamiSettings = NewUmamiSettingsClient(c.config)
 	c.Untappd = NewUntappdClient(c.config)
 	c.Video = NewVideoClient(c.config)
 	c.Weather = NewWeatherClient(c.config)
@@ -223,6 +227,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Sonarr:          NewSonarrClient(cfg),
 		Stock:           NewStockClient(cfg),
 		TextSlide:       NewTextSlideClient(cfg),
+		UmamiSettings:   NewUmamiSettingsClient(cfg),
 		Untappd:         NewUntappdClient(cfg),
 		Video:           NewVideoClient(cfg),
 		Weather:         NewWeatherClient(cfg),
@@ -262,6 +267,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Sonarr:          NewSonarrClient(cfg),
 		Stock:           NewStockClient(cfg),
 		TextSlide:       NewTextSlideClient(cfg),
+		UmamiSettings:   NewUmamiSettingsClient(cfg),
 		Untappd:         NewUntappdClient(cfg),
 		Video:           NewVideoClient(cfg),
 		Weather:         NewWeatherClient(cfg),
@@ -296,8 +302,8 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AISettings, c.Calendar, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings,
-		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide, c.Untappd,
-		c.Video, c.Weather,
+		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
+		c.UmamiSettings, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Use(hooks...)
 	}
@@ -309,8 +315,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AISettings, c.Calendar, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings,
-		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide, c.Untappd,
-		c.Video, c.Weather,
+		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
+		c.UmamiSettings, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -353,6 +359,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Stock.mutate(ctx, m)
 	case *TextSlideMutation:
 		return c.TextSlide.mutate(ctx, m)
+	case *UmamiSettingsMutation:
+		return c.UmamiSettings.mutate(ctx, m)
 	case *UntappdMutation:
 		return c.Untappd.mutate(ctx, m)
 	case *VideoMutation:
@@ -1535,6 +1543,22 @@ func (c *GeneralSettingsClient) QueryAiSettings(_m *GeneralSettings) *AISettings
 			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
 			sqlgraph.To(aisettings.Table, aisettings.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.AiSettingsTable, generalsettings.AiSettingsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUmamiSettings queries the umami_settings edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryUmamiSettings(_m *GeneralSettings) *UmamiSettingsQuery {
+	query := (&UmamiSettingsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(umamisettings.Table, umamisettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.UmamiSettingsTable, generalsettings.UmamiSettingsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2897,6 +2921,139 @@ func (c *TextSlideClient) mutate(ctx context.Context, m *TextSlideMutation) (Val
 	}
 }
 
+// UmamiSettingsClient is a client for the UmamiSettings schema.
+type UmamiSettingsClient struct {
+	config
+}
+
+// NewUmamiSettingsClient returns a client for the UmamiSettings from the given config.
+func NewUmamiSettingsClient(c config) *UmamiSettingsClient {
+	return &UmamiSettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `umamisettings.Hooks(f(g(h())))`.
+func (c *UmamiSettingsClient) Use(hooks ...Hook) {
+	c.hooks.UmamiSettings = append(c.hooks.UmamiSettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `umamisettings.Intercept(f(g(h())))`.
+func (c *UmamiSettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UmamiSettings = append(c.inters.UmamiSettings, interceptors...)
+}
+
+// Create returns a builder for creating a UmamiSettings entity.
+func (c *UmamiSettingsClient) Create() *UmamiSettingsCreate {
+	mutation := newUmamiSettingsMutation(c.config, OpCreate)
+	return &UmamiSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UmamiSettings entities.
+func (c *UmamiSettingsClient) CreateBulk(builders ...*UmamiSettingsCreate) *UmamiSettingsCreateBulk {
+	return &UmamiSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UmamiSettingsClient) MapCreateBulk(slice any, setFunc func(*UmamiSettingsCreate, int)) *UmamiSettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UmamiSettingsCreateBulk{err: fmt.Errorf("calling to UmamiSettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UmamiSettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UmamiSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UmamiSettings.
+func (c *UmamiSettingsClient) Update() *UmamiSettingsUpdate {
+	mutation := newUmamiSettingsMutation(c.config, OpUpdate)
+	return &UmamiSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UmamiSettingsClient) UpdateOne(_m *UmamiSettings) *UmamiSettingsUpdateOne {
+	mutation := newUmamiSettingsMutation(c.config, OpUpdateOne, withUmamiSettings(_m))
+	return &UmamiSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UmamiSettingsClient) UpdateOneID(id int) *UmamiSettingsUpdateOne {
+	mutation := newUmamiSettingsMutation(c.config, OpUpdateOne, withUmamiSettingsID(id))
+	return &UmamiSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UmamiSettings.
+func (c *UmamiSettingsClient) Delete() *UmamiSettingsDelete {
+	mutation := newUmamiSettingsMutation(c.config, OpDelete)
+	return &UmamiSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UmamiSettingsClient) DeleteOne(_m *UmamiSettings) *UmamiSettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UmamiSettingsClient) DeleteOneID(id int) *UmamiSettingsDeleteOne {
+	builder := c.Delete().Where(umamisettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UmamiSettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for UmamiSettings.
+func (c *UmamiSettingsClient) Query() *UmamiSettingsQuery {
+	return &UmamiSettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUmamiSettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UmamiSettings entity by its id.
+func (c *UmamiSettingsClient) Get(ctx context.Context, id int) (*UmamiSettings, error) {
+	return c.Query().Where(umamisettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UmamiSettingsClient) GetX(ctx context.Context, id int) *UmamiSettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *UmamiSettingsClient) Hooks() []Hook {
+	return c.hooks.UmamiSettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *UmamiSettingsClient) Interceptors() []Interceptor {
+	return c.inters.UmamiSettings
+}
+
+func (c *UmamiSettingsClient) mutate(ctx context.Context, m *UmamiSettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UmamiSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UmamiSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UmamiSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UmamiSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UmamiSettings mutation op: %q", m.Op())
+	}
+}
+
 // UntappdClient is a client for the Untappd schema.
 type UntappdClient struct {
 	config
@@ -3301,11 +3458,13 @@ type (
 	hooks struct {
 		AISettings, Calendar, Crypto, DeviceSettings, EmailSettings, F1,
 		GeneralSettings, HomeAssistant, Image, LogEntry, LogSettings, Radarr, RssFeed,
-		Schedule, Sonarr, Stock, TextSlide, Untappd, Video, Weather []ent.Hook
+		Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
+		Weather []ent.Hook
 	}
 	inters struct {
 		AISettings, Calendar, Crypto, DeviceSettings, EmailSettings, F1,
 		GeneralSettings, HomeAssistant, Image, LogEntry, LogSettings, Radarr, RssFeed,
-		Schedule, Sonarr, Stock, TextSlide, Untappd, Video, Weather []ent.Interceptor
+		Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
+		Weather []ent.Interceptor
 	}
 )

@@ -23,6 +23,7 @@ import (
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
 	"ledit/ent/textslide"
+	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
@@ -109,6 +110,7 @@ func checkColumn(t, c string) error {
 			sonarr.Table:          sonarr.ValidColumn,
 			stock.Table:           stock.ValidColumn,
 			textslide.Table:       textslide.ValidColumn,
+			umamisettings.Table:   umamisettings.ValidColumn,
 			untappd.Table:         untappd.ValidColumn,
 			video.Table:           video.ValidColumn,
 			weather.Table:         weather.ValidColumn,

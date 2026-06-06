@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -12,7 +13,20 @@ import (
 )
 
 func (s *Server) IndexHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.html", gin.H{})
+	umamiSettings, _ := s.DB.UmamiSettings.Query().Only(s.Ctx)
+	umamiEnabled := false
+	umamiEndpoint := ""
+	umamiWebsiteID := ""
+	if umamiSettings != nil && umamiSettings.Enable {
+		umamiEnabled = true
+		umamiEndpoint = umamiSettings.Endpoint
+		umamiWebsiteID = umamiSettings.WebsiteID
+	}
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"umamiEnabled":   umamiEnabled,
+		"umamiEndpoint":  umamiEndpoint,
+		"umamiWebsiteID": umamiWebsiteID,
+	})
 }
 
 func (s *Server) AdminDashboard(c *gin.Context) {
@@ -511,6 +525,50 @@ func (s *Server) AdminThemeSave(c *gin.Context) {
 func (s *Server) AdminAnalytics(c *gin.Context) {
 	stats := GetAnalytics()
 	c.HTML(http.StatusOK, "analytics.html", gin.H{"stats": stats})
+}
+
+// ---------------------------------------------------------------------------
+// Umami Analytics Settings
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminUmamiSettings(c *gin.Context) {
+	settings, err := s.DB.UmamiSettings.Query().Only(s.Ctx)
+	if err != nil {
+		settings = nil
+	}
+	c.HTML(http.StatusOK, "umami_settings.html", gin.H{
+		"settings":    settings,
+		"hasSettings": settings != nil,
+	})
+}
+
+func (s *Server) AdminUmamiSettingsSave(c *gin.Context) {
+	endpoint := c.PostForm("endpoint")
+	websiteID := c.PostForm("website_id")
+	enable := c.PostForm("enable") == "on"
+
+	exists, _ := s.DB.UmamiSettings.Query().Exist(s.Ctx)
+	if !exists {
+		_, err := s.DB.UmamiSettings.Create().
+			SetEndpoint(endpoint).
+			SetWebsiteID(websiteID).
+			SetEnable(enable).
+			Save(s.Ctx)
+		if err != nil {
+			slog.Error("failed to create umami settings", "error", err)
+		}
+	} else {
+		_, err := s.DB.UmamiSettings.Update().
+			SetEndpoint(endpoint).
+			SetWebsiteID(websiteID).
+			SetEnable(enable).
+			Save(s.Ctx)
+		if err != nil {
+			slog.Error("failed to update umami settings", "error", err)
+		}
+	}
+
+	c.Redirect(http.StatusFound, "/admin/settings/umami")
 }
 
 // ---------------------------------------------------------------------------

@@ -22,6 +22,7 @@ import (
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
 	"ledit/ent/textslide"
+	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
@@ -374,6 +375,21 @@ func (_u *GeneralSettingsUpdate) AddAiSettings(v ...*AISettings) *GeneralSetting
 		ids[i] = v[i].ID
 	}
 	return _u.AddAiSettingIDs(ids...)
+}
+
+// AddUmamiSettingIDs adds the "umami_settings" edge to the UmamiSettings entity by IDs.
+func (_u *GeneralSettingsUpdate) AddUmamiSettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddUmamiSettingIDs(ids...)
+	return _u
+}
+
+// AddUmamiSettings adds the "umami_settings" edges to the UmamiSettings entity.
+func (_u *GeneralSettingsUpdate) AddUmamiSettings(v ...*UmamiSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUmamiSettingIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -736,6 +752,27 @@ func (_u *GeneralSettingsUpdate) RemoveAiSettings(v ...*AISettings) *GeneralSett
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAiSettingIDs(ids...)
+}
+
+// ClearUmamiSettings clears all "umami_settings" edges to the UmamiSettings entity.
+func (_u *GeneralSettingsUpdate) ClearUmamiSettings() *GeneralSettingsUpdate {
+	_u.mutation.ClearUmamiSettings()
+	return _u
+}
+
+// RemoveUmamiSettingIDs removes the "umami_settings" edge to UmamiSettings entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveUmamiSettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveUmamiSettingIDs(ids...)
+	return _u
+}
+
+// RemoveUmamiSettings removes "umami_settings" edges to UmamiSettings entities.
+func (_u *GeneralSettingsUpdate) RemoveUmamiSettings(v ...*UmamiSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUmamiSettingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1560,6 +1597,51 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.UmamiSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UmamiSettingsTable,
+			Columns: []string{generalsettings.UmamiSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(umamisettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUmamiSettingsIDs(); len(nodes) > 0 && !_u.mutation.UmamiSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UmamiSettingsTable,
+			Columns: []string{generalsettings.UmamiSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(umamisettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UmamiSettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UmamiSettingsTable,
+			Columns: []string{generalsettings.UmamiSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(umamisettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -1910,6 +1992,21 @@ func (_u *GeneralSettingsUpdateOne) AddAiSettings(v ...*AISettings) *GeneralSett
 		ids[i] = v[i].ID
 	}
 	return _u.AddAiSettingIDs(ids...)
+}
+
+// AddUmamiSettingIDs adds the "umami_settings" edge to the UmamiSettings entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddUmamiSettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddUmamiSettingIDs(ids...)
+	return _u
+}
+
+// AddUmamiSettings adds the "umami_settings" edges to the UmamiSettings entity.
+func (_u *GeneralSettingsUpdateOne) AddUmamiSettings(v ...*UmamiSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUmamiSettingIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -2272,6 +2369,27 @@ func (_u *GeneralSettingsUpdateOne) RemoveAiSettings(v ...*AISettings) *GeneralS
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAiSettingIDs(ids...)
+}
+
+// ClearUmamiSettings clears all "umami_settings" edges to the UmamiSettings entity.
+func (_u *GeneralSettingsUpdateOne) ClearUmamiSettings() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearUmamiSettings()
+	return _u
+}
+
+// RemoveUmamiSettingIDs removes the "umami_settings" edge to UmamiSettings entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveUmamiSettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveUmamiSettingIDs(ids...)
+	return _u
+}
+
+// RemoveUmamiSettings removes "umami_settings" edges to UmamiSettings entities.
+func (_u *GeneralSettingsUpdateOne) RemoveUmamiSettings(v ...*UmamiSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUmamiSettingIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -3119,6 +3237,51 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(aisettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UmamiSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UmamiSettingsTable,
+			Columns: []string{generalsettings.UmamiSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(umamisettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUmamiSettingsIDs(); len(nodes) > 0 && !_u.mutation.UmamiSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UmamiSettingsTable,
+			Columns: []string{generalsettings.UmamiSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(umamisettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UmamiSettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UmamiSettingsTable,
+			Columns: []string{generalsettings.UmamiSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(umamisettings.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

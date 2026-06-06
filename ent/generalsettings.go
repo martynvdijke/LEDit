@@ -66,9 +66,11 @@ type GeneralSettingsEdges struct {
 	EmailSettings []*EmailSettings `json:"email_settings,omitempty"`
 	// AiSettings holds the value of the ai_settings edge.
 	AiSettings []*AISettings `json:"ai_settings,omitempty"`
+	// UmamiSettings holds the value of the umami_settings edge.
+	UmamiSettings []*UmamiSettings `json:"umami_settings,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [17]bool
+	loadedTypes [18]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -224,6 +226,15 @@ func (e GeneralSettingsEdges) AiSettingsOrErr() ([]*AISettings, error) {
 	return nil, &NotLoadedError{edge: "ai_settings"}
 }
 
+// UmamiSettingsOrErr returns the UmamiSettings value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) UmamiSettingsOrErr() ([]*UmamiSettings, error) {
+	if e.loadedTypes[17] {
+		return e.UmamiSettings, nil
+	}
+	return nil, &NotLoadedError{edge: "umami_settings"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -376,6 +387,11 @@ func (_m *GeneralSettings) QueryEmailSettings() *EmailSettingsQuery {
 // QueryAiSettings queries the "ai_settings" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryAiSettings() *AISettingsQuery {
 	return NewGeneralSettingsClient(_m.config).QueryAiSettings(_m)
+}
+
+// QueryUmamiSettings queries the "umami_settings" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryUmamiSettings() *UmamiSettingsQuery {
+	return NewGeneralSettingsClient(_m.config).QueryUmamiSettings(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

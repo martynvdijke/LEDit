@@ -46,6 +46,8 @@ type Tx struct {
 	Stock *StockClient
 	// TextSlide is the client for interacting with the TextSlide builders.
 	TextSlide *TextSlideClient
+	// UmamiSettings is the client for interacting with the UmamiSettings builders.
+	UmamiSettings *UmamiSettingsClient
 	// Untappd is the client for interacting with the Untappd builders.
 	Untappd *UntappdClient
 	// Video is the client for interacting with the Video builders.
@@ -200,6 +202,7 @@ func (tx *Tx) init() {
 	tx.Sonarr = NewSonarrClient(tx.config)
 	tx.Stock = NewStockClient(tx.config)
 	tx.TextSlide = NewTextSlideClient(tx.config)
+	tx.UmamiSettings = NewUmamiSettingsClient(tx.config)
 	tx.Untappd = NewUntappdClient(tx.config)
 	tx.Video = NewVideoClient(tx.config)
 	tx.Weather = NewWeatherClient(tx.config)

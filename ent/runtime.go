@@ -18,6 +18,7 @@ import (
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
 	"ledit/ent/textslide"
+	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/weather"
 )
@@ -190,6 +191,12 @@ func init() {
 	textslideDescFontSize := textslideFields[3].Descriptor()
 	// textslide.DefaultFontSize holds the default value on creation for the font_size field.
 	textslide.DefaultFontSize = textslideDescFontSize.Default.(int)
+	umamisettingsFields := schema.UmamiSettings{}.Fields()
+	_ = umamisettingsFields
+	// umamisettingsDescEnable is the schema descriptor for enable field.
+	umamisettingsDescEnable := umamisettingsFields[3].Descriptor()
+	// umamisettings.DefaultEnable holds the default value on creation for the enable field.
+	umamisettings.DefaultEnable = umamisettingsDescEnable.Default.(bool)
 	untappdFields := schema.Untappd{}.Fields()
 	_ = untappdFields
 	// untappdDescToken is the schema descriptor for token field.
