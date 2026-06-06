@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/martynvdijke/LEDit/compare/v1.1.0...v1.2.0) (2026-06-06)
+
+
+### Features
+
+* central logging admin panel with log viewer, settings, and slog migration ([710689d](https://github.com/martynvdijke/LEDit/commit/710689df017a0b2b9a47d25d384b851de50566b1))
+
 # [1.1.0](https://github.com/martynvdijke/LEDit/compare/v1.0.4...v1.1.0) (2026-05-26)
 
 
