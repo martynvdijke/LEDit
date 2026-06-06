@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - AI Settings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>AI Settings</h1>
+            <form method="POST" action="/admin/settings/ai" class="mt-4">
+                <div class="mb-3">
+                    <label for="provider" class="form-label">Provider</label>
+                    <select class="form-select" id="provider" name="provider">
+                        <option value="openai" {{if and .settings (eq .settings.Provider "openai")}}selected{{end}}>OpenAI</option>
+                        <option value="anthropic" {{if and .settings (eq .settings.Provider "anthropic")}}selected{{end}}>Anthropic</option>
+                        <option value="azure" {{if and .settings (eq .settings.Provider "azure")}}selected{{end}}>Azure OpenAI</option>
+                        <option value="ollama" {{if and .settings (eq .settings.Provider "ollama")}}selected{{end}}>Ollama</option>
+                        <option value="other" {{if and .settings (eq .settings.Provider "other")}}selected{{end}}>Other</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="api_key" class="form-label">API Key</label>
+                    <input type="password" class="form-control" id="api_key" name="api_key" value="{{if .settings}}{{.settings.APIKey}}{{end}}" placeholder="sk-...">
+                </div>
+                <div class="mb-3">
+                    <label for="model" class="form-label">Model</label>
+                    <input type="text" class="form-control" id="model" name="model" value="{{if .settings}}{{.settings.Model}}{{end}}" placeholder="gpt-4o">
+                </div>
+                <div class="mb-3">
+                    <label for="endpoint" class="form-label">Endpoint (optional)</label>
+                    <input type="text" class="form-control" id="endpoint" name="endpoint" value="{{if .settings}}{{.settings.Endpoint}}{{end}}" placeholder="https://api.openai.com/v1">
+                    <div class="form-text">Custom endpoint for self-hosted or compatible APIs.</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

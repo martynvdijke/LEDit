@@ -62,9 +62,13 @@ type GeneralSettingsEdges struct {
 	Stocks []*Stock `json:"stocks,omitempty"`
 	// TextSlides holds the value of the text_slides edge.
 	TextSlides []*TextSlide `json:"text_slides,omitempty"`
+	// EmailSettings holds the value of the email_settings edge.
+	EmailSettings []*EmailSettings `json:"email_settings,omitempty"`
+	// AiSettings holds the value of the ai_settings edge.
+	AiSettings []*AISettings `json:"ai_settings,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [15]bool
+	loadedTypes [17]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -200,6 +204,24 @@ func (e GeneralSettingsEdges) TextSlidesOrErr() ([]*TextSlide, error) {
 		return e.TextSlides, nil
 	}
 	return nil, &NotLoadedError{edge: "text_slides"}
+}
+
+// EmailSettingsOrErr returns the EmailSettings value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) EmailSettingsOrErr() ([]*EmailSettings, error) {
+	if e.loadedTypes[15] {
+		return e.EmailSettings, nil
+	}
+	return nil, &NotLoadedError{edge: "email_settings"}
+}
+
+// AiSettingsOrErr returns the AiSettings value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) AiSettingsOrErr() ([]*AISettings, error) {
+	if e.loadedTypes[16] {
+		return e.AiSettings, nil
+	}
+	return nil, &NotLoadedError{edge: "ai_settings"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -344,6 +366,16 @@ func (_m *GeneralSettings) QueryStocks() *StockQuery {
 // QueryTextSlides queries the "text_slides" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryTextSlides() *TextSlideQuery {
 	return NewGeneralSettingsClient(_m.config).QueryTextSlides(_m)
+}
+
+// QueryEmailSettings queries the "email_settings" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryEmailSettings() *EmailSettingsQuery {
+	return NewGeneralSettingsClient(_m.config).QueryEmailSettings(_m)
+}
+
+// QueryAiSettings queries the "ai_settings" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryAiSettings() *AISettingsQuery {
+	return NewGeneralSettingsClient(_m.config).QueryAiSettings(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

@@ -11,13 +11,17 @@ import (
 
 	"ledit/ent/migrate"
 
+	"ledit/ent/aisettings"
 	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
+	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/logentry"
+	"ledit/ent/logsettings"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -39,12 +43,16 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AISettings is the client for interacting with the AISettings builders.
+	AISettings *AISettingsClient
 	// Calendar is the client for interacting with the Calendar builders.
 	Calendar *CalendarClient
 	// Crypto is the client for interacting with the Crypto builders.
 	Crypto *CryptoClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
 	DeviceSettings *DeviceSettingsClient
+	// EmailSettings is the client for interacting with the EmailSettings builders.
+	EmailSettings *EmailSettingsClient
 	// F1 is the client for interacting with the F1 builders.
 	F1 *F1Client
 	// GeneralSettings is the client for interacting with the GeneralSettings builders.
@@ -53,6 +61,10 @@ type Client struct {
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// LogEntry is the client for interacting with the LogEntry builders.
+	LogEntry *LogEntryClient
+	// LogSettings is the client for interacting with the LogSettings builders.
+	LogSettings *LogSettingsClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
 	// RssFeed is the client for interacting with the RssFeed builders.
@@ -82,13 +94,17 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AISettings = NewAISettingsClient(c.config)
 	c.Calendar = NewCalendarClient(c.config)
 	c.Crypto = NewCryptoClient(c.config)
 	c.DeviceSettings = NewDeviceSettingsClient(c.config)
+	c.EmailSettings = NewEmailSettingsClient(c.config)
 	c.F1 = NewF1Client(c.config)
 	c.GeneralSettings = NewGeneralSettingsClient(c.config)
 	c.HomeAssistant = NewHomeAssistantClient(c.config)
 	c.Image = NewImageClient(c.config)
+	c.LogEntry = NewLogEntryClient(c.config)
+	c.LogSettings = NewLogSettingsClient(c.config)
 	c.Radarr = NewRadarrClient(c.config)
 	c.RssFeed = NewRssFeedClient(c.config)
 	c.Schedule = NewScheduleClient(c.config)
@@ -190,13 +206,17 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		AISettings:      NewAISettingsClient(cfg),
 		Calendar:        NewCalendarClient(cfg),
 		Crypto:          NewCryptoClient(cfg),
 		DeviceSettings:  NewDeviceSettingsClient(cfg),
+		EmailSettings:   NewEmailSettingsClient(cfg),
 		F1:              NewF1Client(cfg),
 		GeneralSettings: NewGeneralSettingsClient(cfg),
 		HomeAssistant:   NewHomeAssistantClient(cfg),
 		Image:           NewImageClient(cfg),
+		LogEntry:        NewLogEntryClient(cfg),
+		LogSettings:     NewLogSettingsClient(cfg),
 		Radarr:          NewRadarrClient(cfg),
 		RssFeed:         NewRssFeedClient(cfg),
 		Schedule:        NewScheduleClient(cfg),
@@ -225,13 +245,17 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		AISettings:      NewAISettingsClient(cfg),
 		Calendar:        NewCalendarClient(cfg),
 		Crypto:          NewCryptoClient(cfg),
 		DeviceSettings:  NewDeviceSettingsClient(cfg),
+		EmailSettings:   NewEmailSettingsClient(cfg),
 		F1:              NewF1Client(cfg),
 		GeneralSettings: NewGeneralSettingsClient(cfg),
 		HomeAssistant:   NewHomeAssistantClient(cfg),
 		Image:           NewImageClient(cfg),
+		LogEntry:        NewLogEntryClient(cfg),
+		LogSettings:     NewLogSettingsClient(cfg),
 		Radarr:          NewRadarrClient(cfg),
 		RssFeed:         NewRssFeedClient(cfg),
 		Schedule:        NewScheduleClient(cfg),
@@ -247,7 +271,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Calendar.
+//		AISettings.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -270,9 +294,10 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Calendar, c.Crypto, c.DeviceSettings, c.F1, c.GeneralSettings,
-		c.HomeAssistant, c.Image, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
-		c.TextSlide, c.Untappd, c.Video, c.Weather,
+		c.AISettings, c.Calendar, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
+		c.GeneralSettings, c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings,
+		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide, c.Untappd,
+		c.Video, c.Weather,
 	} {
 		n.Use(hooks...)
 	}
@@ -282,9 +307,10 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Calendar, c.Crypto, c.DeviceSettings, c.F1, c.GeneralSettings,
-		c.HomeAssistant, c.Image, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
-		c.TextSlide, c.Untappd, c.Video, c.Weather,
+		c.AISettings, c.Calendar, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
+		c.GeneralSettings, c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings,
+		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide, c.Untappd,
+		c.Video, c.Weather,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -293,12 +319,16 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AISettingsMutation:
+		return c.AISettings.mutate(ctx, m)
 	case *CalendarMutation:
 		return c.Calendar.mutate(ctx, m)
 	case *CryptoMutation:
 		return c.Crypto.mutate(ctx, m)
 	case *DeviceSettingsMutation:
 		return c.DeviceSettings.mutate(ctx, m)
+	case *EmailSettingsMutation:
+		return c.EmailSettings.mutate(ctx, m)
 	case *F1Mutation:
 		return c.F1.mutate(ctx, m)
 	case *GeneralSettingsMutation:
@@ -307,6 +337,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.HomeAssistant.mutate(ctx, m)
 	case *ImageMutation:
 		return c.Image.mutate(ctx, m)
+	case *LogEntryMutation:
+		return c.LogEntry.mutate(ctx, m)
+	case *LogSettingsMutation:
+		return c.LogSettings.mutate(ctx, m)
 	case *RadarrMutation:
 		return c.Radarr.mutate(ctx, m)
 	case *RssFeedMutation:
@@ -327,6 +361,139 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Weather.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AISettingsClient is a client for the AISettings schema.
+type AISettingsClient struct {
+	config
+}
+
+// NewAISettingsClient returns a client for the AISettings from the given config.
+func NewAISettingsClient(c config) *AISettingsClient {
+	return &AISettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `aisettings.Hooks(f(g(h())))`.
+func (c *AISettingsClient) Use(hooks ...Hook) {
+	c.hooks.AISettings = append(c.hooks.AISettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `aisettings.Intercept(f(g(h())))`.
+func (c *AISettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AISettings = append(c.inters.AISettings, interceptors...)
+}
+
+// Create returns a builder for creating a AISettings entity.
+func (c *AISettingsClient) Create() *AISettingsCreate {
+	mutation := newAISettingsMutation(c.config, OpCreate)
+	return &AISettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AISettings entities.
+func (c *AISettingsClient) CreateBulk(builders ...*AISettingsCreate) *AISettingsCreateBulk {
+	return &AISettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AISettingsClient) MapCreateBulk(slice any, setFunc func(*AISettingsCreate, int)) *AISettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AISettingsCreateBulk{err: fmt.Errorf("calling to AISettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AISettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AISettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AISettings.
+func (c *AISettingsClient) Update() *AISettingsUpdate {
+	mutation := newAISettingsMutation(c.config, OpUpdate)
+	return &AISettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AISettingsClient) UpdateOne(_m *AISettings) *AISettingsUpdateOne {
+	mutation := newAISettingsMutation(c.config, OpUpdateOne, withAISettings(_m))
+	return &AISettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AISettingsClient) UpdateOneID(id int) *AISettingsUpdateOne {
+	mutation := newAISettingsMutation(c.config, OpUpdateOne, withAISettingsID(id))
+	return &AISettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AISettings.
+func (c *AISettingsClient) Delete() *AISettingsDelete {
+	mutation := newAISettingsMutation(c.config, OpDelete)
+	return &AISettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AISettingsClient) DeleteOne(_m *AISettings) *AISettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AISettingsClient) DeleteOneID(id int) *AISettingsDeleteOne {
+	builder := c.Delete().Where(aisettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AISettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for AISettings.
+func (c *AISettingsClient) Query() *AISettingsQuery {
+	return &AISettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAISettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AISettings entity by its id.
+func (c *AISettingsClient) Get(ctx context.Context, id int) (*AISettings, error) {
+	return c.Query().Where(aisettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AISettingsClient) GetX(ctx context.Context, id int) *AISettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *AISettingsClient) Hooks() []Hook {
+	return c.hooks.AISettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *AISettingsClient) Interceptors() []Interceptor {
+	return c.inters.AISettings
+}
+
+func (c *AISettingsClient) mutate(ctx context.Context, m *AISettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AISettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AISettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AISettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AISettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AISettings mutation op: %q", m.Op())
 	}
 }
 
@@ -726,6 +893,139 @@ func (c *DeviceSettingsClient) mutate(ctx context.Context, m *DeviceSettingsMuta
 		return (&DeviceSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown DeviceSettings mutation op: %q", m.Op())
+	}
+}
+
+// EmailSettingsClient is a client for the EmailSettings schema.
+type EmailSettingsClient struct {
+	config
+}
+
+// NewEmailSettingsClient returns a client for the EmailSettings from the given config.
+func NewEmailSettingsClient(c config) *EmailSettingsClient {
+	return &EmailSettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `emailsettings.Hooks(f(g(h())))`.
+func (c *EmailSettingsClient) Use(hooks ...Hook) {
+	c.hooks.EmailSettings = append(c.hooks.EmailSettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `emailsettings.Intercept(f(g(h())))`.
+func (c *EmailSettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.EmailSettings = append(c.inters.EmailSettings, interceptors...)
+}
+
+// Create returns a builder for creating a EmailSettings entity.
+func (c *EmailSettingsClient) Create() *EmailSettingsCreate {
+	mutation := newEmailSettingsMutation(c.config, OpCreate)
+	return &EmailSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of EmailSettings entities.
+func (c *EmailSettingsClient) CreateBulk(builders ...*EmailSettingsCreate) *EmailSettingsCreateBulk {
+	return &EmailSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EmailSettingsClient) MapCreateBulk(slice any, setFunc func(*EmailSettingsCreate, int)) *EmailSettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EmailSettingsCreateBulk{err: fmt.Errorf("calling to EmailSettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EmailSettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EmailSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for EmailSettings.
+func (c *EmailSettingsClient) Update() *EmailSettingsUpdate {
+	mutation := newEmailSettingsMutation(c.config, OpUpdate)
+	return &EmailSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EmailSettingsClient) UpdateOne(_m *EmailSettings) *EmailSettingsUpdateOne {
+	mutation := newEmailSettingsMutation(c.config, OpUpdateOne, withEmailSettings(_m))
+	return &EmailSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EmailSettingsClient) UpdateOneID(id int) *EmailSettingsUpdateOne {
+	mutation := newEmailSettingsMutation(c.config, OpUpdateOne, withEmailSettingsID(id))
+	return &EmailSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for EmailSettings.
+func (c *EmailSettingsClient) Delete() *EmailSettingsDelete {
+	mutation := newEmailSettingsMutation(c.config, OpDelete)
+	return &EmailSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EmailSettingsClient) DeleteOne(_m *EmailSettings) *EmailSettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EmailSettingsClient) DeleteOneID(id int) *EmailSettingsDeleteOne {
+	builder := c.Delete().Where(emailsettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EmailSettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for EmailSettings.
+func (c *EmailSettingsClient) Query() *EmailSettingsQuery {
+	return &EmailSettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEmailSettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a EmailSettings entity by its id.
+func (c *EmailSettingsClient) Get(ctx context.Context, id int) (*EmailSettings, error) {
+	return c.Query().Where(emailsettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EmailSettingsClient) GetX(ctx context.Context, id int) *EmailSettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *EmailSettingsClient) Hooks() []Hook {
+	return c.hooks.EmailSettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *EmailSettingsClient) Interceptors() []Interceptor {
+	return c.inters.EmailSettings
+}
+
+func (c *EmailSettingsClient) mutate(ctx context.Context, m *EmailSettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EmailSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EmailSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EmailSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EmailSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown EmailSettings mutation op: %q", m.Op())
 	}
 }
 
@@ -1210,6 +1510,38 @@ func (c *GeneralSettingsClient) QueryTextSlides(_m *GeneralSettings) *TextSlideQ
 	return query
 }
 
+// QueryEmailSettings queries the email_settings edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryEmailSettings(_m *GeneralSettings) *EmailSettingsQuery {
+	query := (&EmailSettingsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(emailsettings.Table, emailsettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.EmailSettingsTable, generalsettings.EmailSettingsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAiSettings queries the ai_settings edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryAiSettings(_m *GeneralSettings) *AISettingsQuery {
+	query := (&AISettingsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(aisettings.Table, aisettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.AiSettingsTable, generalsettings.AiSettingsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GeneralSettingsClient) Hooks() []Hook {
 	return c.hooks.GeneralSettings
@@ -1498,6 +1830,272 @@ func (c *ImageClient) mutate(ctx context.Context, m *ImageMutation) (Value, erro
 		return (&ImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Image mutation op: %q", m.Op())
+	}
+}
+
+// LogEntryClient is a client for the LogEntry schema.
+type LogEntryClient struct {
+	config
+}
+
+// NewLogEntryClient returns a client for the LogEntry from the given config.
+func NewLogEntryClient(c config) *LogEntryClient {
+	return &LogEntryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `logentry.Hooks(f(g(h())))`.
+func (c *LogEntryClient) Use(hooks ...Hook) {
+	c.hooks.LogEntry = append(c.hooks.LogEntry, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `logentry.Intercept(f(g(h())))`.
+func (c *LogEntryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LogEntry = append(c.inters.LogEntry, interceptors...)
+}
+
+// Create returns a builder for creating a LogEntry entity.
+func (c *LogEntryClient) Create() *LogEntryCreate {
+	mutation := newLogEntryMutation(c.config, OpCreate)
+	return &LogEntryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LogEntry entities.
+func (c *LogEntryClient) CreateBulk(builders ...*LogEntryCreate) *LogEntryCreateBulk {
+	return &LogEntryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LogEntryClient) MapCreateBulk(slice any, setFunc func(*LogEntryCreate, int)) *LogEntryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LogEntryCreateBulk{err: fmt.Errorf("calling to LogEntryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LogEntryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LogEntryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LogEntry.
+func (c *LogEntryClient) Update() *LogEntryUpdate {
+	mutation := newLogEntryMutation(c.config, OpUpdate)
+	return &LogEntryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LogEntryClient) UpdateOne(_m *LogEntry) *LogEntryUpdateOne {
+	mutation := newLogEntryMutation(c.config, OpUpdateOne, withLogEntry(_m))
+	return &LogEntryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LogEntryClient) UpdateOneID(id int) *LogEntryUpdateOne {
+	mutation := newLogEntryMutation(c.config, OpUpdateOne, withLogEntryID(id))
+	return &LogEntryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LogEntry.
+func (c *LogEntryClient) Delete() *LogEntryDelete {
+	mutation := newLogEntryMutation(c.config, OpDelete)
+	return &LogEntryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LogEntryClient) DeleteOne(_m *LogEntry) *LogEntryDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LogEntryClient) DeleteOneID(id int) *LogEntryDeleteOne {
+	builder := c.Delete().Where(logentry.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LogEntryDeleteOne{builder}
+}
+
+// Query returns a query builder for LogEntry.
+func (c *LogEntryClient) Query() *LogEntryQuery {
+	return &LogEntryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLogEntry},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LogEntry entity by its id.
+func (c *LogEntryClient) Get(ctx context.Context, id int) (*LogEntry, error) {
+	return c.Query().Where(logentry.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LogEntryClient) GetX(ctx context.Context, id int) *LogEntry {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LogEntryClient) Hooks() []Hook {
+	return c.hooks.LogEntry
+}
+
+// Interceptors returns the client interceptors.
+func (c *LogEntryClient) Interceptors() []Interceptor {
+	return c.inters.LogEntry
+}
+
+func (c *LogEntryClient) mutate(ctx context.Context, m *LogEntryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LogEntryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LogEntryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LogEntryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LogEntryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LogEntry mutation op: %q", m.Op())
+	}
+}
+
+// LogSettingsClient is a client for the LogSettings schema.
+type LogSettingsClient struct {
+	config
+}
+
+// NewLogSettingsClient returns a client for the LogSettings from the given config.
+func NewLogSettingsClient(c config) *LogSettingsClient {
+	return &LogSettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `logsettings.Hooks(f(g(h())))`.
+func (c *LogSettingsClient) Use(hooks ...Hook) {
+	c.hooks.LogSettings = append(c.hooks.LogSettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `logsettings.Intercept(f(g(h())))`.
+func (c *LogSettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LogSettings = append(c.inters.LogSettings, interceptors...)
+}
+
+// Create returns a builder for creating a LogSettings entity.
+func (c *LogSettingsClient) Create() *LogSettingsCreate {
+	mutation := newLogSettingsMutation(c.config, OpCreate)
+	return &LogSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LogSettings entities.
+func (c *LogSettingsClient) CreateBulk(builders ...*LogSettingsCreate) *LogSettingsCreateBulk {
+	return &LogSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LogSettingsClient) MapCreateBulk(slice any, setFunc func(*LogSettingsCreate, int)) *LogSettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LogSettingsCreateBulk{err: fmt.Errorf("calling to LogSettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LogSettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LogSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LogSettings.
+func (c *LogSettingsClient) Update() *LogSettingsUpdate {
+	mutation := newLogSettingsMutation(c.config, OpUpdate)
+	return &LogSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LogSettingsClient) UpdateOne(_m *LogSettings) *LogSettingsUpdateOne {
+	mutation := newLogSettingsMutation(c.config, OpUpdateOne, withLogSettings(_m))
+	return &LogSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LogSettingsClient) UpdateOneID(id int) *LogSettingsUpdateOne {
+	mutation := newLogSettingsMutation(c.config, OpUpdateOne, withLogSettingsID(id))
+	return &LogSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LogSettings.
+func (c *LogSettingsClient) Delete() *LogSettingsDelete {
+	mutation := newLogSettingsMutation(c.config, OpDelete)
+	return &LogSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LogSettingsClient) DeleteOne(_m *LogSettings) *LogSettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LogSettingsClient) DeleteOneID(id int) *LogSettingsDeleteOne {
+	builder := c.Delete().Where(logsettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LogSettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for LogSettings.
+func (c *LogSettingsClient) Query() *LogSettingsQuery {
+	return &LogSettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLogSettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LogSettings entity by its id.
+func (c *LogSettingsClient) Get(ctx context.Context, id int) (*LogSettings, error) {
+	return c.Query().Where(logsettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LogSettingsClient) GetX(ctx context.Context, id int) *LogSettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LogSettingsClient) Hooks() []Hook {
+	return c.hooks.LogSettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *LogSettingsClient) Interceptors() []Interceptor {
+	return c.inters.LogSettings
+}
+
+func (c *LogSettingsClient) mutate(ctx context.Context, m *LogSettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LogSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LogSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LogSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LogSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LogSettings mutation op: %q", m.Op())
 	}
 }
 
@@ -2701,13 +3299,13 @@ func (c *WeatherClient) mutate(ctx context.Context, m *WeatherMutation) (Value, 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Calendar, Crypto, DeviceSettings, F1, GeneralSettings, HomeAssistant, Image,
-		Radarr, RssFeed, Schedule, Sonarr, Stock, TextSlide, Untappd, Video,
-		Weather []ent.Hook
+		AISettings, Calendar, Crypto, DeviceSettings, EmailSettings, F1,
+		GeneralSettings, HomeAssistant, Image, LogEntry, LogSettings, Radarr, RssFeed,
+		Schedule, Sonarr, Stock, TextSlide, Untappd, Video, Weather []ent.Hook
 	}
 	inters struct {
-		Calendar, Crypto, DeviceSettings, F1, GeneralSettings, HomeAssistant, Image,
-		Radarr, RssFeed, Schedule, Sonarr, Stock, TextSlide, Untappd, Video,
-		Weather []ent.Interceptor
+		AISettings, Calendar, Crypto, DeviceSettings, EmailSettings, F1,
+		GeneralSettings, HomeAssistant, Image, LogEntry, LogSettings, Radarr, RssFeed,
+		Schedule, Sonarr, Stock, TextSlide, Untappd, Video, Weather []ent.Interceptor
 	}
 )

@@ -6,13 +6,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/aisettings"
 	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
+	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/logentry"
+	"ledit/ent/logsettings"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -24,6 +28,7 @@ import (
 	"ledit/ent/video"
 	"ledit/ent/weather"
 	"sync"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -38,13 +43,17 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeAISettings      = "AISettings"
 	TypeCalendar        = "Calendar"
 	TypeCrypto          = "Crypto"
 	TypeDeviceSettings  = "DeviceSettings"
+	TypeEmailSettings   = "EmailSettings"
 	TypeF1              = "F1"
 	TypeGeneralSettings = "GeneralSettings"
 	TypeHomeAssistant   = "HomeAssistant"
 	TypeImage           = "Image"
+	TypeLogEntry        = "LogEntry"
+	TypeLogSettings     = "LogSettings"
 	TypeRadarr          = "Radarr"
 	TypeRssFeed         = "RssFeed"
 	TypeSchedule        = "Schedule"
@@ -55,6 +64,522 @@ const (
 	TypeVideo           = "Video"
 	TypeWeather         = "Weather"
 )
+
+// AISettingsMutation represents an operation that mutates the AISettings nodes in the graph.
+type AISettingsMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	provider      *string
+	api_key       *string
+	model         *string
+	endpoint      *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*AISettings, error)
+	predicates    []predicate.AISettings
+}
+
+var _ ent.Mutation = (*AISettingsMutation)(nil)
+
+// aisettingsOption allows management of the mutation configuration using functional options.
+type aisettingsOption func(*AISettingsMutation)
+
+// newAISettingsMutation creates new mutation for the AISettings entity.
+func newAISettingsMutation(c config, op Op, opts ...aisettingsOption) *AISettingsMutation {
+	m := &AISettingsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAISettings,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAISettingsID sets the ID field of the mutation.
+func withAISettingsID(id int) aisettingsOption {
+	return func(m *AISettingsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AISettings
+		)
+		m.oldValue = func(ctx context.Context) (*AISettings, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AISettings.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAISettings sets the old AISettings of the mutation.
+func withAISettings(node *AISettings) aisettingsOption {
+	return func(m *AISettingsMutation) {
+		m.oldValue = func(context.Context) (*AISettings, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AISettingsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AISettingsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of AISettings entities.
+func (m *AISettingsMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AISettingsMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AISettingsMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().AISettings.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetProvider sets the "provider" field.
+func (m *AISettingsMutation) SetProvider(s string) {
+	m.provider = &s
+}
+
+// Provider returns the value of the "provider" field in the mutation.
+func (m *AISettingsMutation) Provider() (r string, exists bool) {
+	v := m.provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProvider returns the old "provider" field's value of the AISettings entity.
+// If the AISettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AISettingsMutation) OldProvider(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProvider requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
+	}
+	return oldValue.Provider, nil
+}
+
+// ResetProvider resets all changes to the "provider" field.
+func (m *AISettingsMutation) ResetProvider() {
+	m.provider = nil
+}
+
+// SetAPIKey sets the "api_key" field.
+func (m *AISettingsMutation) SetAPIKey(s string) {
+	m.api_key = &s
+}
+
+// APIKey returns the value of the "api_key" field in the mutation.
+func (m *AISettingsMutation) APIKey() (r string, exists bool) {
+	v := m.api_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAPIKey returns the old "api_key" field's value of the AISettings entity.
+// If the AISettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AISettingsMutation) OldAPIKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAPIKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAPIKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAPIKey: %w", err)
+	}
+	return oldValue.APIKey, nil
+}
+
+// ResetAPIKey resets all changes to the "api_key" field.
+func (m *AISettingsMutation) ResetAPIKey() {
+	m.api_key = nil
+}
+
+// SetModel sets the "model" field.
+func (m *AISettingsMutation) SetModel(s string) {
+	m.model = &s
+}
+
+// Model returns the value of the "model" field in the mutation.
+func (m *AISettingsMutation) Model() (r string, exists bool) {
+	v := m.model
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldModel returns the old "model" field's value of the AISettings entity.
+// If the AISettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AISettingsMutation) OldModel(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldModel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldModel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldModel: %w", err)
+	}
+	return oldValue.Model, nil
+}
+
+// ResetModel resets all changes to the "model" field.
+func (m *AISettingsMutation) ResetModel() {
+	m.model = nil
+}
+
+// SetEndpoint sets the "endpoint" field.
+func (m *AISettingsMutation) SetEndpoint(s string) {
+	m.endpoint = &s
+}
+
+// Endpoint returns the value of the "endpoint" field in the mutation.
+func (m *AISettingsMutation) Endpoint() (r string, exists bool) {
+	v := m.endpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEndpoint returns the old "endpoint" field's value of the AISettings entity.
+// If the AISettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AISettingsMutation) OldEndpoint(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEndpoint: %w", err)
+	}
+	return oldValue.Endpoint, nil
+}
+
+// ClearEndpoint clears the value of the "endpoint" field.
+func (m *AISettingsMutation) ClearEndpoint() {
+	m.endpoint = nil
+	m.clearedFields[aisettings.FieldEndpoint] = struct{}{}
+}
+
+// EndpointCleared returns if the "endpoint" field was cleared in this mutation.
+func (m *AISettingsMutation) EndpointCleared() bool {
+	_, ok := m.clearedFields[aisettings.FieldEndpoint]
+	return ok
+}
+
+// ResetEndpoint resets all changes to the "endpoint" field.
+func (m *AISettingsMutation) ResetEndpoint() {
+	m.endpoint = nil
+	delete(m.clearedFields, aisettings.FieldEndpoint)
+}
+
+// Where appends a list predicates to the AISettingsMutation builder.
+func (m *AISettingsMutation) Where(ps ...predicate.AISettings) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AISettingsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AISettingsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.AISettings, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AISettingsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AISettingsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (AISettings).
+func (m *AISettingsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AISettingsMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.provider != nil {
+		fields = append(fields, aisettings.FieldProvider)
+	}
+	if m.api_key != nil {
+		fields = append(fields, aisettings.FieldAPIKey)
+	}
+	if m.model != nil {
+		fields = append(fields, aisettings.FieldModel)
+	}
+	if m.endpoint != nil {
+		fields = append(fields, aisettings.FieldEndpoint)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AISettingsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case aisettings.FieldProvider:
+		return m.Provider()
+	case aisettings.FieldAPIKey:
+		return m.APIKey()
+	case aisettings.FieldModel:
+		return m.Model()
+	case aisettings.FieldEndpoint:
+		return m.Endpoint()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AISettingsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case aisettings.FieldProvider:
+		return m.OldProvider(ctx)
+	case aisettings.FieldAPIKey:
+		return m.OldAPIKey(ctx)
+	case aisettings.FieldModel:
+		return m.OldModel(ctx)
+	case aisettings.FieldEndpoint:
+		return m.OldEndpoint(ctx)
+	}
+	return nil, fmt.Errorf("unknown AISettings field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AISettingsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case aisettings.FieldProvider:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProvider(v)
+		return nil
+	case aisettings.FieldAPIKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAPIKey(v)
+		return nil
+	case aisettings.FieldModel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetModel(v)
+		return nil
+	case aisettings.FieldEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEndpoint(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AISettings field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AISettingsMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AISettingsMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AISettingsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown AISettings numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AISettingsMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(aisettings.FieldEndpoint) {
+		fields = append(fields, aisettings.FieldEndpoint)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AISettingsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AISettingsMutation) ClearField(name string) error {
+	switch name {
+	case aisettings.FieldEndpoint:
+		m.ClearEndpoint()
+		return nil
+	}
+	return fmt.Errorf("unknown AISettings nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AISettingsMutation) ResetField(name string) error {
+	switch name {
+	case aisettings.FieldProvider:
+		m.ResetProvider()
+		return nil
+	case aisettings.FieldAPIKey:
+		m.ResetAPIKey()
+		return nil
+	case aisettings.FieldModel:
+		m.ResetModel()
+		return nil
+	case aisettings.FieldEndpoint:
+		m.ResetEndpoint()
+		return nil
+	}
+	return fmt.Errorf("unknown AISettings field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AISettingsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AISettingsMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AISettingsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AISettingsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AISettingsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AISettingsMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AISettingsMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown AISettings unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AISettingsMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown AISettings edge %s", name)
+}
 
 // CalendarMutation represents an operation that mutates the Calendar nodes in the graph.
 type CalendarMutation struct {
@@ -1622,6 +2147,644 @@ func (m *DeviceSettingsMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown DeviceSettings edge %s", name)
 }
 
+// EmailSettingsMutation represents an operation that mutates the EmailSettings nodes in the graph.
+type EmailSettingsMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	host          *string
+	port          *int
+	addport       *int
+	username      *string
+	password      *string
+	from_address  *string
+	use_tls       *bool
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*EmailSettings, error)
+	predicates    []predicate.EmailSettings
+}
+
+var _ ent.Mutation = (*EmailSettingsMutation)(nil)
+
+// emailsettingsOption allows management of the mutation configuration using functional options.
+type emailsettingsOption func(*EmailSettingsMutation)
+
+// newEmailSettingsMutation creates new mutation for the EmailSettings entity.
+func newEmailSettingsMutation(c config, op Op, opts ...emailsettingsOption) *EmailSettingsMutation {
+	m := &EmailSettingsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeEmailSettings,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withEmailSettingsID sets the ID field of the mutation.
+func withEmailSettingsID(id int) emailsettingsOption {
+	return func(m *EmailSettingsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *EmailSettings
+		)
+		m.oldValue = func(ctx context.Context) (*EmailSettings, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().EmailSettings.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withEmailSettings sets the old EmailSettings of the mutation.
+func withEmailSettings(node *EmailSettings) emailsettingsOption {
+	return func(m *EmailSettingsMutation) {
+		m.oldValue = func(context.Context) (*EmailSettings, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m EmailSettingsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m EmailSettingsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of EmailSettings entities.
+func (m *EmailSettingsMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *EmailSettingsMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *EmailSettingsMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().EmailSettings.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetHost sets the "host" field.
+func (m *EmailSettingsMutation) SetHost(s string) {
+	m.host = &s
+}
+
+// Host returns the value of the "host" field in the mutation.
+func (m *EmailSettingsMutation) Host() (r string, exists bool) {
+	v := m.host
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHost returns the old "host" field's value of the EmailSettings entity.
+// If the EmailSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmailSettingsMutation) OldHost(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHost is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHost requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHost: %w", err)
+	}
+	return oldValue.Host, nil
+}
+
+// ResetHost resets all changes to the "host" field.
+func (m *EmailSettingsMutation) ResetHost() {
+	m.host = nil
+}
+
+// SetPort sets the "port" field.
+func (m *EmailSettingsMutation) SetPort(i int) {
+	m.port = &i
+	m.addport = nil
+}
+
+// Port returns the value of the "port" field in the mutation.
+func (m *EmailSettingsMutation) Port() (r int, exists bool) {
+	v := m.port
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPort returns the old "port" field's value of the EmailSettings entity.
+// If the EmailSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmailSettingsMutation) OldPort(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPort is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPort requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPort: %w", err)
+	}
+	return oldValue.Port, nil
+}
+
+// AddPort adds i to the "port" field.
+func (m *EmailSettingsMutation) AddPort(i int) {
+	if m.addport != nil {
+		*m.addport += i
+	} else {
+		m.addport = &i
+	}
+}
+
+// AddedPort returns the value that was added to the "port" field in this mutation.
+func (m *EmailSettingsMutation) AddedPort() (r int, exists bool) {
+	v := m.addport
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPort resets all changes to the "port" field.
+func (m *EmailSettingsMutation) ResetPort() {
+	m.port = nil
+	m.addport = nil
+}
+
+// SetUsername sets the "username" field.
+func (m *EmailSettingsMutation) SetUsername(s string) {
+	m.username = &s
+}
+
+// Username returns the value of the "username" field in the mutation.
+func (m *EmailSettingsMutation) Username() (r string, exists bool) {
+	v := m.username
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsername returns the old "username" field's value of the EmailSettings entity.
+// If the EmailSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmailSettingsMutation) OldUsername(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsername is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsername requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsername: %w", err)
+	}
+	return oldValue.Username, nil
+}
+
+// ResetUsername resets all changes to the "username" field.
+func (m *EmailSettingsMutation) ResetUsername() {
+	m.username = nil
+}
+
+// SetPassword sets the "password" field.
+func (m *EmailSettingsMutation) SetPassword(s string) {
+	m.password = &s
+}
+
+// Password returns the value of the "password" field in the mutation.
+func (m *EmailSettingsMutation) Password() (r string, exists bool) {
+	v := m.password
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPassword returns the old "password" field's value of the EmailSettings entity.
+// If the EmailSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmailSettingsMutation) OldPassword(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPassword is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPassword requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPassword: %w", err)
+	}
+	return oldValue.Password, nil
+}
+
+// ResetPassword resets all changes to the "password" field.
+func (m *EmailSettingsMutation) ResetPassword() {
+	m.password = nil
+}
+
+// SetFromAddress sets the "from_address" field.
+func (m *EmailSettingsMutation) SetFromAddress(s string) {
+	m.from_address = &s
+}
+
+// FromAddress returns the value of the "from_address" field in the mutation.
+func (m *EmailSettingsMutation) FromAddress() (r string, exists bool) {
+	v := m.from_address
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFromAddress returns the old "from_address" field's value of the EmailSettings entity.
+// If the EmailSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmailSettingsMutation) OldFromAddress(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFromAddress is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFromAddress requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFromAddress: %w", err)
+	}
+	return oldValue.FromAddress, nil
+}
+
+// ResetFromAddress resets all changes to the "from_address" field.
+func (m *EmailSettingsMutation) ResetFromAddress() {
+	m.from_address = nil
+}
+
+// SetUseTLS sets the "use_tls" field.
+func (m *EmailSettingsMutation) SetUseTLS(b bool) {
+	m.use_tls = &b
+}
+
+// UseTLS returns the value of the "use_tls" field in the mutation.
+func (m *EmailSettingsMutation) UseTLS() (r bool, exists bool) {
+	v := m.use_tls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUseTLS returns the old "use_tls" field's value of the EmailSettings entity.
+// If the EmailSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmailSettingsMutation) OldUseTLS(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUseTLS is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUseTLS requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUseTLS: %w", err)
+	}
+	return oldValue.UseTLS, nil
+}
+
+// ResetUseTLS resets all changes to the "use_tls" field.
+func (m *EmailSettingsMutation) ResetUseTLS() {
+	m.use_tls = nil
+}
+
+// Where appends a list predicates to the EmailSettingsMutation builder.
+func (m *EmailSettingsMutation) Where(ps ...predicate.EmailSettings) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the EmailSettingsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *EmailSettingsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.EmailSettings, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *EmailSettingsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *EmailSettingsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (EmailSettings).
+func (m *EmailSettingsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *EmailSettingsMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.host != nil {
+		fields = append(fields, emailsettings.FieldHost)
+	}
+	if m.port != nil {
+		fields = append(fields, emailsettings.FieldPort)
+	}
+	if m.username != nil {
+		fields = append(fields, emailsettings.FieldUsername)
+	}
+	if m.password != nil {
+		fields = append(fields, emailsettings.FieldPassword)
+	}
+	if m.from_address != nil {
+		fields = append(fields, emailsettings.FieldFromAddress)
+	}
+	if m.use_tls != nil {
+		fields = append(fields, emailsettings.FieldUseTLS)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *EmailSettingsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case emailsettings.FieldHost:
+		return m.Host()
+	case emailsettings.FieldPort:
+		return m.Port()
+	case emailsettings.FieldUsername:
+		return m.Username()
+	case emailsettings.FieldPassword:
+		return m.Password()
+	case emailsettings.FieldFromAddress:
+		return m.FromAddress()
+	case emailsettings.FieldUseTLS:
+		return m.UseTLS()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *EmailSettingsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case emailsettings.FieldHost:
+		return m.OldHost(ctx)
+	case emailsettings.FieldPort:
+		return m.OldPort(ctx)
+	case emailsettings.FieldUsername:
+		return m.OldUsername(ctx)
+	case emailsettings.FieldPassword:
+		return m.OldPassword(ctx)
+	case emailsettings.FieldFromAddress:
+		return m.OldFromAddress(ctx)
+	case emailsettings.FieldUseTLS:
+		return m.OldUseTLS(ctx)
+	}
+	return nil, fmt.Errorf("unknown EmailSettings field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *EmailSettingsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case emailsettings.FieldHost:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHost(v)
+		return nil
+	case emailsettings.FieldPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPort(v)
+		return nil
+	case emailsettings.FieldUsername:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsername(v)
+		return nil
+	case emailsettings.FieldPassword:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPassword(v)
+		return nil
+	case emailsettings.FieldFromAddress:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFromAddress(v)
+		return nil
+	case emailsettings.FieldUseTLS:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUseTLS(v)
+		return nil
+	}
+	return fmt.Errorf("unknown EmailSettings field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *EmailSettingsMutation) AddedFields() []string {
+	var fields []string
+	if m.addport != nil {
+		fields = append(fields, emailsettings.FieldPort)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *EmailSettingsMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case emailsettings.FieldPort:
+		return m.AddedPort()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *EmailSettingsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case emailsettings.FieldPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPort(v)
+		return nil
+	}
+	return fmt.Errorf("unknown EmailSettings numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *EmailSettingsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *EmailSettingsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *EmailSettingsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown EmailSettings nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *EmailSettingsMutation) ResetField(name string) error {
+	switch name {
+	case emailsettings.FieldHost:
+		m.ResetHost()
+		return nil
+	case emailsettings.FieldPort:
+		m.ResetPort()
+		return nil
+	case emailsettings.FieldUsername:
+		m.ResetUsername()
+		return nil
+	case emailsettings.FieldPassword:
+		m.ResetPassword()
+		return nil
+	case emailsettings.FieldFromAddress:
+		m.ResetFromAddress()
+		return nil
+	case emailsettings.FieldUseTLS:
+		m.ResetUseTLS()
+		return nil
+	}
+	return fmt.Errorf("unknown EmailSettings field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *EmailSettingsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *EmailSettingsMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *EmailSettingsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *EmailSettingsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *EmailSettingsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *EmailSettingsMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *EmailSettingsMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown EmailSettings unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *EmailSettingsMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown EmailSettings edge %s", name)
+}
+
 // F1Mutation represents an operation that mutates the F1 nodes in the graph.
 type F1Mutation struct {
 	config
@@ -2061,6 +3224,12 @@ type GeneralSettingsMutation struct {
 	text_slides            map[int]struct{}
 	removedtext_slides     map[int]struct{}
 	clearedtext_slides     bool
+	email_settings         map[int]struct{}
+	removedemail_settings  map[int]struct{}
+	clearedemail_settings  bool
+	ai_settings            map[int]struct{}
+	removedai_settings     map[int]struct{}
+	clearedai_settings     bool
 	done                   bool
 	oldValue               func(context.Context) (*GeneralSettings, error)
 	predicates             []predicate.GeneralSettings
@@ -3178,6 +4347,114 @@ func (m *GeneralSettingsMutation) ResetTextSlides() {
 	m.removedtext_slides = nil
 }
 
+// AddEmailSettingIDs adds the "email_settings" edge to the EmailSettings entity by ids.
+func (m *GeneralSettingsMutation) AddEmailSettingIDs(ids ...int) {
+	if m.email_settings == nil {
+		m.email_settings = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.email_settings[ids[i]] = struct{}{}
+	}
+}
+
+// ClearEmailSettings clears the "email_settings" edge to the EmailSettings entity.
+func (m *GeneralSettingsMutation) ClearEmailSettings() {
+	m.clearedemail_settings = true
+}
+
+// EmailSettingsCleared reports if the "email_settings" edge to the EmailSettings entity was cleared.
+func (m *GeneralSettingsMutation) EmailSettingsCleared() bool {
+	return m.clearedemail_settings
+}
+
+// RemoveEmailSettingIDs removes the "email_settings" edge to the EmailSettings entity by IDs.
+func (m *GeneralSettingsMutation) RemoveEmailSettingIDs(ids ...int) {
+	if m.removedemail_settings == nil {
+		m.removedemail_settings = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.email_settings, ids[i])
+		m.removedemail_settings[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedEmailSettings returns the removed IDs of the "email_settings" edge to the EmailSettings entity.
+func (m *GeneralSettingsMutation) RemovedEmailSettingsIDs() (ids []int) {
+	for id := range m.removedemail_settings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// EmailSettingsIDs returns the "email_settings" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) EmailSettingsIDs() (ids []int) {
+	for id := range m.email_settings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetEmailSettings resets all changes to the "email_settings" edge.
+func (m *GeneralSettingsMutation) ResetEmailSettings() {
+	m.email_settings = nil
+	m.clearedemail_settings = false
+	m.removedemail_settings = nil
+}
+
+// AddAiSettingIDs adds the "ai_settings" edge to the AISettings entity by ids.
+func (m *GeneralSettingsMutation) AddAiSettingIDs(ids ...int) {
+	if m.ai_settings == nil {
+		m.ai_settings = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.ai_settings[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAiSettings clears the "ai_settings" edge to the AISettings entity.
+func (m *GeneralSettingsMutation) ClearAiSettings() {
+	m.clearedai_settings = true
+}
+
+// AiSettingsCleared reports if the "ai_settings" edge to the AISettings entity was cleared.
+func (m *GeneralSettingsMutation) AiSettingsCleared() bool {
+	return m.clearedai_settings
+}
+
+// RemoveAiSettingIDs removes the "ai_settings" edge to the AISettings entity by IDs.
+func (m *GeneralSettingsMutation) RemoveAiSettingIDs(ids ...int) {
+	if m.removedai_settings == nil {
+		m.removedai_settings = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.ai_settings, ids[i])
+		m.removedai_settings[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAiSettings returns the removed IDs of the "ai_settings" edge to the AISettings entity.
+func (m *GeneralSettingsMutation) RemovedAiSettingsIDs() (ids []int) {
+	for id := range m.removedai_settings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AiSettingsIDs returns the "ai_settings" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) AiSettingsIDs() (ids []int) {
+	for id := range m.ai_settings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAiSettings resets all changes to the "ai_settings" edge.
+func (m *GeneralSettingsMutation) ResetAiSettings() {
+	m.ai_settings = nil
+	m.clearedai_settings = false
+	m.removedai_settings = nil
+}
+
 // Where appends a list predicates to the GeneralSettingsMutation builder.
 func (m *GeneralSettingsMutation) Where(ps ...predicate.GeneralSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -3401,7 +4678,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 17)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -3446,6 +4723,12 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.text_slides != nil {
 		edges = append(edges, generalsettings.EdgeTextSlides)
+	}
+	if m.email_settings != nil {
+		edges = append(edges, generalsettings.EdgeEmailSettings)
+	}
+	if m.ai_settings != nil {
+		edges = append(edges, generalsettings.EdgeAiSettings)
 	}
 	return edges
 }
@@ -3544,13 +4827,25 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeEmailSettings:
+		ids := make([]ent.Value, 0, len(m.email_settings))
+		for id := range m.email_settings {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeAiSettings:
+		ids := make([]ent.Value, 0, len(m.ai_settings))
+		for id := range m.ai_settings {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 17)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -3595,6 +4890,12 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removedtext_slides != nil {
 		edges = append(edges, generalsettings.EdgeTextSlides)
+	}
+	if m.removedemail_settings != nil {
+		edges = append(edges, generalsettings.EdgeEmailSettings)
+	}
+	if m.removedai_settings != nil {
+		edges = append(edges, generalsettings.EdgeAiSettings)
 	}
 	return edges
 }
@@ -3693,13 +4994,25 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeEmailSettings:
+		ids := make([]ent.Value, 0, len(m.removedemail_settings))
+		for id := range m.removedemail_settings {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeAiSettings:
+		ids := make([]ent.Value, 0, len(m.removedai_settings))
+		for id := range m.removedai_settings {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 17)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -3745,6 +5058,12 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	if m.clearedtext_slides {
 		edges = append(edges, generalsettings.EdgeTextSlides)
 	}
+	if m.clearedemail_settings {
+		edges = append(edges, generalsettings.EdgeEmailSettings)
+	}
+	if m.clearedai_settings {
+		edges = append(edges, generalsettings.EdgeAiSettings)
+	}
 	return edges
 }
 
@@ -3782,6 +5101,10 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedstocks
 	case generalsettings.EdgeTextSlides:
 		return m.clearedtext_slides
+	case generalsettings.EdgeEmailSettings:
+		return m.clearedemail_settings
+	case generalsettings.EdgeAiSettings:
+		return m.clearedai_settings
 	}
 	return false
 }
@@ -3842,6 +5165,12 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 		return nil
 	case generalsettings.EdgeTextSlides:
 		m.ResetTextSlides()
+		return nil
+	case generalsettings.EdgeEmailSettings:
+		m.ResetEmailSettings()
+		return nil
+	case generalsettings.EdgeAiSettings:
+		m.ResetAiSettings()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings edge %s", name)
@@ -4551,6 +5880,1201 @@ func (m *ImageMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ImageMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Image edge %s", name)
+}
+
+// LogEntryMutation represents an operation that mutates the LogEntry nodes in the graph.
+type LogEntryMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	timestamp     *time.Time
+	level         *string
+	source        *string
+	message       *string
+	metadata      *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*LogEntry, error)
+	predicates    []predicate.LogEntry
+}
+
+var _ ent.Mutation = (*LogEntryMutation)(nil)
+
+// logentryOption allows management of the mutation configuration using functional options.
+type logentryOption func(*LogEntryMutation)
+
+// newLogEntryMutation creates new mutation for the LogEntry entity.
+func newLogEntryMutation(c config, op Op, opts ...logentryOption) *LogEntryMutation {
+	m := &LogEntryMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeLogEntry,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withLogEntryID sets the ID field of the mutation.
+func withLogEntryID(id int) logentryOption {
+	return func(m *LogEntryMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *LogEntry
+		)
+		m.oldValue = func(ctx context.Context) (*LogEntry, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().LogEntry.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withLogEntry sets the old LogEntry of the mutation.
+func withLogEntry(node *LogEntry) logentryOption {
+	return func(m *LogEntryMutation) {
+		m.oldValue = func(context.Context) (*LogEntry, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m LogEntryMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m LogEntryMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of LogEntry entities.
+func (m *LogEntryMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *LogEntryMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *LogEntryMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().LogEntry.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (m *LogEntryMutation) SetTimestamp(t time.Time) {
+	m.timestamp = &t
+}
+
+// Timestamp returns the value of the "timestamp" field in the mutation.
+func (m *LogEntryMutation) Timestamp() (r time.Time, exists bool) {
+	v := m.timestamp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimestamp returns the old "timestamp" field's value of the LogEntry entity.
+// If the LogEntry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogEntryMutation) OldTimestamp(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimestamp is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimestamp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimestamp: %w", err)
+	}
+	return oldValue.Timestamp, nil
+}
+
+// ResetTimestamp resets all changes to the "timestamp" field.
+func (m *LogEntryMutation) ResetTimestamp() {
+	m.timestamp = nil
+}
+
+// SetLevel sets the "level" field.
+func (m *LogEntryMutation) SetLevel(s string) {
+	m.level = &s
+}
+
+// Level returns the value of the "level" field in the mutation.
+func (m *LogEntryMutation) Level() (r string, exists bool) {
+	v := m.level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLevel returns the old "level" field's value of the LogEntry entity.
+// If the LogEntry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogEntryMutation) OldLevel(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLevel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLevel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLevel: %w", err)
+	}
+	return oldValue.Level, nil
+}
+
+// ResetLevel resets all changes to the "level" field.
+func (m *LogEntryMutation) ResetLevel() {
+	m.level = nil
+}
+
+// SetSource sets the "source" field.
+func (m *LogEntryMutation) SetSource(s string) {
+	m.source = &s
+}
+
+// Source returns the value of the "source" field in the mutation.
+func (m *LogEntryMutation) Source() (r string, exists bool) {
+	v := m.source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSource returns the old "source" field's value of the LogEntry entity.
+// If the LogEntry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogEntryMutation) OldSource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+	}
+	return oldValue.Source, nil
+}
+
+// ResetSource resets all changes to the "source" field.
+func (m *LogEntryMutation) ResetSource() {
+	m.source = nil
+}
+
+// SetMessage sets the "message" field.
+func (m *LogEntryMutation) SetMessage(s string) {
+	m.message = &s
+}
+
+// Message returns the value of the "message" field in the mutation.
+func (m *LogEntryMutation) Message() (r string, exists bool) {
+	v := m.message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMessage returns the old "message" field's value of the LogEntry entity.
+// If the LogEntry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogEntryMutation) OldMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMessage: %w", err)
+	}
+	return oldValue.Message, nil
+}
+
+// ResetMessage resets all changes to the "message" field.
+func (m *LogEntryMutation) ResetMessage() {
+	m.message = nil
+}
+
+// SetMetadata sets the "metadata" field.
+func (m *LogEntryMutation) SetMetadata(s string) {
+	m.metadata = &s
+}
+
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *LogEntryMutation) Metadata() (r string, exists bool) {
+	v := m.metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetadata returns the old "metadata" field's value of the LogEntry entity.
+// If the LogEntry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogEntryMutation) OldMetadata(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
+	}
+	return oldValue.Metadata, nil
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (m *LogEntryMutation) ClearMetadata() {
+	m.metadata = nil
+	m.clearedFields[logentry.FieldMetadata] = struct{}{}
+}
+
+// MetadataCleared returns if the "metadata" field was cleared in this mutation.
+func (m *LogEntryMutation) MetadataCleared() bool {
+	_, ok := m.clearedFields[logentry.FieldMetadata]
+	return ok
+}
+
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *LogEntryMutation) ResetMetadata() {
+	m.metadata = nil
+	delete(m.clearedFields, logentry.FieldMetadata)
+}
+
+// Where appends a list predicates to the LogEntryMutation builder.
+func (m *LogEntryMutation) Where(ps ...predicate.LogEntry) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the LogEntryMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *LogEntryMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.LogEntry, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *LogEntryMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *LogEntryMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (LogEntry).
+func (m *LogEntryMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *LogEntryMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.timestamp != nil {
+		fields = append(fields, logentry.FieldTimestamp)
+	}
+	if m.level != nil {
+		fields = append(fields, logentry.FieldLevel)
+	}
+	if m.source != nil {
+		fields = append(fields, logentry.FieldSource)
+	}
+	if m.message != nil {
+		fields = append(fields, logentry.FieldMessage)
+	}
+	if m.metadata != nil {
+		fields = append(fields, logentry.FieldMetadata)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *LogEntryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case logentry.FieldTimestamp:
+		return m.Timestamp()
+	case logentry.FieldLevel:
+		return m.Level()
+	case logentry.FieldSource:
+		return m.Source()
+	case logentry.FieldMessage:
+		return m.Message()
+	case logentry.FieldMetadata:
+		return m.Metadata()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *LogEntryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case logentry.FieldTimestamp:
+		return m.OldTimestamp(ctx)
+	case logentry.FieldLevel:
+		return m.OldLevel(ctx)
+	case logentry.FieldSource:
+		return m.OldSource(ctx)
+	case logentry.FieldMessage:
+		return m.OldMessage(ctx)
+	case logentry.FieldMetadata:
+		return m.OldMetadata(ctx)
+	}
+	return nil, fmt.Errorf("unknown LogEntry field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LogEntryMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case logentry.FieldTimestamp:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimestamp(v)
+		return nil
+	case logentry.FieldLevel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLevel(v)
+		return nil
+	case logentry.FieldSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSource(v)
+		return nil
+	case logentry.FieldMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMessage(v)
+		return nil
+	case logentry.FieldMetadata:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetadata(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LogEntry field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *LogEntryMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *LogEntryMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LogEntryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown LogEntry numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *LogEntryMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(logentry.FieldMetadata) {
+		fields = append(fields, logentry.FieldMetadata)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *LogEntryMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *LogEntryMutation) ClearField(name string) error {
+	switch name {
+	case logentry.FieldMetadata:
+		m.ClearMetadata()
+		return nil
+	}
+	return fmt.Errorf("unknown LogEntry nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *LogEntryMutation) ResetField(name string) error {
+	switch name {
+	case logentry.FieldTimestamp:
+		m.ResetTimestamp()
+		return nil
+	case logentry.FieldLevel:
+		m.ResetLevel()
+		return nil
+	case logentry.FieldSource:
+		m.ResetSource()
+		return nil
+	case logentry.FieldMessage:
+		m.ResetMessage()
+		return nil
+	case logentry.FieldMetadata:
+		m.ResetMetadata()
+		return nil
+	}
+	return fmt.Errorf("unknown LogEntry field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *LogEntryMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *LogEntryMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *LogEntryMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *LogEntryMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *LogEntryMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *LogEntryMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *LogEntryMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown LogEntry unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *LogEntryMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown LogEntry edge %s", name)
+}
+
+// LogSettingsMutation represents an operation that mutates the LogSettings nodes in the graph.
+type LogSettingsMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int
+	verbosity         *string
+	retention_days    *int
+	addretention_days *int
+	otel_endpoint     *string
+	otel_protocol     *string
+	otel_enabled      *bool
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*LogSettings, error)
+	predicates        []predicate.LogSettings
+}
+
+var _ ent.Mutation = (*LogSettingsMutation)(nil)
+
+// logsettingsOption allows management of the mutation configuration using functional options.
+type logsettingsOption func(*LogSettingsMutation)
+
+// newLogSettingsMutation creates new mutation for the LogSettings entity.
+func newLogSettingsMutation(c config, op Op, opts ...logsettingsOption) *LogSettingsMutation {
+	m := &LogSettingsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeLogSettings,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withLogSettingsID sets the ID field of the mutation.
+func withLogSettingsID(id int) logsettingsOption {
+	return func(m *LogSettingsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *LogSettings
+		)
+		m.oldValue = func(ctx context.Context) (*LogSettings, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().LogSettings.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withLogSettings sets the old LogSettings of the mutation.
+func withLogSettings(node *LogSettings) logsettingsOption {
+	return func(m *LogSettingsMutation) {
+		m.oldValue = func(context.Context) (*LogSettings, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m LogSettingsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m LogSettingsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of LogSettings entities.
+func (m *LogSettingsMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *LogSettingsMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *LogSettingsMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().LogSettings.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetVerbosity sets the "verbosity" field.
+func (m *LogSettingsMutation) SetVerbosity(s string) {
+	m.verbosity = &s
+}
+
+// Verbosity returns the value of the "verbosity" field in the mutation.
+func (m *LogSettingsMutation) Verbosity() (r string, exists bool) {
+	v := m.verbosity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVerbosity returns the old "verbosity" field's value of the LogSettings entity.
+// If the LogSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogSettingsMutation) OldVerbosity(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVerbosity is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVerbosity requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVerbosity: %w", err)
+	}
+	return oldValue.Verbosity, nil
+}
+
+// ResetVerbosity resets all changes to the "verbosity" field.
+func (m *LogSettingsMutation) ResetVerbosity() {
+	m.verbosity = nil
+}
+
+// SetRetentionDays sets the "retention_days" field.
+func (m *LogSettingsMutation) SetRetentionDays(i int) {
+	m.retention_days = &i
+	m.addretention_days = nil
+}
+
+// RetentionDays returns the value of the "retention_days" field in the mutation.
+func (m *LogSettingsMutation) RetentionDays() (r int, exists bool) {
+	v := m.retention_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRetentionDays returns the old "retention_days" field's value of the LogSettings entity.
+// If the LogSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogSettingsMutation) OldRetentionDays(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRetentionDays is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRetentionDays requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRetentionDays: %w", err)
+	}
+	return oldValue.RetentionDays, nil
+}
+
+// AddRetentionDays adds i to the "retention_days" field.
+func (m *LogSettingsMutation) AddRetentionDays(i int) {
+	if m.addretention_days != nil {
+		*m.addretention_days += i
+	} else {
+		m.addretention_days = &i
+	}
+}
+
+// AddedRetentionDays returns the value that was added to the "retention_days" field in this mutation.
+func (m *LogSettingsMutation) AddedRetentionDays() (r int, exists bool) {
+	v := m.addretention_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRetentionDays resets all changes to the "retention_days" field.
+func (m *LogSettingsMutation) ResetRetentionDays() {
+	m.retention_days = nil
+	m.addretention_days = nil
+}
+
+// SetOtelEndpoint sets the "otel_endpoint" field.
+func (m *LogSettingsMutation) SetOtelEndpoint(s string) {
+	m.otel_endpoint = &s
+}
+
+// OtelEndpoint returns the value of the "otel_endpoint" field in the mutation.
+func (m *LogSettingsMutation) OtelEndpoint() (r string, exists bool) {
+	v := m.otel_endpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOtelEndpoint returns the old "otel_endpoint" field's value of the LogSettings entity.
+// If the LogSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogSettingsMutation) OldOtelEndpoint(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOtelEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOtelEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOtelEndpoint: %w", err)
+	}
+	return oldValue.OtelEndpoint, nil
+}
+
+// ClearOtelEndpoint clears the value of the "otel_endpoint" field.
+func (m *LogSettingsMutation) ClearOtelEndpoint() {
+	m.otel_endpoint = nil
+	m.clearedFields[logsettings.FieldOtelEndpoint] = struct{}{}
+}
+
+// OtelEndpointCleared returns if the "otel_endpoint" field was cleared in this mutation.
+func (m *LogSettingsMutation) OtelEndpointCleared() bool {
+	_, ok := m.clearedFields[logsettings.FieldOtelEndpoint]
+	return ok
+}
+
+// ResetOtelEndpoint resets all changes to the "otel_endpoint" field.
+func (m *LogSettingsMutation) ResetOtelEndpoint() {
+	m.otel_endpoint = nil
+	delete(m.clearedFields, logsettings.FieldOtelEndpoint)
+}
+
+// SetOtelProtocol sets the "otel_protocol" field.
+func (m *LogSettingsMutation) SetOtelProtocol(s string) {
+	m.otel_protocol = &s
+}
+
+// OtelProtocol returns the value of the "otel_protocol" field in the mutation.
+func (m *LogSettingsMutation) OtelProtocol() (r string, exists bool) {
+	v := m.otel_protocol
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOtelProtocol returns the old "otel_protocol" field's value of the LogSettings entity.
+// If the LogSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogSettingsMutation) OldOtelProtocol(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOtelProtocol is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOtelProtocol requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOtelProtocol: %w", err)
+	}
+	return oldValue.OtelProtocol, nil
+}
+
+// ClearOtelProtocol clears the value of the "otel_protocol" field.
+func (m *LogSettingsMutation) ClearOtelProtocol() {
+	m.otel_protocol = nil
+	m.clearedFields[logsettings.FieldOtelProtocol] = struct{}{}
+}
+
+// OtelProtocolCleared returns if the "otel_protocol" field was cleared in this mutation.
+func (m *LogSettingsMutation) OtelProtocolCleared() bool {
+	_, ok := m.clearedFields[logsettings.FieldOtelProtocol]
+	return ok
+}
+
+// ResetOtelProtocol resets all changes to the "otel_protocol" field.
+func (m *LogSettingsMutation) ResetOtelProtocol() {
+	m.otel_protocol = nil
+	delete(m.clearedFields, logsettings.FieldOtelProtocol)
+}
+
+// SetOtelEnabled sets the "otel_enabled" field.
+func (m *LogSettingsMutation) SetOtelEnabled(b bool) {
+	m.otel_enabled = &b
+}
+
+// OtelEnabled returns the value of the "otel_enabled" field in the mutation.
+func (m *LogSettingsMutation) OtelEnabled() (r bool, exists bool) {
+	v := m.otel_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOtelEnabled returns the old "otel_enabled" field's value of the LogSettings entity.
+// If the LogSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogSettingsMutation) OldOtelEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOtelEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOtelEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOtelEnabled: %w", err)
+	}
+	return oldValue.OtelEnabled, nil
+}
+
+// ResetOtelEnabled resets all changes to the "otel_enabled" field.
+func (m *LogSettingsMutation) ResetOtelEnabled() {
+	m.otel_enabled = nil
+}
+
+// Where appends a list predicates to the LogSettingsMutation builder.
+func (m *LogSettingsMutation) Where(ps ...predicate.LogSettings) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the LogSettingsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *LogSettingsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.LogSettings, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *LogSettingsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *LogSettingsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (LogSettings).
+func (m *LogSettingsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *LogSettingsMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.verbosity != nil {
+		fields = append(fields, logsettings.FieldVerbosity)
+	}
+	if m.retention_days != nil {
+		fields = append(fields, logsettings.FieldRetentionDays)
+	}
+	if m.otel_endpoint != nil {
+		fields = append(fields, logsettings.FieldOtelEndpoint)
+	}
+	if m.otel_protocol != nil {
+		fields = append(fields, logsettings.FieldOtelProtocol)
+	}
+	if m.otel_enabled != nil {
+		fields = append(fields, logsettings.FieldOtelEnabled)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *LogSettingsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case logsettings.FieldVerbosity:
+		return m.Verbosity()
+	case logsettings.FieldRetentionDays:
+		return m.RetentionDays()
+	case logsettings.FieldOtelEndpoint:
+		return m.OtelEndpoint()
+	case logsettings.FieldOtelProtocol:
+		return m.OtelProtocol()
+	case logsettings.FieldOtelEnabled:
+		return m.OtelEnabled()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *LogSettingsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case logsettings.FieldVerbosity:
+		return m.OldVerbosity(ctx)
+	case logsettings.FieldRetentionDays:
+		return m.OldRetentionDays(ctx)
+	case logsettings.FieldOtelEndpoint:
+		return m.OldOtelEndpoint(ctx)
+	case logsettings.FieldOtelProtocol:
+		return m.OldOtelProtocol(ctx)
+	case logsettings.FieldOtelEnabled:
+		return m.OldOtelEnabled(ctx)
+	}
+	return nil, fmt.Errorf("unknown LogSettings field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LogSettingsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case logsettings.FieldVerbosity:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVerbosity(v)
+		return nil
+	case logsettings.FieldRetentionDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRetentionDays(v)
+		return nil
+	case logsettings.FieldOtelEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOtelEndpoint(v)
+		return nil
+	case logsettings.FieldOtelProtocol:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOtelProtocol(v)
+		return nil
+	case logsettings.FieldOtelEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOtelEnabled(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LogSettings field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *LogSettingsMutation) AddedFields() []string {
+	var fields []string
+	if m.addretention_days != nil {
+		fields = append(fields, logsettings.FieldRetentionDays)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *LogSettingsMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case logsettings.FieldRetentionDays:
+		return m.AddedRetentionDays()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LogSettingsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case logsettings.FieldRetentionDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRetentionDays(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LogSettings numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *LogSettingsMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(logsettings.FieldOtelEndpoint) {
+		fields = append(fields, logsettings.FieldOtelEndpoint)
+	}
+	if m.FieldCleared(logsettings.FieldOtelProtocol) {
+		fields = append(fields, logsettings.FieldOtelProtocol)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *LogSettingsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *LogSettingsMutation) ClearField(name string) error {
+	switch name {
+	case logsettings.FieldOtelEndpoint:
+		m.ClearOtelEndpoint()
+		return nil
+	case logsettings.FieldOtelProtocol:
+		m.ClearOtelProtocol()
+		return nil
+	}
+	return fmt.Errorf("unknown LogSettings nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *LogSettingsMutation) ResetField(name string) error {
+	switch name {
+	case logsettings.FieldVerbosity:
+		m.ResetVerbosity()
+		return nil
+	case logsettings.FieldRetentionDays:
+		m.ResetRetentionDays()
+		return nil
+	case logsettings.FieldOtelEndpoint:
+		m.ResetOtelEndpoint()
+		return nil
+	case logsettings.FieldOtelProtocol:
+		m.ResetOtelProtocol()
+		return nil
+	case logsettings.FieldOtelEnabled:
+		m.ResetOtelEnabled()
+		return nil
+	}
+	return fmt.Errorf("unknown LogSettings field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *LogSettingsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *LogSettingsMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *LogSettingsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *LogSettingsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *LogSettingsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *LogSettingsMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *LogSettingsMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown LogSettings unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *LogSettingsMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown LogSettings edge %s", name)
 }
 
 // RadarrMutation represents an operation that mutates the Radarr nodes in the graph.

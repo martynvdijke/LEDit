@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AISettings is the predicate function for aisettings builders.
+type AISettings func(*sql.Selector)
+
 // Calendar is the predicate function for calendar builders.
 type Calendar func(*sql.Selector)
 
@@ -14,6 +17,9 @@ type Crypto func(*sql.Selector)
 
 // DeviceSettings is the predicate function for devicesettings builders.
 type DeviceSettings func(*sql.Selector)
+
+// EmailSettings is the predicate function for emailsettings builders.
+type EmailSettings func(*sql.Selector)
 
 // F1 is the predicate function for f1 builders.
 type F1 func(*sql.Selector)
@@ -26,6 +32,12 @@ type HomeAssistant func(*sql.Selector)
 
 // Image is the predicate function for image builders.
 type Image func(*sql.Selector)
+
+// LogEntry is the predicate function for logentry builders.
+type LogEntry func(*sql.Selector)
+
+// LogSettings is the predicate function for logsettings builders.
+type LogSettings func(*sql.Selector)
 
 // Radarr is the predicate function for radarr builders.
 type Radarr func(*sql.Selector)

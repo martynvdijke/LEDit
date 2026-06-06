@@ -4,7 +4,7 @@ import (
 	"context"
 	"html/template"
 	"io/fs"
-	"log"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -12,13 +12,17 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
 	"ledit/ent"
+	"ledit/logging"
 )
 
 type Server struct {
-	Router *gin.Engine
-	DB     *ent.Client
-	WSHub  *WSHub
-	Ctx    context.Context
+	Router       *gin.Engine
+	DB           *ent.Client
+	WSHub        *WSHub
+	Ctx          context.Context
+	LogStore     *logging.LogStore
+	OTelExporter *logging.OTelExporter
+	LogCleanup   *logging.LogCleanup
 }
 
 func New(driver *sql.Driver) *Server {
@@ -26,16 +30,24 @@ func New(driver *sql.Driver) *Server {
 	ctx := context.Background()
 
 	if err := client.Schema.Create(ctx); err != nil {
-		log.Fatalf("Failed to create schema resources: %v", err)
+		slog.Error("Failed to create schema resources", "error", err)
+		panic(err)
 	}
+
+	// Initialize central logging system (DB-backed, OTEL-ready).
+	// This sets slog.SetDefault, so all subsequent slog calls use it.
+	logStore, otelExp, logCleanup := logging.InitLogging(client, "warn")
 
 	router := gin.Default()
 
 	srv := &Server{
-		Router: router,
-		DB:     client,
-		WSHub:  NewWSHub(client),
-		Ctx:    ctx,
+		Router:       router,
+		DB:           client,
+		WSHub:        NewWSHub(client),
+		Ctx:          ctx,
+		LogStore:     logStore,
+		OTelExporter: otelExp,
+		LogCleanup:   logCleanup,
 	}
 
 	srv.setupRoutes()
@@ -200,6 +212,22 @@ func (s *Server) setupRoutes() {
 		admin.GET("/textslides/:id/edit", s.AdminTextSlideEdit)
 		admin.POST("/textslides/:id/edit", s.AdminTextSlideUpdate)
 		admin.POST("/textslides/:id/delete", s.AdminTextSlideDelete)
+
+		// Log Viewer (Phase 11)
+		admin.GET("/logs", s.AdminLogs)
+		admin.GET("/api/logs", s.AdminLogsAPI)
+
+		// Log Settings
+		admin.GET("/settings/logs", s.AdminLogSettings)
+		admin.POST("/settings/logs", s.AdminLogSettingsSave)
+
+		// Email Settings
+		admin.GET("/settings/email", s.AdminEmailSettings)
+		admin.POST("/settings/email", s.AdminEmailSettingsSave)
+
+		// AI Settings
+		admin.GET("/settings/ai", s.AdminAISettings)
+		admin.POST("/settings/ai", s.AdminAISettingsSave)
 
 		// Analytics (Phase 10)
 		admin.GET("/analytics", s.AdminAnalytics)

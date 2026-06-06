@@ -8,77 +8,7 @@
 </head>
 <body>
     <div class="d-flex">
-        <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white" style="width: 250px; min-height: 100vh;">
-            <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none">
-                <span class="fs-4">LEDit</span>
-            </a>
-            <hr>
-            <ul class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item">
-                    <a href="/" class="nav-link text-white">Home</a>
-                </li>
-                <li>
-                    <a href="/admin/" class="nav-link text-white">Dashboard</a>
-                </li>
-                <li>
-                    <a href="/admin/settings" class="nav-link text-white">Settings</a>
-                </li>
-                <li>
-                    <a href="/admin/schedules" class="nav-link text-white">Schedules</a>
-                </li>
-                <li>
-                    <a href="/admin/devices" class="nav-link text-white">Devices</a>
-                </li>
-                <li>
-                    <a href="/admin/theme" class="nav-link text-white">Theme</a>
-                </li>
-                <li>
-                    <a href="/admin/analytics" class="nav-link text-white">Analytics</a>
-                </li>
-                <li>
-                    <a href="/admin/notifications" class="nav-link text-white">Notifications</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/sonarr/new" class="nav-link text-white">Add Sonarr</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/radarr/new" class="nav-link text-white">Add Radarr</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/f1/new" class="nav-link text-white">Add F1</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/weather/new" class="nav-link text-white">Add Weather</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/homeassistant/new" class="nav-link text-white">Add HA</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/untappd/new" class="nav-link text-white">Add Untappd</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/images/new" class="nav-link text-white">Add Image</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/videos/new" class="nav-link text-white">Add Video</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/crypto/new" class="nav-link text-white">Add Crypto</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/stock/new" class="nav-link text-white">Add Stock</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/rssfeed/new" class="nav-link text-white">Add RSS</a>
-                </li>
-                <li>
-                    <a href="/admin/datasources/calendar/new" class="nav-link text-white">Add Calendar</a>
-                </li>
-                <li>
-                    <a href="/admin/textslides/new" class="nav-link text-white">Add Text Slide</a>
-                </li>
-            </ul>
-        </div>
+        {{template "sidebar" .}}
         <div class="container-fluid p-4">
             <h1>{{if .edit}}Edit{{else}}New{{end}} Text Slide</h1>
             <form method="POST" action="/admin/textslides{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4">

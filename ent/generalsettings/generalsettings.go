@@ -50,6 +50,10 @@ const (
 	EdgeStocks = "stocks"
 	// EdgeTextSlides holds the string denoting the text_slides edge name in mutations.
 	EdgeTextSlides = "text_slides"
+	// EdgeEmailSettings holds the string denoting the email_settings edge name in mutations.
+	EdgeEmailSettings = "email_settings"
+	// EdgeAiSettings holds the string denoting the ai_settings edge name in mutations.
+	EdgeAiSettings = "ai_settings"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -157,6 +161,20 @@ const (
 	TextSlidesInverseTable = "text_slides"
 	// TextSlidesColumn is the table column denoting the text_slides relation/edge.
 	TextSlidesColumn = "general_settings_text_slides"
+	// EmailSettingsTable is the table that holds the email_settings relation/edge.
+	EmailSettingsTable = "email_settings"
+	// EmailSettingsInverseTable is the table name for the EmailSettings entity.
+	// It exists in this package in order to avoid circular dependency with the "emailsettings" package.
+	EmailSettingsInverseTable = "email_settings"
+	// EmailSettingsColumn is the table column denoting the email_settings relation/edge.
+	EmailSettingsColumn = "general_settings_email_settings"
+	// AiSettingsTable is the table that holds the ai_settings relation/edge.
+	AiSettingsTable = "ai_settings"
+	// AiSettingsInverseTable is the table name for the AISettings entity.
+	// It exists in this package in order to avoid circular dependency with the "aisettings" package.
+	AiSettingsInverseTable = "ai_settings"
+	// AiSettingsColumn is the table column denoting the ai_settings relation/edge.
+	AiSettingsColumn = "general_settings_ai_settings"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -422,6 +440,34 @@ func ByTextSlides(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTextSlidesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByEmailSettingsCount orders the results by email_settings count.
+func ByEmailSettingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEmailSettingsStep(), opts...)
+	}
+}
+
+// ByEmailSettings orders the results by email_settings terms.
+func ByEmailSettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEmailSettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByAiSettingsCount orders the results by ai_settings count.
+func ByAiSettingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAiSettingsStep(), opts...)
+	}
+}
+
+// ByAiSettings orders the results by ai_settings terms.
+func ByAiSettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAiSettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -525,5 +571,19 @@ func newTextSlidesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TextSlidesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, TextSlidesTable, TextSlidesColumn),
+	)
+}
+func newEmailSettingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EmailSettingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, EmailSettingsTable, EmailSettingsColumn),
+	)
+}
+func newAiSettingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AiSettingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AiSettingsTable, AiSettingsColumn),
 	)
 }

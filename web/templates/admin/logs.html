@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Logs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .log-table { font-family: monospace; font-size: 0.85rem; }
+        .log-table td { vertical-align: top; }
+        .level-trace { color: #6c757d; }
+        .level-debug { color: #0dcaf0; }
+        .level-info { color: #198754; }
+        .level-warn { color: #ffc107; }
+        .level-error { color: #dc3545; }
+        .level-fatal { color: #dc3545; font-weight: bold; }
+        .log-detail { white-space: pre-wrap; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>Log Viewer</h1>
+
+            <form id="log-filter" class="row g-3 mt-3 mb-3">
+                <div class="col-md-2">
+                    <label for="level" class="form-label">Level</label>
+                    <select class="form-select" id="level" name="level">
+                        <option value="">All</option>
+                        {{range .levels}}
+                        <option value="{{.}}">{{.}}</option>
+                        {{end}}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="source" class="form-label">Source</label>
+                    <input type="text" class="form-control" id="source" name="source" placeholder="Filter by source">
+                </div>
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" placeholder="Search messages...">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" id="refresh-btn" class="btn btn-outline-secondary" title="Refresh">↻</button>
+                </div>
+            </form>
+
+            <div id="log-stats" class="mb-2 text-muted small"></div>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-striped log-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px">Level</th>
+                            <th style="width: 160px">Timestamp</th>
+                            <th style="width: 100px">Source</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-entries">
+                        <tr><td colspan="4" class="text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <nav id="log-pagination" aria-label="Log pagination">
+                <ul class="pagination pagination-sm justify-content-center">
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentPage = 1;
+
+        function fetchLogs(page) {
+            currentPage = page;
+            const level = document.getElementById('level').value;
+            const source = document.getElementById('source').value;
+            const search = document.getElementById('search').value;
+
+            const params = new URLSearchParams({
+                page: page,
+                page_size: 50,
+                level: level,
+                source: source,
+                search: search
+            });
+
+            fetch('/admin/api/logs?' + params.toString())
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById('log-entries');
+                    tbody.innerHTML = '';
+
+                    if (data.items.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">No log entries found.</td></tr>';
+                    } else {
+                        data.items.forEach(function(entry) {
+                            const ts = new Date(entry.timestamp).toLocaleString();
+                            const levelClass = 'level-' + entry.level;
+                            const metaHtml = entry.metadata
+                                ? '<br><span class="text-muted small">' + escapeHtml(entry.metadata) + '</span>'
+                                : '';
+                            tbody.innerHTML += '<tr>' +
+                                '<td class="' + levelClass + '"><strong>' + entry.level.toUpperCase() + '</strong></td>' +
+                                '<td class="text-muted">' + ts + '</td>' +
+                                '<td>' + escapeHtml(entry.source) + '</td>' +
+                                '<td class="log-detail">' + escapeHtml(entry.message) + metaHtml + '</td>' +
+                                '</tr>';
+                        });
+                    }
+
+                    document.getElementById('log-stats').textContent =
+                        'Showing ' + data.items.length + ' of ' + data.total + ' entries (page ' + data.page + ' of ' + data.total_pages + ')';
+
+                    renderPagination(data);
+                })
+                .catch(function(err) {
+                    document.getElementById('log-entries').innerHTML =
+                        '<tr><td colspan="4" class="text-danger">Error loading logs: ' + err.message + '</td></tr>';
+                });
+        }
+
+        function renderPagination(data) {
+            const ul = document.querySelector('#log-pagination ul');
+            ul.innerHTML = '';
+
+            if (data.total_pages <= 1) return;
+
+            const prev = document.createElement('li');
+            prev.className = 'page-item' + (data.page <= 1 ? ' disabled' : '');
+            prev.innerHTML = '<a class="page-link" href="#">Previous</a>';
+            prev.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (data.page > 1) fetchLogs(data.page - 1);
+            });
+            ul.appendChild(prev);
+
+            for (let i = 1; i <= data.total_pages; i++) {
+                const li = document.createElement('li');
+                li.className = 'page-item' + (i === data.page ? ' active' : '');
+                li.innerHTML = '<a class="page-link" href="#">' + i + '</a>';
+                li.addEventListener('click', (function(p) {
+                    return function(e) {
+                        e.preventDefault();
+                        fetchLogs(p);
+                    };
+                })(i));
+                ul.appendChild(li);
+            }
+
+            const next = document.createElement('li');
+            next.className = 'page-item' + (data.page >= data.total_pages ? ' disabled' : '');
+            next.innerHTML = '<a class="page-link" href="#">Next</a>';
+            next.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (data.page < data.total_pages) fetchLogs(data.page + 1);
+            });
+            ul.appendChild(next);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.getElementById('log-filter').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetchLogs(1);
+        });
+
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            fetchLogs(currentPage);
+        });
+
+        // Auto-refresh every 10 seconds
+        fetchLogs(1);
+        setInterval(function() {
+            fetchLogs(currentPage);
+        }, 10000);
+    </script>
+</body>
+</html>

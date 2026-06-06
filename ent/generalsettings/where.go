@@ -549,6 +549,52 @@ func HasTextSlidesWith(preds ...predicate.TextSlide) predicate.GeneralSettings {
 	})
 }
 
+// HasEmailSettings applies the HasEdge predicate on the "email_settings" edge.
+func HasEmailSettings() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, EmailSettingsTable, EmailSettingsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEmailSettingsWith applies the HasEdge predicate on the "email_settings" edge with a given conditions (other predicates).
+func HasEmailSettingsWith(preds ...predicate.EmailSettings) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newEmailSettingsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAiSettings applies the HasEdge predicate on the "ai_settings" edge.
+func HasAiSettings() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AiSettingsTable, AiSettingsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAiSettingsWith applies the HasEdge predicate on the "ai_settings" edge with a given conditions (other predicates).
+func HasAiSettingsWith(preds ...predicate.AISettings) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newAiSettingsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.GeneralSettings) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.AndPredicates(predicates...))

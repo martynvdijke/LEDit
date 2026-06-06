@@ -8,6 +8,29 @@ import (
 )
 
 var (
+	// AiSettingsColumns holds the columns for the "ai_settings" table.
+	AiSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "provider", Type: field.TypeString},
+		{Name: "api_key", Type: field.TypeString},
+		{Name: "model", Type: field.TypeString},
+		{Name: "endpoint", Type: field.TypeString, Nullable: true},
+		{Name: "general_settings_ai_settings", Type: field.TypeInt, Nullable: true},
+	}
+	// AiSettingsTable holds the schema information for the "ai_settings" table.
+	AiSettingsTable = &schema.Table{
+		Name:       "ai_settings",
+		Columns:    AiSettingsColumns,
+		PrimaryKey: []*schema.Column{AiSettingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "ai_settings_general_settings_ai_settings",
+				Columns:    []*schema.Column{AiSettingsColumns[5]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// CalendarsColumns holds the columns for the "calendars" table.
 	CalendarsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -72,6 +95,31 @@ var (
 			{
 				Symbol:     "device_settings_general_settings_device_settings",
 				Columns:    []*schema.Column{DeviceSettingsColumns[9]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// EmailSettingsColumns holds the columns for the "email_settings" table.
+	EmailSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "host", Type: field.TypeString},
+		{Name: "port", Type: field.TypeInt},
+		{Name: "username", Type: field.TypeString},
+		{Name: "password", Type: field.TypeString},
+		{Name: "from_address", Type: field.TypeString},
+		{Name: "use_tls", Type: field.TypeBool, Default: true},
+		{Name: "general_settings_email_settings", Type: field.TypeInt, Nullable: true},
+	}
+	// EmailSettingsTable holds the schema information for the "email_settings" table.
+	EmailSettingsTable = &schema.Table{
+		Name:       "email_settings",
+		Columns:    EmailSettingsColumns,
+		PrimaryKey: []*schema.Column{EmailSettingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "email_settings_general_settings_email_settings",
+				Columns:    []*schema.Column{EmailSettingsColumns[7]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -152,6 +200,43 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 		},
+	}
+	// LogEntriesColumns holds the columns for the "log_entries" table.
+	LogEntriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "timestamp", Type: field.TypeTime},
+		{Name: "level", Type: field.TypeString},
+		{Name: "source", Type: field.TypeString},
+		{Name: "message", Type: field.TypeString},
+		{Name: "metadata", Type: field.TypeString, Nullable: true},
+	}
+	// LogEntriesTable holds the schema information for the "log_entries" table.
+	LogEntriesTable = &schema.Table{
+		Name:       "log_entries",
+		Columns:    LogEntriesColumns,
+		PrimaryKey: []*schema.Column{LogEntriesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "logentry_level_timestamp",
+				Unique:  false,
+				Columns: []*schema.Column{LogEntriesColumns[2], LogEntriesColumns[1]},
+			},
+		},
+	}
+	// LogSettingsColumns holds the columns for the "log_settings" table.
+	LogSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "verbosity", Type: field.TypeString, Default: "warn"},
+		{Name: "retention_days", Type: field.TypeInt, Default: 7},
+		{Name: "otel_endpoint", Type: field.TypeString, Nullable: true},
+		{Name: "otel_protocol", Type: field.TypeString, Nullable: true},
+		{Name: "otel_enabled", Type: field.TypeBool, Default: false},
+	}
+	// LogSettingsTable holds the schema information for the "log_settings" table.
+	LogSettingsTable = &schema.Table{
+		Name:       "log_settings",
+		Columns:    LogSettingsColumns,
+		PrimaryKey: []*schema.Column{LogSettingsColumns[0]},
 	}
 	// RadarrsColumns holds the columns for the "radarrs" table.
 	RadarrsColumns = []*schema.Column{
@@ -346,13 +431,17 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AiSettingsTable,
 		CalendarsTable,
 		CryptosTable,
 		DeviceSettingsTable,
+		EmailSettingsTable,
 		F1sTable,
 		GeneralSettingsTable,
 		HomeAssistantsTable,
 		ImagesTable,
+		LogEntriesTable,
+		LogSettingsTable,
 		RadarrsTable,
 		RssFeedsTable,
 		SchedulesTable,
@@ -366,9 +455,11 @@ var (
 )
 
 func init() {
+	AiSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	CalendarsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	CryptosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	DeviceSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	EmailSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	F1sTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	HomeAssistantsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	ImagesTable.ForeignKeys[0].RefTable = GeneralSettingsTable

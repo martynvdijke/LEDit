@@ -6,9 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/aisettings"
 	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
+	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
@@ -297,6 +299,36 @@ func (_c *GeneralSettingsCreate) AddTextSlides(v ...*TextSlide) *GeneralSettings
 		ids[i] = v[i].ID
 	}
 	return _c.AddTextSlideIDs(ids...)
+}
+
+// AddEmailSettingIDs adds the "email_settings" edge to the EmailSettings entity by IDs.
+func (_c *GeneralSettingsCreate) AddEmailSettingIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddEmailSettingIDs(ids...)
+	return _c
+}
+
+// AddEmailSettings adds the "email_settings" edges to the EmailSettings entity.
+func (_c *GeneralSettingsCreate) AddEmailSettings(v ...*EmailSettings) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddEmailSettingIDs(ids...)
+}
+
+// AddAiSettingIDs adds the "ai_settings" edge to the AISettings entity by IDs.
+func (_c *GeneralSettingsCreate) AddAiSettingIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddAiSettingIDs(ids...)
+	return _c
+}
+
+// AddAiSettings adds the "ai_settings" edges to the AISettings entity.
+func (_c *GeneralSettingsCreate) AddAiSettings(v ...*AISettings) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAiSettingIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -633,6 +665,38 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(textslide.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.EmailSettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.EmailSettingsTable,
+			Columns: []string{generalsettings.EmailSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(emailsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AiSettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AiSettingsTable,
+			Columns: []string{generalsettings.AiSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aisettings.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

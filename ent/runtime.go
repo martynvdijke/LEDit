@@ -6,9 +6,11 @@ import (
 	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
+	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
+	"ledit/ent/logsettings"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -74,6 +76,12 @@ func init() {
 	devicesettingsDescEnabled := devicesettingsFields[7].Descriptor()
 	// devicesettings.DefaultEnabled holds the default value on creation for the enabled field.
 	devicesettings.DefaultEnabled = devicesettingsDescEnabled.Default.(bool)
+	emailsettingsFields := schema.EmailSettings{}.Fields()
+	_ = emailsettingsFields
+	// emailsettingsDescUseTLS is the schema descriptor for use_tls field.
+	emailsettingsDescUseTLS := emailsettingsFields[6].Descriptor()
+	// emailsettings.DefaultUseTLS holds the default value on creation for the use_tls field.
+	emailsettings.DefaultUseTLS = emailsettingsDescUseTLS.Default.(bool)
 	f1Fields := schema.F1{}.Fields()
 	_ = f1Fields
 	// f1DescToken is the schema descriptor for token field.
@@ -104,6 +112,20 @@ func init() {
 	homeassistantDescURL := homeassistantFields[1].Descriptor()
 	// homeassistant.DefaultURL holds the default value on creation for the url field.
 	homeassistant.DefaultURL = homeassistantDescURL.Default.(string)
+	logsettingsFields := schema.LogSettings{}.Fields()
+	_ = logsettingsFields
+	// logsettingsDescVerbosity is the schema descriptor for verbosity field.
+	logsettingsDescVerbosity := logsettingsFields[1].Descriptor()
+	// logsettings.DefaultVerbosity holds the default value on creation for the verbosity field.
+	logsettings.DefaultVerbosity = logsettingsDescVerbosity.Default.(string)
+	// logsettingsDescRetentionDays is the schema descriptor for retention_days field.
+	logsettingsDescRetentionDays := logsettingsFields[2].Descriptor()
+	// logsettings.DefaultRetentionDays holds the default value on creation for the retention_days field.
+	logsettings.DefaultRetentionDays = logsettingsDescRetentionDays.Default.(int)
+	// logsettingsDescOtelEnabled is the schema descriptor for otel_enabled field.
+	logsettingsDescOtelEnabled := logsettingsFields[5].Descriptor()
+	// logsettings.DefaultOtelEnabled holds the default value on creation for the otel_enabled field.
+	logsettings.DefaultOtelEnabled = logsettingsDescOtelEnabled.Default.(bool)
 	radarrFields := schema.Radarr{}.Fields()
 	_ = radarrFields
 	// radarrDescToken is the schema descriptor for token field.

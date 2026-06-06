@@ -12,12 +12,16 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// AISettings is the client for interacting with the AISettings builders.
+	AISettings *AISettingsClient
 	// Calendar is the client for interacting with the Calendar builders.
 	Calendar *CalendarClient
 	// Crypto is the client for interacting with the Crypto builders.
 	Crypto *CryptoClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
 	DeviceSettings *DeviceSettingsClient
+	// EmailSettings is the client for interacting with the EmailSettings builders.
+	EmailSettings *EmailSettingsClient
 	// F1 is the client for interacting with the F1 builders.
 	F1 *F1Client
 	// GeneralSettings is the client for interacting with the GeneralSettings builders.
@@ -26,6 +30,10 @@ type Tx struct {
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// LogEntry is the client for interacting with the LogEntry builders.
+	LogEntry *LogEntryClient
+	// LogSettings is the client for interacting with the LogSettings builders.
+	LogSettings *LogSettingsClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
 	// RssFeed is the client for interacting with the RssFeed builders.
@@ -175,13 +183,17 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.AISettings = NewAISettingsClient(tx.config)
 	tx.Calendar = NewCalendarClient(tx.config)
 	tx.Crypto = NewCryptoClient(tx.config)
 	tx.DeviceSettings = NewDeviceSettingsClient(tx.config)
+	tx.EmailSettings = NewEmailSettingsClient(tx.config)
 	tx.F1 = NewF1Client(tx.config)
 	tx.GeneralSettings = NewGeneralSettingsClient(tx.config)
 	tx.HomeAssistant = NewHomeAssistantClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
+	tx.LogEntry = NewLogEntryClient(tx.config)
+	tx.LogSettings = NewLogSettingsClient(tx.config)
 	tx.Radarr = NewRadarrClient(tx.config)
 	tx.RssFeed = NewRssFeedClient(tx.config)
 	tx.Schedule = NewScheduleClient(tx.config)
@@ -200,7 +212,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Calendar.QueryXXX(), the query will be executed
+// applies a query, for example: AISettings.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

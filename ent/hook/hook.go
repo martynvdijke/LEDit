@@ -8,6 +8,18 @@ import (
 	"ledit/ent"
 )
 
+// The AISettingsFunc type is an adapter to allow the use of ordinary
+// function as AISettings mutator.
+type AISettingsFunc func(context.Context, *ent.AISettingsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AISettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AISettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AISettingsMutation", m)
+}
+
 // The CalendarFunc type is an adapter to allow the use of ordinary
 // function as Calendar mutator.
 type CalendarFunc func(context.Context, *ent.CalendarMutation) (ent.Value, error)
@@ -42,6 +54,18 @@ func (f DeviceSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DeviceSettingsMutation", m)
+}
+
+// The EmailSettingsFunc type is an adapter to allow the use of ordinary
+// function as EmailSettings mutator.
+type EmailSettingsFunc func(context.Context, *ent.EmailSettingsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EmailSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EmailSettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EmailSettingsMutation", m)
 }
 
 // The F1Func type is an adapter to allow the use of ordinary
@@ -90,6 +114,30 @@ func (f ImageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ImageMutation", m)
+}
+
+// The LogEntryFunc type is an adapter to allow the use of ordinary
+// function as LogEntry mutator.
+type LogEntryFunc func(context.Context, *ent.LogEntryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LogEntryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LogEntryMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LogEntryMutation", m)
+}
+
+// The LogSettingsFunc type is an adapter to allow the use of ordinary
+// function as LogSettings mutator.
+type LogSettingsFunc func(context.Context, *ent.LogSettingsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LogSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LogSettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LogSettingsMutation", m)
 }
 
 // The RadarrFunc type is an adapter to allow the use of ordinary

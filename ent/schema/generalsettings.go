@@ -36,5 +36,7 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("calendars", Calendar.Type),
 		edge.To("stocks", Stock.Type),
 		edge.To("text_slides", TextSlide.Type),
+		edge.To("email_settings", EmailSettings.Type),
+		edge.To("ai_settings", AISettings.Type),
 	}
 }
