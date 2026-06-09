@@ -1,3 +1,18 @@
+# [1.4.0](https://github.com/martynvdijke/LEDit/compare/v1.3.0...v1.4.0) (2026-06-09)
+
+
+### Bug Fixes
+
+* add actions:read and checks:read permissions to reusable ci workflow call ([f383e96](https://github.com/martynvdijke/LEDit/commit/f383e96b5a5fbc05c40d8babcb7feb623ec5b264))
+* rename githubToken to otelToken for otel-cicd-action@v4 ([0ff3c16](https://github.com/martynvdijke/LEDit/commit/0ff3c160a54ba2ba7c933cf9ccfac743b26e212b))
+* use githubToken (correct param for otel-cicd-action@v4) instead of otelToken ([cd234b6](https://github.com/martynvdijke/LEDit/commit/cd234b6e9829ff427be7a15088373350455beb72))
+* use githubToken instead of otelToken for otel-cicd-action@v4 ([7f29a4e](https://github.com/martynvdijke/LEDit/commit/7f29a4e5096fd92245ac248e94813611834ee8bf))
+
+
+### Features
+
+* add otlpAuthorization input for Bearer auth ([1886e29](https://github.com/martynvdijke/LEDit/commit/1886e29283524f33437815b71b2bb8521f52b49a))
+
 # [1.3.0](https://github.com/martynvdijke/LEDit/compare/v1.2.0...v1.3.0) (2026-06-06)
 
 
