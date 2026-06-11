@@ -65,7 +65,7 @@ func (h *DBHandler) Handle(_ context.Context, r slog.Record) error {
 
 	// Export via OTel
 	if h.otel != nil && h.otel.IsEnabled() {
-		h.otel.Export(context.Background(), levelName, source, msg, metadata)
+		h.otel.Export(context.Background(), r.Level, source, msg, metadata)
 	}
 
 	return nil

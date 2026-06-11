@@ -3,6 +3,8 @@ package logging
 import (
 	"log/slog"
 	"strings"
+
+	"go.opentelemetry.io/otel/log"
 )
 
 // ParseLevel converts a string level name to slog.Level.
@@ -48,4 +50,22 @@ func LevelName(l slog.Level) string {
 // ValidLevels returns all valid level names.
 func ValidLevels() []string {
 	return []string{"trace", "debug", "info", "warn", "error", "fatal"}
+}
+
+// LevelToOTELSeverity maps an slog.Level to an OpenTelemetry log.Severity.
+func LevelToOTELSeverity(l slog.Level) log.Severity {
+	switch {
+	case l < slog.LevelDebug:
+		return log.SeverityTrace
+	case l < slog.LevelInfo:
+		return log.SeverityDebug
+	case l < slog.LevelWarn:
+		return log.SeverityInfo
+	case l < slog.LevelError:
+		return log.SeverityWarn
+	case l < slog.Level(12):
+		return log.SeverityError
+	default:
+		return log.SeverityFatal
+	}
 }

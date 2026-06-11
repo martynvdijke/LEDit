@@ -36,17 +36,12 @@
 - [x] 6.5 Create `logging/levels.go` — helper functions for slog level <-> string conversion, verbosity filtering
 - [x] 6.6 Wire the logging system into the Server on startup (`handlers/server.go`)
 
+## 7. Replace Existing log.Printf Calls
+
 - [x] 7.1 Replace `log.Printf`/`log.Fatalf` in `handlers/server.go` with `slog` calls
 - [x] 7.2 Replace `log.Printf` in `handlers/websocket.go` with `slog` calls
 - [x] 7.3 Replace `log.Printf`/`log.Fatalf` in `main.go` with `slog` calls
 - [x] 7.4 Replace `log.Printf`/`log.Fatalf` in any other Go files
-
-## 7. Replace Existing log.Printf Calls
-
-- [ ] 7.1 Replace `log.Printf`/`log.Fatalf` in `handlers/server.go` with `slog` calls
-- [ ] 7.2 Replace `log.Printf` in `handlers/websocket.go` with `slog` calls
-- [ ] 7.3 Replace `log.Printf`/`log.Fatalf` in `main.go` with `slog` calls
-- [ ] 7.4 Replace `log.Printf`/`log.Fatalf` in any other Go files
 
 ## 8. Admin Log Viewer Page
 
@@ -77,10 +72,10 @@
 
 ## 12. OpenTelemetry Integration
 
-- [ ] 12.1 Add `go.opentelemetry.io/otel` and OTLP exporter dependencies to `go.mod`
-- [ ] 12.2 Implement OTEL log exporter init in `logging/otel.go` (reads config from LogSettings)
-- [ ] 12.3 Map internal log levels to OTEL severity numbers
-- [ ] 12.4 Handle exporter errors gracefully (log locally, don't crash)
+- [x] 12.1 Add `go.opentelemetry.io/otel` and OTLP exporter dependencies to `go.mod`
+- [x] 12.2 Implement OTEL log exporter init in `logging/otel.go` (reads config from LogSettings)
+- [x] 12.3 Map internal log levels to OTEL severity numbers
+- [x] 12.4 Handle exporter errors gracefully (log locally, don't crash)
 
 ## 13. Instrumentation & Verification
 
