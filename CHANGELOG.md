@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/martynvdijke/LEDit/compare/v1.5.0...v1.6.0) (2026-06-11)
+
+
+### Features
+
+* add slog instrumentation to all 16 datasources and AI test connection logging ([10213ed](https://github.com/martynvdijke/LEDit/commit/10213ed01c3ef05aac833f93d4247d0f6b18fad3))
+
 # [1.5.0](https://github.com/martynvdijke/LEDit/compare/v1.4.1...v1.5.0) (2026-06-11)
 
 
