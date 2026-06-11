@@ -2,7 +2,7 @@ package logging
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 
 	"ledit/ent"
@@ -63,10 +63,10 @@ func (lc *LogCleanup) cleanup() {
 		Where(logentry.TimestampLT(cutoff)).
 		Exec(ctx)
 	if err != nil {
-		log.Printf("log cleanup error: %v", err)
+		slog.Error("log cleanup error", "error", err, "source", "logging")
 		return
 	}
 	if deleted > 0 {
-		log.Printf("log cleanup: deleted %d entries older than %d days", deleted, retentionDays)
+		slog.Info("log cleanup completed", "deleted", deleted, "retention_days", retentionDays, "source", "logging")
 	}
 }

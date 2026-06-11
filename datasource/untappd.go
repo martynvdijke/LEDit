@@ -1,6 +1,8 @@
 package datasource
 
 import (
+	"log/slog"
+
 	"ledit/render"
 	"ledit/render/themes"
 )
@@ -11,6 +13,7 @@ type UntappdDS struct {
 }
 
 func (u *UntappdDS) GetPNG() (*render.RenderedImage, error) {
+	slog.Info("using mock untappd data", "source", "untappd")
 	data := map[string]string{
 		"brewery": "Local Brew Co.",
 		"beer":    "IPA",

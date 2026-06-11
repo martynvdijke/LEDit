@@ -2,7 +2,7 @@ package logging
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 
 	"ledit/ent"
@@ -47,7 +47,7 @@ func (ls *LogStore) Submit(ts time.Time, level, source, message, metadata string
 	select {
 	case ls.queue <- entry:
 	default:
-		log.Println("log store queue full, dropping entry")
+		slog.Warn("log store queue full, dropping entry", "source", "logging")
 	}
 }
 
@@ -80,7 +80,7 @@ func (ls *LogStore) loop() {
 		}
 		_, err := ls.client.LogEntry.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
-			log.Printf("log store flush error: %v", err)
+			slog.Error("log store flush error", "error", err, "source", "logging")
 		}
 		cancel()
 		batch = batch[:0]

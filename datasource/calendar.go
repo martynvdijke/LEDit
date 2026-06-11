@@ -2,6 +2,7 @@ package datasource
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"ledit/render"
@@ -13,15 +14,19 @@ type CalendarDS struct {
 }
 
 func (c *CalendarDS) GetPNG() (*render.RenderedImage, error) {
+	slog.Info("fetching calendar data", "source", "calendar", "url", c.URL)
 	body, err := apiGet(c.URL, "", nil)
 	if err != nil {
+		slog.Warn("calendar fetch failed, using fallback", "source", "calendar", "error", err)
 		return fallbackCalendar(c.Name), nil
 	}
 
 	events := parseICal(string(body))
 	if len(events) == 0 {
+		slog.Warn("calendar no events found, using fallback", "source", "calendar")
 		return fallbackCalendar(c.Name), nil
 	}
+	slog.Info("calendar data fetched successfully", "source", "calendar", "event_count", len(events))
 
 	data := map[string]string{}
 	title := "CALENDAR"

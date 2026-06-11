@@ -9,6 +9,9 @@ The user wants:
 4. Logs exported via OpenTelemetry (OTLP)
 5. Verbosity control — default shows only warnings and above
 6. New Email Settings and AI Settings pages onboarded with logging
+7. **Extensive logging of all external dependency calls** — every datasource API call (Sonarr, Radarr, Weather, HomeAssistant, F1, etc.) and every AI provider request logged with start/success/failure visibility
+8. **WebSocket event logging** — connection lifecycle and render errors visible in the central log
+9. **Logging infrastructure self-logging** — store flush errors, cleanup operations logged through the same system
 
 ## Goals / Non-Goals
 
@@ -20,6 +23,10 @@ The user wants:
 - Export logs to OpenTelemetry via OTLP when configured
 - Add `/admin/settings/email` and `/admin/settings/ai` pages with full logging instrumentation
 - Add a nav item for Logs in the admin sidebar across all admin templates
+- **Add `slog` logging to all 16 datasource `GetPNG()` methods** — log API call start, success, and failure per source
+- **Add `slog` logging to WebSocket handler** — replace all `log.Printf` calls
+- **Add `slog` logging to logging infrastructure** — replace `log.Printf`/`log.Println` in store.go, cleanup.go, slog.go
+- **Add AI provider test connection logging** — log test connection requests, successes, failures with latency
 
 **Non-Goals:**
 - Replacing Go's `slog` with a third-party logger (stdlib is sufficient)
@@ -27,6 +34,8 @@ The user wants:
 - Log rotation or file-based logging (DB-based with retention is sufficient)
 - Distributed tracing or metrics (OTEL logs only for now)
 - Authentication for OTEL export (plain OTLP for now)
+- Adding a separate HTTP client middleware layer for logging (inline `slog` calls in each datasource is simpler)
+- Refactoring datasource error handling patterns (errors still return fallback renders; just add logging)
 
 ## Decisions
 
@@ -58,7 +67,18 @@ The user wants:
 - **Email schema**: `EmailSettings` — host, port, username, password (encrypted), from_address, use_tls
 - **AI schema**: `AISettings` — provider (openai/ollama/etc), api_key (encrypted), model, endpoint
 
-### 7. Sidebar nav updated via a shared template partial
+### 8. External dependency logging strategy
+- **Why**: Currently all 16 datasource implementations silently call external APIs and fall back to placeholder images on failure — no logs, no visibility. The user wants to see every external call in the central log viewer.
+- **Approach**: Add `slog.Info`/`slog.Error` calls inline in each datasource's `GetPNG()` method at three points:
+  1. **API call start** (`slog.Info`, source=`"<ds-type>"`, attrs: url, name info) — logged before `apiGet`
+  2. **API call success** (`slog.Info`, source=`"<ds-type>"`, attrs: response size/status) — after successful fetch
+  3. **API call failure** (`slog.Error`, source=`"<ds-type>"`, attrs: error details) — when `apiGet` returns an error or fallback is used
+- **Datasource identification**: Each datasource uses its own source tag (e.g., `"sonarr"`, `"weather"`, `"homeassistant"`, `"ai-settings"`) so logs are filterable in the UI
+- **AI provider logging**: The AI settings "Test Connection" handler already logs at info/error. Additionally, any future AI provider API calls should log at info level with source `"ai-settings"`, including latency
+- **WebSocket logging**: Replace `log.Printf` with `slog.Warn`/`slog.Error` calls, using source `"websocket"` so connection errors appear in the central log
+- **Infrastructure self-logging**: Replace `log.Printf`/`log.Println` in `logging/store.go`, `logging/cleanup.go`, and `logging/slog.go` with `slog.Warn`/`slog.Error` calls
+
+### 9. Sidebar nav updated via a shared template partial
 - **Why**: Currently the sidebar is duplicated in every admin template. Extracting it into a shared `sidebar.html` partial and using `{{template "sidebar" .}}` avoids touching 11+ files for every nav change.
 - **Alternative**: Edit all 11+ templates individually (more error-prone, but simpler initial refactor)
 
@@ -69,3 +89,6 @@ The user wants:
 - **[Risk]** Extracting the sidebar into a partial touches all admin templates → **Mitigation**: Do this as the first task; it's mechanical and easy to verify
 - **[Trade-off]** Using stdlib `slog` means no built-in async handler → We build our own, which is ~100 lines of Go
 - **[Trade-off]** Email/AI settings with encrypted secrets require a crypto helper → Already exists in `ent/schema` patterns; minimal new code
+- **[Risk]** Adding `slog` calls to 16 datasource files is verbose and repetitive → **Mitigation**: Use a consistent 3-call pattern (start/success/failure); consider extracting a helper if repetition is excessive
+- **[Risk]** High-frequency datasource polling could flood the log table → **Mitigation**: Use `slog.Info` for normal operations (respects verbosity filter); noisy datasources can be filtered by source in the UI
+- **[Risk]** Websocket handler errors logged via `slog` could create feedback loop → **Mitigation**: WebSocket errors use `slog.Warn`/`slog.Error`, which are safe — the handler has no DB write path that would re-enter the WebSocket

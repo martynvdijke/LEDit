@@ -2,6 +2,7 @@ package datasource
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"ledit/render"
@@ -13,15 +14,19 @@ type RssFeedDS struct {
 }
 
 func (r *RssFeedDS) GetPNG() (*render.RenderedImage, error) {
+	slog.Info("fetching RSS feed", "source", "rssfeed", "url", r.URL)
 	body, err := apiGet(r.URL, "", nil)
 	if err != nil {
+		slog.Warn("RSS feed fetch failed, using fallback", "source", "rssfeed", "error", err)
 		return fallbackRSS(r.Name), nil
 	}
 
 	items := parseRSS(string(body))
 	if len(items) == 0 {
+		slog.Warn("RSS feed no items found, using fallback", "source", "rssfeed")
 		return fallbackRSS(r.Name), nil
 	}
+	slog.Info("RSS feed fetched successfully", "source", "rssfeed", "item_count", len(items))
 
 	data := map[string]string{}
 	title := "RSS"

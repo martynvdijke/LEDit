@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"math/rand"
 	"net/http"
 	"time"
@@ -36,14 +36,14 @@ func NewWSHub(client *ent.Client) *WSHub {
 func (h *WSHub) HandleWS(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Printf("WebSocket upgrade error: %v", err)
+		slog.Error("WebSocket upgrade error", "error", err, "source", "websocket")
 		return
 	}
 	defer conn.Close()
 
 	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().Only(c.Request.Context())
 	if err != nil {
-		log.Printf("Failed to load settings: %v", err)
+		slog.Error("Failed to load settings for WebSocket", "error", err, "source", "websocket")
 		return
 	}
 
@@ -194,7 +194,7 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 
 			img, err := sw.Source.GetPNG()
 			if err != nil {
-				log.Printf("Error getting PNG from %s: %v", sw.Name, err)
+				slog.Error("Error rendering datasource for WebSocket", "source_name", sw.Name, "error", err, "source", "websocket")
 				continue
 			}
 
@@ -206,7 +206,7 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 			}
 			data, _ := json.Marshal(msg)
 			if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
-				log.Printf("WebSocket write error: %v", err)
+				slog.Warn("WebSocket write error", "error", err, "source", "websocket")
 				return
 			}
 			TrackDisplay(sw.Name, timeout.Seconds())

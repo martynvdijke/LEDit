@@ -3,6 +3,7 @@ package datasource
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"ledit/render"
@@ -23,15 +24,19 @@ func (c *CryptoDS) GetPNG() (*render.RenderedImage, error) {
 		url = c.URL
 	}
 
+	slog.Info("fetching crypto data", "source", "crypto", "coins", ids)
 	body, err := apiGet(url, "", nil)
 	if err != nil {
+		slog.Warn("crypto API call failed, using fallback", "source", "crypto", "error", err)
 		return fallbackCrypto(ids), nil
 	}
 
 	var resp map[string]map[string]float64
 	if err := json.Unmarshal(body, &resp); err != nil || len(resp) == 0 {
+		slog.Warn("crypto no data in response, using fallback", "source", "crypto", "error", err)
 		return fallbackCrypto(ids), nil
 	}
+	slog.Info("crypto data fetched successfully", "source", "crypto", "coin_count", len(resp))
 
 	data := map[string]string{}
 	for _, id := range strings.Split(ids, ",") {

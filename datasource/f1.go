@@ -3,6 +3,7 @@ package datasource
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 
 	"ledit/render"
 	"ledit/render/themes"
@@ -19,6 +20,7 @@ func (f *F1DS) GetPNG() (*render.RenderedImage, error) {
 		url = f.URL
 	}
 
+	slog.Info("fetching F1 data from openf1", "source", "f1")
 	body, err := apiGet(url, f.Token, nil)
 	if err == nil {
 		var messages []struct {
@@ -27,6 +29,7 @@ func (f *F1DS) GetPNG() (*render.RenderedImage, error) {
 			Date     string `json:"date"`
 		}
 		if err := json.Unmarshal(body, &messages); err == nil && len(messages) > 0 {
+			slog.Info("F1 data fetched successfully from openf1", "source", "f1", "count", len(messages))
 			data := map[string]string{
 				"message": messages[0].Message,
 			}
@@ -37,6 +40,7 @@ func (f *F1DS) GetPNG() (*render.RenderedImage, error) {
 		}
 	}
 
+	slog.Warn("F1 openf1 API failed, trying ergast fallback", "source", "f1", "error", err)
 	ergastURL := "https://ergast.com/api/f1/current/last/results.json"
 	if f.URL != "" {
 		ergastURL = f.URL
@@ -63,6 +67,7 @@ func (f *F1DS) GetPNG() (*render.RenderedImage, error) {
 			} `json:"MRData"`
 		}
 		if err := json.Unmarshal(body, &ergast); err == nil && len(ergast.MRData.RaceTable.Races) > 0 {
+			slog.Info("F1 data fetched successfully from ergast", "source", "f1", "race", ergast.MRData.RaceTable.Races[0].RaceName)
 			race := ergast.MRData.RaceTable.Races[0]
 			data := map[string]string{
 				"Next Race": race.RaceName,
@@ -75,6 +80,7 @@ func (f *F1DS) GetPNG() (*render.RenderedImage, error) {
 		}
 	}
 
+	slog.Warn("F1 all APIs failed, using fallback", "source", "f1")
 	return fallbackF1(), nil
 }
 

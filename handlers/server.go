@@ -228,6 +228,7 @@ func (s *Server) setupRoutes() {
 		// AI Settings
 		admin.GET("/settings/ai", s.AdminAISettings)
 		admin.POST("/settings/ai", s.AdminAISettingsSave)
+		admin.POST("/settings/ai/test", s.AdminAISettingsTestConnection)
 
 		// Umami Analytics Settings
 		admin.GET("/settings/umami", s.AdminUmamiSettings)

@@ -36,39 +36,40 @@
 - [x] 6.5 Create `logging/levels.go` — helper functions for slog level <-> string conversion, verbosity filtering
 - [x] 6.6 Wire the logging system into the Server on startup (`handlers/server.go`)
 
-## 7. Replace Existing log.Printf Calls
+## 7. Replace Remaining log.Printf Calls
 
 - [x] 7.1 Replace `log.Printf`/`log.Fatalf` in `handlers/server.go` with `slog` calls
-- [x] 7.2 Replace `log.Printf` in `handlers/websocket.go` with `slog` calls
-- [x] 7.3 Replace `log.Printf`/`log.Fatalf` in `main.go` with `slog` calls
-- [x] 7.4 Replace `log.Printf`/`log.Fatalf` in any other Go files
+- [x] 7.2 Replace `log.Printf`/`log.Fatalf` in `main.go` with `slog` calls
+- [x] 7.3 Replace `log.Printf` in `handlers/websocket.go` with `slog.Warn`/`slog.Error` calls (source="websocket")
+- [x] 7.4 Replace `log.Println`/`log.Printf` in `logging/store.go` with `slog.Warn`/`slog.Error` calls (source="logging")
+- [x] 7.5 Replace `log.Printf` in `logging/cleanup.go` with `slog.Info`/`slog.Error` calls (source="logging")
+- [x] 7.6 Replace `log.Println` in `logging/slog.go` with `slog.Info` call (source="logging")
 
 ## 8. Admin Log Viewer Page
 
-- [ ] 8.1 Create `handlers/logs.go` with `AdminLogs` handler: query LogEntry with level/source/search/pagination filters
-- [ ] 8.2 Create `web/templates/admin/logs.html` — log viewer UI with table, filters, severity badges, pagination
-- [ ] 8.3 Register route `GET /admin/logs` in `handlers/server.go`
-- [ ] 8.4 Add query helper methods on the Server for filtered log queries
+- [x] 8.1 Create `handlers/log_admin.go` with `AdminLogs` handler and `AdminLogsAPI` JSON endpoint
+- [x] 8.2 Create `web/templates/admin/logs.html` — log viewer UI with table, filters, severity badges, pagination
+- [x] 8.3 Register route `GET /admin/logs` and `GET /admin/api/logs` in `handlers/server.go`
 
 ## 9. Admin Log Settings Page
 
-- [ ] 9.1 Create `handlers/log_settings.go` with `AdminLogSettings` (GET) and `AdminLogSettingsSave` (POST)
-- [ ] 9.2 Create `web/templates/admin/log_settings.html` — verbosity selector, retention field, OTEL config
-- [ ] 9.3 Register routes `GET /admin/settings/logs` and `POST /admin/settings/logs`
+- [x] 9.1 Create `AdminLogSettings` (GET) and `AdminLogSettingsSave` (POST) in `handlers/log_admin.go`
+- [x] 9.2 Create `web/templates/admin/log_settings.html` — verbosity selector, retention field, OTEL config
+- [x] 9.3 Register routes `GET /admin/settings/logs` and `POST /admin/settings/logs`
 
 ## 10. Admin Email Settings Page
 
-- [ ] 10.1 Create `handlers/email_settings.go` with CRUD handlers for EmailSettings
-- [ ] 10.2 Create `web/templates/admin/email_settings.html` — SMTP configuration form with "Test Email" button
-- [ ] 10.3 Register email settings routes under `/admin/settings/email`
-- [ ] 10.4 Wire EmailSettings edge into AdminDashboard query in `handlers/handlers.go`
+- [x] 10.1 Create `AdminEmailSettings` and `AdminEmailSettingsSave` handlers in `handlers/log_admin.go`
+- [x] 10.2 Create `web/templates/admin/email_settings.html` — SMTP configuration form
+- [x] 10.3 Register email settings routes under `/admin/settings/email`
+- [ ] 10.4 Wire EmailSettings edge into AdminDashboard query in `handlers/handlers.go` (include `.WithEmailSettings()`)
 
 ## 11. Admin AI Settings Page
 
-- [ ] 11.1 Create `handlers/ai_settings.go` with CRUD handlers for AISettings
-- [ ] 11.2 Create `web/templates/admin/ai_settings.html` — AI provider config form with "Test Connection" button
-- [ ] 11.3 Register AI settings routes under `/admin/settings/ai`
-- [ ] 11.4 Wire AISettings edge into AdminDashboard query in `handlers/handlers.go`
+- [x] 11.1 Create `AdminAISettings` and `AdminAISettingsSave` handlers in `handlers/log_admin.go`
+- [x] 11.2 Create `web/templates/admin/ai_settings.html` — AI provider config form with provider dropdown
+- [x] 11.3 Register AI settings routes under `/admin/settings/ai`
+- [ ] 11.4 Wire AISettings edge into AdminDashboard query in `handlers/handlers.go` (include `.WithAISettings()`)
 
 ## 12. OpenTelemetry Integration
 
@@ -77,9 +78,37 @@
 - [x] 12.3 Map internal log levels to OTEL severity numbers
 - [x] 12.4 Handle exporter errors gracefully (log locally, don't crash)
 
-## 13. Instrumentation & Verification
+## 13. Datasource API Call Logging (Token/URL datasources)
 
-- [ ] 13.1 Verify all log entries flow through central system by exercising settings endpoints (email, AI)
-- [ ] 13.2 Verify verbosity filtering works (change level to "error", confirm warn entries hidden)
-- [ ] 13.3 Verify OTEL export works (configure endpoint, confirm logs arrive)
-- [ ] 13.4 Run `task pre-push` (gofmt, tests, build) and fix any issues
+- [x] 13.1 Add slog instrumentation to `datasource/sonarr.go` — log API call start, success (series count), failure, fallback
+- [x] 13.2 Add slog instrumentation to `datasource/radarr.go` — same pattern
+- [x] 13.3 Add slog instrumentation to `datasource/f1.go` — same pattern
+- [x] 13.4 Add slog instrumentation to `datasource/weather.go` — same pattern, include location
+- [x] 13.5 Add slog instrumentation to `datasource/homeassistant.go` — same pattern, include entity count on success
+- [x] 13.6 Add slog instrumentation to `datasource/untappd.go` — same pattern
+- [x] 13.7 Add slog instrumentation to `datasource/crypto.go` — same pattern
+- [x] 13.8 Add slog instrumentation to `datasource/stock.go` — same pattern
+
+## 14. Datasource File/Feed/Text Logging
+
+- [x] 14.1 Add slog instrumentation to `datasource/rssfeed.go` — log fetch start, entry count, failure
+- [x] 14.2 Add slog instrumentation to `datasource/calendar.go` — log fetch start, event count, failure
+- [x] 14.3 Add slog instrumentation to `datasource/image.go` — log file read, path, failure
+- [x] 14.4 Add slog instrumentation to `datasource/video.go` — log file read, path, failure
+- [x] 14.5 Add slog instrumentation to `datasource/textslide.go` — log render start/success
+- [x] 14.6 Add slog instrumentation to `datasource/systemstats.go` — log stats collection
+
+## 15. AI Provider Test Connection Logging
+
+- [x] 15.1 Add "Test Connection" button and handler to AI settings page that attempts to connect to the AI provider
+- [x] 15.2 Log test connection start at info level with source "ai-settings" (provider, model, endpoint attrs)
+- [x] 15.3 Log test connection success at info level with source "ai-settings" (latency attr)
+- [x] 15.4 Log test connection failure at error level with source "ai-settings" (error, latency attrs)
+
+## 16. Instrumentation & Verification
+
+- [ ] 16.1 Verify all datasource log entries appear in central log view by exercising each datasource
+- [ ] 16.2 Verify WebSocket errors appear in logs (connect and disconnect)
+- [ ] 16.3 Verify logging infrastructure self-logs appear (store flush, cleanup, init)
+- [ ] 16.4 Verify verbosity filtering works (change level to "error", confirm warn entries hidden)
+- [ ] 16.5 Run `task pre-push` (gofmt, tests, build) and fix any issues

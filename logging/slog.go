@@ -2,7 +2,6 @@ package logging
 
 import (
 	"context"
-	"log"
 	"log/slog"
 	"time"
 
@@ -92,7 +91,7 @@ func InitLogging(client *ent.Client, minLevelStr string) (*LogStore, *OTelExport
 	handler := NewDBHandler(store, otel, minLevel)
 	slog.SetDefault(slog.New(handler))
 
-	log.Println("central logging initialized, minimum level:", minLevelStr)
+	slog.Info("central logging initialized", "min_level", minLevelStr, "source", "logging")
 
 	return store, otel, cleanup
 }

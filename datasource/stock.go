@@ -2,6 +2,7 @@ package datasource
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 	"strings"
 
@@ -19,6 +20,7 @@ func (s *StockDS) GetPNG() (*render.RenderedImage, error) {
 		symbols = s.Token
 	}
 
+	slog.Info("fetching stock data", "source", "stock", "symbols", symbols)
 	data := map[string]string{}
 	for _, sym := range strings.Split(symbols, ",") {
 		sym = strings.TrimSpace(sym)
@@ -41,6 +43,7 @@ func (s *StockDS) GetPNG() (*render.RenderedImage, error) {
 	}
 
 	if len(data) == 0 {
+		slog.Warn("stock all symbols failed, using fallback", "source", "stock")
 		for _, sym := range strings.Split(symbols, ",") {
 			sym = strings.TrimSpace(sym)
 			if sym != "" {
@@ -48,6 +51,8 @@ func (s *StockDS) GetPNG() (*render.RenderedImage, error) {
 				data[label] = "--"
 			}
 		}
+	} else {
+		slog.Info("stock data fetched successfully", "source", "stock", "symbols_found", len(data))
 	}
 
 	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
@@ -59,6 +64,7 @@ func fetchStockPrice(symbol string) (price, change string) {
 		"User-Agent": "Mozilla/5.0",
 	})
 	if err != nil {
+		slog.Warn("stock price fetch failed", "source", "stock", "symbol", symbol, "error", err)
 		return "", ""
 	}
 

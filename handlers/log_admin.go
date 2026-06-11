@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -243,6 +244,117 @@ func (s *Server) AdminAISettings(c *gin.Context) {
 		"settings":    settings,
 		"hasSettings": settings != nil,
 	})
+}
+
+// AdminAISettingsTestConnection tests the AI provider connection.
+func (s *Server) AdminAISettingsTestConnection(c *gin.Context) {
+	provider := c.PostForm("provider")
+	apiKey := c.PostForm("api_key")
+	model := c.PostForm("model")
+	endpoint := c.PostForm("endpoint")
+
+	start := time.Now()
+	err := testAIProviderConnection(provider, apiKey, model, endpoint)
+	latency := time.Since(start)
+
+	if err != nil {
+		slog.Error("AI test connection failed", "source", "ai-settings", "provider", provider, "model", model, "endpoint", endpoint, "error", err, "latency_ms", latency.Milliseconds())
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+
+	slog.Info("AI test connection succeeded", "source", "ai-settings", "provider", provider, "model", model, "endpoint", endpoint, "latency_ms", latency.Milliseconds())
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Connection successful!"})
+}
+
+func testAIProviderConnection(provider, apiKey, model, endpoint string) error {
+	if apiKey == "" && provider != "ollama" {
+		return fmt.Errorf("API key is required")
+	}
+
+	switch provider {
+	case "openai":
+		url := endpoint
+		if url == "" {
+			url = "https://api.openai.com/v1/models"
+		}
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Authorization", "Bearer "+apiKey)
+		client := &http.Client{Timeout: 10 * time.Second}
+		resp, err := client.Do(req)
+		if err != nil {
+			return fmt.Errorf("connection failed: %w", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode >= 400 {
+			return fmt.Errorf("API returned status %d", resp.StatusCode)
+		}
+		return nil
+
+	case "anthropic":
+		url := endpoint
+		if url == "" {
+			url = "https://api.anthropic.com/v1/messages"
+		}
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Set("x-api-key", apiKey)
+		req.Header.Set("anthropic-version", "2023-06-01")
+		client := &http.Client{Timeout: 10 * time.Second}
+		resp, err := client.Do(req)
+		if err != nil {
+			return fmt.Errorf("connection failed: %w", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode >= 400 {
+			return fmt.Errorf("API returned status %d", resp.StatusCode)
+		}
+		return nil
+
+	case "ollama":
+		url := endpoint
+		if url == "" {
+			url = "http://localhost:11434/api/tags"
+		}
+		client := &http.Client{Timeout: 10 * time.Second}
+		resp, err := client.Get(url)
+		if err != nil {
+			return fmt.Errorf("connection failed: %w", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode >= 400 {
+			return fmt.Errorf("API returned status %d", resp.StatusCode)
+		}
+		return nil
+
+	default:
+		// Generic: try the endpoint with API key in Authorization header
+		if endpoint == "" {
+			return fmt.Errorf("endpoint URL is required for custom provider")
+		}
+		req, err := http.NewRequest("GET", endpoint, nil)
+		if err != nil {
+			return err
+		}
+		if apiKey != "" {
+			req.Header.Set("Authorization", "Bearer "+apiKey)
+		}
+		client := &http.Client{Timeout: 10 * time.Second}
+		resp, err := client.Do(req)
+		if err != nil {
+			return fmt.Errorf("connection failed: %w", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode >= 400 {
+			return fmt.Errorf("API returned status %d", resp.StatusCode)
+		}
+		return nil
+	}
 }
 
 // AdminAISettingsSave saves AI settings.

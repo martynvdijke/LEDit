@@ -2,6 +2,7 @@ package datasource
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"runtime"
 	"strings"
@@ -12,6 +13,7 @@ import (
 type SystemStatsDS struct{}
 
 func (s *SystemStatsDS) GetPNG() (*render.RenderedImage, error) {
+	slog.Info("collecting system stats", "source", "systemstats")
 	data := map[string]string{
 		"CPU":  fmt.Sprintf("%d cores", runtime.NumCPU()),
 		"GO":   runtime.Version(),

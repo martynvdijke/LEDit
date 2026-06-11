@@ -3,6 +3,7 @@ package datasource
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 
 	"ledit/render"
 )
@@ -19,8 +20,10 @@ func (w *WeatherDS) GetPNG() (*render.RenderedImage, error) {
 		url = w.URL
 	}
 
+	slog.Info("fetching weather data", "source", "weather", "location", city)
 	body, err := apiGet(url, w.Token, nil)
 	if err != nil {
+		slog.Warn("weather API call failed, using fallback", "source", "weather", "location", city, "error", err)
 		return fallbackWeather(), nil
 	}
 
@@ -35,9 +38,11 @@ func (w *WeatherDS) GetPNG() (*render.RenderedImage, error) {
 		Name string `json:"name"`
 	}
 	if err := json.Unmarshal(body, &resp); err != nil || len(resp.Weather) == 0 {
+		slog.Warn("weather no data in response, using fallback", "source", "weather", "error", err)
 		return fallbackWeather(), nil
 	}
 
+	slog.Info("weather data fetched successfully", "source", "weather", "location", resp.Name, "temp", resp.Main.Temp)
 	data := map[string]string{
 		"location":  resp.Name,
 		"condition": resp.Weather[0].Description,
