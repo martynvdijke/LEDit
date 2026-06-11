@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/martynvdijke/LEDit/compare/v1.4.1...v1.5.0) (2026-06-11)
+
+
+### Features
+
+* implement full OpenTelemetry log export via OTEL SDK ([f1faabc](https://github.com/martynvdijke/LEDit/commit/f1faabc8a59562f4436093a830818884772577f8))
+
 ## [1.4.1](https://github.com/martynvdijke/LEDit/compare/v1.4.0...v1.4.1) (2026-06-10)
 
 
