@@ -31,6 +31,18 @@ var (
 			},
 		},
 	}
+	// AdminSettingsColumns holds the columns for the "admin_settings" table.
+	AdminSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "username", Type: field.TypeString, Default: "admin"},
+		{Name: "password_hash", Type: field.TypeString, Default: ""},
+	}
+	// AdminSettingsTable holds the schema information for the "admin_settings" table.
+	AdminSettingsTable = &schema.Table{
+		Name:       "admin_settings",
+		Columns:    AdminSettingsColumns,
+		PrimaryKey: []*schema.Column{AdminSettingsColumns[0]},
+	}
 	// CalendarsColumns holds the columns for the "calendars" table.
 	CalendarsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -153,6 +165,7 @@ var (
 		{Name: "random", Type: field.TypeBool},
 		{Name: "width", Type: field.TypeInt, Default: 64},
 		{Name: "height", Type: field.TypeInt, Default: 64},
+		{Name: "theme", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: "{}"},
 	}
 	// GeneralSettingsTable holds the schema information for the "general_settings" table.
 	GeneralSettingsTable = &schema.Table{
@@ -238,6 +251,19 @@ var (
 		Columns:    LogSettingsColumns,
 		PrimaryKey: []*schema.Column{LogSettingsColumns[0]},
 	}
+	// NotificationsColumns holds the columns for the "notifications" table.
+	NotificationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "title", Type: field.TypeString, Default: ""},
+		{Name: "message", Type: field.TypeString, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// NotificationsTable holds the schema information for the "notifications" table.
+	NotificationsTable = &schema.Table{
+		Name:       "notifications",
+		Columns:    NotificationsColumns,
+		PrimaryKey: []*schema.Column{NotificationsColumns[0]},
+	}
 	// RadarrsColumns holds the columns for the "radarrs" table.
 	RadarrsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -284,7 +310,7 @@ var (
 	SchedulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString, Default: ""},
-		{Name: "cron", Type: field.TypeString, Default: ""},
+		{Name: "time_range", Type: field.TypeString, Default: ""},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
 		{Name: "general_settings_schedules", Type: field.TypeInt, Nullable: true},
 	}
@@ -454,6 +480,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AiSettingsTable,
+		AdminSettingsTable,
 		CalendarsTable,
 		CryptosTable,
 		DeviceSettingsTable,
@@ -464,6 +491,7 @@ var (
 		ImagesTable,
 		LogEntriesTable,
 		LogSettingsTable,
+		NotificationsTable,
 		RadarrsTable,
 		RssFeedsTable,
 		SchedulesTable,

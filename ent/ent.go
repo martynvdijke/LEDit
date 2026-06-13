@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/adminsettings"
 	"ledit/ent/aisettings"
 	"ledit/ent/calendar"
 	"ledit/ent/crypto"
@@ -17,6 +18,7 @@ import (
 	"ledit/ent/image"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
+	"ledit/ent/notification"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -94,6 +96,7 @@ func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			aisettings.Table:      aisettings.ValidColumn,
+			adminsettings.Table:   adminsettings.ValidColumn,
 			calendar.Table:        calendar.ValidColumn,
 			crypto.Table:          crypto.ValidColumn,
 			devicesettings.Table:  devicesettings.ValidColumn,
@@ -104,6 +107,7 @@ func checkColumn(t, c string) error {
 			image.Table:           image.ValidColumn,
 			logentry.Table:        logentry.ValidColumn,
 			logsettings.Table:     logsettings.ValidColumn,
+			notification.Table:    notification.ValidColumn,
 			radarr.Table:          radarr.ValidColumn,
 			rssfeed.Table:         rssfeed.ValidColumn,
 			schedule.Table:        schedule.ValidColumn,

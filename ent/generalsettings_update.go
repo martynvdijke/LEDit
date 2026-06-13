@@ -122,6 +122,26 @@ func (_u *GeneralSettingsUpdate) AddHeight(v int) *GeneralSettingsUpdate {
 	return _u
 }
 
+// SetTheme sets the "theme" field.
+func (_u *GeneralSettingsUpdate) SetTheme(v string) *GeneralSettingsUpdate {
+	_u.mutation.SetTheme(v)
+	return _u
+}
+
+// SetNillableTheme sets the "theme" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableTheme(v *string) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetTheme(*v)
+	}
+	return _u
+}
+
+// ClearTheme clears the value of the "theme" field.
+func (_u *GeneralSettingsUpdate) ClearTheme() *GeneralSettingsUpdate {
+	_u.mutation.ClearTheme()
+	return _u
+}
+
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by IDs.
 func (_u *GeneralSettingsUpdate) AddSonarrIDs(ids ...int) *GeneralSettingsUpdate {
 	_u.mutation.AddSonarrIDs(ids...)
@@ -831,6 +851,12 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if value, ok := _u.mutation.AddedHeight(); ok {
 		_spec.AddField(generalsettings.FieldHeight, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.Theme(); ok {
+		_spec.SetField(generalsettings.FieldTheme, field.TypeString, value)
+	}
+	if _u.mutation.ThemeCleared() {
+		_spec.ClearField(generalsettings.FieldTheme, field.TypeString)
 	}
 	if _u.mutation.SonarrCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1739,6 +1765,26 @@ func (_u *GeneralSettingsUpdateOne) AddHeight(v int) *GeneralSettingsUpdateOne {
 	return _u
 }
 
+// SetTheme sets the "theme" field.
+func (_u *GeneralSettingsUpdateOne) SetTheme(v string) *GeneralSettingsUpdateOne {
+	_u.mutation.SetTheme(v)
+	return _u
+}
+
+// SetNillableTheme sets the "theme" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableTheme(v *string) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetTheme(*v)
+	}
+	return _u
+}
+
+// ClearTheme clears the value of the "theme" field.
+func (_u *GeneralSettingsUpdateOne) ClearTheme() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearTheme()
+	return _u
+}
+
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by IDs.
 func (_u *GeneralSettingsUpdateOne) AddSonarrIDs(ids ...int) *GeneralSettingsUpdateOne {
 	_u.mutation.AddSonarrIDs(ids...)
@@ -2478,6 +2524,12 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 	}
 	if value, ok := _u.mutation.AddedHeight(); ok {
 		_spec.AddField(generalsettings.FieldHeight, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.Theme(); ok {
+		_spec.SetField(generalsettings.FieldTheme, field.TypeString, value)
+	}
+	if _u.mutation.ThemeCleared() {
+		_spec.ClearField(generalsettings.FieldTheme, field.TypeString)
 	}
 	if _u.mutation.SonarrCleared() {
 		edge := &sqlgraph.EdgeSpec{

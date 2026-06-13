@@ -17,7 +17,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Name</th>
-                        <th>Cron / Time Range</th>
+                        <th>Time Range</th>
                         <th>Enabled</th>
                         <th>Actions</th>
                     </tr>
@@ -27,7 +27,7 @@
                     <tr>
                         <td>{{.ID}}</td>
                         <td>{{.Name}}</td>
-                        <td>{{.Cron}}</td>
+                        <td>{{.TimeRange}}</td>
                         <td>{{if .Enabled}}Yes{{else}}No{{end}}</td>
                         <td>
                             <a href="/admin/schedules/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>

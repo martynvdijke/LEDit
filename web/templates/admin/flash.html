@@ -1,0 +1,8 @@
+{{define "flash"}}
+{{if .flash_message}}
+<div class="alert alert-{{if eq .flash_type "danger"}}danger{{else if eq .flash_type "success"}}success{{else}}info{{end}} alert-dismissible fade show mt-3" role="alert">
+    {{.flash_message}}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{{end}}
+{{end}}

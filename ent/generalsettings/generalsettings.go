@@ -20,6 +20,8 @@ const (
 	FieldWidth = "width"
 	// FieldHeight holds the string denoting the height field in the database.
 	FieldHeight = "height"
+	// FieldTheme holds the string denoting the theme field in the database.
+	FieldTheme = "theme"
 	// EdgeSonarr holds the string denoting the sonarr edge name in mutations.
 	EdgeSonarr = "sonarr"
 	// EdgeRadarr holds the string denoting the radarr edge name in mutations.
@@ -193,6 +195,7 @@ var Columns = []string{
 	FieldRandom,
 	FieldWidth,
 	FieldHeight,
+	FieldTheme,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -210,6 +213,8 @@ var (
 	DefaultWidth int
 	// DefaultHeight holds the default value on creation for the "height" field.
 	DefaultHeight int
+	// DefaultTheme holds the default value on creation for the "theme" field.
+	DefaultTheme string
 )
 
 // OrderOption defines the ordering options for the GeneralSettings queries.
@@ -238,6 +243,11 @@ func ByWidth(opts ...sql.OrderTermOption) OrderOption {
 // ByHeight orders the results by the height field.
 func ByHeight(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldHeight, opts...).ToFunc()
+}
+
+// ByTheme orders the results by the theme field.
+func ByTheme(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTheme, opts...).ToFunc()
 }
 
 // BySonarrCount orders the results by sonarr count.

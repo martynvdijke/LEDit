@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/adminsettings"
 	"ledit/ent/aisettings"
 	"ledit/ent/calendar"
 	"ledit/ent/crypto"
@@ -17,6 +18,7 @@ import (
 	"ledit/ent/image"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
+	"ledit/ent/notification"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -45,6 +47,7 @@ const (
 
 	// Node types.
 	TypeAISettings      = "AISettings"
+	TypeAdminSettings   = "AdminSettings"
 	TypeCalendar        = "Calendar"
 	TypeCrypto          = "Crypto"
 	TypeDeviceSettings  = "DeviceSettings"
@@ -55,6 +58,7 @@ const (
 	TypeImage           = "Image"
 	TypeLogEntry        = "LogEntry"
 	TypeLogSettings     = "LogSettings"
+	TypeNotification    = "Notification"
 	TypeRadarr          = "Radarr"
 	TypeRssFeed         = "RssFeed"
 	TypeSchedule        = "Schedule"
@@ -581,6 +585,392 @@ func (m *AISettingsMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *AISettingsMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown AISettings edge %s", name)
+}
+
+// AdminSettingsMutation represents an operation that mutates the AdminSettings nodes in the graph.
+type AdminSettingsMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	username      *string
+	password_hash *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*AdminSettings, error)
+	predicates    []predicate.AdminSettings
+}
+
+var _ ent.Mutation = (*AdminSettingsMutation)(nil)
+
+// adminsettingsOption allows management of the mutation configuration using functional options.
+type adminsettingsOption func(*AdminSettingsMutation)
+
+// newAdminSettingsMutation creates new mutation for the AdminSettings entity.
+func newAdminSettingsMutation(c config, op Op, opts ...adminsettingsOption) *AdminSettingsMutation {
+	m := &AdminSettingsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAdminSettings,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAdminSettingsID sets the ID field of the mutation.
+func withAdminSettingsID(id int) adminsettingsOption {
+	return func(m *AdminSettingsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AdminSettings
+		)
+		m.oldValue = func(ctx context.Context) (*AdminSettings, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AdminSettings.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAdminSettings sets the old AdminSettings of the mutation.
+func withAdminSettings(node *AdminSettings) adminsettingsOption {
+	return func(m *AdminSettingsMutation) {
+		m.oldValue = func(context.Context) (*AdminSettings, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AdminSettingsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AdminSettingsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of AdminSettings entities.
+func (m *AdminSettingsMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AdminSettingsMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AdminSettingsMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().AdminSettings.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUsername sets the "username" field.
+func (m *AdminSettingsMutation) SetUsername(s string) {
+	m.username = &s
+}
+
+// Username returns the value of the "username" field in the mutation.
+func (m *AdminSettingsMutation) Username() (r string, exists bool) {
+	v := m.username
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsername returns the old "username" field's value of the AdminSettings entity.
+// If the AdminSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminSettingsMutation) OldUsername(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsername is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsername requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsername: %w", err)
+	}
+	return oldValue.Username, nil
+}
+
+// ResetUsername resets all changes to the "username" field.
+func (m *AdminSettingsMutation) ResetUsername() {
+	m.username = nil
+}
+
+// SetPasswordHash sets the "password_hash" field.
+func (m *AdminSettingsMutation) SetPasswordHash(s string) {
+	m.password_hash = &s
+}
+
+// PasswordHash returns the value of the "password_hash" field in the mutation.
+func (m *AdminSettingsMutation) PasswordHash() (r string, exists bool) {
+	v := m.password_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPasswordHash returns the old "password_hash" field's value of the AdminSettings entity.
+// If the AdminSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminSettingsMutation) OldPasswordHash(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPasswordHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPasswordHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPasswordHash: %w", err)
+	}
+	return oldValue.PasswordHash, nil
+}
+
+// ResetPasswordHash resets all changes to the "password_hash" field.
+func (m *AdminSettingsMutation) ResetPasswordHash() {
+	m.password_hash = nil
+}
+
+// Where appends a list predicates to the AdminSettingsMutation builder.
+func (m *AdminSettingsMutation) Where(ps ...predicate.AdminSettings) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AdminSettingsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AdminSettingsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.AdminSettings, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AdminSettingsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AdminSettingsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (AdminSettings).
+func (m *AdminSettingsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AdminSettingsMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.username != nil {
+		fields = append(fields, adminsettings.FieldUsername)
+	}
+	if m.password_hash != nil {
+		fields = append(fields, adminsettings.FieldPasswordHash)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AdminSettingsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case adminsettings.FieldUsername:
+		return m.Username()
+	case adminsettings.FieldPasswordHash:
+		return m.PasswordHash()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AdminSettingsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case adminsettings.FieldUsername:
+		return m.OldUsername(ctx)
+	case adminsettings.FieldPasswordHash:
+		return m.OldPasswordHash(ctx)
+	}
+	return nil, fmt.Errorf("unknown AdminSettings field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AdminSettingsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case adminsettings.FieldUsername:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsername(v)
+		return nil
+	case adminsettings.FieldPasswordHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPasswordHash(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AdminSettings field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AdminSettingsMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AdminSettingsMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AdminSettingsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown AdminSettings numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AdminSettingsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AdminSettingsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AdminSettingsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown AdminSettings nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AdminSettingsMutation) ResetField(name string) error {
+	switch name {
+	case adminsettings.FieldUsername:
+		m.ResetUsername()
+		return nil
+	case adminsettings.FieldPasswordHash:
+		m.ResetPasswordHash()
+		return nil
+	}
+	return fmt.Errorf("unknown AdminSettings field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AdminSettingsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AdminSettingsMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AdminSettingsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AdminSettingsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AdminSettingsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AdminSettingsMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AdminSettingsMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown AdminSettings unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AdminSettingsMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown AdminSettings edge %s", name)
 }
 
 // CalendarMutation represents an operation that mutates the Calendar nodes in the graph.
@@ -3180,6 +3570,7 @@ type GeneralSettingsMutation struct {
 	addwidth               *int
 	height                 *int
 	addheight              *int
+	theme                  *string
 	clearedFields          map[string]struct{}
 	sonarr                 map[int]struct{}
 	removedsonarr          map[int]struct{}
@@ -3540,6 +3931,55 @@ func (m *GeneralSettingsMutation) AddedHeight() (r int, exists bool) {
 func (m *GeneralSettingsMutation) ResetHeight() {
 	m.height = nil
 	m.addheight = nil
+}
+
+// SetTheme sets the "theme" field.
+func (m *GeneralSettingsMutation) SetTheme(s string) {
+	m.theme = &s
+}
+
+// Theme returns the value of the "theme" field in the mutation.
+func (m *GeneralSettingsMutation) Theme() (r string, exists bool) {
+	v := m.theme
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTheme returns the old "theme" field's value of the GeneralSettings entity.
+// If the GeneralSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GeneralSettingsMutation) OldTheme(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTheme is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTheme requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTheme: %w", err)
+	}
+	return oldValue.Theme, nil
+}
+
+// ClearTheme clears the value of the "theme" field.
+func (m *GeneralSettingsMutation) ClearTheme() {
+	m.theme = nil
+	m.clearedFields[generalsettings.FieldTheme] = struct{}{}
+}
+
+// ThemeCleared returns if the "theme" field was cleared in this mutation.
+func (m *GeneralSettingsMutation) ThemeCleared() bool {
+	_, ok := m.clearedFields[generalsettings.FieldTheme]
+	return ok
+}
+
+// ResetTheme resets all changes to the "theme" field.
+func (m *GeneralSettingsMutation) ResetTheme() {
+	m.theme = nil
+	delete(m.clearedFields, generalsettings.FieldTheme)
 }
 
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by ids.
@@ -4548,7 +4988,7 @@ func (m *GeneralSettingsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GeneralSettingsMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.timeout != nil {
 		fields = append(fields, generalsettings.FieldTimeout)
 	}
@@ -4560,6 +5000,9 @@ func (m *GeneralSettingsMutation) Fields() []string {
 	}
 	if m.height != nil {
 		fields = append(fields, generalsettings.FieldHeight)
+	}
+	if m.theme != nil {
+		fields = append(fields, generalsettings.FieldTheme)
 	}
 	return fields
 }
@@ -4577,6 +5020,8 @@ func (m *GeneralSettingsMutation) Field(name string) (ent.Value, bool) {
 		return m.Width()
 	case generalsettings.FieldHeight:
 		return m.Height()
+	case generalsettings.FieldTheme:
+		return m.Theme()
 	}
 	return nil, false
 }
@@ -4594,6 +5039,8 @@ func (m *GeneralSettingsMutation) OldField(ctx context.Context, name string) (en
 		return m.OldWidth(ctx)
 	case generalsettings.FieldHeight:
 		return m.OldHeight(ctx)
+	case generalsettings.FieldTheme:
+		return m.OldTheme(ctx)
 	}
 	return nil, fmt.Errorf("unknown GeneralSettings field %s", name)
 }
@@ -4630,6 +5077,13 @@ func (m *GeneralSettingsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetHeight(v)
+		return nil
+	case generalsettings.FieldTheme:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTheme(v)
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings field %s", name)
@@ -4699,7 +5153,11 @@ func (m *GeneralSettingsMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *GeneralSettingsMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(generalsettings.FieldTheme) {
+		fields = append(fields, generalsettings.FieldTheme)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -4712,6 +5170,11 @@ func (m *GeneralSettingsMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *GeneralSettingsMutation) ClearField(name string) error {
+	switch name {
+	case generalsettings.FieldTheme:
+		m.ClearTheme()
+		return nil
+	}
 	return fmt.Errorf("unknown GeneralSettings nullable field %s", name)
 }
 
@@ -4730,6 +5193,9 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 		return nil
 	case generalsettings.FieldHeight:
 		m.ResetHeight()
+		return nil
+	case generalsettings.FieldTheme:
+		m.ResetTheme()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings field %s", name)
@@ -7162,6 +7628,446 @@ func (m *LogSettingsMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown LogSettings edge %s", name)
 }
 
+// NotificationMutation represents an operation that mutates the Notification nodes in the graph.
+type NotificationMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	title         *string
+	message       *string
+	created_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Notification, error)
+	predicates    []predicate.Notification
+}
+
+var _ ent.Mutation = (*NotificationMutation)(nil)
+
+// notificationOption allows management of the mutation configuration using functional options.
+type notificationOption func(*NotificationMutation)
+
+// newNotificationMutation creates new mutation for the Notification entity.
+func newNotificationMutation(c config, op Op, opts ...notificationOption) *NotificationMutation {
+	m := &NotificationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNotification,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNotificationID sets the ID field of the mutation.
+func withNotificationID(id int) notificationOption {
+	return func(m *NotificationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Notification
+		)
+		m.oldValue = func(ctx context.Context) (*Notification, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Notification.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNotification sets the old Notification of the mutation.
+func withNotification(node *Notification) notificationOption {
+	return func(m *NotificationMutation) {
+		m.oldValue = func(context.Context) (*Notification, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NotificationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NotificationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Notification entities.
+func (m *NotificationMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NotificationMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NotificationMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Notification.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTitle sets the "title" field.
+func (m *NotificationMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *NotificationMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the Notification entity.
+// If the Notification object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NotificationMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *NotificationMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetMessage sets the "message" field.
+func (m *NotificationMutation) SetMessage(s string) {
+	m.message = &s
+}
+
+// Message returns the value of the "message" field in the mutation.
+func (m *NotificationMutation) Message() (r string, exists bool) {
+	v := m.message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMessage returns the old "message" field's value of the Notification entity.
+// If the Notification object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NotificationMutation) OldMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMessage: %w", err)
+	}
+	return oldValue.Message, nil
+}
+
+// ResetMessage resets all changes to the "message" field.
+func (m *NotificationMutation) ResetMessage() {
+	m.message = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *NotificationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *NotificationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Notification entity.
+// If the Notification object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NotificationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *NotificationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// Where appends a list predicates to the NotificationMutation builder.
+func (m *NotificationMutation) Where(ps ...predicate.Notification) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NotificationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NotificationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Notification, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NotificationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NotificationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Notification).
+func (m *NotificationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NotificationMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.title != nil {
+		fields = append(fields, notification.FieldTitle)
+	}
+	if m.message != nil {
+		fields = append(fields, notification.FieldMessage)
+	}
+	if m.created_at != nil {
+		fields = append(fields, notification.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NotificationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case notification.FieldTitle:
+		return m.Title()
+	case notification.FieldMessage:
+		return m.Message()
+	case notification.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NotificationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case notification.FieldTitle:
+		return m.OldTitle(ctx)
+	case notification.FieldMessage:
+		return m.OldMessage(ctx)
+	case notification.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Notification field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NotificationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case notification.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case notification.FieldMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMessage(v)
+		return nil
+	case notification.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Notification field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NotificationMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NotificationMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NotificationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Notification numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NotificationMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NotificationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NotificationMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Notification nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NotificationMutation) ResetField(name string) error {
+	switch name {
+	case notification.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case notification.FieldMessage:
+		m.ResetMessage()
+		return nil
+	case notification.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Notification field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NotificationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NotificationMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NotificationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NotificationMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NotificationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NotificationMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NotificationMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Notification unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NotificationMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Notification edge %s", name)
+}
+
 // RadarrMutation represents an operation that mutates the Radarr nodes in the graph.
 type RadarrMutation struct {
 	config
@@ -7929,7 +8835,7 @@ type ScheduleMutation struct {
 	typ           string
 	id            *int
 	name          *string
-	cron          *string
+	time_range    *string
 	enabled       *bool
 	clearedFields map[string]struct{}
 	done          bool
@@ -8071,40 +8977,40 @@ func (m *ScheduleMutation) ResetName() {
 	m.name = nil
 }
 
-// SetCron sets the "cron" field.
-func (m *ScheduleMutation) SetCron(s string) {
-	m.cron = &s
+// SetTimeRange sets the "time_range" field.
+func (m *ScheduleMutation) SetTimeRange(s string) {
+	m.time_range = &s
 }
 
-// Cron returns the value of the "cron" field in the mutation.
-func (m *ScheduleMutation) Cron() (r string, exists bool) {
-	v := m.cron
+// TimeRange returns the value of the "time_range" field in the mutation.
+func (m *ScheduleMutation) TimeRange() (r string, exists bool) {
+	v := m.time_range
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCron returns the old "cron" field's value of the Schedule entity.
+// OldTimeRange returns the old "time_range" field's value of the Schedule entity.
 // If the Schedule object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ScheduleMutation) OldCron(ctx context.Context) (v string, err error) {
+func (m *ScheduleMutation) OldTimeRange(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCron is only allowed on UpdateOne operations")
+		return v, errors.New("OldTimeRange is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCron requires an ID field in the mutation")
+		return v, errors.New("OldTimeRange requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCron: %w", err)
+		return v, fmt.Errorf("querying old value for OldTimeRange: %w", err)
 	}
-	return oldValue.Cron, nil
+	return oldValue.TimeRange, nil
 }
 
-// ResetCron resets all changes to the "cron" field.
-func (m *ScheduleMutation) ResetCron() {
-	m.cron = nil
+// ResetTimeRange resets all changes to the "time_range" field.
+func (m *ScheduleMutation) ResetTimeRange() {
+	m.time_range = nil
 }
 
 // SetEnabled sets the "enabled" field.
@@ -8181,8 +9087,8 @@ func (m *ScheduleMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, schedule.FieldName)
 	}
-	if m.cron != nil {
-		fields = append(fields, schedule.FieldCron)
+	if m.time_range != nil {
+		fields = append(fields, schedule.FieldTimeRange)
 	}
 	if m.enabled != nil {
 		fields = append(fields, schedule.FieldEnabled)
@@ -8197,8 +9103,8 @@ func (m *ScheduleMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case schedule.FieldName:
 		return m.Name()
-	case schedule.FieldCron:
-		return m.Cron()
+	case schedule.FieldTimeRange:
+		return m.TimeRange()
 	case schedule.FieldEnabled:
 		return m.Enabled()
 	}
@@ -8212,8 +9118,8 @@ func (m *ScheduleMutation) OldField(ctx context.Context, name string) (ent.Value
 	switch name {
 	case schedule.FieldName:
 		return m.OldName(ctx)
-	case schedule.FieldCron:
-		return m.OldCron(ctx)
+	case schedule.FieldTimeRange:
+		return m.OldTimeRange(ctx)
 	case schedule.FieldEnabled:
 		return m.OldEnabled(ctx)
 	}
@@ -8232,12 +9138,12 @@ func (m *ScheduleMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case schedule.FieldCron:
+	case schedule.FieldTimeRange:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCron(v)
+		m.SetTimeRange(v)
 		return nil
 	case schedule.FieldEnabled:
 		v, ok := value.(bool)
@@ -8298,8 +9204,8 @@ func (m *ScheduleMutation) ResetField(name string) error {
 	case schedule.FieldName:
 		m.ResetName()
 		return nil
-	case schedule.FieldCron:
-		m.ResetCron()
+	case schedule.FieldTimeRange:
+		m.ResetTimeRange()
 		return nil
 	case schedule.FieldEnabled:
 		m.ResetEnabled()

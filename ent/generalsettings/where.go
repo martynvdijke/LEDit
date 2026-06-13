@@ -74,6 +74,11 @@ func Height(v int) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldEQ(FieldHeight, v))
 }
 
+// Theme applies equality check predicate on the "theme" field. It's identical to ThemeEQ.
+func Theme(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldTheme, v))
+}
+
 // TimeoutEQ applies the EQ predicate on the "timeout" field.
 func TimeoutEQ(v float64) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldEQ(FieldTimeout, v))
@@ -202,6 +207,81 @@ func HeightLT(v int) predicate.GeneralSettings {
 // HeightLTE applies the LTE predicate on the "height" field.
 func HeightLTE(v int) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldLTE(FieldHeight, v))
+}
+
+// ThemeEQ applies the EQ predicate on the "theme" field.
+func ThemeEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldTheme, v))
+}
+
+// ThemeNEQ applies the NEQ predicate on the "theme" field.
+func ThemeNEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldTheme, v))
+}
+
+// ThemeIn applies the In predicate on the "theme" field.
+func ThemeIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldTheme, vs...))
+}
+
+// ThemeNotIn applies the NotIn predicate on the "theme" field.
+func ThemeNotIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldTheme, vs...))
+}
+
+// ThemeGT applies the GT predicate on the "theme" field.
+func ThemeGT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldTheme, v))
+}
+
+// ThemeGTE applies the GTE predicate on the "theme" field.
+func ThemeGTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldTheme, v))
+}
+
+// ThemeLT applies the LT predicate on the "theme" field.
+func ThemeLT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldTheme, v))
+}
+
+// ThemeLTE applies the LTE predicate on the "theme" field.
+func ThemeLTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldTheme, v))
+}
+
+// ThemeContains applies the Contains predicate on the "theme" field.
+func ThemeContains(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContains(FieldTheme, v))
+}
+
+// ThemeHasPrefix applies the HasPrefix predicate on the "theme" field.
+func ThemeHasPrefix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasPrefix(FieldTheme, v))
+}
+
+// ThemeHasSuffix applies the HasSuffix predicate on the "theme" field.
+func ThemeHasSuffix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasSuffix(FieldTheme, v))
+}
+
+// ThemeIsNil applies the IsNil predicate on the "theme" field.
+func ThemeIsNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIsNull(FieldTheme))
+}
+
+// ThemeNotNil applies the NotNil predicate on the "theme" field.
+func ThemeNotNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotNull(FieldTheme))
+}
+
+// ThemeEqualFold applies the EqualFold predicate on the "theme" field.
+func ThemeEqualFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEqualFold(FieldTheme, v))
+}
+
+// ThemeContainsFold applies the ContainsFold predicate on the "theme" field.
+func ThemeContainsFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContainsFold(FieldTheme, v))
 }
 
 // HasSonarr applies the HasEdge predicate on the "sonarr" edge.

@@ -18,8 +18,8 @@ type Schedule struct {
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Cron expression or time range like 08:00-12:00
-	Cron string `json:"cron,omitempty"`
+	// Time range like 08:00-12:00
+	TimeRange string `json:"time_range,omitempty"`
 	// Enabled holds the value of the "enabled" field.
 	Enabled                    bool `json:"enabled,omitempty"`
 	general_settings_schedules *int
@@ -35,7 +35,7 @@ func (*Schedule) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case schedule.FieldID:
 			values[i] = new(sql.NullInt64)
-		case schedule.FieldName, schedule.FieldCron:
+		case schedule.FieldName, schedule.FieldTimeRange:
 			values[i] = new(sql.NullString)
 		case schedule.ForeignKeys[0]: // general_settings_schedules
 			values[i] = new(sql.NullInt64)
@@ -66,11 +66,11 @@ func (_m *Schedule) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Name = value.String
 			}
-		case schedule.FieldCron:
+		case schedule.FieldTimeRange:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field cron", values[i])
+				return fmt.Errorf("unexpected type %T for field time_range", values[i])
 			} else if value.Valid {
-				_m.Cron = value.String
+				_m.TimeRange = value.String
 			}
 		case schedule.FieldEnabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -124,8 +124,8 @@ func (_m *Schedule) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	builder.WriteString("cron=")
-	builder.WriteString(_m.Cron)
+	builder.WriteString("time_range=")
+	builder.WriteString(_m.TimeRange)
 	builder.WriteString(", ")
 	builder.WriteString("enabled=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Enabled))

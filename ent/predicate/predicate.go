@@ -9,6 +9,9 @@ import (
 // AISettings is the predicate function for aisettings builders.
 type AISettings func(*sql.Selector)
 
+// AdminSettings is the predicate function for adminsettings builders.
+type AdminSettings func(*sql.Selector)
+
 // Calendar is the predicate function for calendar builders.
 type Calendar func(*sql.Selector)
 
@@ -38,6 +41,9 @@ type LogEntry func(*sql.Selector)
 
 // LogSettings is the predicate function for logsettings builders.
 type LogSettings func(*sql.Selector)
+
+// Notification is the predicate function for notification builders.
+type Notification func(*sql.Selector)
 
 // Radarr is the predicate function for radarr builders.
 type Radarr func(*sql.Selector)

@@ -19,7 +19,7 @@ import (
 
 // AdminLogs renders the log viewer page.
 func (s *Server) AdminLogs(c *gin.Context) {
-	c.HTML(http.StatusOK, "logs.html", gin.H{
+	s.renderPage(c, http.StatusOK, "logs.html", gin.H{
 		"levels": logging.ValidLevels(),
 	})
 }
@@ -110,7 +110,7 @@ func (s *Server) AdminLogSettings(c *gin.Context) {
 	if err != nil {
 		settings = nil
 	}
-	c.HTML(http.StatusOK, "log_settings.html", gin.H{
+	s.renderPage(c, http.StatusOK, "log_settings.html", gin.H{
 		"settings":    settings,
 		"hasSettings": settings != nil,
 		"levels":      logging.ValidLevels(),
@@ -158,8 +158,6 @@ func (s *Server) AdminLogSettingsSave(c *gin.Context) {
 	if s.LogStore != nil {
 		s.DB.LogSettings.Query().Only(s.Ctx)
 		_ = logging.ParseLevel(verbosity)
-		// The handler's min level is updated on next init; for live changes
-		// we'd need to expose SetMinLevel. For now, log the intent.
 		slog.Info("log verbosity updated (restart to take full effect)", "verbosity", verbosity)
 	}
 
@@ -168,6 +166,7 @@ func (s *Server) AdminLogSettingsSave(c *gin.Context) {
 		s.OTelExporter.Configure(otelEndpoint, otelProtocol, otelEnabled)
 	}
 
+	SetFlash(c, "success", "Log settings saved")
 	c.Redirect(http.StatusFound, "/admin/settings/logs")
 }
 
@@ -181,7 +180,7 @@ func (s *Server) AdminEmailSettings(c *gin.Context) {
 	if err != nil {
 		settings = nil
 	}
-	c.HTML(http.StatusOK, "email_settings.html", gin.H{
+	s.renderPage(c, http.StatusOK, "email_settings.html", gin.H{
 		"settings":    settings,
 		"hasSettings": settings != nil,
 	})
@@ -198,6 +197,13 @@ func (s *Server) AdminEmailSettingsSave(c *gin.Context) {
 
 	if port == 0 {
 		port = 587
+	}
+
+	v := NewValidator().Required("Host", host).Port("Port", port)
+	if !v.Valid() {
+		SetFlash(c, "danger", v.Error())
+		c.Redirect(http.StatusFound, "/admin/settings/email")
+		return
 	}
 
 	exists, _ := s.DB.EmailSettings.Query().Exist(s.Ctx)
@@ -227,6 +233,7 @@ func (s *Server) AdminEmailSettingsSave(c *gin.Context) {
 		}
 	}
 
+	SetFlash(c, "success", "Email settings saved")
 	c.Redirect(http.StatusFound, "/admin/settings/email")
 }
 
@@ -240,7 +247,7 @@ func (s *Server) AdminAISettings(c *gin.Context) {
 	if err != nil {
 		settings = nil
 	}
-	c.HTML(http.StatusOK, "ai_settings.html", gin.H{
+	s.renderPage(c, http.StatusOK, "ai_settings.html", gin.H{
 		"settings":    settings,
 		"hasSettings": settings != nil,
 	})
@@ -333,7 +340,6 @@ func testAIProviderConnection(provider, apiKey, model, endpoint string) error {
 		return nil
 
 	default:
-		// Generic: try the endpoint with API key in Authorization header
 		if endpoint == "" {
 			return fmt.Errorf("endpoint URL is required for custom provider")
 		}
@@ -387,5 +393,6 @@ func (s *Server) AdminAISettingsSave(c *gin.Context) {
 		}
 	}
 
+	SetFlash(c, "success", "AI settings saved")
 	c.Redirect(http.StatusFound, "/admin/settings/ai")
 }

@@ -13,8 +13,8 @@ const (
 	FieldID = "id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldCron holds the string denoting the cron field in the database.
-	FieldCron = "cron"
+	// FieldTimeRange holds the string denoting the time_range field in the database.
+	FieldTimeRange = "time_range"
 	// FieldEnabled holds the string denoting the enabled field in the database.
 	FieldEnabled = "enabled"
 	// Table holds the table name of the schedule in the database.
@@ -25,7 +25,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldName,
-	FieldCron,
+	FieldTimeRange,
 	FieldEnabled,
 }
 
@@ -53,8 +53,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultName holds the default value on creation for the "name" field.
 	DefaultName string
-	// DefaultCron holds the default value on creation for the "cron" field.
-	DefaultCron string
+	// DefaultTimeRange holds the default value on creation for the "time_range" field.
+	DefaultTimeRange string
 	// DefaultEnabled holds the default value on creation for the "enabled" field.
 	DefaultEnabled bool
 )
@@ -72,9 +72,9 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
-// ByCron orders the results by the cron field.
-func ByCron(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCron, opts...).ToFunc()
+// ByTimeRange orders the results by the time_range field.
+func ByTimeRange(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimeRange, opts...).ToFunc()
 }
 
 // ByEnabled orders the results by the enabled field.

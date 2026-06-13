@@ -41,16 +41,16 @@ func (_u *ScheduleUpdate) SetNillableName(v *string) *ScheduleUpdate {
 	return _u
 }
 
-// SetCron sets the "cron" field.
-func (_u *ScheduleUpdate) SetCron(v string) *ScheduleUpdate {
-	_u.mutation.SetCron(v)
+// SetTimeRange sets the "time_range" field.
+func (_u *ScheduleUpdate) SetTimeRange(v string) *ScheduleUpdate {
+	_u.mutation.SetTimeRange(v)
 	return _u
 }
 
-// SetNillableCron sets the "cron" field if the given value is not nil.
-func (_u *ScheduleUpdate) SetNillableCron(v *string) *ScheduleUpdate {
+// SetNillableTimeRange sets the "time_range" field if the given value is not nil.
+func (_u *ScheduleUpdate) SetNillableTimeRange(v *string) *ScheduleUpdate {
 	if v != nil {
-		_u.SetCron(*v)
+		_u.SetTimeRange(*v)
 	}
 	return _u
 }
@@ -113,8 +113,8 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(schedule.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Cron(); ok {
-		_spec.SetField(schedule.FieldCron, field.TypeString, value)
+	if value, ok := _u.mutation.TimeRange(); ok {
+		_spec.SetField(schedule.FieldTimeRange, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(schedule.FieldEnabled, field.TypeBool, value)
@@ -153,16 +153,16 @@ func (_u *ScheduleUpdateOne) SetNillableName(v *string) *ScheduleUpdateOne {
 	return _u
 }
 
-// SetCron sets the "cron" field.
-func (_u *ScheduleUpdateOne) SetCron(v string) *ScheduleUpdateOne {
-	_u.mutation.SetCron(v)
+// SetTimeRange sets the "time_range" field.
+func (_u *ScheduleUpdateOne) SetTimeRange(v string) *ScheduleUpdateOne {
+	_u.mutation.SetTimeRange(v)
 	return _u
 }
 
-// SetNillableCron sets the "cron" field if the given value is not nil.
-func (_u *ScheduleUpdateOne) SetNillableCron(v *string) *ScheduleUpdateOne {
+// SetNillableTimeRange sets the "time_range" field if the given value is not nil.
+func (_u *ScheduleUpdateOne) SetNillableTimeRange(v *string) *ScheduleUpdateOne {
 	if v != nil {
-		_u.SetCron(*v)
+		_u.SetTimeRange(*v)
 	}
 	return _u
 }
@@ -255,8 +255,8 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(schedule.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Cron(); ok {
-		_spec.SetField(schedule.FieldCron, field.TypeString, value)
+	if value, ok := _u.mutation.TimeRange(); ok {
+		_spec.SetField(schedule.FieldTimeRange, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(schedule.FieldEnabled, field.TypeBool, value)

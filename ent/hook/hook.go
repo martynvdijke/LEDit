@@ -20,6 +20,18 @@ func (f AISettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AISettingsMutation", m)
 }
 
+// The AdminSettingsFunc type is an adapter to allow the use of ordinary
+// function as AdminSettings mutator.
+type AdminSettingsFunc func(context.Context, *ent.AdminSettingsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AdminSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AdminSettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AdminSettingsMutation", m)
+}
+
 // The CalendarFunc type is an adapter to allow the use of ordinary
 // function as Calendar mutator.
 type CalendarFunc func(context.Context, *ent.CalendarMutation) (ent.Value, error)
@@ -138,6 +150,18 @@ func (f LogSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LogSettingsMutation", m)
+}
+
+// The NotificationFunc type is an adapter to allow the use of ordinary
+// function as Notification mutator.
+type NotificationFunc func(context.Context, *ent.NotificationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NotificationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NotificationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NotificationMutation", m)
 }
 
 // The RadarrFunc type is an adapter to allow the use of ordinary

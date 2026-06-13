@@ -12,7 +12,7 @@ type Schedule struct {
 func (Schedule) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").Default(""),
-		field.String("cron").Default("").Comment("Cron expression or time range like 08:00-12:00"),
+		field.String("time_range").Default("").Comment("Time range like 08:00-12:00"),
 		field.Bool("enabled").Default(true),
 	}
 }

@@ -77,6 +77,20 @@ func (_c *GeneralSettingsCreate) SetNillableHeight(v *int) *GeneralSettingsCreat
 	return _c
 }
 
+// SetTheme sets the "theme" field.
+func (_c *GeneralSettingsCreate) SetTheme(v string) *GeneralSettingsCreate {
+	_c.mutation.SetTheme(v)
+	return _c
+}
+
+// SetNillableTheme sets the "theme" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableTheme(v *string) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetTheme(*v)
+	}
+	return _c
+}
+
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by IDs.
 func (_c *GeneralSettingsCreate) AddSonarrIDs(ids ...int) *GeneralSettingsCreate {
 	_c.mutation.AddSonarrIDs(ids...)
@@ -390,6 +404,10 @@ func (_c *GeneralSettingsCreate) defaults() {
 		v := generalsettings.DefaultHeight
 		_c.mutation.SetHeight(v)
 	}
+	if _, ok := _c.mutation.Theme(); !ok {
+		v := generalsettings.DefaultTheme
+		_c.mutation.SetTheme(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -447,6 +465,10 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 	if value, ok := _c.mutation.Height(); ok {
 		_spec.SetField(generalsettings.FieldHeight, field.TypeInt, value)
 		_node.Height = value
+	}
+	if value, ok := _c.mutation.Theme(); ok {
+		_spec.SetField(generalsettings.FieldTheme, field.TypeString, value)
+		_node.Theme = value
 	}
 	if nodes := _c.mutation.SonarrIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

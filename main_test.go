@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"ledit/datasource"
 	"ledit/db"
 	"ledit/ent"
@@ -30,6 +31,7 @@ import (
 var testCtx = context.Background()
 
 func TestMain(m *testing.M) {
+	os.Setenv("LEDIT_AUTH_DISABLE", "true")
 	os.MkdirAll("testdata", 0755)
 	code := m.Run()
 	os.RemoveAll("testdata")
@@ -932,6 +934,16 @@ func TestLoginAction(t *testing.T) {
 	defer drv.Close()
 
 	srv := handlers.New(drv)
+
+	// Create admin settings in DB (normally done by initAdminSettings during New(),
+	// but LEDIT_AUTH_DISABLE skips that in test mode)
+	hash, _ := bcrypt.GenerateFromPassword([]byte("ledit"), bcrypt.DefaultCost)
+	srv.DB.AdminSettings.Create().SetUsername("admin").
+		SetPasswordHash(string(hash)).
+		SaveX(testCtx)
+
+	// Re-enable auth for this test
+	handlers.EnableAuth()
 
 	body := bytes.NewBufferString("username=admin&password=ledit")
 	req := httptest.NewRequest("POST", "/login", body)

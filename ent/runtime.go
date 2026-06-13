@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"ledit/ent/adminsettings"
 	"ledit/ent/calendar"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
@@ -11,6 +12,7 @@ import (
 	"ledit/ent/generalsettings"
 	"ledit/ent/homeassistant"
 	"ledit/ent/logsettings"
+	"ledit/ent/notification"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -27,6 +29,16 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	adminsettingsFields := schema.AdminSettings{}.Fields()
+	_ = adminsettingsFields
+	// adminsettingsDescUsername is the schema descriptor for username field.
+	adminsettingsDescUsername := adminsettingsFields[1].Descriptor()
+	// adminsettings.DefaultUsername holds the default value on creation for the username field.
+	adminsettings.DefaultUsername = adminsettingsDescUsername.Default.(string)
+	// adminsettingsDescPasswordHash is the schema descriptor for password_hash field.
+	adminsettingsDescPasswordHash := adminsettingsFields[2].Descriptor()
+	// adminsettings.DefaultPasswordHash holds the default value on creation for the password_hash field.
+	adminsettings.DefaultPasswordHash = adminsettingsDescPasswordHash.Default.(string)
 	calendarFields := schema.Calendar{}.Fields()
 	_ = calendarFields
 	// calendarDescName is the schema descriptor for name field.
@@ -103,6 +115,10 @@ func init() {
 	generalsettingsDescHeight := generalsettingsFields[3].Descriptor()
 	// generalsettings.DefaultHeight holds the default value on creation for the height field.
 	generalsettings.DefaultHeight = generalsettingsDescHeight.Default.(int)
+	// generalsettingsDescTheme is the schema descriptor for theme field.
+	generalsettingsDescTheme := generalsettingsFields[4].Descriptor()
+	// generalsettings.DefaultTheme holds the default value on creation for the theme field.
+	generalsettings.DefaultTheme = generalsettingsDescTheme.Default.(string)
 	homeassistantFields := schema.HomeAssistant{}.Fields()
 	_ = homeassistantFields
 	// homeassistantDescToken is the schema descriptor for token field.
@@ -127,6 +143,16 @@ func init() {
 	logsettingsDescOtelEnabled := logsettingsFields[5].Descriptor()
 	// logsettings.DefaultOtelEnabled holds the default value on creation for the otel_enabled field.
 	logsettings.DefaultOtelEnabled = logsettingsDescOtelEnabled.Default.(bool)
+	notificationFields := schema.Notification{}.Fields()
+	_ = notificationFields
+	// notificationDescTitle is the schema descriptor for title field.
+	notificationDescTitle := notificationFields[1].Descriptor()
+	// notification.DefaultTitle holds the default value on creation for the title field.
+	notification.DefaultTitle = notificationDescTitle.Default.(string)
+	// notificationDescMessage is the schema descriptor for message field.
+	notificationDescMessage := notificationFields[2].Descriptor()
+	// notification.DefaultMessage holds the default value on creation for the message field.
+	notification.DefaultMessage = notificationDescMessage.Default.(string)
 	radarrFields := schema.Radarr{}.Fields()
 	_ = radarrFields
 	// radarrDescToken is the schema descriptor for token field.
@@ -149,10 +175,10 @@ func init() {
 	scheduleDescName := scheduleFields[0].Descriptor()
 	// schedule.DefaultName holds the default value on creation for the name field.
 	schedule.DefaultName = scheduleDescName.Default.(string)
-	// scheduleDescCron is the schema descriptor for cron field.
-	scheduleDescCron := scheduleFields[1].Descriptor()
-	// schedule.DefaultCron holds the default value on creation for the cron field.
-	schedule.DefaultCron = scheduleDescCron.Default.(string)
+	// scheduleDescTimeRange is the schema descriptor for time_range field.
+	scheduleDescTimeRange := scheduleFields[1].Descriptor()
+	// schedule.DefaultTimeRange holds the default value on creation for the time_range field.
+	schedule.DefaultTimeRange = scheduleDescTimeRange.Default.(string)
 	// scheduleDescEnabled is the schema descriptor for enabled field.
 	scheduleDescEnabled := scheduleFields[2].Descriptor()
 	// schedule.DefaultEnabled holds the default value on creation for the enabled field.

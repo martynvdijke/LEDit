@@ -16,8 +16,28 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true
+		// Allow same-origin requests (admin panel)
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			return true
+		}
+		// Allow configured device origins
+		return allowedWSOrigin(origin)
 	},
+}
+
+func allowedWSOrigin(origin string) bool {
+	// Local origins are always allowed
+	if origin == "http://localhost" || origin == "https://localhost" {
+		return true
+	}
+	// Allow loopback IPs
+	if origin == "http://127.0.0.1" || origin == "http://127.0.0.1:80" {
+		return true
+	}
+	// Allow origins from device settings will be checked at runtime
+	// (device IPs are loaded dynamically)
+	return false
 }
 
 type sourceWithName struct {

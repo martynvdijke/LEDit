@@ -24,6 +24,8 @@ type GeneralSettings struct {
 	Width int `json:"width,omitempty"`
 	// Height holds the value of the "height" field.
 	Height int `json:"height,omitempty"`
+	// Theme holds the value of the "theme" field.
+	Theme string `json:"theme,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GeneralSettingsQuery when eager-loading is set.
 	Edges        GeneralSettingsEdges `json:"edges"`
@@ -246,6 +248,8 @@ func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case generalsettings.FieldID, generalsettings.FieldWidth, generalsettings.FieldHeight:
 			values[i] = new(sql.NullInt64)
+		case generalsettings.FieldTheme:
+			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -290,6 +294,12 @@ func (_m *GeneralSettings) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field height", values[i])
 			} else if value.Valid {
 				_m.Height = int(value.Int64)
+			}
+		case generalsettings.FieldTheme:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field theme", values[i])
+			} else if value.Valid {
+				_m.Theme = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -428,6 +438,9 @@ func (_m *GeneralSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("height=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Height))
+	builder.WriteString(", ")
+	builder.WriteString("theme=")
+	builder.WriteString(_m.Theme)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -58,9 +58,9 @@ func Name(v string) predicate.Schedule {
 	return predicate.Schedule(sql.FieldEQ(FieldName, v))
 }
 
-// Cron applies equality check predicate on the "cron" field. It's identical to CronEQ.
-func Cron(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldEQ(FieldCron, v))
+// TimeRange applies equality check predicate on the "time_range" field. It's identical to TimeRangeEQ.
+func TimeRange(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldEQ(FieldTimeRange, v))
 }
 
 // Enabled applies equality check predicate on the "enabled" field. It's identical to EnabledEQ.
@@ -133,69 +133,69 @@ func NameContainsFold(v string) predicate.Schedule {
 	return predicate.Schedule(sql.FieldContainsFold(FieldName, v))
 }
 
-// CronEQ applies the EQ predicate on the "cron" field.
-func CronEQ(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldEQ(FieldCron, v))
+// TimeRangeEQ applies the EQ predicate on the "time_range" field.
+func TimeRangeEQ(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldEQ(FieldTimeRange, v))
 }
 
-// CronNEQ applies the NEQ predicate on the "cron" field.
-func CronNEQ(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldNEQ(FieldCron, v))
+// TimeRangeNEQ applies the NEQ predicate on the "time_range" field.
+func TimeRangeNEQ(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldNEQ(FieldTimeRange, v))
 }
 
-// CronIn applies the In predicate on the "cron" field.
-func CronIn(vs ...string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldIn(FieldCron, vs...))
+// TimeRangeIn applies the In predicate on the "time_range" field.
+func TimeRangeIn(vs ...string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldIn(FieldTimeRange, vs...))
 }
 
-// CronNotIn applies the NotIn predicate on the "cron" field.
-func CronNotIn(vs ...string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldNotIn(FieldCron, vs...))
+// TimeRangeNotIn applies the NotIn predicate on the "time_range" field.
+func TimeRangeNotIn(vs ...string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldNotIn(FieldTimeRange, vs...))
 }
 
-// CronGT applies the GT predicate on the "cron" field.
-func CronGT(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldGT(FieldCron, v))
+// TimeRangeGT applies the GT predicate on the "time_range" field.
+func TimeRangeGT(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldGT(FieldTimeRange, v))
 }
 
-// CronGTE applies the GTE predicate on the "cron" field.
-func CronGTE(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldGTE(FieldCron, v))
+// TimeRangeGTE applies the GTE predicate on the "time_range" field.
+func TimeRangeGTE(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldGTE(FieldTimeRange, v))
 }
 
-// CronLT applies the LT predicate on the "cron" field.
-func CronLT(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldLT(FieldCron, v))
+// TimeRangeLT applies the LT predicate on the "time_range" field.
+func TimeRangeLT(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldLT(FieldTimeRange, v))
 }
 
-// CronLTE applies the LTE predicate on the "cron" field.
-func CronLTE(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldLTE(FieldCron, v))
+// TimeRangeLTE applies the LTE predicate on the "time_range" field.
+func TimeRangeLTE(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldLTE(FieldTimeRange, v))
 }
 
-// CronContains applies the Contains predicate on the "cron" field.
-func CronContains(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldContains(FieldCron, v))
+// TimeRangeContains applies the Contains predicate on the "time_range" field.
+func TimeRangeContains(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldContains(FieldTimeRange, v))
 }
 
-// CronHasPrefix applies the HasPrefix predicate on the "cron" field.
-func CronHasPrefix(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldHasPrefix(FieldCron, v))
+// TimeRangeHasPrefix applies the HasPrefix predicate on the "time_range" field.
+func TimeRangeHasPrefix(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldHasPrefix(FieldTimeRange, v))
 }
 
-// CronHasSuffix applies the HasSuffix predicate on the "cron" field.
-func CronHasSuffix(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldHasSuffix(FieldCron, v))
+// TimeRangeHasSuffix applies the HasSuffix predicate on the "time_range" field.
+func TimeRangeHasSuffix(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldHasSuffix(FieldTimeRange, v))
 }
 
-// CronEqualFold applies the EqualFold predicate on the "cron" field.
-func CronEqualFold(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldEqualFold(FieldCron, v))
+// TimeRangeEqualFold applies the EqualFold predicate on the "time_range" field.
+func TimeRangeEqualFold(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldEqualFold(FieldTimeRange, v))
 }
 
-// CronContainsFold applies the ContainsFold predicate on the "cron" field.
-func CronContainsFold(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldContainsFold(FieldCron, v))
+// TimeRangeContainsFold applies the ContainsFold predicate on the "time_range" field.
+func TimeRangeContainsFold(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldContainsFold(FieldTimeRange, v))
 }
 
 // EnabledEQ applies the EQ predicate on the "enabled" field.

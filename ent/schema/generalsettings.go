@@ -16,6 +16,7 @@ func (GeneralSettings) Fields() []ent.Field {
 		field.Bool("random"),
 		field.Int("width").Default(64),
 		field.Int("height").Default(64),
+		field.Text("theme").Default("{}").Optional(),
 	}
 }
 

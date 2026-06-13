@@ -1,36 +1,66 @@
 {{define "sidebar"}}
-<div class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white" style="width: 250px; min-height: 100vh;">
-    <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none">
-        <span class="fs-4">LEDit</span>
-    </a>
-    <hr>
-    <ul class="nav nav-pills flex-column mb-auto">
-        <li><a href="/" class="nav-link text-white">Home</a></li>
-        <li><a href="/admin/" class="nav-link text-white">Dashboard</a></li>
-        <li><a href="/admin/settings" class="nav-link text-white">Settings</a></li>
-        <li><a href="/admin/schedules" class="nav-link text-white">Schedules</a></li>
-        <li><a href="/admin/devices" class="nav-link text-white">Devices</a></li>
-        <li><a href="/admin/theme" class="nav-link text-white">Theme</a></li>
-        <li><a href="/admin/logs" class="nav-link text-white">Logs</a></li>
-        <li><a href="/admin/settings/logs" class="nav-link text-white ps-4">Log Settings</a></li>
-        <li><a href="/admin/settings/email" class="nav-link text-white ps-4">Email Settings</a></li>
-        <li><a href="/admin/settings/ai" class="nav-link text-white ps-4">AI Settings</a></li>
-        <li><a href="/admin/analytics" class="nav-link text-white">Analytics</a></li>
-        <li><a href="/admin/settings/umami" class="nav-link text-white ps-4">Umami Analytics</a></li>
-        <li><a href="/admin/notifications" class="nav-link text-white">Notifications</a></li>
-        <li><a href="/admin/datasources/sonarr/new" class="nav-link text-white">Add Sonarr</a></li>
-        <li><a href="/admin/datasources/radarr/new" class="nav-link text-white">Add Radarr</a></li>
-        <li><a href="/admin/datasources/f1/new" class="nav-link text-white">Add F1</a></li>
-        <li><a href="/admin/datasources/weather/new" class="nav-link text-white">Add Weather</a></li>
-        <li><a href="/admin/datasources/homeassistant/new" class="nav-link text-white">Add HA</a></li>
-        <li><a href="/admin/datasources/untappd/new" class="nav-link text-white">Add Untappd</a></li>
-        <li><a href="/admin/datasources/images/new" class="nav-link text-white">Add Image</a></li>
-        <li><a href="/admin/datasources/videos/new" class="nav-link text-white">Add Video</a></li>
-        <li><a href="/admin/datasources/crypto/new" class="nav-link text-white">Add Crypto</a></li>
-        <li><a href="/admin/datasources/stock/new" class="nav-link text-white">Add Stock</a></li>
-        <li><a href="/admin/datasources/rssfeed/new" class="nav-link text-white">Add RSS</a></li>
-        <li><a href="/admin/datasources/calendar/new" class="nav-link text-white">Add Calendar</a></li>
-        <li><a href="/admin/textslides/new" class="nav-link text-white">Add Text Slide</a></li>
-    </ul>
+<style>
+@media (min-width: 768px) {
+    .sidebar-desktop {
+        position: static !important;
+        visibility: visible !important;
+        transform: none !important;
+        width: 250px !important;
+        z-index: auto;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-desktop .offcanvas-header { display: none; }
+    .sidebar-toggle { display: none !important; }
+}
+</style>
+<button class="btn btn-dark sidebar-toggle position-fixed top-0 start-0 m-2 z-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
+    &#9776;
+</button>
+<div class="offcanvas offcanvas-start bg-dark text-white sidebar-desktop" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarLabel">
+    <div class="offcanvas-header">
+        <span class="fs-4 text-white" id="sidebarLabel">LEDit</span>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column p-0">
+        {{template "flash" .}}
+        <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none px-3 pt-2 d-none d-md-flex">
+            <span class="fs-4">LEDit</span>
+        </a>
+        <hr class="d-none d-md-block mx-3">
+        <ul class="nav nav-pills flex-column mb-auto px-2">
+            <li class="nav-item"><a href="/" class="nav-link text-white{{if eq $.active "home"}} active{{end}}">Home</a></li>
+            <li class="nav-item mt-1"><a href="/admin/" class="nav-link text-white{{if eq $.active "dashboard"}} active{{end}}">Dashboard</a></li>
+            <li class="nav-item"><a href="/admin/settings" class="nav-link text-white{{if eq $.active "settings"}} active{{end}}">Settings</a></li>
+            <li class="nav-item"><a href="/admin/schedules" class="nav-link text-white{{if eq $.active "schedules"}} active{{end}}">Schedules</a></li>
+            <li class="nav-item"><a href="/admin/devices" class="nav-link text-white{{if eq $.active "devices"}} active{{end}}">Devices</a></li>
+            <li class="nav-item"><a href="/admin/theme" class="nav-link text-white{{if eq $.active "theme"}} active{{end}}">Theme</a></li>
+            <li class="nav-item"><a href="/admin/logs" class="nav-link text-white{{if eq $.active "logs"}} active{{end}}">Logs</a></li>
+            <li class="nav-item"><a href="/admin/settings/logs" class="nav-link text-white ps-4{{if eq $.active "log-settings"}} active{{end}}">Log Settings</a></li>
+            <li class="nav-item"><a href="/admin/settings/email" class="nav-link text-white ps-4{{if eq $.active "email"}} active{{end}}">Email Settings</a></li>
+            <li class="nav-item"><a href="/admin/settings/ai" class="nav-link text-white ps-4{{if eq $.active "ai"}} active{{end}}">AI Settings</a></li>
+            <li class="nav-item"><a href="/admin/analytics" class="nav-link text-white{{if eq $.active "analytics"}} active{{end}}">Analytics</a></li>
+            <li class="nav-item"><a href="/admin/settings/umami" class="nav-link text-white ps-4{{if eq $.active "umami"}} active{{end}}">Umami Analytics</a></li>
+            <li class="nav-item"><a href="/admin/notifications" class="nav-link text-white{{if eq $.active "notifications"}} active{{end}}">Notifications</a></li>
+            <li class="nav-item"><a href="/admin/password" class="nav-link text-white{{if eq $.active "password"}} active{{end}}">Password</a></li>
+            <li class="nav-item dropdown mt-2">
+                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">Add Datasource</a>
+                <ul class="dropdown-menu dropdown-menu-dark">
+                    <li><a href="/admin/datasources/sonarr/new" class="dropdown-item{{if eq $.active "sonarr"}} active{{end}}">Sonarr</a></li>
+                    <li><a href="/admin/datasources/radarr/new" class="dropdown-item{{if eq $.active "radarr"}} active{{end}}">Radarr</a></li>
+                    <li><a href="/admin/datasources/f1/new" class="dropdown-item{{if eq $.active "f1"}} active{{end}}">F1</a></li>
+                    <li><a href="/admin/datasources/weather/new" class="dropdown-item{{if eq $.active "weather"}} active{{end}}">Weather</a></li>
+                    <li><a href="/admin/datasources/homeassistant/new" class="dropdown-item{{if eq $.active "homeassistant"}} active{{end}}">Home Assistant</a></li>
+                    <li><a href="/admin/datasources/untappd/new" class="dropdown-item{{if eq $.active "untappd"}} active{{end}}">Untappd</a></li>
+                    <li><a href="/admin/datasources/images/new" class="dropdown-item{{if eq $.active "images"}} active{{end}}">Image</a></li>
+                    <li><a href="/admin/datasources/videos/new" class="dropdown-item{{if eq $.active "videos"}} active{{end}}">Video</a></li>
+                    <li><a href="/admin/datasources/crypto/new" class="dropdown-item{{if eq $.active "crypto"}} active{{end}}">Crypto</a></li>
+                    <li><a href="/admin/datasources/stock/new" class="dropdown-item{{if eq $.active "stock"}} active{{end}}">Stock</a></li>
+                    <li><a href="/admin/datasources/rssfeed/new" class="dropdown-item{{if eq $.active "rssfeed"}} active{{end}}">RSS Feed</a></li>
+                    <li><a href="/admin/datasources/calendar/new" class="dropdown-item{{if eq $.active "calendar"}} active{{end}}">Calendar</a></li>
+                    <li><a href="/admin/textslides/new" class="dropdown-item{{if eq $.active "textslides"}} active{{end}}">Text Slide</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
 </div>
 {{end}}

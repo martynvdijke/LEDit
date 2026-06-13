@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// AISettings is the client for interacting with the AISettings builders.
 	AISettings *AISettingsClient
+	// AdminSettings is the client for interacting with the AdminSettings builders.
+	AdminSettings *AdminSettingsClient
 	// Calendar is the client for interacting with the Calendar builders.
 	Calendar *CalendarClient
 	// Crypto is the client for interacting with the Crypto builders.
@@ -34,6 +36,8 @@ type Tx struct {
 	LogEntry *LogEntryClient
 	// LogSettings is the client for interacting with the LogSettings builders.
 	LogSettings *LogSettingsClient
+	// Notification is the client for interacting with the Notification builders.
+	Notification *NotificationClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
 	// RssFeed is the client for interacting with the RssFeed builders.
@@ -186,6 +190,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.AISettings = NewAISettingsClient(tx.config)
+	tx.AdminSettings = NewAdminSettingsClient(tx.config)
 	tx.Calendar = NewCalendarClient(tx.config)
 	tx.Crypto = NewCryptoClient(tx.config)
 	tx.DeviceSettings = NewDeviceSettingsClient(tx.config)
@@ -196,6 +201,7 @@ func (tx *Tx) init() {
 	tx.Image = NewImageClient(tx.config)
 	tx.LogEntry = NewLogEntryClient(tx.config)
 	tx.LogSettings = NewLogSettingsClient(tx.config)
+	tx.Notification = NewNotificationClient(tx.config)
 	tx.Radarr = NewRadarrClient(tx.config)
 	tx.RssFeed = NewRssFeedClient(tx.config)
 	tx.Schedule = NewScheduleClient(tx.config)

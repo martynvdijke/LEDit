@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"ledit/ent"
 )
 
 type FeedController struct {
@@ -99,7 +100,7 @@ func (s *Server) APIFeedPriority(c *gin.Context) {
 	priorityMu.Lock()
 	priorityMessages = append(priorityMessages, req)
 	priorityMu.Unlock()
-	AddNotification(req.Title, req.Message)
+	s.AddNotification(req.Title, req.Message)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
@@ -112,17 +113,17 @@ func (s *Server) APIWebhookNotify(c *gin.Context) {
 	priorityMu.Lock()
 	priorityMessages = append(priorityMessages, req)
 	priorityMu.Unlock()
-	AddNotification(req.Title, req.Message)
+	s.AddNotification(req.Title, req.Message)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func (s *Server) APINotificationHistory(c *gin.Context) {
-	c.JSON(http.StatusOK, GetNotificationHistory())
+	c.JSON(http.StatusOK, s.GetNotificationHistory())
 }
 
 func (s *Server) AdminNotifications(c *gin.Context) {
-	c.HTML(http.StatusOK, "notifications.html", gin.H{
-		"notifications": GetNotificationHistory(),
+	s.renderPage(c, http.StatusOK, "notifications.html", gin.H{
+		"notifications": s.GetNotificationHistory(),
 	})
 }
 
@@ -156,7 +157,8 @@ func PopPriorityMessage() *priorityMsg {
 	return &msg
 }
 
-func AddNotification(title, message string) {
+// addToMemoryQueue stores a notification in the in-memory queue (for live feed display).
+func addToMemoryQueue(title, message string) {
 	priorityMu.Lock()
 	defer priorityMu.Unlock()
 	notifID++
@@ -173,10 +175,52 @@ func AddNotification(title, message string) {
 	}
 }
 
-func GetNotificationHistory() []notifEntry {
+// getMemoryQueue returns a copy of the in-memory notification queue.
+func getMemoryQueue() []notifEntry {
 	priorityMu.Lock()
 	defer priorityMu.Unlock()
 	out := make([]notifEntry, len(notifHistory))
 	copy(out, notifHistory)
 	return out
+}
+
+// AddNotification persists a notification to DB and adds to the in-memory queue.
+func (s *Server) AddNotification(title, message string) {
+	if s.DB != nil {
+		s.DB.Notification.Create().SetTitle(title).SetMessage(message).SetCreatedAt(time.Now()).SaveX(s.Ctx)
+	}
+	addToMemoryQueue(title, message)
+}
+
+// GetNotificationHistory returns merged DB + in-memory notification history (up to 50).
+func (s *Server) GetNotificationHistory() []notifEntry {
+	memQueue := getMemoryQueue()
+
+	// Also load from DB
+	dbNotifs, err := s.DB.Notification.Query().Order(ent.Desc("created_at")).Limit(50).All(s.Ctx)
+	if err != nil || len(dbNotifs) == 0 {
+		return memQueue
+	}
+
+	// Merge DB entries not already in memory
+	existing := map[int]bool{}
+	for _, n := range memQueue {
+		existing[n.ID] = true
+	}
+	var merged []notifEntry
+	for _, dn := range dbNotifs {
+		if !existing[dn.ID] {
+			merged = append(merged, notifEntry{
+				ID:      dn.ID,
+				Title:   dn.Title,
+				Message: dn.Message,
+				Time:    dn.CreatedAt.Format("15:04:05"),
+			})
+		}
+	}
+	merged = append(merged, memQueue...)
+	if len(merged) > 50 {
+		merged = merged[:50]
+	}
+	return merged
 }

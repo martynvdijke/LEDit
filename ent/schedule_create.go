@@ -33,16 +33,16 @@ func (_c *ScheduleCreate) SetNillableName(v *string) *ScheduleCreate {
 	return _c
 }
 
-// SetCron sets the "cron" field.
-func (_c *ScheduleCreate) SetCron(v string) *ScheduleCreate {
-	_c.mutation.SetCron(v)
+// SetTimeRange sets the "time_range" field.
+func (_c *ScheduleCreate) SetTimeRange(v string) *ScheduleCreate {
+	_c.mutation.SetTimeRange(v)
 	return _c
 }
 
-// SetNillableCron sets the "cron" field if the given value is not nil.
-func (_c *ScheduleCreate) SetNillableCron(v *string) *ScheduleCreate {
+// SetNillableTimeRange sets the "time_range" field if the given value is not nil.
+func (_c *ScheduleCreate) SetNillableTimeRange(v *string) *ScheduleCreate {
 	if v != nil {
-		_c.SetCron(*v)
+		_c.SetTimeRange(*v)
 	}
 	return _c
 }
@@ -100,9 +100,9 @@ func (_c *ScheduleCreate) defaults() {
 		v := schedule.DefaultName
 		_c.mutation.SetName(v)
 	}
-	if _, ok := _c.mutation.Cron(); !ok {
-		v := schedule.DefaultCron
-		_c.mutation.SetCron(v)
+	if _, ok := _c.mutation.TimeRange(); !ok {
+		v := schedule.DefaultTimeRange
+		_c.mutation.SetTimeRange(v)
 	}
 	if _, ok := _c.mutation.Enabled(); !ok {
 		v := schedule.DefaultEnabled
@@ -115,8 +115,8 @@ func (_c *ScheduleCreate) check() error {
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Schedule.name"`)}
 	}
-	if _, ok := _c.mutation.Cron(); !ok {
-		return &ValidationError{Name: "cron", err: errors.New(`ent: missing required field "Schedule.cron"`)}
+	if _, ok := _c.mutation.TimeRange(); !ok {
+		return &ValidationError{Name: "time_range", err: errors.New(`ent: missing required field "Schedule.time_range"`)}
 	}
 	if _, ok := _c.mutation.Enabled(); !ok {
 		return &ValidationError{Name: "enabled", err: errors.New(`ent: missing required field "Schedule.enabled"`)}
@@ -151,9 +151,9 @@ func (_c *ScheduleCreate) createSpec() (*Schedule, *sqlgraph.CreateSpec) {
 		_spec.SetField(schedule.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := _c.mutation.Cron(); ok {
-		_spec.SetField(schedule.FieldCron, field.TypeString, value)
-		_node.Cron = value
+	if value, ok := _c.mutation.TimeRange(); ok {
+		_spec.SetField(schedule.FieldTimeRange, field.TypeString, value)
+		_node.TimeRange = value
 	}
 	if value, ok := _c.mutation.Enabled(); ok {
 		_spec.SetField(schedule.FieldEnabled, field.TypeBool, value)

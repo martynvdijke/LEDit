@@ -17,8 +17,8 @@
                     <input type="text" class="form-control" id="name" name="name" value="{{if .obj}}{{.obj.Name}}{{end}}" required>
                 </div>
                 <div class="mb-3">
-                    <label for="cron" class="form-label">Time Range (e.g. 08:00-12:00)</label>
-                    <input type="text" class="form-control" id="cron" name="cron" value="{{if .obj}}{{.obj.Cron}}{{end}}" placeholder="08:00-12:00">
+                    <label for="time_range" class="form-label">Time Range (e.g. 08:00-12:00)</label>
+                    <input type="text" class="form-control" id="time_range" name="time_range" value="{{if .obj}}{{.obj.TimeRange}}{{end}}" placeholder="08:00-12:00">
                 </div>
                 <div class="mb-3 form-check">
                     <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if not .edit}}checked{{else if .obj.Enabled}}checked{{end}}>

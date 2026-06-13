@@ -6,11 +6,13 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"ledit/ent"
 	"ledit/logging"
 )
@@ -34,6 +36,9 @@ func New(driver *sql.Driver) *Server {
 		panic(err)
 	}
 
+	// Bootstrap admin credentials on first run.
+	initAdminSettings(client, ctx)
+
 	// Initialize central logging system (DB-backed, OTEL-ready).
 	// This sets slog.SetDefault, so all subsequent slog calls use it.
 	logStore, otelExp, logCleanup := logging.InitLogging(client, "warn")
@@ -53,6 +58,40 @@ func New(driver *sql.Driver) *Server {
 	srv.setupRoutes()
 
 	return srv
+}
+
+func initAdminSettings(client *ent.Client, ctx context.Context) {
+	disableAuth := os.Getenv("LEDIT_AUTH_DISABLE")
+	if disableAuth == "true" || disableAuth == "1" {
+		slog.Warn("Authentication is DISABLED by LEDIT_AUTH_DISABLE env var")
+		authEnabled = false
+		return
+	}
+
+	count, err := client.AdminSettings.Query().Count(ctx)
+	if err != nil || count > 0 {
+		authEnabled = true
+		return
+	}
+
+	password := os.Getenv("LEDIT_ADMIN_PASSWORD")
+	if password == "" {
+		password = "ledit"
+		slog.Warn("Using default admin password — set LEDIT_ADMIN_PASSWORD env var for security")
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		slog.Error("Failed to hash admin password", "error", err)
+		panic(err)
+	}
+
+	if _, err := client.AdminSettings.Create().SetUsername("admin").SetPasswordHash(string(hash)).Save(ctx); err != nil {
+		slog.Error("Failed to create initial admin settings", "error", err)
+		panic(err)
+	}
+	slog.Info("Initial admin credentials created")
+	authEnabled = true
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -95,7 +134,7 @@ func (s *Server) setupRoutes() {
 	s.Router.GET("/logout", s.LogoutAction)
 
 	admin := s.Router.Group("/admin")
-	admin.Use(AuthMiddleware())
+	admin.Use(AuthMiddleware(), FlashMiddleware())
 	{
 		admin.GET("/", s.AdminDashboard)
 		admin.GET("/settings", s.AdminSettings)
@@ -233,6 +272,10 @@ func (s *Server) setupRoutes() {
 		// Umami Analytics Settings
 		admin.GET("/settings/umami", s.AdminUmamiSettings)
 		admin.POST("/settings/umami", s.AdminUmamiSettingsSave)
+
+		// Password Change
+		admin.GET("/password", s.AdminPasswordChange)
+		admin.POST("/password", s.AdminPasswordChangeSave)
 
 		// Analytics (Phase 10)
 		admin.GET("/analytics", s.AdminAnalytics)
