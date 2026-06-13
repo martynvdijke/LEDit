@@ -107,8 +107,8 @@
 
 ## 16. Instrumentation & Verification
 
-- [ ] 16.1 Verify all datasource log entries appear in central log view by exercising each datasource
-- [ ] 16.2 Verify WebSocket errors appear in logs (connect and disconnect)
-- [ ] 16.3 Verify logging infrastructure self-logs appear (store flush, cleanup, init)
-- [ ] 16.4 Verify verbosity filtering works (change level to "error", confirm warn entries hidden)
-- [ ] 16.5 Run `task pre-push` (gofmt, tests, build) and fix any issues
+- [x] 16.1 Verify all datasource log entries appear in central log view by exercising each datasource
+- [x] 16.2 Verify WebSocket errors appear in logs (connect and disconnect)
+- [x] 16.3 Verify logging infrastructure self-logs appear (store flush, cleanup, init)
+- [x] 16.4 Verify verbosity filtering works (change level to "error", confirm warn entries hidden)
+- [x] 16.5 Run `task pre-push` (gofmt, tests, build) and fix any issues
