@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/martynvdijke/LEDit/compare/v1.6.0...v1.7.0) (2026-06-13)
+
+
+### Features
+
+* add comprehensive-fixes change proposal with 11 capability specs ([aa8ed27](https://github.com/martynvdijke/LEDit/commit/aa8ed274e6f85c166a7e7f4a9d8298a62dcd8935))
+
 # [1.6.0](https://github.com/martynvdijke/LEDit/compare/v1.5.0...v1.6.0) (2026-06-11)
 
 
