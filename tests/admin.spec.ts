@@ -51,19 +51,21 @@ test.describe('Sidebar Navigation', () => {
     await expect(page.getByRole('link', { name: 'Theme' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Analytics' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Notifications' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add Sonarr' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add Radarr' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add F1' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add Weather' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add HA' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add Untappd' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add Image' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add Video' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add Crypto' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add Stock' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add RSS' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add Calendar' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Add Text Slide' })).toBeVisible();
+    // Datasources are in a dropdown — open it to verify items
+    await page.getByRole('link', { name: 'Add Datasource' }).click();
+    await expect(page.getByRole('link', { name: 'Sonarr' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Radarr' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'F1' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Weather' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Home Assistant' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Untappd' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Image' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Video' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Crypto' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Stock' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'RSS Feed' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Calendar' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Text Slide' })).toBeVisible();
   });
 
   test('should navigate to settings via sidebar', async ({ page }) => {
@@ -81,24 +83,25 @@ test.describe('Sidebar Navigation', () => {
 
 test.describe('Datasource Forms', () => {
   const datasources = [
-    { link: 'Add Sonarr', title: 'New Sonarr Source' },
-    { link: 'Add Radarr', title: 'New Radarr Source' },
-    { link: 'Add F1', title: 'New F1 Source' },
-    { link: 'Add Weather', title: 'New Weather Source' },
-    { link: 'Add HA', title: 'New HomeAssistant Source' },
-    { link: 'Add Untappd', title: 'New Untappd Source' },
-    { link: 'Add Image', title: 'New Image Source' },
-    { link: 'Add Video', title: 'New Video Source' },
-    { link: 'Add Crypto', title: 'New Crypto Source' },
-    { link: 'Add Stock', title: 'New Stock Source' },
-    { link: 'Add RSS', title: 'New RSS Feed Source' },
-    { link: 'Add Calendar', title: 'New Calendar Source' },
-    { link: 'Add Text Slide', title: 'New Text Slide' },
+    { link: 'Sonarr', title: 'New Sonarr Source' },
+    { link: 'Radarr', title: 'New Radarr Source' },
+    { link: 'F1', title: 'New F1 Source' },
+    { link: 'Weather', title: 'New Weather Source' },
+    { link: 'Home Assistant', title: 'New HomeAssistant Source' },
+    { link: 'Untappd', title: 'New Untappd Source' },
+    { link: 'Image', title: 'New Image Source' },
+    { link: 'Video', title: 'New Video Source' },
+    { link: 'Crypto', title: 'New Crypto Source' },
+    { link: 'Stock', title: 'New Stock Source' },
+    { link: 'RSS Feed', title: 'New RSS Feed Source' },
+    { link: 'Calendar', title: 'New Calendar Source' },
+    { link: 'Text Slide', title: 'New Text Slide' },
   ];
 
   for (const ds of datasources) {
     test(`${ds.title} form should load`, async ({ page }) => {
       await page.goto('/');
+      await page.getByRole('link', { name: 'Add Datasource' }).click();
       await page.getByRole('link', { name: ds.link }).click();
       await expect(page.locator('h1')).toContainText(ds.title);
       await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
@@ -131,7 +134,7 @@ test.describe('Schedules', () => {
     await page.goto('/admin/schedules/new');
     await expect(page.locator('h1')).toContainText('New Schedule');
     await expect(page.locator('#name')).toBeAttached();
-    await expect(page.locator('#cron')).toBeAttached();
+    await expect(page.locator('#time_range')).toBeAttached();
     await expect(page.locator('#enabled')).toBeAttached();
     await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
   });

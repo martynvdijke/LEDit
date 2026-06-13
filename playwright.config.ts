@@ -22,7 +22,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'rm -rf data && ./ledit',
+    command: 'rm -rf data && LEDIT_AUTH_DISABLE=true ./ledit',
     url: 'http://localhost:8080',
     reuseExistingServer: false,
   },
