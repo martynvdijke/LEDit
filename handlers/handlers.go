@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"log/slog"
+	"maps"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -36,8 +37,8 @@ func activePage(c *gin.Context) string {
 		return a
 	}
 	// Match prefix for edit pages, or the endpoint itself
-	if strings.HasPrefix(path, "/admin/datasources/") {
-		parts := strings.Split(strings.TrimPrefix(path, "/admin/datasources/"), "/")
+	if after, ok := strings.CutPrefix(path, "/admin/datasources/"); ok {
+		parts := strings.Split(after, "/")
 		if len(parts) > 0 {
 			return parts[0]
 		}
@@ -435,9 +436,7 @@ func (s *Server) AdminThemeEditor(c *gin.Context) {
 	if settings != nil && settings.Theme != "" && settings.Theme != "{}" {
 		var saved map[string]any
 		if err := json.Unmarshal([]byte(settings.Theme), &saved); err == nil {
-			for k, v := range saved {
-				theme[k] = v
-			}
+			maps.Copy(theme, saved)
 		}
 	}
 	data := gin.H{"theme": theme}

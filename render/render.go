@@ -78,8 +78,8 @@ func RenderDict(dataDict map[string]string, width, height int, theme Theme, font
 	for key, value := range dataDict {
 		markerX := margin - 15
 		markerY := yPos + 8
-		for dy := 0; dy < 8; dy++ {
-			for dx := 0; dx < 8; dx++ {
+		for dy := range 8 {
+			for dx := range 8 {
 				img.Set(markerX+dx, markerY+dy, accent)
 			}
 		}
@@ -92,7 +92,7 @@ func RenderDict(dataDict map[string]string, width, height int, theme Theme, font
 	}
 
 	for y := 0; y < height; y += 4 {
-		for x := 0; x < width; x++ {
+		for x := range width {
 			existing := img.RGBAAt(x, y)
 			existing.R = uint8(float64(existing.R) * 0.8)
 			existing.G = uint8(float64(existing.G) * 0.8)
@@ -255,8 +255,8 @@ func drawStringSimple(img *image.RGBA, text string, x, y int, col color.Color) {
 			continue
 		}
 		glyph := simpleFont[idx]
-		for row := 0; row < charH; row++ {
-			for colBit := 0; colBit < 5; colBit++ {
+		for row := range charH {
+			for colBit := range 5 {
 				if glyph[row][colBit] == 1 {
 					img.Set(baseX+colBit, baseY+row, col)
 				}

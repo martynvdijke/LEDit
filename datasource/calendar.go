@@ -56,8 +56,8 @@ func parseICal(ical string) []string {
 	var summary string
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "SUMMARY:") {
-			summary = strings.TrimPrefix(line, "SUMMARY:")
+		if after, ok := strings.CutPrefix(line, "SUMMARY:"); ok {
+			summary = after
 		} else if strings.HasPrefix(line, "DTSTART") {
 			if summary != "" {
 				events = append(events, summary)

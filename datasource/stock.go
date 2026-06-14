@@ -22,7 +22,7 @@ func (s *StockDS) GetPNG() (*render.RenderedImage, error) {
 
 	slog.Info("fetching stock data", "source", "stock", "symbols", symbols)
 	data := map[string]string{}
-	for _, sym := range strings.Split(symbols, ",") {
+	for sym := range strings.SplitSeq(symbols, ",") {
 		sym = strings.TrimSpace(sym)
 		if sym == "" {
 			continue
@@ -44,7 +44,7 @@ func (s *StockDS) GetPNG() (*render.RenderedImage, error) {
 
 	if len(data) == 0 {
 		slog.Warn("stock all symbols failed, using fallback", "source", "stock")
-		for _, sym := range strings.Split(symbols, ",") {
+		for sym := range strings.SplitSeq(symbols, ",") {
 			sym = strings.TrimSpace(sym)
 			if sym != "" {
 				label := strings.ToUpper(sym[:min(5, len(sym))])

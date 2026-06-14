@@ -39,7 +39,7 @@ func (c *CryptoDS) GetPNG() (*render.RenderedImage, error) {
 	slog.Info("crypto data fetched successfully", "source", "crypto", "coin_count", len(resp))
 
 	data := map[string]string{}
-	for _, id := range strings.Split(ids, ",") {
+	for id := range strings.SplitSeq(ids, ",") {
 		id = strings.TrimSpace(id)
 		if prices, ok := resp[id]; ok {
 			usd := prices["usd"]
@@ -65,7 +65,7 @@ func (c *CryptoDS) GetPNG() (*render.RenderedImage, error) {
 
 func fallbackCrypto(ids string) *render.RenderedImage {
 	data := map[string]string{}
-	for _, id := range strings.Split(ids, ",") {
+	for id := range strings.SplitSeq(ids, ",") {
 		id = strings.TrimSpace(id)
 		if id != "" {
 			data[strings.ToUpper(id[:min(4, len(id))])] = "--"
