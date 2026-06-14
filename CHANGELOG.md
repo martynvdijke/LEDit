@@ -1,3 +1,16 @@
+# [1.8.0](https://github.com/martynvdijke/LEDit/compare/v1.7.0...v1.8.0) (2026-06-14)
+
+
+### Bug Fixes
+
+* correct Playwright test selectors for strict mode violations ([adb9fa8](https://github.com/martynvdijke/LEDit/commit/adb9fa8044a8765fc502d525fc3be598f93d4598))
+* E2E tests for auth, sidebar dropdown, schedule field rename ([478e4d8](https://github.com/martynvdijke/LEDit/commit/478e4d87ff4757d0da6a613992962c355a279aae)), closes [#cron](https://github.com/martynvdijke/LEDit/issues/cron) [#time_range](https://github.com/martynvdijke/LEDit/issues/time_range)
+
+
+### Features
+
+* comprehensive fixes implementation ([ff32242](https://github.com/martynvdijke/LEDit/commit/ff32242ef1919b2a87ed41593eec57af3cbbe38a))
+
 # [1.7.0](https://github.com/martynvdijke/LEDit/compare/v1.6.0...v1.7.0) (2026-06-13)
 
 
