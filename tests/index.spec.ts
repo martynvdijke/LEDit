@@ -23,14 +23,14 @@ test.describe('Index / Live Feed', () => {
 
   test('should show LEDit branding', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.fs-4')).toContainText('LEDit');
+    await expect(page.getByRole('link', { name: 'LEDit' })).toBeVisible();
   });
 
   test('should have sidebar with navigation links', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('link', { name: 'Home' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Settings', exact: true })).toBeVisible();
   });
 
   test('should show source and next labels', async ({ page }) => {
