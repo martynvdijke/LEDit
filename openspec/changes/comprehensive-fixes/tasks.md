@@ -40,7 +40,7 @@
 - [x] 5.3 Add `active` field to template context for all routes, pass current page identifier
 - [x] 5.4 Update `sidebar.html` partial — add `active` class logic using the passed identifier
 - [x] 5.5 Add responsive hamburger toggle and off-canvas collapse to sidebar (Bootstrap off-canvas)
-- [ ] 5.6 Run E2E tests to verify sidebar navigation still works
+- [x] 5.6 Run E2E tests to verify sidebar navigation still works
 - [x] 5.7 Run `task pre-push`
 
 ## 6. Theme Editor Persistence
@@ -109,6 +109,6 @@
 ## 13. Verification
 
 - [x] 13.1 Run full test suite: `go test ./...` (Go unit tests)
-- [ ] 13.2 Run E2E tests: `task test:e2e` (Playwright)
+- [x] 13.2 Run E2E tests: `task test:e2e` (Playwright)
 - [x] 13.3 Run build: `go build -o ledit .`
 - [x] 13.4 Run `go fmt ./... && go test ./... && go build ./...` for final validation

@@ -62,14 +62,14 @@
 - [x] 10.1 Create `AdminEmailSettings` and `AdminEmailSettingsSave` handlers in `handlers/log_admin.go`
 - [x] 10.2 Create `web/templates/admin/email_settings.html` — SMTP configuration form
 - [x] 10.3 Register email settings routes under `/admin/settings/email`
-- [ ] 10.4 Wire EmailSettings edge into AdminDashboard query in `handlers/handlers.go` (include `.WithEmailSettings()`)
+- [x] 10.4 Wire EmailSettings edge into AdminDashboard query in `handlers/handlers.go` (include `.WithEmailSettings()`)
 
 ## 11. Admin AI Settings Page
 
 - [x] 11.1 Create `AdminAISettings` and `AdminAISettingsSave` handlers in `handlers/log_admin.go`
 - [x] 11.2 Create `web/templates/admin/ai_settings.html` — AI provider config form with provider dropdown
 - [x] 11.3 Register AI settings routes under `/admin/settings/ai`
-- [ ] 11.4 Wire AISettings edge into AdminDashboard query in `handlers/handlers.go` (include `.WithAISettings()`)
+- [x] 11.4 Wire AISettings edge into AdminDashboard query in `handlers/handlers.go` (include `.WithAISettings()`)
 
 ## 12. OpenTelemetry Integration
 
