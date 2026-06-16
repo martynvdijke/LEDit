@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/martynvdijke/LEDit/compare/v1.8.0...v1.9.0) (2026-06-16)
+
+
+### Features
+
+* implement e-ink mode with toggle, refresh interval, and E2E tests ([b1759f0](https://github.com/martynvdijke/LEDit/commit/b1759f00e6c3e1c7e57aac70378e666f839e8154))
+
 # [1.8.0](https://github.com/martynvdijke/LEDit/compare/v1.7.0...v1.8.0) (2026-06-14)
 
 
