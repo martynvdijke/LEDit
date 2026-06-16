@@ -26,6 +26,8 @@ type GeneralSettings struct {
 	Height int `json:"height,omitempty"`
 	// Theme holds the value of the "theme" field.
 	Theme string `json:"theme,omitempty"`
+	// EinkMode holds the value of the "eink_mode" field.
+	EinkMode bool `json:"eink_mode,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GeneralSettingsQuery when eager-loading is set.
 	Edges        GeneralSettingsEdges `json:"edges"`
@@ -242,7 +244,7 @@ func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case generalsettings.FieldRandom:
+		case generalsettings.FieldRandom, generalsettings.FieldEinkMode:
 			values[i] = new(sql.NullBool)
 		case generalsettings.FieldTimeout:
 			values[i] = new(sql.NullFloat64)
@@ -300,6 +302,12 @@ func (_m *GeneralSettings) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field theme", values[i])
 			} else if value.Valid {
 				_m.Theme = value.String
+			}
+		case generalsettings.FieldEinkMode:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field eink_mode", values[i])
+			} else if value.Valid {
+				_m.EinkMode = value.Bool
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -441,6 +449,9 @@ func (_m *GeneralSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("theme=")
 	builder.WriteString(_m.Theme)
+	builder.WriteString(", ")
+	builder.WriteString("eink_mode=")
+	builder.WriteString(fmt.Sprintf("%v", _m.EinkMode))
 	builder.WriteByte(')')
 	return builder.String()
 }

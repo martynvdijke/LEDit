@@ -79,6 +79,11 @@ func Theme(v string) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldEQ(FieldTheme, v))
 }
 
+// EinkMode applies equality check predicate on the "eink_mode" field. It's identical to EinkModeEQ.
+func EinkMode(v bool) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldEinkMode, v))
+}
+
 // TimeoutEQ applies the EQ predicate on the "timeout" field.
 func TimeoutEQ(v float64) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldEQ(FieldTimeout, v))
@@ -282,6 +287,26 @@ func ThemeEqualFold(v string) predicate.GeneralSettings {
 // ThemeContainsFold applies the ContainsFold predicate on the "theme" field.
 func ThemeContainsFold(v string) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldContainsFold(FieldTheme, v))
+}
+
+// EinkModeEQ applies the EQ predicate on the "eink_mode" field.
+func EinkModeEQ(v bool) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldEinkMode, v))
+}
+
+// EinkModeNEQ applies the NEQ predicate on the "eink_mode" field.
+func EinkModeNEQ(v bool) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldEinkMode, v))
+}
+
+// EinkModeIsNil applies the IsNil predicate on the "eink_mode" field.
+func EinkModeIsNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIsNull(FieldEinkMode))
+}
+
+// EinkModeNotNil applies the NotNil predicate on the "eink_mode" field.
+func EinkModeNotNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotNull(FieldEinkMode))
 }
 
 // HasSonarr applies the HasEdge predicate on the "sonarr" edge.

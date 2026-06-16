@@ -112,11 +112,14 @@ func (s *Server) setupRoutes() {
 	})
 	s.Router.SetHTMLTemplate(tmpl)
 
+	s.Router.Use(s.EInkMiddleware())
+
 	s.Router.Static("/static", "./web/static")
 	s.Router.Static("/media", "./web/media")
 
 	s.Router.GET("/", s.IndexHandler)
 	s.Router.GET("/ws/feed", s.WSHub.HandleWS)
+	s.Router.GET("/eink/toggle", s.AdminEInkToggleFeed)
 
 	api := s.Router.Group("/api")
 	{
@@ -276,6 +279,10 @@ func (s *Server) setupRoutes() {
 		// Password Change
 		admin.GET("/password", s.AdminPasswordChange)
 		admin.POST("/password", s.AdminPasswordChangeSave)
+
+		// E-Ink Mode
+		admin.GET("/eink/toggle", s.AdminEInkToggle)
+		admin.POST("/eink/refresh", s.AdminEInkRefresh)
 
 		// Analytics (Phase 10)
 		admin.GET("/analytics", s.AdminAnalytics)

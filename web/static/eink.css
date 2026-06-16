@@ -1,0 +1,378 @@
+/* ============================================================
+   E-Ink Mode Stylesheet
+   All rules scoped under .eink-mode to avoid polluting defaults.
+   Activated by adding .eink-mode class to <body>.
+   ============================================================ */
+
+/* --- High-Contrast Color Scheme --- */
+.eink-mode,
+.eink-mode body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+.eink-mode .bg-dark,
+.eink-mode .bg-primary,
+.eink-mode .bg-secondary,
+.eink-mode .bg-success,
+.eink-mode .bg-danger,
+.eink-mode .bg-warning,
+.eink-mode .bg-info {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+/* Bordered cards instead of colored */
+.eink-mode .card.text-white {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    box-shadow: none !important;
+}
+
+.eink-mode .card.text-white .card-title,
+.eink-mode .card.text-white .card-text {
+    color: #000000 !important;
+}
+
+/* Left border color hint instead of full bg color */
+.eink-mode .card.bg-primary { border-left: 4px solid #0d6efd !important; }
+.eink-mode .card.bg-success { border-left: 4px solid #198754 !important; }
+.eink-mode .card.bg-info    { border-left: 4px solid #0dcaf0 !important; }
+.eink-mode .card.bg-warning { border-left: 4px solid #ffc107 !important; }
+.eink-mode .card.bg-secondary { border-left: 4px solid #6c757d !important; }
+.eink-mode .card.bg-dark    { border-left: 4px solid #212529 !important; }
+.eink-mode .card.bg-danger  { border-left: 4px solid #dc3545 !important; }
+
+/* Badges: bordered instead of filled */
+.eink-mode .badge {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    font-weight: 600;
+}
+
+/* Alerts: bordered */
+.eink-mode .alert {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+}
+
+/* Tables: high contrast */
+.eink-mode .table {
+    --bs-table-bg: #FFFFFF !important;
+    --bs-table-color: #000000 !important;
+    --bs-table-striped-bg: #F0F0F0 !important;
+    --bs-table-striped-color: #000000 !important;
+    --bs-table-border-color: #000000 !important;
+    color: #000000 !important;
+    border-color: #000000 !important;
+}
+
+.eink-mode .table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: #F0F0F0 !important;
+    color: #000000 !important;
+}
+
+/* Tables inside cards: ensure text is black */
+.eink-mode .table td,
+.eink-mode .table th {
+    color: #000000 !important;
+    border-color: #000000 !important;
+}
+
+/* Sidebar: high contrast */
+.eink-mode .offcanvas.offcanvas-start {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border-right: 1px solid #CCCCCC !important;
+}
+
+.eink-mode .offcanvas.offcanvas-start .nav-link {
+    color: #000000 !important;
+}
+
+.eink-mode .offcanvas.offcanvas-start .nav-link.active {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+}
+
+.eink-mode .offcanvas.offcanvas-start .nav-link:hover {
+    background-color: #E0E0E0 !important;
+    color: #000000 !important;
+}
+
+.eink-mode .offcanvas-header .fs-4,
+.eink-mode .offcanvas-body .fs-4 {
+    color: #000000 !important;
+}
+
+/* Sidebar toggle button */
+.eink-mode .sidebar-toggle {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+}
+
+/* Dropdown menus */
+.eink-mode .dropdown-menu {
+    background-color: #FFFFFF !important;
+    border: 1px solid #000000 !important;
+    box-shadow: none !important;
+}
+
+.eink-mode .dropdown-item {
+    color: #000000 !important;
+}
+
+.eink-mode .dropdown-item:hover {
+    background-color: #E0E0E0 !important;
+    color: #000000 !important;
+}
+
+.eink-mode .dropdown-menu-dark {
+    background-color: #FFFFFF !important;
+}
+
+/* Links */
+.eink-mode a:not(.btn):not(.nav-link) {
+    color: #000000 !important;
+    text-decoration: underline !important;
+}
+
+.eink-mode a:not(.btn):not(.nav-link):hover {
+    color: #333333 !important;
+}
+
+/* Headings */
+.eink-mode h1, .eink-mode h2, .eink-mode h3,
+.eink-mode h4, .eink-mode h5, .eink-mode h6 {
+    color: #000000 !important;
+}
+
+/* Text utilities */
+.eink-mode .text-muted {
+    color: #444444 !important;
+}
+
+.eink-mode .text-white {
+    color: #000000 !important;
+}
+
+/* Form labels */
+.eink-mode .form-label {
+    color: #000000 !important;
+}
+
+/* --- Disable All Animations & Transitions --- */
+.eink-mode *,
+.eink-mode *::before,
+.eink-mode *::after {
+    animation: none !important;
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    transition: none !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+}
+
+/* Disable hover effects on buttons */
+.eink-mode .btn:hover {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border-color: #000000 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.eink-mode .btn-primary {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+}
+
+.eink-mode .btn-primary:hover {
+    background-color: #E0E0E0 !important;
+}
+
+.eink-mode .btn-warning {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+}
+
+.eink-mode .btn-secondary {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+}
+
+.eink-mode .btn-danger {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+}
+
+/* Disable card hover effects */
+.eink-mode .card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* --- Larger Touch Targets (48px minimum) --- */
+/* Sidebar links */
+.eink-mode .offcanvas.offcanvas-start .nav-link {
+    min-height: 48px !important;
+    padding: 12px 16px !important;
+    font-size: 1rem !important;
+    line-height: 24px !important;
+}
+
+/* Sidebar dropdown items */
+.eink-mode .dropdown-item {
+    min-height: 44px !important;
+    padding: 10px 16px !important;
+}
+
+/* Buttons */
+.eink-mode .btn {
+    min-height: 48px !important;
+    padding: 12px 20px !important;
+    font-size: 1rem !important;
+}
+
+/* Form controls */
+.eink-mode .form-control,
+.eink-mode .form-select,
+.eink-mode .form-control-color {
+    min-height: 48px !important;
+    padding: 12px 16px !important;
+    font-size: 1rem !important;
+}
+
+.eink-mode .form-check-input {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    margin-top: 0.25rem !important;
+}
+
+.eink-mode .form-check-label {
+    font-size: 1rem !important;
+    padding-left: 0.5rem !important;
+}
+
+/* Input groups */
+.eink-mode .input-group > .form-control,
+.eink-mode .input-group > .btn {
+    min-height: 48px !important;
+}
+
+/* Color input */
+.eink-mode input[type="color"].form-control-color {
+    width: 4rem !important;
+    height: 48px !important;
+    padding: 4px !important;
+}
+
+/* --- Simplify Visual Noise --- */
+/* Horizontal rules */
+.eink-mode hr {
+    border-top: 1px solid #000000 !important;
+    opacity: 1 !important;
+}
+
+/* Table borders */
+.eink-mode .table {
+    border: 1px solid #000000 !important;
+}
+
+.eink-mode .table td,
+.eink-mode .table th {
+    border: 1px solid #000000 !important;
+}
+
+/* Sidebar separator */
+.eink-mode .offcanvas.offcanvas-start hr {
+    border-top: 1px solid #000000 !important;
+}
+
+/* Remove shadows */
+.eink-mode * {
+    text-shadow: none !important;
+    box-shadow: none !important;
+}
+
+.eink-mode .offcanvas-body {
+    scrollbar-width: thin;
+    scrollbar-color: #CCCCCC #FFFFFF;
+}
+
+/* --- Feed Page Specific Overrides --- */
+/* Live feed headings */
+.eink-mode #source-label,
+.eink-mode #next-label {
+    border: 1px solid #000000 !important;
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+/* Status text - plain, no color */
+.eink-mode #status-text {
+    color: #000000 !important;
+}
+
+/* Fullscreen feed: pure black background */
+.eink-mode .fullscreen-active {
+    background-color: #000000 !important;
+}
+
+.eink-mode .fullscreen-active #clock-overlay {
+    color: #FFFFFF !important;
+    text-shadow: none !important;
+}
+
+.eink-mode .fullscreen-active #marquee-container {
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: #FFFFFF !important;
+}
+
+/* Disable matrix overlay in e-ink mode */
+.eink-mode #matrix-overlay {
+    display: none !important;
+}
+
+/* Disable marquee animation */
+.eink-mode #marquee-text {
+    animation: none !important;
+    padding-left: 0 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    display: block !important;
+}
+
+/* Disable fade transitions on feed images */
+.eink-mode #media-display {
+    transition: none !important;
+    opacity: 1 !important;
+}
+
+.eink-mode #media-display.fade-out {
+    opacity: 1 !important;
+}
+
+/* Feed controls */
+.eink-mode .feed-controls .btn {
+    border: 1px solid #000000 !important;
+}
+
+/* Refresh button highlight */
+.eink-mode #btn-refresh {
+    border: 2px solid #000000 !important;
+    font-weight: bold !important;
+}
+
+/* --- Form Check Toggle for E-Ink Settings --- */
+.eink-mode .form-switch .form-check-input {
+    border: 1px solid #000000 !important;
+}

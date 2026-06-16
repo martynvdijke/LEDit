@@ -119,6 +119,10 @@ func init() {
 	generalsettingsDescTheme := generalsettingsFields[4].Descriptor()
 	// generalsettings.DefaultTheme holds the default value on creation for the theme field.
 	generalsettings.DefaultTheme = generalsettingsDescTheme.Default.(string)
+	// generalsettingsDescEinkMode is the schema descriptor for eink_mode field.
+	generalsettingsDescEinkMode := generalsettingsFields[5].Descriptor()
+	// generalsettings.DefaultEinkMode holds the default value on creation for the eink_mode field.
+	generalsettings.DefaultEinkMode = generalsettingsDescEinkMode.Default.(bool)
 	homeassistantFields := schema.HomeAssistant{}.Fields()
 	_ = homeassistantFields
 	// homeassistantDescToken is the schema descriptor for token field.

@@ -62,6 +62,10 @@ func (s *Server) renderPage(c *gin.Context, httpCode int, name string, obj gin.H
 	if fm, ok := c.Get("flash_message"); ok {
 		obj["flash_message"] = fm
 	}
+	// Inject e-ink mode state from middleware
+	if em, ok := c.Get("eink_mode"); ok {
+		obj["eink_mode"] = em
+	}
 	c.HTML(httpCode, name, obj)
 }
 
@@ -75,10 +79,12 @@ func (s *Server) IndexHandler(c *gin.Context) {
 		umamiEndpoint = umamiSettings.Endpoint
 		umamiWebsiteID = umamiSettings.WebsiteID
 	}
+	einkMode := getEInkMode(c)
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"umamiEnabled":   umamiEnabled,
 		"umamiEndpoint":  umamiEndpoint,
 		"umamiWebsiteID": umamiWebsiteID,
+		"eink_mode":      einkMode,
 	})
 }
 
@@ -194,6 +200,7 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 	random := c.PostForm("random") == "on"
 	width, _ := strconv.Atoi(c.PostForm("width"))
 	height, _ := strconv.Atoi(c.PostForm("height"))
+	einkMode := c.PostForm("eink_mode") == "on"
 
 	v := NewValidator().RangeFloat("Timeout", timeout, 0.1, 3600).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512)
 	if !v.Valid() {
@@ -209,6 +216,7 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 			SetRandom(random).
 			SetWidth(width).
 			SetHeight(height).
+			SetEinkMode(einkMode).
 			Save(s.Ctx)
 	} else {
 		s.DB.GeneralSettings.UpdateOneID(1).
@@ -216,6 +224,7 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 			SetRandom(random).
 			SetWidth(width).
 			SetHeight(height).
+			SetEinkMode(einkMode).
 			Exec(s.Ctx)
 	}
 	SetFlash(c, "success", "Settings saved")

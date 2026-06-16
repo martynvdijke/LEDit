@@ -3571,6 +3571,7 @@ type GeneralSettingsMutation struct {
 	height                 *int
 	addheight              *int
 	theme                  *string
+	eink_mode              *bool
 	clearedFields          map[string]struct{}
 	sonarr                 map[int]struct{}
 	removedsonarr          map[int]struct{}
@@ -3980,6 +3981,55 @@ func (m *GeneralSettingsMutation) ThemeCleared() bool {
 func (m *GeneralSettingsMutation) ResetTheme() {
 	m.theme = nil
 	delete(m.clearedFields, generalsettings.FieldTheme)
+}
+
+// SetEinkMode sets the "eink_mode" field.
+func (m *GeneralSettingsMutation) SetEinkMode(b bool) {
+	m.eink_mode = &b
+}
+
+// EinkMode returns the value of the "eink_mode" field in the mutation.
+func (m *GeneralSettingsMutation) EinkMode() (r bool, exists bool) {
+	v := m.eink_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEinkMode returns the old "eink_mode" field's value of the GeneralSettings entity.
+// If the GeneralSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GeneralSettingsMutation) OldEinkMode(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEinkMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEinkMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEinkMode: %w", err)
+	}
+	return oldValue.EinkMode, nil
+}
+
+// ClearEinkMode clears the value of the "eink_mode" field.
+func (m *GeneralSettingsMutation) ClearEinkMode() {
+	m.eink_mode = nil
+	m.clearedFields[generalsettings.FieldEinkMode] = struct{}{}
+}
+
+// EinkModeCleared returns if the "eink_mode" field was cleared in this mutation.
+func (m *GeneralSettingsMutation) EinkModeCleared() bool {
+	_, ok := m.clearedFields[generalsettings.FieldEinkMode]
+	return ok
+}
+
+// ResetEinkMode resets all changes to the "eink_mode" field.
+func (m *GeneralSettingsMutation) ResetEinkMode() {
+	m.eink_mode = nil
+	delete(m.clearedFields, generalsettings.FieldEinkMode)
 }
 
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by ids.
@@ -4988,7 +5038,7 @@ func (m *GeneralSettingsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GeneralSettingsMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.timeout != nil {
 		fields = append(fields, generalsettings.FieldTimeout)
 	}
@@ -5003,6 +5053,9 @@ func (m *GeneralSettingsMutation) Fields() []string {
 	}
 	if m.theme != nil {
 		fields = append(fields, generalsettings.FieldTheme)
+	}
+	if m.eink_mode != nil {
+		fields = append(fields, generalsettings.FieldEinkMode)
 	}
 	return fields
 }
@@ -5022,6 +5075,8 @@ func (m *GeneralSettingsMutation) Field(name string) (ent.Value, bool) {
 		return m.Height()
 	case generalsettings.FieldTheme:
 		return m.Theme()
+	case generalsettings.FieldEinkMode:
+		return m.EinkMode()
 	}
 	return nil, false
 }
@@ -5041,6 +5096,8 @@ func (m *GeneralSettingsMutation) OldField(ctx context.Context, name string) (en
 		return m.OldHeight(ctx)
 	case generalsettings.FieldTheme:
 		return m.OldTheme(ctx)
+	case generalsettings.FieldEinkMode:
+		return m.OldEinkMode(ctx)
 	}
 	return nil, fmt.Errorf("unknown GeneralSettings field %s", name)
 }
@@ -5084,6 +5141,13 @@ func (m *GeneralSettingsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTheme(v)
+		return nil
+	case generalsettings.FieldEinkMode:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEinkMode(v)
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings field %s", name)
@@ -5157,6 +5221,9 @@ func (m *GeneralSettingsMutation) ClearedFields() []string {
 	if m.FieldCleared(generalsettings.FieldTheme) {
 		fields = append(fields, generalsettings.FieldTheme)
 	}
+	if m.FieldCleared(generalsettings.FieldEinkMode) {
+		fields = append(fields, generalsettings.FieldEinkMode)
+	}
 	return fields
 }
 
@@ -5173,6 +5240,9 @@ func (m *GeneralSettingsMutation) ClearField(name string) error {
 	switch name {
 	case generalsettings.FieldTheme:
 		m.ClearTheme()
+		return nil
+	case generalsettings.FieldEinkMode:
+		m.ClearEinkMode()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings nullable field %s", name)
@@ -5196,6 +5266,9 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 		return nil
 	case generalsettings.FieldTheme:
 		m.ResetTheme()
+		return nil
+	case generalsettings.FieldEinkMode:
+		m.ResetEinkMode()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings field %s", name)

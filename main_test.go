@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -1409,5 +1410,504 @@ func TestServerAdminTextSlideCreateAndEditAndDelete(t *testing.T) {
 	exists := srv.DB.TextSlide.Query().ExistX(testCtx)
 	if exists {
 		t.Error("expected text slide to be deleted")
+	}
+}
+
+// ---------------------------------------------------------------------------
+// E-Ink Mode Tests
+// ---------------------------------------------------------------------------
+
+func TestEInkMiddleware_NoCookie_UsesDBDefault(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SetEinkMode(true).
+		SaveX(testCtx)
+
+	// No cookie set → should use DB default (true)
+	req := httptest.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	// Template should render "E-Ink: On" when eink is true
+	body := w.Body.String()
+	if !strings.Contains(body, "E-Ink: On") {
+		t.Error("expected 'E-Ink: On' in rendered template when eink_mode=true")
+	}
+	if !strings.Contains(body, "class=\"eink-mode\"") {
+		t.Error("expected body class 'eink-mode' when eink_mode=true")
+	}
+}
+
+func TestEInkMiddleware_CookieTakesPrecedence(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SetEinkMode(false). // DB default is false
+		SaveX(testCtx)
+
+	// Cookie says true → should override DB default
+	req := httptest.NewRequest("GET", "/", nil)
+	req.AddCookie(&http.Cookie{Name: "ledit_eink", Value: "true"})
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "E-Ink: On") {
+		t.Error("expected 'E-Ink: On' when cookie overrides DB default to true")
+	}
+}
+
+func TestEInkMiddleware_CookieFalse(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SetEinkMode(true). // DB says true
+		SaveX(testCtx)
+
+	// Cookie says false → should override DB to false
+	req := httptest.NewRequest("GET", "/", nil)
+	req.AddCookie(&http.Cookie{Name: "ledit_eink", Value: "false"})
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if strings.Contains(body, "E-Ink: On") {
+		t.Error("expected 'E-Ink: Off' when cookie overrides DB default to false")
+	}
+	if strings.Contains(body, "class=\"eink-mode\"") {
+		t.Error("expected no eink-mode body class when eink_mode=false")
+	}
+}
+
+func TestAdminEInkToggle_EnablesEInk(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	// Toggle e-ink ON (currently off/no cookie)
+	req := httptest.NewRequest("GET", "/admin/eink/toggle", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302 redirect, got %d", w.Code)
+	}
+
+	cookies := w.Result().Cookies()
+	var einkCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "ledit_eink" {
+			einkCookie = c
+			break
+		}
+	}
+	if einkCookie == nil {
+		t.Fatal("expected ledit_eink cookie to be set")
+	}
+	if einkCookie.Value != "true" {
+		t.Errorf("expected cookie value 'true', got '%s'", einkCookie.Value)
+	}
+	if einkCookie.MaxAge != 365*24*60*60 {
+		t.Errorf("expected MaxAge 1 year, got %d", einkCookie.MaxAge)
+	}
+}
+
+func TestAdminEInkToggle_DisablesEInk(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	// First toggle ON
+	req1 := httptest.NewRequest("GET", "/admin/eink/toggle", nil)
+	w1 := httptest.NewRecorder()
+	srv.ServeHTTP(w1, req1)
+
+	// Second toggle OFF (cookie from first request is now set)
+	req2 := httptest.NewRequest("GET", "/admin/eink/toggle", nil)
+	req2.Header.Set("Cookie", "ledit_eink=true")
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, req2)
+
+	if w2.Code != http.StatusFound {
+		t.Errorf("expected 302 redirect, got %d", w2.Code)
+	}
+
+	cookies := w2.Result().Cookies()
+	var einkCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "ledit_eink" {
+			einkCookie = c
+			break
+		}
+	}
+	if einkCookie == nil {
+		t.Fatal("expected ledit_eink cookie to be cleared")
+	}
+	// MaxAge = -1 means delete
+	if einkCookie.MaxAge != -1 {
+		t.Errorf("expected MaxAge -1 (delete), got %d", einkCookie.MaxAge)
+	}
+	if einkCookie.Value != "" {
+		t.Errorf("expected empty cookie value, got '%s'", einkCookie.Value)
+	}
+}
+
+func TestEInkToggleFeed_EnablesEInk(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	req := httptest.NewRequest("GET", "/eink/toggle", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302 redirect, got %d", w.Code)
+	}
+
+	cookies := w.Result().Cookies()
+	var einkCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "ledit_eink" {
+			einkCookie = c
+			break
+		}
+	}
+	if einkCookie == nil {
+		t.Fatal("expected ledit_eink cookie to be set")
+	}
+	if einkCookie.Value != "true" {
+		t.Errorf("expected cookie value 'true', got '%s'", einkCookie.Value)
+	}
+}
+
+func TestEInkToggleFeed_DisablesEInk(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	req := httptest.NewRequest("GET", "/eink/toggle", nil)
+	req.Header.Set("Cookie", "ledit_eink=true")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302 redirect, got %d", w.Code)
+	}
+
+	cookies := w.Result().Cookies()
+	var einkCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "ledit_eink" {
+			einkCookie = c
+			break
+		}
+	}
+	if einkCookie == nil {
+		t.Fatal("expected ledit_eink cookie to be cleared")
+	}
+	if einkCookie.MaxAge != -1 {
+		t.Errorf("expected MaxAge -1 (delete), got %d", einkCookie.MaxAge)
+	}
+}
+
+func TestEInkRefresh_SetsCookie(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	body := bytes.NewBufferString("interval=60")
+	req := httptest.NewRequest("POST", "/admin/eink/refresh", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302 redirect, got %d", w.Code)
+	}
+
+	cookies := w.Result().Cookies()
+	var refreshCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "ledit_eink_refresh" {
+			refreshCookie = c
+			break
+		}
+	}
+	if refreshCookie == nil {
+		t.Fatal("expected ledit_eink_refresh cookie to be set")
+	}
+	if refreshCookie.Value != "60" {
+		t.Errorf("expected cookie value '60', got '%s'", refreshCookie.Value)
+	}
+}
+
+func TestEInkRefresh_DefaultInterval(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	// No interval provided → defaults to 30
+	req := httptest.NewRequest("POST", "/admin/eink/refresh", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	cookies := w.Result().Cookies()
+	var refreshCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "ledit_eink_refresh" {
+			refreshCookie = c
+			break
+		}
+	}
+	if refreshCookie == nil {
+		t.Fatal("expected ledit_eink_refresh cookie to be set")
+	}
+	if refreshCookie.Value != "30" {
+		t.Errorf("expected default cookie value '30', got '%s'", refreshCookie.Value)
+	}
+}
+
+func TestEInkRefresh_ClampsInterval(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	// Too low → clamped to 30
+	body := bytes.NewBufferString("interval=1")
+	req := httptest.NewRequest("POST", "/admin/eink/refresh", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	cookies := w.Result().Cookies()
+	var refreshCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "ledit_eink_refresh" {
+			refreshCookie = c
+			break
+		}
+	}
+	if refreshCookie == nil {
+		t.Fatal("expected ledit_eink_refresh cookie to be set")
+	}
+	if refreshCookie.Value != "30" {
+		t.Errorf("expected clamped value '30', got '%s'", refreshCookie.Value)
+	}
+
+	// Too high → clamped to 30
+	body2 := bytes.NewBufferString("interval=9999")
+	req2 := httptest.NewRequest("POST", "/admin/eink/refresh", body2)
+	req2.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, req2)
+
+	cookies2 := w2.Result().Cookies()
+	for _, c := range cookies2 {
+		if c.Name == "ledit_eink_refresh" {
+			if c.Value != "30" {
+				t.Errorf("expected clamped value '30', got '%s'", c.Value)
+			}
+		}
+	}
+}
+
+func TestAdminSettingsSavesEInkMode(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SetEinkMode(false).
+		SaveX(testCtx)
+
+	// Save settings with eink_mode=on
+	body := bytes.NewBufferString("timeout=5.0&random=on&width=128&height=64&eink_mode=on")
+	req := httptest.NewRequest("POST", "/admin/settings", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+
+	settings := srv.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).OnlyX(testCtx)
+	if !settings.EinkMode {
+		t.Error("expected EinkMode to be true after saving with eink_mode=on")
+	}
+}
+
+func TestAdminSettingsSavesEInkModeOff(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SetEinkMode(true).
+		SaveX(testCtx)
+
+	// Save settings without eink_mode (off)
+	body := bytes.NewBufferString("timeout=5.0&random=on&width=128&height=64")
+	req := httptest.NewRequest("POST", "/admin/settings", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+
+	settings := srv.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).OnlyX(testCtx)
+	if settings.EinkMode {
+		t.Error("expected EinkMode to be false when eink_mode param is not 'on'")
+	}
+}
+
+func TestEInkToggle_RedirectsToReferrer(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	req := httptest.NewRequest("GET", "/admin/eink/toggle", nil)
+	req.Header.Set("Referer", "/admin/settings")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+	loc := w.Header().Get("Location")
+	if loc != "/admin/settings" {
+		t.Errorf("expected redirect to /admin/settings, got '%s'", loc)
+	}
+}
+
+func TestEInkToggle_NoReferrer_RedirectsToAdmin(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	req := httptest.NewRequest("GET", "/admin/eink/toggle", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+	loc := w.Header().Get("Location")
+	if loc != "/admin/" {
+		t.Errorf("expected default redirect to /admin/, got '%s'", loc)
+	}
+}
+
+func TestEInkToggleFeed_NoReferrer_RedirectsToRoot(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	req := httptest.NewRequest("GET", "/eink/toggle", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+	loc := w.Header().Get("Location")
+	if loc != "/" {
+		t.Errorf("expected default redirect to /, got '%s'", loc)
+	}
+}
+
+func TestEInkRefresh_InvalidIntervalString(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	body := bytes.NewBufferString("interval=notanumber")
+	req := httptest.NewRequest("POST", "/admin/eink/refresh", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	cookies := w.Result().Cookies()
+	var refreshCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "ledit_eink_refresh" {
+			refreshCookie = c
+			break
+		}
+	}
+	if refreshCookie == nil {
+		t.Fatal("expected ledit_eink_refresh cookie to be set")
+	}
+	if refreshCookie.Value != "30" {
+		t.Errorf("expected default value '30' for invalid input, got '%s'", refreshCookie.Value)
 	}
 }

@@ -142,6 +142,26 @@ func (_u *GeneralSettingsUpdate) ClearTheme() *GeneralSettingsUpdate {
 	return _u
 }
 
+// SetEinkMode sets the "eink_mode" field.
+func (_u *GeneralSettingsUpdate) SetEinkMode(v bool) *GeneralSettingsUpdate {
+	_u.mutation.SetEinkMode(v)
+	return _u
+}
+
+// SetNillableEinkMode sets the "eink_mode" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableEinkMode(v *bool) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetEinkMode(*v)
+	}
+	return _u
+}
+
+// ClearEinkMode clears the value of the "eink_mode" field.
+func (_u *GeneralSettingsUpdate) ClearEinkMode() *GeneralSettingsUpdate {
+	_u.mutation.ClearEinkMode()
+	return _u
+}
+
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by IDs.
 func (_u *GeneralSettingsUpdate) AddSonarrIDs(ids ...int) *GeneralSettingsUpdate {
 	_u.mutation.AddSonarrIDs(ids...)
@@ -857,6 +877,12 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if _u.mutation.ThemeCleared() {
 		_spec.ClearField(generalsettings.FieldTheme, field.TypeString)
+	}
+	if value, ok := _u.mutation.EinkMode(); ok {
+		_spec.SetField(generalsettings.FieldEinkMode, field.TypeBool, value)
+	}
+	if _u.mutation.EinkModeCleared() {
+		_spec.ClearField(generalsettings.FieldEinkMode, field.TypeBool)
 	}
 	if _u.mutation.SonarrCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1785,6 +1811,26 @@ func (_u *GeneralSettingsUpdateOne) ClearTheme() *GeneralSettingsUpdateOne {
 	return _u
 }
 
+// SetEinkMode sets the "eink_mode" field.
+func (_u *GeneralSettingsUpdateOne) SetEinkMode(v bool) *GeneralSettingsUpdateOne {
+	_u.mutation.SetEinkMode(v)
+	return _u
+}
+
+// SetNillableEinkMode sets the "eink_mode" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableEinkMode(v *bool) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetEinkMode(*v)
+	}
+	return _u
+}
+
+// ClearEinkMode clears the value of the "eink_mode" field.
+func (_u *GeneralSettingsUpdateOne) ClearEinkMode() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearEinkMode()
+	return _u
+}
+
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by IDs.
 func (_u *GeneralSettingsUpdateOne) AddSonarrIDs(ids ...int) *GeneralSettingsUpdateOne {
 	_u.mutation.AddSonarrIDs(ids...)
@@ -2530,6 +2576,12 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 	}
 	if _u.mutation.ThemeCleared() {
 		_spec.ClearField(generalsettings.FieldTheme, field.TypeString)
+	}
+	if value, ok := _u.mutation.EinkMode(); ok {
+		_spec.SetField(generalsettings.FieldEinkMode, field.TypeBool, value)
+	}
+	if _u.mutation.EinkModeCleared() {
+		_spec.ClearField(generalsettings.FieldEinkMode, field.TypeBool)
 	}
 	if _u.mutation.SonarrCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -91,6 +91,20 @@ func (_c *GeneralSettingsCreate) SetNillableTheme(v *string) *GeneralSettingsCre
 	return _c
 }
 
+// SetEinkMode sets the "eink_mode" field.
+func (_c *GeneralSettingsCreate) SetEinkMode(v bool) *GeneralSettingsCreate {
+	_c.mutation.SetEinkMode(v)
+	return _c
+}
+
+// SetNillableEinkMode sets the "eink_mode" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableEinkMode(v *bool) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetEinkMode(*v)
+	}
+	return _c
+}
+
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by IDs.
 func (_c *GeneralSettingsCreate) AddSonarrIDs(ids ...int) *GeneralSettingsCreate {
 	_c.mutation.AddSonarrIDs(ids...)
@@ -408,6 +422,10 @@ func (_c *GeneralSettingsCreate) defaults() {
 		v := generalsettings.DefaultTheme
 		_c.mutation.SetTheme(v)
 	}
+	if _, ok := _c.mutation.EinkMode(); !ok {
+		v := generalsettings.DefaultEinkMode
+		_c.mutation.SetEinkMode(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -469,6 +487,10 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 	if value, ok := _c.mutation.Theme(); ok {
 		_spec.SetField(generalsettings.FieldTheme, field.TypeString, value)
 		_node.Theme = value
+	}
+	if value, ok := _c.mutation.EinkMode(); ok {
+		_spec.SetField(generalsettings.FieldEinkMode, field.TypeBool, value)
+		_node.EinkMode = value
 	}
 	if nodes := _c.mutation.SonarrIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

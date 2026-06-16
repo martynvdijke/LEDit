@@ -22,6 +22,8 @@ const (
 	FieldHeight = "height"
 	// FieldTheme holds the string denoting the theme field in the database.
 	FieldTheme = "theme"
+	// FieldEinkMode holds the string denoting the eink_mode field in the database.
+	FieldEinkMode = "eink_mode"
 	// EdgeSonarr holds the string denoting the sonarr edge name in mutations.
 	EdgeSonarr = "sonarr"
 	// EdgeRadarr holds the string denoting the radarr edge name in mutations.
@@ -196,6 +198,7 @@ var Columns = []string{
 	FieldWidth,
 	FieldHeight,
 	FieldTheme,
+	FieldEinkMode,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -215,6 +218,8 @@ var (
 	DefaultHeight int
 	// DefaultTheme holds the default value on creation for the "theme" field.
 	DefaultTheme string
+	// DefaultEinkMode holds the default value on creation for the "eink_mode" field.
+	DefaultEinkMode bool
 )
 
 // OrderOption defines the ordering options for the GeneralSettings queries.
@@ -248,6 +253,11 @@ func ByHeight(opts ...sql.OrderTermOption) OrderOption {
 // ByTheme orders the results by the theme field.
 func ByTheme(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTheme, opts...).ToFunc()
+}
+
+// ByEinkMode orders the results by the eink_mode field.
+func ByEinkMode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEinkMode, opts...).ToFunc()
 }
 
 // BySonarrCount orders the results by sonarr count.

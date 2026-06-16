@@ -42,6 +42,11 @@
             <li class="nav-item"><a href="/admin/settings/umami" class="nav-link text-white ps-4{{if eq $.active "umami"}} active{{end}}">Umami Analytics</a></li>
             <li class="nav-item"><a href="/admin/notifications" class="nav-link text-white{{if eq $.active "notifications"}} active{{end}}">Notifications</a></li>
             <li class="nav-item"><a href="/admin/password" class="nav-link text-white{{if eq $.active "password"}} active{{end}}">Password</a></li>
+            <li class="nav-item mt-2">
+                <a href="/admin/eink/toggle" class="nav-link text-white{{if eq $.active "eink"}} active{{end}}" id="eink-toggle-link">
+                    {{if .eink_mode}}■ E-Ink Mode: On{{else}}□ E-Ink Mode: Off{{end}}
+                </a>
+            </li>
             <li class="nav-item dropdown mt-2">
                 <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">Add Datasource</a>
                 <ul class="dropdown-menu dropdown-menu-dark">

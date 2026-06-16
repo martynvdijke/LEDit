@@ -28,6 +28,10 @@
                     <label for="height" class="form-label">Matrix Height</label>
                     <input type="number" class="form-control" id="height" name="height" value="{{if .settings}}{{.settings.Height}}{{else}}64{{end}}">
                 </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="eink_mode" name="eink_mode"{{if and .settings .settings.EinkMode}} checked{{end}}>
+                    <label for="eink_mode" class="form-check-label">E-Ink Mode (default for new visitors)</label>
+                </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
         </div>
