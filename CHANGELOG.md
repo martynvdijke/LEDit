@@ -1,3 +1,10 @@
+## [1.9.3](https://github.com/martynvdijke/LEDit/compare/v1.9.2...v1.9.3) (2026-06-20)
+
+
+### Bug Fixes
+
+* treat chore(deps) commits as patch releases in semantic-release ([0550ca4](https://github.com/martynvdijke/LEDit/commit/0550ca45805aba80e1638377b75b41ea7d1898ea))
+
 ## [1.9.2](https://github.com/martynvdijke/LEDit/compare/v1.9.1...v1.9.2) (2026-06-19)
 
 
