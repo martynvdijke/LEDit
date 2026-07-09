@@ -1,3 +1,10 @@
+## [1.9.9](https://github.com/martynvdijke/LEDit/compare/v1.9.8...v1.9.9) (2026-07-09)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#36](https://github.com/martynvdijke/LEDit/issues/36)) ([d714711](https://github.com/martynvdijke/LEDit/commit/d7147117014d565058cb810e6af37c9984c9becc))
+
 ## [1.9.8](https://github.com/martynvdijke/LEDit/compare/v1.9.7...v1.9.8) (2026-07-08)
 
 ## [1.9.7](https://github.com/martynvdijke/LEDit/compare/v1.9.6...v1.9.7) (2026-07-06)
