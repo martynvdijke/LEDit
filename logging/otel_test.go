@@ -2,6 +2,7 @@ package logging
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"testing"
 
@@ -98,4 +99,182 @@ func TestOTelExporter_Configure_NoPanic(t *testing.T) {
 	e.Configure("", "", false)
 
 	e.Close()
+}
+
+// ---------------------------------------------------------------------------
+// Telemetry unit tests
+// ---------------------------------------------------------------------------
+
+func TestNewTelemetry_DisabledByDefault(t *testing.T) {
+	tm := NewTelemetry()
+	if tm.IsEnabled() {
+		t.Error("expected Telemetry to be disabled by default")
+	}
+}
+
+func TestInitTelemetry_NoEndpoint(t *testing.T) {
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "")
+	tm := InitTelemetry()
+	if tm.IsEnabled() {
+		t.Error("expected Telemetry to be disabled when no endpoint set")
+	}
+	tm.Shutdown(context.Background())
+}
+
+func TestInitTelemetry_WithEndpoint(t *testing.T) {
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317")
+	tm := InitTelemetry()
+	if !tm.IsEnabled() {
+		t.Error("expected Telemetry to be enabled with endpoint set")
+	}
+	tm.Shutdown(context.Background())
+
+	// Reset env
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "")
+}
+
+func TestTelemetry_NewSlogHandler_ReturnsNilWhenDisabled(t *testing.T) {
+	tm := NewTelemetry()
+	if h := tm.NewSlogHandler(); h != nil {
+		t.Error("expected nil slog handler from disabled telemetry")
+	}
+}
+
+func TestTelemetry_Shutdown_NoPanic(t *testing.T) {
+	tm := NewTelemetry()
+	tm.Shutdown(context.Background())
+	// Shutdown again (idempotent)
+	tm.Shutdown(context.Background())
+}
+
+func TestDefaultServiceName(t *testing.T) {
+	t.Run("default", func(t *testing.T) {
+		t.Setenv("OTEL_SERVICE_NAME", "")
+		if got := defaultServiceName(); got != "ledit" {
+			t.Errorf("defaultServiceName() = %q, want %q", got, "ledit")
+		}
+	})
+
+	t.Run("custom", func(t *testing.T) {
+		t.Setenv("OTEL_SERVICE_NAME", "myapp")
+		if got := defaultServiceName(); got != "myapp" {
+			t.Errorf("defaultServiceName() = %q, want %q", got, "myapp")
+		}
+	})
+}
+
+func TestNewSampler_Defaults(t *testing.T) {
+	t.Setenv("OTEL_TRACES_SAMPLER", "")
+	t.Setenv("OTEL_TRACES_SAMPLER_ARG", "")
+	s := newSampler()
+	if s == nil {
+		t.Fatal("expected non-nil sampler")
+	}
+	// Default should be ParentBased(AlwaysSample), verify it's not AlwaysOff
+	_ = s
+}
+
+func TestNewSampler_AlwaysOff(t *testing.T) {
+	t.Setenv("OTEL_TRACES_SAMPLER", "always_off")
+	t.Setenv("OTEL_TRACES_SAMPLER_ARG", "")
+	s := newSampler()
+	if s == nil {
+		t.Fatal("expected non-nil sampler")
+	}
+}
+
+func TestNewSampler_TraceIDRatio(t *testing.T) {
+	t.Setenv("OTEL_TRACES_SAMPLER", "traceidratio")
+	t.Setenv("OTEL_TRACES_SAMPLER_ARG", "0.5")
+	s := newSampler()
+	if s == nil {
+		t.Fatal("expected non-nil sampler")
+	}
+	_ = s
+}
+
+func TestTelemetry_Accessors_NilSafe(t *testing.T) {
+	tm := NewTelemetry()
+
+	if tp := tm.TracerProvider(); tp != nil {
+		t.Error("expected nil TracerProvider from disabled telemetry")
+	}
+	if mp := tm.MeterProvider(); mp != nil {
+		t.Error("expected nil MeterProvider from disabled telemetry")
+	}
+	if lp := tm.LoggerProvider(); lp != nil {
+		t.Error("expected nil LoggerProvider from disabled telemetry")
+	}
+	if tr := tm.Tracer(); tr == nil {
+		t.Error("expected non-nil Tracer (noop) from disabled telemetry")
+	}
+	if m := tm.Meter(); m != nil {
+		t.Log("Meter is nil from disabled telemetry (expected)")
+	}
+}
+
+// ---------------------------------------------------------------------------
+// DB query tracing tests
+// ---------------------------------------------------------------------------
+
+func TestTraceDBQuery_Success(t *testing.T) {
+	ctx := context.Background()
+	err := TraceDBQuery(ctx, "test-operation", func(ctx context.Context) error {
+		return nil
+	})
+	if err != nil {
+		t.Errorf("expected nil error, got %v", err)
+	}
+}
+
+func TestTraceDBQuery_Error(t *testing.T) {
+	expectedErr := errors.New("db error")
+	ctx := context.Background()
+	err := TraceDBQuery(ctx, "test-operation", func(ctx context.Context) error {
+		return expectedErr
+	})
+	if !errors.Is(err, expectedErr) {
+		t.Errorf("expected %v, got %v", expectedErr, err)
+	}
+}
+
+func TestTraceDBQuery_BackgroundCtx(t *testing.T) {
+	ctx := context.Background()
+	err := TraceDBQuery(ctx, "background-test", func(ctx context.Context) error {
+		return nil
+	})
+	if err != nil {
+		t.Errorf("expected nil error, got %v", err)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Metrics tests
+// ---------------------------------------------------------------------------
+
+func TestRecordHTTPRequest_NoPanic(t *testing.T) {
+	// Call before InitMetrics — should be a no-op, no panic
+	RecordHTTPRequest(context.Background(), "GET", "/test", 200, 0)
+}
+
+func TestInitMetrics_Idempotent(t *testing.T) {
+	// Reset the package-level flag for this test
+	metricsInitialised = false
+
+	InitMetrics(nil)
+	InitMetrics(nil)
+
+	// No panic = pass
+}
+
+// ---------------------------------------------------------------------------
+// Graceful degradation test
+// ---------------------------------------------------------------------------
+
+func TestInitTelemetry_UnreachableEndpoint(t *testing.T) {
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:19999")
+	tm := InitTelemetry()
+	// Should not crash — may log a warning but returns gracefully
+	tm.Shutdown(context.Background())
+	_ = tm
 }

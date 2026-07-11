@@ -8,6 +8,13 @@ services:
     volumes:
       - ledit-data:/app/data
     container_name: ledit
+    environment:
+      # OpenTelemetry configuration
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_EXPORTER_OTLP_PROTOCOL:-grpc}
+      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-ledit}
+      - OTEL_TRACES_SAMPLER=${OTEL_TRACES_SAMPLER:-parentbased_always_on}
+      - OTEL_RESOURCE_ATTRIBUTES=${OTEL_RESOURCE_ATTRIBUTES:-}
 
 volumes:
   ledit-data:

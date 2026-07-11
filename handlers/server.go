@@ -9,9 +9,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"golang.org/x/crypto/bcrypt"
 	"ledit/ent"
 	"ledit/logging"
@@ -25,9 +27,10 @@ type Server struct {
 	LogStore     *logging.LogStore
 	OTelExporter *logging.OTelExporter
 	LogCleanup   *logging.LogCleanup
+	Telemetry    *logging.Telemetry
 }
 
-func New(driver *sql.Driver) *Server {
+func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	client := ent.NewClient(ent.Driver(driver))
 	ctx := context.Background()
 
@@ -45,6 +48,13 @@ func New(driver *sql.Driver) *Server {
 
 	router := gin.Default()
 
+	// OpenTelemetry request tracing — creates spans for every HTTP request,
+	// propagates trace context from incoming traceparent headers.
+	if telemetry != nil && telemetry.IsEnabled() {
+		router.Use(otelgin.Middleware("ledit"))
+		router.Use(metricsMiddleware())
+	}
+
 	srv := &Server{
 		Router:       router,
 		DB:           client,
@@ -53,11 +63,28 @@ func New(driver *sql.Driver) *Server {
 		LogStore:     logStore,
 		OTelExporter: otelExp,
 		LogCleanup:   logCleanup,
+		Telemetry:    telemetry,
 	}
 
 	srv.setupRoutes()
 
 	return srv
+}
+
+// metricsMiddleware records HTTP request count and duration via OTel metrics.
+func metricsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		duration := time.Since(start)
+		logging.RecordHTTPRequest(
+			c.Request.Context(),
+			c.Request.Method,
+			c.FullPath(),
+			c.Writer.Status(),
+			duration,
+		)
+	}
 }
 
 func initAdminSettings(client *ent.Client, ctx context.Context) {

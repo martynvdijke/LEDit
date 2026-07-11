@@ -288,7 +288,7 @@ func TestServerIndexPage(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -306,7 +306,7 @@ func TestServerAdminDashboard(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -320,7 +320,7 @@ func TestServerAdminSettings(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/settings", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -334,7 +334,7 @@ func TestServerAdminSonarrNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/datasources/sonarr/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -348,7 +348,7 @@ func TestServerAdminF1New(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/datasources/f1/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -362,7 +362,7 @@ func TestServerAdminWeatherNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/datasources/weather/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -376,7 +376,7 @@ func TestServerAdminHomeAssistantNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/datasources/homeassistant/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -390,7 +390,7 @@ func TestServerAdminUntappdNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/datasources/untappd/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -404,7 +404,7 @@ func TestServerAdminImageNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/datasources/images/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -429,7 +429,7 @@ func TestServerAdminCryptoNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/datasources/crypto/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -443,7 +443,7 @@ func TestServerAdminVideoNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/datasources/videos/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -457,7 +457,7 @@ func TestServerAdminF1CreateAndEditAndDelete(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -501,7 +501,7 @@ func TestServerAdminDatasourceCreateAndEditCycle(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -600,7 +600,7 @@ func TestServerPostSettings(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	body := bytes.NewBufferString("timeout=3.5&random=on&width=64&height=64")
 	req := httptest.NewRequest("POST", "/admin/settings", body)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -624,7 +624,7 @@ func TestAPIFeedStatus(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/api/feed/current", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -643,7 +643,7 @@ func TestAPIFeedPauseResume(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 
 	body := bytes.NewBufferString(`{}`)
 	body2 := bytes.NewBufferString(`{}`)
@@ -678,7 +678,7 @@ func TestAPIWebhookNotify(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	body := bytes.NewBufferString(`{"title":"Test","message":"Hello"}`)
 	req := httptest.NewRequest("POST", "/api/webhook/notify", body)
 	req.Header.Set("Content-Type", "application/json")
@@ -693,7 +693,7 @@ func TestAPINotificationHistory(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/api/notifications", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -711,7 +711,7 @@ func TestServerAdminSchedules(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -742,7 +742,7 @@ func TestServerAdminDevices(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -759,7 +759,7 @@ func TestServerAdminTheme(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/theme", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -772,7 +772,7 @@ func TestServerAdminAnalytics(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/analytics", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -785,7 +785,7 @@ func TestLoginPage(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/login", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -809,7 +809,7 @@ func TestAdminNotificationsPage(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/notifications", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -822,7 +822,7 @@ func TestAPIFeedNext(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	body := bytes.NewBufferString(`{}`)
 	req := httptest.NewRequest("POST", "/api/feed/next", body)
 	req.Header.Set("Content-Type", "application/json")
@@ -844,7 +844,7 @@ func TestDeviceSettingsCreateEditDelete(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -888,7 +888,7 @@ func TestScheduleCreateAndEdit(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -934,7 +934,7 @@ func TestLoginAction(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 
 	// Create admin settings in DB (normally done by initAdminSettings during New(),
 	// but LEDIT_AUTH_DISABLE skips that in test mode)
@@ -963,7 +963,7 @@ func TestLoginActionInvalid(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 
 	body := bytes.NewBufferString("username=admin&password=wrong")
 	req := httptest.NewRequest("POST", "/login", body)
@@ -979,7 +979,7 @@ func TestDSUpdateAndNewForm(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1090,7 +1090,7 @@ func TestWebSocketUpgrade(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).
 		SetRandom(false).
@@ -1185,7 +1185,7 @@ func TestServerAdminStockNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/datasources/stock/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -1199,7 +1199,7 @@ func TestServerAdminRSSNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/datasources/rssfeed/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -1213,7 +1213,7 @@ func TestServerAdminCalendarNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/datasources/calendar/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -1227,7 +1227,7 @@ func TestServerAdminTextSlideNew(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	req := httptest.NewRequest("GET", "/admin/textslides/new", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
@@ -1241,7 +1241,7 @@ func TestServerAdminStockCreateAndEditAndDelete(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1285,7 +1285,7 @@ func TestServerAdminRSSCreateAndEditAndDelete(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1329,7 +1329,7 @@ func TestServerAdminCalendarCreateAndEditAndDelete(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1373,7 +1373,7 @@ func TestServerAdminTextSlideCreateAndEditAndDelete(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1421,7 +1421,7 @@ func TestEInkMiddleware_NoCookie_UsesDBDefault(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SetEinkMode(true).
@@ -1449,7 +1449,7 @@ func TestEInkMiddleware_CookieTakesPrecedence(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SetEinkMode(false). // DB default is false
@@ -1474,7 +1474,7 @@ func TestEInkMiddleware_CookieFalse(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SetEinkMode(true). // DB says true
@@ -1502,7 +1502,7 @@ func TestAdminEInkToggle_EnablesEInk(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1539,7 +1539,7 @@ func TestAdminEInkToggle_DisablesEInk(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1583,7 +1583,7 @@ func TestEInkToggleFeed_EnablesEInk(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1616,7 +1616,7 @@ func TestEInkToggleFeed_DisablesEInk(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1650,7 +1650,7 @@ func TestEInkRefresh_SetsCookie(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1685,7 +1685,7 @@ func TestEInkRefresh_DefaultInterval(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1716,7 +1716,7 @@ func TestEInkRefresh_ClampsInterval(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1764,7 +1764,7 @@ func TestAdminSettingsSavesEInkMode(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SetEinkMode(false).
@@ -1791,7 +1791,7 @@ func TestAdminSettingsSavesEInkModeOff(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SetEinkMode(true).
@@ -1818,7 +1818,7 @@ func TestEInkToggle_RedirectsToReferrer(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1841,7 +1841,7 @@ func TestEInkToggle_NoReferrer_RedirectsToAdmin(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1863,7 +1863,7 @@ func TestEInkToggleFeed_NoReferrer_RedirectsToRoot(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
@@ -1885,7 +1885,7 @@ func TestEInkRefresh_InvalidIntervalString(t *testing.T) {
 	drv := openTestDB(t)
 	defer drv.Close()
 
-	srv := handlers.New(drv)
+	srv := handlers.New(drv, nil)
 	srv.DB.GeneralSettings.Create().
 		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
 		SaveX(testCtx)
