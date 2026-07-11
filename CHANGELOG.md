@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/martynvdijke/LEDit/compare/v1.9.9...v1.10.0) (2026-07-11)
+
+
+### Features
+
+* add OpenTelemetry support with traces, metrics, and log correlation ([50b9b77](https://github.com/martynvdijke/LEDit/commit/50b9b775fdc765a8f1861f3897702b0b8958f7ed))
+
 ## [1.9.9](https://github.com/martynvdijke/LEDit/compare/v1.9.8...v1.9.9) (2026-07-09)
 
 
