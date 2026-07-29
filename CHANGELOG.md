@@ -1,3 +1,10 @@
+## [1.10.9](https://github.com/martynvdijke/LEDit/compare/v1.10.8...v1.10.9) (2026-07-29)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/mattn/go-sqlite3 to v1.14.49 ([#45](https://github.com/martynvdijke/LEDit/issues/45)) ([061cbac](https://github.com/martynvdijke/LEDit/commit/061cbacad7690d74eee3071315c9bf8000bea607))
+
 ## [1.10.8](https://github.com/martynvdijke/LEDit/compare/v1.10.7...v1.10.8) (2026-07-28)
 
 ## [1.10.7](https://github.com/martynvdijke/LEDit/compare/v1.10.6...v1.10.7) (2026-07-27)
