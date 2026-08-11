@@ -17,3 +17,5 @@ media/backups/
 backups/
 air_errors.log
 PLANS.md
+openspec/
+.opencode/
