@@ -92,6 +92,14 @@ LEDit is configured through the admin panel at `/admin/settings`. Key environmen
 
 All other settings (datasources, schedules, devices, themes) are managed through the web UI.
 
+## Frontend Assets
+
+The Go templates use project-owned Vite assets. Install the frontend dependencies with
+`npm install`, then run `npm run build` to compile CSS/TypeScript and regenerate the
+PWA icons. During frontend development, `npm run dev` starts Vite in watch mode.
+`task build` runs the asset build before compiling the Go server; the Dockerfile does
+the same in its Node assets stage.
+
 ## Project Structure
 
 ```

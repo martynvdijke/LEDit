@@ -43,7 +43,7 @@ test.describe('Admin Settings', () => {
 test.describe('Sidebar Navigation', () => {
   test('sidebar navigation links should be present', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('link', { name: 'Home' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Live feed', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Dashboard', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Settings', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Schedules' })).toBeVisible();
@@ -51,8 +51,8 @@ test.describe('Sidebar Navigation', () => {
     await expect(page.getByRole('link', { name: 'Theme' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Analytics', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Notifications' })).toBeVisible();
-    // Datasources are in a dropdown — open it to verify items
-    await page.getByRole('button', { name: 'Add Datasource' }).click();
+    // Datasources are in a disclosure — open it to verify items
+    await page.locator('summary', { hasText: 'Add datasource' }).click();
     await expect(page.getByRole('link', { name: 'Sonarr' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Radarr' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'F1' })).toBeVisible();
@@ -101,7 +101,7 @@ test.describe('Datasource Forms', () => {
   for (const ds of datasources) {
     test(`${ds.title} form should load`, async ({ page }) => {
       await page.goto('/');
-      await page.getByRole('button', { name: 'Add Datasource' }).click();
+      await page.locator('summary', { hasText: 'Add datasource' }).click();
       await page.getByRole('link', { name: ds.link }).click();
       await expect(page.locator('h1')).toContainText(ds.title);
       await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();

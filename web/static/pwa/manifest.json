@@ -4,10 +4,22 @@
   "description": "LED Matrix Infotainment System - Live Feed Viewer",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#212529",
+  "background_color": "#09110e",
+  "theme_color": "#09110e",
   "orientation": "any",
   "icons": [
+    {
+      "src": "/static/pwa/favicon.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/pwa/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/static/pwa/icon.svg",
       "sizes": "512x512",

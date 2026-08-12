@@ -13,6 +13,11 @@ tasks:
       - npm install
       - npx playwright install --with-deps chromium
 
+  assets:
+    desc: Build frontend bundles and PWA icons
+    cmds:
+      - npm run build
+
   fmt:
     desc: Format code (Go)
     cmds:
@@ -30,6 +35,7 @@ tasks:
   build:
     desc: Build the Go binary
     cmds:
+      - task: assets
       - go build -o ledit .
 
   run:

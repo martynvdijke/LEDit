@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Index / Live Feed', () => {
   test('should load the index page', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('h1')).toContainText('LEDit Live Feed');
+    await expect(page.locator('h1')).toContainText('Live feed');
   });
 
   test('should have WebSocket status indicator', async ({ page }) => {
@@ -23,12 +23,12 @@ test.describe('Index / Live Feed', () => {
 
   test('should show LEDit branding', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('link', { name: 'LEDit' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'LEDit live feed' })).toBeVisible();
   });
 
   test('should have sidebar with navigation links', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('link', { name: 'Home' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Live feed', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Settings', exact: true })).toBeVisible();
   });
@@ -45,12 +45,28 @@ test.describe('Index / Live Feed', () => {
     await expect(page.locator('#btn-skip')).toBeVisible();
     await expect(page.locator('#btn-fullscreen')).toBeVisible();
     await expect(page.locator('#btn-pause')).toHaveText('Pause');
-    await expect(page.locator('#btn-skip')).toHaveText('Skip');
+    await expect(page.locator('#btn-skip')).toHaveText('Skip to next');
     await expect(page.locator('#btn-fullscreen')).toHaveText('Fullscreen');
   });
 
   test('should have matrix overlay canvas', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#matrix-overlay')).toBeAttached();
+  });
+
+  test('should load owned assets and remain usable on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await expect(page.locator('link[href="/static/assets/styles.css"]')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: /Open navigation/ })).toBeVisible();
+    await page.getByRole('button', { name: /Open navigation/ }).click();
+    await expect(page.locator('[data-app-shell]')).toHaveClass(/nav-open/);
+    await expect(page.locator('body')).not.toHaveCSS('overflow-x', 'scroll');
+  });
+
+  test('should expose PWA branding metadata', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', '/static/pwa/manifest.json');
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/static/pwa/favicon.png');
   });
 });

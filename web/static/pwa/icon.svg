@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="64" fill="#212529"/>
+  <rect width="512" height="512" rx="72" fill="#09110e"/>
   <!-- LED matrix grid -->
-  <g fill="none" stroke="#198754" stroke-width="2" opacity="0.3">
+  <g fill="none" stroke="#a6ff70" stroke-width="3" opacity="0.18">
     <line x1="128" y1="128" x2="384" y2="128"/>
     <line x1="128" y1="170" x2="384" y2="170"/>
     <line x1="128" y1="212" x2="384" y2="212"/>
@@ -18,7 +18,7 @@
     <line x1="380" y1="128" x2="380" y2="380"/>
   </g>
   <!-- LED dots simulating 'L' character -->
-  <g fill="#0f0" opacity="0.9">
+  <g fill="#a6ff70" opacity="0.95">
     <circle cx="148" cy="148" r="8"/>
     <circle cx="148" cy="190" r="8"/>
     <circle cx="148" cy="232" r="8"/>

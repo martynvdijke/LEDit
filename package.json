@@ -3,10 +3,16 @@
   "version": "0.1.0",
   "description": "A LED matrix infotainment system",
   "scripts": {
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "dev": "vite --host 0.0.0.0",
+    "build": "npm run icons && vite build",
+    "icons": "node scripts/generate-icons.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
-    "@types/node": "^24.0.0"
+    "@types/node": "^24.0.0",
+    "sharp": "^0.34.3",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
   }
 }
