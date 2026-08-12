@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/martynvdijke/LEDit/compare/v1.10.12...v1.11.0) (2026-08-12)
+
+
+### Features
+
+* retro CRT control room UI redesign ([7a62075](https://github.com/martynvdijke/LEDit/commit/7a620750f14de3339cb11811362ea0bfa9cab2c0))
+
 ## [1.10.12](https://github.com/martynvdijke/LEDit/compare/v1.10.11...v1.10.12) (2026-08-03)
 
 ## [1.10.11](https://github.com/martynvdijke/LEDit/compare/v1.10.10...v1.10.11) (2026-07-31)
