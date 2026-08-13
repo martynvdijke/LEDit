@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ledit-device"
+version = "1.0.0"
+description = "LEDit device client: stream frames to an RGB LED matrix over WebSocket"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+dependencies = [
+    "Pillow>=9.0",
+    "websocket-client>=1.5",
+]
+
+[project.scripts]
+ledit-device = "ledit_device.__main__:main"
+
+[tool.setuptools]
+packages = ["ledit_device"]

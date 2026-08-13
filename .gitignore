@@ -19,3 +19,6 @@ air_errors.log
 PLANS.md
 openspec/
 .opencode/
+__pycache__/
+*.pyc
+*.pyo
