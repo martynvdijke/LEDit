@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/martynvdijke/LEDit/compare/v1.12.0...v1.13.0) (2026-08-13)
+
+
+### Features
+
+* add TRMNL e-ink stats endpoint ([d4a5c6b](https://github.com/martynvdijke/LEDit/commit/d4a5c6bf102dbf336d1ac19e31c3a7fb4d86beb1))
+
 # [1.12.0](https://github.com/martynvdijke/LEDit/compare/v1.11.0...v1.12.0) (2026-08-13)
 
 
