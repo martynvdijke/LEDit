@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ledit/ent/devicesettings"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -31,7 +32,13 @@ type DeviceSettings struct {
 	// Height holds the value of the "height" field.
 	Height int `json:"height,omitempty"`
 	// Enabled holds the value of the "enabled" field.
-	Enabled                          bool `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled,omitempty"`
+	// Token holds the value of the "token" field.
+	Token string `json:"token,omitempty"`
+	// RefreshInterval holds the value of the "refresh_interval" field.
+	RefreshInterval int `json:"refresh_interval,omitempty"`
+	// LastSeenAt holds the value of the "last_seen_at" field.
+	LastSeenAt                       *time.Time `json:"last_seen_at,omitempty"`
 	general_settings_device_settings *int
 	selectValues                     sql.SelectValues
 }
@@ -43,10 +50,12 @@ func (*DeviceSettings) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case devicesettings.FieldEnabled:
 			values[i] = new(sql.NullBool)
-		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight:
+		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldRefreshInterval:
 			values[i] = new(sql.NullInt64)
-		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword:
+		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken:
 			values[i] = new(sql.NullString)
+		case devicesettings.FieldLastSeenAt:
+			values[i] = new(sql.NullTime)
 		case devicesettings.ForeignKeys[0]: // general_settings_device_settings
 			values[i] = new(sql.NullInt64)
 		default:
@@ -118,6 +127,25 @@ func (_m *DeviceSettings) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Enabled = value.Bool
 			}
+		case devicesettings.FieldToken:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field token", values[i])
+			} else if value.Valid {
+				_m.Token = value.String
+			}
+		case devicesettings.FieldRefreshInterval:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field refresh_interval", values[i])
+			} else if value.Valid {
+				_m.RefreshInterval = int(value.Int64)
+			}
+		case devicesettings.FieldLastSeenAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_seen_at", values[i])
+			} else if value.Valid {
+				_m.LastSeenAt = new(time.Time)
+				*_m.LastSeenAt = value.Time
+			}
 		case devicesettings.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field general_settings_device_settings", value)
@@ -184,6 +212,17 @@ func (_m *DeviceSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("enabled=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Enabled))
+	builder.WriteString(", ")
+	builder.WriteString("token=")
+	builder.WriteString(_m.Token)
+	builder.WriteString(", ")
+	builder.WriteString("refresh_interval=")
+	builder.WriteString(fmt.Sprintf("%v", _m.RefreshInterval))
+	builder.WriteString(", ")
+	if v := _m.LastSeenAt; v != nil {
+		builder.WriteString("last_seen_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

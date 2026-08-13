@@ -97,9 +97,6 @@ func (s *Server) APIFeedPriority(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	priorityMu.Lock()
-	priorityMessages = append(priorityMessages, req)
-	priorityMu.Unlock()
 	s.AddNotification(req.Title, req.Message)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
@@ -110,9 +107,6 @@ func (s *Server) APIWebhookNotify(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	priorityMu.Lock()
-	priorityMessages = append(priorityMessages, req)
-	priorityMu.Unlock()
 	s.AddNotification(req.Title, req.Message)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
@@ -133,10 +127,9 @@ type priorityMsg struct {
 }
 
 var (
-	priorityMu       sync.Mutex
-	priorityMessages []priorityMsg
-	notifHistory     []notifEntry
-	notifID          int
+	priorityMu   sync.Mutex
+	notifHistory []notifEntry
+	notifID      int
 )
 
 type notifEntry struct {
@@ -144,17 +137,6 @@ type notifEntry struct {
 	Title   string `json:"title"`
 	Message string `json:"message"`
 	Time    string `json:"time"`
-}
-
-func PopPriorityMessage() *priorityMsg {
-	priorityMu.Lock()
-	defer priorityMu.Unlock()
-	if len(priorityMessages) == 0 {
-		return nil
-	}
-	msg := priorityMessages[0]
-	priorityMessages = priorityMessages[1:]
-	return &msg
 }
 
 // addToMemoryQueue stores a notification in the in-memory queue (for live feed display).
@@ -181,6 +163,27 @@ func getMemoryQueue() []notifEntry {
 	defer priorityMu.Unlock()
 	out := make([]notifEntry, len(notifHistory))
 	copy(out, notifHistory)
+	return out
+}
+
+// CurrentNotifSeq returns the current notification sequence number.
+func CurrentNotifSeq() int {
+	priorityMu.Lock()
+	defer priorityMu.Unlock()
+	return notifID
+}
+
+// NotificationsAfter returns in-memory notifications with an ID greater than
+// cursor, in ascending order. Used to broadcast each notification to every
+// connection exactly once.
+func NotificationsAfter(cursor int) []notifEntry {
+	all := getMemoryQueue()
+	var out []notifEntry
+	for _, n := range all {
+		if n.ID > cursor {
+			out = append(out, n)
+		}
+	}
 	return out
 }
 

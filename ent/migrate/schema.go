@@ -96,6 +96,9 @@ var (
 		{Name: "width", Type: field.TypeInt, Default: 64},
 		{Name: "height", Type: field.TypeInt, Default: 64},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "refresh_interval", Type: field.TypeInt, Default: 60},
+		{Name: "last_seen_at", Type: field.TypeTime, Nullable: true},
 		{Name: "general_settings_device_settings", Type: field.TypeInt, Nullable: true},
 	}
 	// DeviceSettingsTable holds the schema information for the "device_settings" table.
@@ -106,7 +109,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "device_settings_general_settings_device_settings",
-				Columns:    []*schema.Column{DeviceSettingsColumns[9]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[12]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

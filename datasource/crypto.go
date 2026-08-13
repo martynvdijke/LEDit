@@ -14,7 +14,7 @@ type CryptoDS struct {
 	URL   string
 }
 
-func (c *CryptoDS) GetPNG() (*render.RenderedImage, error) {
+func (c *CryptoDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	ids := "bitcoin,ethereum"
 	if c.Token != "" {
 		ids = c.Token
@@ -28,13 +28,13 @@ func (c *CryptoDS) GetPNG() (*render.RenderedImage, error) {
 	body, err := apiGet(url, "", nil)
 	if err != nil {
 		slog.Warn("crypto API call failed, using fallback", "source", "crypto", "error", err)
-		return fallbackCrypto(ids), nil
+		return fallbackCrypto(ids, width, height), nil
 	}
 
 	var resp map[string]map[string]float64
 	if err := json.Unmarshal(body, &resp); err != nil || len(resp) == 0 {
 		slog.Warn("crypto no data in response, using fallback", "source", "crypto", "error", err)
-		return fallbackCrypto(ids), nil
+		return fallbackCrypto(ids, width, height), nil
 	}
 	slog.Info("crypto data fetched successfully", "source", "crypto", "coin_count", len(resp))
 
@@ -57,13 +57,13 @@ func (c *CryptoDS) GetPNG() (*render.RenderedImage, error) {
 		}
 	}
 	if len(data) == 0 {
-		return fallbackCrypto(ids), nil
+		return fallbackCrypto(ids, width, height), nil
 	}
 
-	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }
 
-func fallbackCrypto(ids string) *render.RenderedImage {
+func fallbackCrypto(ids string, width, height int) *render.RenderedImage {
 	data := map[string]string{}
 	for id := range strings.SplitSeq(ids, ",") {
 		id = strings.TrimSpace(id)
@@ -71,6 +71,6 @@ func fallbackCrypto(ids string) *render.RenderedImage {
 			data[strings.ToUpper(id[:min(4, len(id))])] = "--"
 		}
 	}
-	img, _ := render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	img, _ := render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 	return img
 }

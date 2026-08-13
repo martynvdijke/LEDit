@@ -14,7 +14,7 @@ type ImageDS struct {
 	Path string
 }
 
-func (img *ImageDS) GetPNG() (*render.RenderedImage, error) {
+func (img *ImageDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	if !render.FileExists(img.Path) {
 		slog.Error("image file not found", "source", "image", "path", img.Path)
 		return nil, fmt.Errorf("image file not found: %s", img.Path)

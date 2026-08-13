@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"ledit/ent/devicesettings"
 	"ledit/ent/predicate"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -160,6 +161,61 @@ func (_u *DeviceSettingsUpdate) SetNillableEnabled(v *bool) *DeviceSettingsUpdat
 	return _u
 }
 
+// SetToken sets the "token" field.
+func (_u *DeviceSettingsUpdate) SetToken(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetToken(v)
+	return _u
+}
+
+// SetNillableToken sets the "token" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableToken(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetToken(*v)
+	}
+	return _u
+}
+
+// SetRefreshInterval sets the "refresh_interval" field.
+func (_u *DeviceSettingsUpdate) SetRefreshInterval(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetRefreshInterval()
+	_u.mutation.SetRefreshInterval(v)
+	return _u
+}
+
+// SetNillableRefreshInterval sets the "refresh_interval" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableRefreshInterval(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetRefreshInterval(*v)
+	}
+	return _u
+}
+
+// AddRefreshInterval adds value to the "refresh_interval" field.
+func (_u *DeviceSettingsUpdate) AddRefreshInterval(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddRefreshInterval(v)
+	return _u
+}
+
+// SetLastSeenAt sets the "last_seen_at" field.
+func (_u *DeviceSettingsUpdate) SetLastSeenAt(v time.Time) *DeviceSettingsUpdate {
+	_u.mutation.SetLastSeenAt(v)
+	return _u
+}
+
+// SetNillableLastSeenAt sets the "last_seen_at" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableLastSeenAt(v *time.Time) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetLastSeenAt(*v)
+	}
+	return _u
+}
+
+// ClearLastSeenAt clears the value of the "last_seen_at" field.
+func (_u *DeviceSettingsUpdate) ClearLastSeenAt() *DeviceSettingsUpdate {
+	_u.mutation.ClearLastSeenAt()
+	return _u
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_u *DeviceSettingsUpdate) Mutation() *DeviceSettingsMutation {
 	return _u.mutation
@@ -233,6 +289,21 @@ func (_u *DeviceSettingsUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(devicesettings.FieldEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Token(); ok {
+		_spec.SetField(devicesettings.FieldToken, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.RefreshInterval(); ok {
+		_spec.SetField(devicesettings.FieldRefreshInterval, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedRefreshInterval(); ok {
+		_spec.AddField(devicesettings.FieldRefreshInterval, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.LastSeenAt(); ok {
+		_spec.SetField(devicesettings.FieldLastSeenAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastSeenAtCleared() {
+		_spec.ClearField(devicesettings.FieldLastSeenAt, field.TypeTime)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -387,6 +458,61 @@ func (_u *DeviceSettingsUpdateOne) SetNillableEnabled(v *bool) *DeviceSettingsUp
 	return _u
 }
 
+// SetToken sets the "token" field.
+func (_u *DeviceSettingsUpdateOne) SetToken(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetToken(v)
+	return _u
+}
+
+// SetNillableToken sets the "token" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableToken(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetToken(*v)
+	}
+	return _u
+}
+
+// SetRefreshInterval sets the "refresh_interval" field.
+func (_u *DeviceSettingsUpdateOne) SetRefreshInterval(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetRefreshInterval()
+	_u.mutation.SetRefreshInterval(v)
+	return _u
+}
+
+// SetNillableRefreshInterval sets the "refresh_interval" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableRefreshInterval(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetRefreshInterval(*v)
+	}
+	return _u
+}
+
+// AddRefreshInterval adds value to the "refresh_interval" field.
+func (_u *DeviceSettingsUpdateOne) AddRefreshInterval(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddRefreshInterval(v)
+	return _u
+}
+
+// SetLastSeenAt sets the "last_seen_at" field.
+func (_u *DeviceSettingsUpdateOne) SetLastSeenAt(v time.Time) *DeviceSettingsUpdateOne {
+	_u.mutation.SetLastSeenAt(v)
+	return _u
+}
+
+// SetNillableLastSeenAt sets the "last_seen_at" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableLastSeenAt(v *time.Time) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetLastSeenAt(*v)
+	}
+	return _u
+}
+
+// ClearLastSeenAt clears the value of the "last_seen_at" field.
+func (_u *DeviceSettingsUpdateOne) ClearLastSeenAt() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearLastSeenAt()
+	return _u
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_u *DeviceSettingsUpdateOne) Mutation() *DeviceSettingsMutation {
 	return _u.mutation
@@ -490,6 +616,21 @@ func (_u *DeviceSettingsUpdateOne) sqlSave(ctx context.Context) (_node *DeviceSe
 	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(devicesettings.FieldEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Token(); ok {
+		_spec.SetField(devicesettings.FieldToken, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.RefreshInterval(); ok {
+		_spec.SetField(devicesettings.FieldRefreshInterval, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedRefreshInterval(); ok {
+		_spec.AddField(devicesettings.FieldRefreshInterval, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.LastSeenAt(); ok {
+		_spec.SetField(devicesettings.FieldLastSeenAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastSeenAtCleared() {
+		_spec.ClearField(devicesettings.FieldLastSeenAt, field.TypeTime)
 	}
 	_node = &DeviceSettings{config: _u.config}
 	_spec.Assign = _node.assignValues

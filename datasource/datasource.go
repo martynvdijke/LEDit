@@ -5,19 +5,19 @@ import (
 )
 
 type Datasource interface {
-	GetPNG() (*render.RenderedImage, error)
+	GetPNG(width, height int) (*render.RenderedImage, error)
 }
 
 type RenderedBase struct{}
 
-func DefaultGetPNG() (*render.RenderedImage, error) {
+func DefaultGetPNG(width, height int) (*render.RenderedImage, error) {
 	data := map[string]string{
 		"name":    "Test Project",
 		"version": "1.0",
 		"status":  "active",
 		"date":    "2024-03-25",
 	}
-	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }
 
 func DefaultTheme() render.Theme {

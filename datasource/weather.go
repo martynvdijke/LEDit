@@ -13,7 +13,7 @@ type WeatherDS struct {
 	URL   string
 }
 
-func (w *WeatherDS) GetPNG() (*render.RenderedImage, error) {
+func (w *WeatherDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	city := "London"
 	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=metric", city, w.Token)
 	if w.URL != "" {
@@ -24,7 +24,7 @@ func (w *WeatherDS) GetPNG() (*render.RenderedImage, error) {
 	body, err := apiGet(url, w.Token, nil)
 	if err != nil {
 		slog.Warn("weather API call failed, using fallback", "source", "weather", "location", city, "error", err)
-		return fallbackWeather(), nil
+		return fallbackWeather(width, height), nil
 	}
 
 	var resp struct {
@@ -39,7 +39,7 @@ func (w *WeatherDS) GetPNG() (*render.RenderedImage, error) {
 	}
 	if err := json.Unmarshal(body, &resp); err != nil || len(resp.Weather) == 0 {
 		slog.Warn("weather no data in response, using fallback", "source", "weather", "error", err)
-		return fallbackWeather(), nil
+		return fallbackWeather(width, height), nil
 	}
 
 	slog.Info("weather data fetched successfully", "source", "weather", "location", resp.Name, "temp", resp.Main.Temp)
@@ -49,15 +49,15 @@ func (w *WeatherDS) GetPNG() (*render.RenderedImage, error) {
 		"temp":      fmt.Sprintf("%.1f°C", resp.Main.Temp),
 		"humidity":  fmt.Sprintf("%d%%", resp.Main.Humidity),
 	}
-	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }
 
-func fallbackWeather() *render.RenderedImage {
+func fallbackWeather(width, height int) *render.RenderedImage {
 	data := map[string]string{
 		"condition": "unknown",
 		"temp":      "--",
 		"humidity":  "--",
 	}
-	img, _ := render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	img, _ := render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 	return img
 }

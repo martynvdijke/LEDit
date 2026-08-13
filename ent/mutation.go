@@ -1736,24 +1736,28 @@ func (m *CryptoMutation) ResetEdge(name string) error {
 // DeviceSettingsMutation represents an operation that mutates the DeviceSettings nodes in the graph.
 type DeviceSettingsMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	ip            *string
-	port          *int
-	addport       *int
-	username      *string
-	password      *string
-	width         *int
-	addwidth      *int
-	height        *int
-	addheight     *int
-	enabled       *bool
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*DeviceSettings, error)
-	predicates    []predicate.DeviceSettings
+	op                  Op
+	typ                 string
+	id                  *int
+	name                *string
+	ip                  *string
+	port                *int
+	addport             *int
+	username            *string
+	password            *string
+	width               *int
+	addwidth            *int
+	height              *int
+	addheight           *int
+	enabled             *bool
+	token               *string
+	refresh_interval    *int
+	addrefresh_interval *int
+	last_seen_at        *time.Time
+	clearedFields       map[string]struct{}
+	done                bool
+	oldValue            func(context.Context) (*DeviceSettings, error)
+	predicates          []predicate.DeviceSettings
 }
 
 var _ ent.Mutation = (*DeviceSettingsMutation)(nil)
@@ -2202,6 +2206,147 @@ func (m *DeviceSettingsMutation) ResetEnabled() {
 	m.enabled = nil
 }
 
+// SetToken sets the "token" field.
+func (m *DeviceSettingsMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *DeviceSettingsMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *DeviceSettingsMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetRefreshInterval sets the "refresh_interval" field.
+func (m *DeviceSettingsMutation) SetRefreshInterval(i int) {
+	m.refresh_interval = &i
+	m.addrefresh_interval = nil
+}
+
+// RefreshInterval returns the value of the "refresh_interval" field in the mutation.
+func (m *DeviceSettingsMutation) RefreshInterval() (r int, exists bool) {
+	v := m.refresh_interval
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRefreshInterval returns the old "refresh_interval" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldRefreshInterval(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRefreshInterval is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRefreshInterval requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRefreshInterval: %w", err)
+	}
+	return oldValue.RefreshInterval, nil
+}
+
+// AddRefreshInterval adds i to the "refresh_interval" field.
+func (m *DeviceSettingsMutation) AddRefreshInterval(i int) {
+	if m.addrefresh_interval != nil {
+		*m.addrefresh_interval += i
+	} else {
+		m.addrefresh_interval = &i
+	}
+}
+
+// AddedRefreshInterval returns the value that was added to the "refresh_interval" field in this mutation.
+func (m *DeviceSettingsMutation) AddedRefreshInterval() (r int, exists bool) {
+	v := m.addrefresh_interval
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRefreshInterval resets all changes to the "refresh_interval" field.
+func (m *DeviceSettingsMutation) ResetRefreshInterval() {
+	m.refresh_interval = nil
+	m.addrefresh_interval = nil
+}
+
+// SetLastSeenAt sets the "last_seen_at" field.
+func (m *DeviceSettingsMutation) SetLastSeenAt(t time.Time) {
+	m.last_seen_at = &t
+}
+
+// LastSeenAt returns the value of the "last_seen_at" field in the mutation.
+func (m *DeviceSettingsMutation) LastSeenAt() (r time.Time, exists bool) {
+	v := m.last_seen_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastSeenAt returns the old "last_seen_at" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldLastSeenAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastSeenAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastSeenAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastSeenAt: %w", err)
+	}
+	return oldValue.LastSeenAt, nil
+}
+
+// ClearLastSeenAt clears the value of the "last_seen_at" field.
+func (m *DeviceSettingsMutation) ClearLastSeenAt() {
+	m.last_seen_at = nil
+	m.clearedFields[devicesettings.FieldLastSeenAt] = struct{}{}
+}
+
+// LastSeenAtCleared returns if the "last_seen_at" field was cleared in this mutation.
+func (m *DeviceSettingsMutation) LastSeenAtCleared() bool {
+	_, ok := m.clearedFields[devicesettings.FieldLastSeenAt]
+	return ok
+}
+
+// ResetLastSeenAt resets all changes to the "last_seen_at" field.
+func (m *DeviceSettingsMutation) ResetLastSeenAt() {
+	m.last_seen_at = nil
+	delete(m.clearedFields, devicesettings.FieldLastSeenAt)
+}
+
 // Where appends a list predicates to the DeviceSettingsMutation builder.
 func (m *DeviceSettingsMutation) Where(ps ...predicate.DeviceSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -2236,7 +2381,7 @@ func (m *DeviceSettingsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DeviceSettingsMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 11)
 	if m.name != nil {
 		fields = append(fields, devicesettings.FieldName)
 	}
@@ -2260,6 +2405,15 @@ func (m *DeviceSettingsMutation) Fields() []string {
 	}
 	if m.enabled != nil {
 		fields = append(fields, devicesettings.FieldEnabled)
+	}
+	if m.token != nil {
+		fields = append(fields, devicesettings.FieldToken)
+	}
+	if m.refresh_interval != nil {
+		fields = append(fields, devicesettings.FieldRefreshInterval)
+	}
+	if m.last_seen_at != nil {
+		fields = append(fields, devicesettings.FieldLastSeenAt)
 	}
 	return fields
 }
@@ -2285,6 +2439,12 @@ func (m *DeviceSettingsMutation) Field(name string) (ent.Value, bool) {
 		return m.Height()
 	case devicesettings.FieldEnabled:
 		return m.Enabled()
+	case devicesettings.FieldToken:
+		return m.Token()
+	case devicesettings.FieldRefreshInterval:
+		return m.RefreshInterval()
+	case devicesettings.FieldLastSeenAt:
+		return m.LastSeenAt()
 	}
 	return nil, false
 }
@@ -2310,6 +2470,12 @@ func (m *DeviceSettingsMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldHeight(ctx)
 	case devicesettings.FieldEnabled:
 		return m.OldEnabled(ctx)
+	case devicesettings.FieldToken:
+		return m.OldToken(ctx)
+	case devicesettings.FieldRefreshInterval:
+		return m.OldRefreshInterval(ctx)
+	case devicesettings.FieldLastSeenAt:
+		return m.OldLastSeenAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown DeviceSettings field %s", name)
 }
@@ -2375,6 +2541,27 @@ func (m *DeviceSettingsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetEnabled(v)
 		return nil
+	case devicesettings.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case devicesettings.FieldRefreshInterval:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRefreshInterval(v)
+		return nil
+	case devicesettings.FieldLastSeenAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastSeenAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DeviceSettings field %s", name)
 }
@@ -2392,6 +2579,9 @@ func (m *DeviceSettingsMutation) AddedFields() []string {
 	if m.addheight != nil {
 		fields = append(fields, devicesettings.FieldHeight)
 	}
+	if m.addrefresh_interval != nil {
+		fields = append(fields, devicesettings.FieldRefreshInterval)
+	}
 	return fields
 }
 
@@ -2406,6 +2596,8 @@ func (m *DeviceSettingsMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedWidth()
 	case devicesettings.FieldHeight:
 		return m.AddedHeight()
+	case devicesettings.FieldRefreshInterval:
+		return m.AddedRefreshInterval()
 	}
 	return nil, false
 }
@@ -2436,6 +2628,13 @@ func (m *DeviceSettingsMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddHeight(v)
 		return nil
+	case devicesettings.FieldRefreshInterval:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRefreshInterval(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DeviceSettings numeric field %s", name)
 }
@@ -2443,7 +2642,11 @@ func (m *DeviceSettingsMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *DeviceSettingsMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(devicesettings.FieldLastSeenAt) {
+		fields = append(fields, devicesettings.FieldLastSeenAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2456,6 +2659,11 @@ func (m *DeviceSettingsMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *DeviceSettingsMutation) ClearField(name string) error {
+	switch name {
+	case devicesettings.FieldLastSeenAt:
+		m.ClearLastSeenAt()
+		return nil
+	}
 	return fmt.Errorf("unknown DeviceSettings nullable field %s", name)
 }
 
@@ -2486,6 +2694,15 @@ func (m *DeviceSettingsMutation) ResetField(name string) error {
 		return nil
 	case devicesettings.FieldEnabled:
 		m.ResetEnabled()
+		return nil
+	case devicesettings.FieldToken:
+		m.ResetToken()
+		return nil
+	case devicesettings.FieldRefreshInterval:
+		m.ResetRefreshInterval()
+		return nil
+	case devicesettings.FieldLastSeenAt:
+		m.ResetLastSeenAt()
 		return nil
 	}
 	return fmt.Errorf("unknown DeviceSettings field %s", name)

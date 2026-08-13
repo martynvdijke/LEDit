@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 	"math/rand"
@@ -11,6 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 	"ledit/datasource"
 	"ledit/ent"
+	"ledit/ent/devicesettings"
 	"ledit/ent/generalsettings"
 )
 
@@ -53,20 +55,10 @@ func NewWSHub(client *ent.Client) *WSHub {
 	return &WSHub{Client: client}
 }
 
-func (h *WSHub) HandleWS(c *gin.Context) {
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		slog.Error("WebSocket upgrade error", "error", err, "source", "websocket")
-		return
-	}
-	defer conn.Close()
-
-	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().Only(c.Request.Context())
-	if err != nil {
-		slog.Error("Failed to load settings for WebSocket", "error", err, "source", "websocket")
-		return
-	}
-
+// loadSources builds the ordered list of datasources from GeneralSettings,
+// optionally shuffling them when the random flag is set. Shared by the preview
+// and device feeds.
+func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 	var sources []sourceWithName
 
 	sonarr, _ := settings.Edges.SonarrOrErr()
@@ -144,6 +136,26 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 		})
 	}
 
+	return sources
+}
+
+// HandleWS serves the browser preview feed at a fixed 400x400 resolution,
+// controlled by the shared GlobalFeed controller.
+func (h *WSHub) HandleWS(c *gin.Context) {
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		slog.Error("WebSocket upgrade error", "error", err, "source", "websocket")
+		return
+	}
+	defer conn.Close()
+
+	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().Only(c.Request.Context())
+	if err != nil {
+		slog.Error("Failed to load settings for WebSocket", "error", err, "source", "websocket")
+		return
+	}
+
+	sources := h.loadSources(settings)
 	if len(sources) == 0 {
 		msg, _ := json.Marshal(map[string]string{"error": "no datasources configured"})
 		conn.WriteMessage(websocket.TextMessage, msg)
@@ -151,6 +163,83 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 	}
 
 	timeout := time.Duration(settings.Timeout * float64(time.Second))
+	serveFeed(conn, sources, settings.Random, timeout, 400, 400, GlobalFeed)
+}
+
+// HandleDeviceWS serves a device feed at the device's configured resolution
+// and refresh interval, authenticated by the device token.
+func (h *WSHub) HandleDeviceWS(c *gin.Context) {
+	token := c.Param("token")
+	if token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing token"})
+		return
+	}
+
+	device, err := h.Client.DeviceSettings.Query().Where(devicesettings.TokenEQ(token)).Only(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+		return
+	}
+	if !device.Enabled {
+		c.JSON(http.StatusForbidden, gin.H{"error": "device disabled"})
+		return
+	}
+
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		slog.Error("Device WebSocket upgrade error", "error", err, "source", "websocket", "device", device.Name)
+		return
+	}
+	defer conn.Close()
+
+	// Mark the device as seen; clear on disconnect so status reflects
+	// connectivity.
+	if err := h.Client.DeviceSettings.UpdateOneID(device.ID).SetLastSeenAt(time.Now()).Exec(context.Background()); err != nil {
+		slog.Warn("failed to update device last_seen_at", "device", device.Name, "error", err)
+	}
+	defer func() {
+		if err := h.Client.DeviceSettings.UpdateOneID(device.ID).ClearLastSeenAt().Exec(context.Background()); err != nil {
+			slog.Warn("failed to clear device last_seen_at", "device", device.Name, "error", err)
+		}
+	}()
+
+	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().Only(c.Request.Context())
+	if err != nil {
+		slog.Error("Failed to load settings for device WebSocket", "error", err, "source", "websocket", "device", device.Name)
+		return
+	}
+
+	sources := h.loadSources(settings)
+	if len(sources) == 0 {
+		msg, _ := json.Marshal(map[string]string{"error": "no datasources configured"})
+		conn.WriteMessage(websocket.TextMessage, msg)
+		return
+	}
+
+	width := device.Width
+	if width <= 0 {
+		width = 64
+	}
+	height := device.Height
+	if height <= 0 {
+		height = 64
+	}
+	interval := device.RefreshInterval
+	if interval <= 0 {
+		interval = 60
+	}
+	timeout := time.Duration(interval) * time.Second
+
+	// Each device gets its own feed controller so pause/skip/next are
+	// independent of the shared preview feed.
+	serveFeed(conn, sources, settings.Random, timeout, width, height, &FeedController{})
+}
+
+// serveFeed runs the source-cycle loop for a single WebSocket connection,
+// rendering each datasource at the given resolution and advancing on the given
+// timeout. Notifications are broadcast to every connection exactly once.
+func serveFeed(conn *websocket.Conn, sources []sourceWithName, random bool, timeout time.Duration, width, height int, feed *FeedController) {
+	cursor := CurrentNotifSeq()
 
 	// Read control messages in a goroutine
 	done := make(chan struct{})
@@ -172,47 +261,53 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 			}
 			switch cmd["action"] {
 			case "next":
-				GlobalFeed.Next()
+				feed.Next()
 			case "pause":
-				GlobalFeed.Pause()
+				feed.Pause()
 			case "resume":
-				GlobalFeed.Resume()
+				feed.Resume()
 			}
 		}
 	}()
 
 	for {
 		for i, sw := range sources {
-			// Check for priority messages
-			if pm := PopPriorityMessage(); pm != nil {
-				msg := map[string]string{
-					"format":  "PNG",
-					"source":  "NOTIFICATION",
-					"message": pm.Message,
+			// Broadcast any new notifications to this connection.
+			if notifs := NotificationsAfter(cursor); len(notifs) > 0 {
+				for _, n := range notifs {
+					msg := map[string]string{
+						"format":  "PNG",
+						"source":  "NOTIFICATION",
+						"title":   n.Title,
+						"message": n.Message,
+					}
+					data, _ := json.Marshal(msg)
+					if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
+						return
+					}
+					cursor = n.ID
 				}
-				data, _ := json.Marshal(msg)
-				conn.WriteMessage(websocket.TextMessage, data)
 				time.Sleep(timeout)
 				continue
 			}
 
 			// Compute next source name
 			nextName := ""
-			if settings.Random {
+			if random {
 				nextName = sources[rand.Intn(len(sources))].Name
 			} else {
 				nextIdx := (i + 1) % len(sources)
 				nextName = sources[nextIdx].Name
 			}
 
-			GlobalFeed.SetCurrent(sw.Name, nextName)
+			feed.SetCurrent(sw.Name, nextName)
 
 			// Wait if paused
-			for GlobalFeed.IsPaused() {
+			for feed.IsPaused() {
 				time.Sleep(100 * time.Millisecond)
 			}
 
-			img, err := sw.Source.GetPNG()
+			img, err := sw.Source.GetPNG(width, height)
 			if err != nil {
 				slog.Error("Error rendering datasource for WebSocket", "source_name", sw.Name, "error", err, "source", "websocket")
 				continue
@@ -234,7 +329,7 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 			// Wait for timeout or skip signal
 			deadline := time.Now().Add(timeout)
 			for time.Now().Before(deadline) {
-				if GlobalFeed.ShouldSkip() {
+				if feed.ShouldSkip() {
 					break
 				}
 				time.Sleep(50 * time.Millisecond)

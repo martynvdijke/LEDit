@@ -12,12 +12,12 @@ type RadarrDS struct {
 	URL   string
 }
 
-func (r *RadarrDS) GetPNG() (*render.RenderedImage, error) {
+func (r *RadarrDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	if r.URL == "" || r.Token == "" {
 		slog.Warn("radarr not configured", "source", "radarr")
 		return render.RenderDict(map[string]string{
 			"Radarr": "not configured",
-		}, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+		}, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 	}
 
 	slog.Info("fetching radarr data", "source", "radarr")
@@ -25,7 +25,7 @@ func (r *RadarrDS) GetPNG() (*render.RenderedImage, error) {
 	body, err := apiGet(url, r.Token, nil)
 	if err != nil {
 		slog.Warn("radarr API call failed, using fallback", "source", "radarr", "error", err)
-		return fallbackRadarr(), nil
+		return fallbackRadarr(width, height), nil
 	}
 
 	var movies []struct {
@@ -34,7 +34,7 @@ func (r *RadarrDS) GetPNG() (*render.RenderedImage, error) {
 	}
 	if err := json.Unmarshal(body, &movies); err != nil || len(movies) == 0 {
 		slog.Warn("radarr no movies found, using fallback", "source", "radarr", "error", err)
-		return fallbackRadarr(), nil
+		return fallbackRadarr(width, height), nil
 	}
 	slog.Info("radarr data fetched successfully", "source", "radarr", "count", len(movies))
 
@@ -43,13 +43,13 @@ func (r *RadarrDS) GetPNG() (*render.RenderedImage, error) {
 		"Movie":  m.Title,
 		"Status": m.Status,
 	}
-	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }
 
-func fallbackRadarr() *render.RenderedImage {
+func fallbackRadarr(width, height int) *render.RenderedImage {
 	data := map[string]string{
 		"Radarr": "no movies",
 	}
-	img, _ := render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	img, _ := render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 	return img
 }

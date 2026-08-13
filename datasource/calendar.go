@@ -13,18 +13,18 @@ type CalendarDS struct {
 	Name string
 }
 
-func (c *CalendarDS) GetPNG() (*render.RenderedImage, error) {
+func (c *CalendarDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	slog.Info("fetching calendar data", "source", "calendar", "url", c.URL)
 	body, err := apiGet(c.URL, "", nil)
 	if err != nil {
 		slog.Warn("calendar fetch failed, using fallback", "source", "calendar", "error", err)
-		return fallbackCalendar(c.Name), nil
+		return fallbackCalendar(c.Name, width, height), nil
 	}
 
 	events := parseICal(string(body))
 	if len(events) == 0 {
 		slog.Warn("calendar no events found, using fallback", "source", "calendar")
-		return fallbackCalendar(c.Name), nil
+		return fallbackCalendar(c.Name, width, height), nil
 	}
 	slog.Info("calendar data fetched successfully", "source", "calendar", "event_count", len(events))
 
@@ -47,7 +47,7 @@ func (c *CalendarDS) GetPNG() (*render.RenderedImage, error) {
 		data[key] = val
 	}
 
-	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }
 
 func parseICal(ical string) []string {
@@ -71,7 +71,7 @@ func parseICal(ical string) []string {
 	return events
 }
 
-func fallbackCalendar(name string) *render.RenderedImage {
+func fallbackCalendar(name string, width, height int) *render.RenderedImage {
 	data := map[string]string{
 		"source": "CALENDAR",
 		"status": "unavailable",
@@ -79,6 +79,6 @@ func fallbackCalendar(name string) *render.RenderedImage {
 	if name != "" {
 		data["source"] = name
 	}
-	img, _ := render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	img, _ := render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 	return img
 }

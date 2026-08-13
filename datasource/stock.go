@@ -14,7 +14,7 @@ type StockDS struct {
 	URL   string
 }
 
-func (s *StockDS) GetPNG() (*render.RenderedImage, error) {
+func (s *StockDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	symbols := "AAPL,MSFT,GOOGL"
 	if s.Token != "" {
 		symbols = s.Token
@@ -55,7 +55,7 @@ func (s *StockDS) GetPNG() (*render.RenderedImage, error) {
 		slog.Info("stock data fetched successfully", "source", "stock", "symbols_found", len(data))
 	}
 
-	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }
 
 func fetchStockPrice(symbol string) (price, change string) {

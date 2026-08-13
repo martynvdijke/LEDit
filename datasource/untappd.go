@@ -12,7 +12,7 @@ type UntappdDS struct {
 	URL   string
 }
 
-func (u *UntappdDS) GetPNG() (*render.RenderedImage, error) {
+func (u *UntappdDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	slog.Info("using mock untappd data", "source", "untappd")
 	data := map[string]string{
 		"brewery": "Local Brew Co.",
@@ -20,5 +20,5 @@ func (u *UntappdDS) GetPNG() (*render.RenderedImage, error) {
 		"abv":     "6.5%",
 		"rating":  "4.2",
 	}
-	return render.RenderDict(data, 400, 400, themes.UntappdTheme, "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, themes.UntappdTheme, "fonts/PixelifySans.ttf")
 }

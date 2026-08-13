@@ -341,7 +341,7 @@ func (s *Server) AdminDeviceSettingsList(c *gin.Context) {
 		return
 	}
 	devices, _ := settings.Edges.DeviceSettingsOrErr()
-	s.renderPage(c, http.StatusOK, "devices.html", gin.H{"devices": devices})
+	s.renderPage(c, http.StatusOK, "devices.html", gin.H{"devices": devices, "host": c.Request.Host})
 }
 
 func (s *Server) AdminDeviceSettingsNew(c *gin.Context) {
@@ -366,6 +366,10 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		height = 64
 	}
 	enabled := c.PostForm("enabled") == "on"
+	refreshInterval, _ := strconv.Atoi(c.PostForm("refresh_interval"))
+	if refreshInterval <= 0 {
+		refreshInterval = 60
+	}
 
 	v := NewValidator().Required("Name", name).Port("Port", port).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512)
 	if !v.Valid() {
@@ -378,6 +382,7 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		SetName(name).SetIP(ip).SetPort(port).
 		SetUsername(username).SetPassword(password).
 		SetWidth(width).SetHeight(height).SetEnabled(enabled).
+		SetToken(generateDeviceToken()).SetRefreshInterval(refreshInterval).
 		SaveX(s.Ctx)
 	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
 		s.DB.GeneralSettings.UpdateOne(settings).AddDeviceSettings(obj).Exec(s.Ctx)
@@ -406,6 +411,10 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 	width, _ := strconv.Atoi(c.PostForm("width"))
 	height, _ := strconv.Atoi(c.PostForm("height"))
 	enabled := c.PostForm("enabled") == "on"
+	refreshInterval, _ := strconv.Atoi(c.PostForm("refresh_interval"))
+	if refreshInterval <= 0 {
+		refreshInterval = 60
+	}
 	v := NewValidator().Required("Name", name).Port("Port", port).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512)
 	if !v.Valid() {
 		SetFlash(c, "danger", v.Error())
@@ -417,6 +426,7 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		SetName(name).SetIP(ip).SetPort(port).
 		SetUsername(username).SetPassword(password).
 		SetWidth(width).SetHeight(height).SetEnabled(enabled).
+		SetRefreshInterval(refreshInterval).
 		Exec(s.Ctx)
 	SetFlash(c, "success", "Device updated")
 	c.Redirect(http.StatusFound, "/admin/devices")

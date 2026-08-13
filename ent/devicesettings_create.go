@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"ledit/ent/devicesettings"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -131,6 +132,48 @@ func (_c *DeviceSettingsCreate) SetNillableEnabled(v *bool) *DeviceSettingsCreat
 	return _c
 }
 
+// SetToken sets the "token" field.
+func (_c *DeviceSettingsCreate) SetToken(v string) *DeviceSettingsCreate {
+	_c.mutation.SetToken(v)
+	return _c
+}
+
+// SetNillableToken sets the "token" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableToken(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetToken(*v)
+	}
+	return _c
+}
+
+// SetRefreshInterval sets the "refresh_interval" field.
+func (_c *DeviceSettingsCreate) SetRefreshInterval(v int) *DeviceSettingsCreate {
+	_c.mutation.SetRefreshInterval(v)
+	return _c
+}
+
+// SetNillableRefreshInterval sets the "refresh_interval" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableRefreshInterval(v *int) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetRefreshInterval(*v)
+	}
+	return _c
+}
+
+// SetLastSeenAt sets the "last_seen_at" field.
+func (_c *DeviceSettingsCreate) SetLastSeenAt(v time.Time) *DeviceSettingsCreate {
+	_c.mutation.SetLastSeenAt(v)
+	return _c
+}
+
+// SetNillableLastSeenAt sets the "last_seen_at" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableLastSeenAt(v *time.Time) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetLastSeenAt(*v)
+	}
+	return _c
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_c *DeviceSettingsCreate) Mutation() *DeviceSettingsMutation {
 	return _c.mutation
@@ -198,6 +241,14 @@ func (_c *DeviceSettingsCreate) defaults() {
 		v := devicesettings.DefaultEnabled
 		_c.mutation.SetEnabled(v)
 	}
+	if _, ok := _c.mutation.Token(); !ok {
+		v := devicesettings.DefaultToken
+		_c.mutation.SetToken(v)
+	}
+	if _, ok := _c.mutation.RefreshInterval(); !ok {
+		v := devicesettings.DefaultRefreshInterval
+		_c.mutation.SetRefreshInterval(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -225,6 +276,12 @@ func (_c *DeviceSettingsCreate) check() error {
 	}
 	if _, ok := _c.mutation.Enabled(); !ok {
 		return &ValidationError{Name: "enabled", err: errors.New(`ent: missing required field "DeviceSettings.enabled"`)}
+	}
+	if _, ok := _c.mutation.Token(); !ok {
+		return &ValidationError{Name: "token", err: errors.New(`ent: missing required field "DeviceSettings.token"`)}
+	}
+	if _, ok := _c.mutation.RefreshInterval(); !ok {
+		return &ValidationError{Name: "refresh_interval", err: errors.New(`ent: missing required field "DeviceSettings.refresh_interval"`)}
 	}
 	return nil
 }
@@ -283,6 +340,18 @@ func (_c *DeviceSettingsCreate) createSpec() (*DeviceSettings, *sqlgraph.CreateS
 	if value, ok := _c.mutation.Enabled(); ok {
 		_spec.SetField(devicesettings.FieldEnabled, field.TypeBool, value)
 		_node.Enabled = value
+	}
+	if value, ok := _c.mutation.Token(); ok {
+		_spec.SetField(devicesettings.FieldToken, field.TypeString, value)
+		_node.Token = value
+	}
+	if value, ok := _c.mutation.RefreshInterval(); ok {
+		_spec.SetField(devicesettings.FieldRefreshInterval, field.TypeInt, value)
+		_node.RefreshInterval = value
+	}
+	if value, ok := _c.mutation.LastSeenAt(); ok {
+		_spec.SetField(devicesettings.FieldLastSeenAt, field.TypeTime, value)
+		_node.LastSeenAt = &value
 	}
 	return _node, _spec
 }

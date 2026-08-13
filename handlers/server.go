@@ -42,6 +42,9 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	// Bootstrap admin credentials on first run.
 	initAdminSettings(client, ctx)
 
+	// Backfill tokens for any legacy device rows that lack one.
+	backfillDeviceTokens(client, ctx)
+
 	// Initialize central logging system (DB-backed, OTEL-ready).
 	// This sets slog.SetDefault, so all subsequent slog calls use it.
 	logStore, otelExp, logCleanup := logging.InitLogging(client, "warn")
@@ -121,6 +124,23 @@ func initAdminSettings(client *ent.Client, ctx context.Context) {
 	authEnabled = true
 }
 
+// backfillDeviceTokens assigns a token to any device row that lacks one
+// (legacy rows created before per-device tokens were introduced).
+func backfillDeviceTokens(client *ent.Client, ctx context.Context) {
+	devices, err := client.DeviceSettings.Query().All(ctx)
+	if err != nil {
+		slog.Warn("Failed to query devices for token backfill", "error", err)
+		return
+	}
+	for _, d := range devices {
+		if d.Token == "" {
+			if err := client.DeviceSettings.UpdateOne(d).SetToken(generateDeviceToken()).Exec(ctx); err != nil {
+				slog.Warn("Failed to backfill device token", "id", d.ID, "error", err)
+			}
+		}
+	}
+}
+
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.Router.ServeHTTP(w, r)
 }
@@ -146,6 +166,7 @@ func (s *Server) setupRoutes() {
 
 	s.Router.GET("/", s.IndexHandler)
 	s.Router.GET("/ws/feed", s.WSHub.HandleWS)
+	s.Router.GET("/ws/device/:token", s.WSHub.HandleDeviceWS)
 	s.Router.GET("/eink/toggle", s.AdminEInkToggleFeed)
 
 	api := s.Router.Group("/api")
@@ -157,6 +178,7 @@ func (s *Server) setupRoutes() {
 		api.POST("/feed/priority", s.APIFeedPriority)
 		api.POST("/webhook/notify", s.APIWebhookNotify)
 		api.GET("/notifications", s.APINotificationHistory)
+		api.GET("/trmnl/stats", s.APITrmnlStats)
 	}
 
 	s.Router.GET("/login", s.LoginPage)

@@ -27,6 +27,12 @@ const (
 	FieldHeight = "height"
 	// FieldEnabled holds the string denoting the enabled field in the database.
 	FieldEnabled = "enabled"
+	// FieldToken holds the string denoting the token field in the database.
+	FieldToken = "token"
+	// FieldRefreshInterval holds the string denoting the refresh_interval field in the database.
+	FieldRefreshInterval = "refresh_interval"
+	// FieldLastSeenAt holds the string denoting the last_seen_at field in the database.
+	FieldLastSeenAt = "last_seen_at"
 	// Table holds the table name of the devicesettings in the database.
 	Table = "device_settings"
 )
@@ -42,6 +48,9 @@ var Columns = []string{
 	FieldWidth,
 	FieldHeight,
 	FieldEnabled,
+	FieldToken,
+	FieldRefreshInterval,
+	FieldLastSeenAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "device_settings"
@@ -82,6 +91,10 @@ var (
 	DefaultHeight int
 	// DefaultEnabled holds the default value on creation for the "enabled" field.
 	DefaultEnabled bool
+	// DefaultToken holds the default value on creation for the "token" field.
+	DefaultToken string
+	// DefaultRefreshInterval holds the default value on creation for the "refresh_interval" field.
+	DefaultRefreshInterval int
 )
 
 // OrderOption defines the ordering options for the DeviceSettings queries.
@@ -130,4 +143,19 @@ func ByHeight(opts ...sql.OrderTermOption) OrderOption {
 // ByEnabled orders the results by the enabled field.
 func ByEnabled(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEnabled, opts...).ToFunc()
+}
+
+// ByToken orders the results by the token field.
+func ByToken(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldToken, opts...).ToFunc()
+}
+
+// ByRefreshInterval orders the results by the refresh_interval field.
+func ByRefreshInterval(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRefreshInterval, opts...).ToFunc()
+}
+
+// ByLastSeenAt orders the results by the last_seen_at field.
+func ByLastSeenAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastSeenAt, opts...).ToFunc()
 }

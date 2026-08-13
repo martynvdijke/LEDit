@@ -14,7 +14,7 @@
             <a href="/admin/devices/new" class="btn btn-primary mb-3">New Device</a>
             <table class="table table-striped">
                 <thead>
-                    <tr><th>ID</th><th>Name</th><th>IP</th><th>Port</th><th>Matrix</th><th>Enabled</th><th>Actions</th></tr>
+                    <tr><th>ID</th><th>Name</th><th>IP</th><th>Port</th><th>Matrix</th><th>Enabled</th><th>Status</th><th>Token</th><th>Connection URL</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
                     {{range .devices}}
@@ -22,6 +22,9 @@
                         <td>{{.ID}}</td><td>{{.Name}}</td><td>{{.IP}}</td><td>{{.Port}}</td>
                         <td>{{.Width}}x{{.Height}}</td>
                         <td>{{if .Enabled}}Yes{{else}}No{{end}}</td>
+                        <td>{{if .LastSeenAt}}<span class="text-success">Online</span>{{else}}<span class="text-muted">Offline</span>{{end}}</td>
+                        <td><code>{{.Token}}</code></td>
+                        <td><code>ws://{{$.host}}/ws/device/{{.Token}}</code></td>
                         <td>
                             <a href="/admin/devices/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
                             <form method="POST" action="/admin/devices/{{.ID}}/delete" style="display:inline">
@@ -30,7 +33,7 @@
                         </td>
                     </tr>
                     {{else}}
-                    <tr><td colspan="7" class="text-muted">No devices configured.</td></tr>
+                    <tr><td colspan="10" class="text-muted">No devices configured.</td></tr>
                     {{end}}
                 </tbody>
             </table>

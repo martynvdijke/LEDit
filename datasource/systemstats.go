@@ -10,18 +10,41 @@ import (
 	"ledit/render"
 )
 
+// SystemStats is the shared system statistics snapshot used by both the
+// System Stats datasource (LED feed) and the TRMNL stats endpoint so values
+// never diverge.
+type SystemStats struct {
+	CPUCores  int    `json:"cpu_cores"`
+	GoVersion string `json:"go_version"`
+	OS        string `json:"os"`
+	Memory    string `json:"memory"`
+	Load      string `json:"load"`
+}
+
+// GetSystemStats collects the current system statistics.
+func GetSystemStats() SystemStats {
+	return SystemStats{
+		CPUCores:  runtime.NumCPU(),
+		GoVersion: runtime.Version(),
+		OS:        runtime.GOOS + "/" + runtime.GOARCH,
+		Memory:    memString(),
+		Load:      loadString(),
+	}
+}
+
 type SystemStatsDS struct{}
 
-func (s *SystemStatsDS) GetPNG() (*render.RenderedImage, error) {
+func (s *SystemStatsDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	slog.Info("collecting system stats", "source", "systemstats")
+	st := GetSystemStats()
 	data := map[string]string{
-		"CPU":  fmt.Sprintf("%d cores", runtime.NumCPU()),
-		"GO":   runtime.Version(),
-		"OS":   runtime.GOOS + "/" + runtime.GOARCH,
-		"MEM":  memString(),
-		"LOAD": loadString(),
+		"CPU":  fmt.Sprintf("%d cores", st.CPUCores),
+		"GO":   st.GoVersion,
+		"OS":   st.OS,
+		"MEM":  st.Memory,
+		"LOAD": st.Load,
 	}
-	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }
 
 func memString() string {

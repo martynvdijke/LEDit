@@ -13,7 +13,7 @@ type VideoDS struct {
 	Path string
 }
 
-func (v *VideoDS) GetPNG() (*render.RenderedImage, error) {
+func (v *VideoDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	if !render.FileExists(v.Path) {
 		slog.Error("video file not found", "source", "video", "path", v.Path)
 		return nil, fmt.Errorf("video file not found: %s", v.Path)

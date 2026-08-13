@@ -19,5 +19,8 @@ func (DeviceSettings) Fields() []ent.Field {
 		field.Int("width").Default(64),
 		field.Int("height").Default(64),
 		field.Bool("enabled").Default(true),
+		field.String("token").Default(""),
+		field.Int("refresh_interval").Default(60),
+		field.Time("last_seen_at").Optional().Nillable(),
 	}
 }

@@ -12,19 +12,19 @@ type SonarrDS struct {
 	URL   string
 }
 
-func (s *SonarrDS) GetPNG() (*render.RenderedImage, error) {
+func (s *SonarrDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	if s.URL == "" || s.Token == "" {
 		slog.Warn("sonarr not configured", "source", "sonarr")
 		return render.RenderDict(map[string]string{
 			"Sonarr": "not configured",
-		}, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+		}, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 	}
 
 	slog.Info("fetching sonarr data", "source", "sonarr")
 	body, err := s.apiGet("/api/v3/series")
 	if err != nil {
 		slog.Warn("sonarr API call failed, using fallback", "source", "sonarr", "error", err)
-		return fallbackSonarr(), nil
+		return fallbackSonarr(width, height), nil
 	}
 
 	var series []struct {
@@ -34,7 +34,7 @@ func (s *SonarrDS) GetPNG() (*render.RenderedImage, error) {
 	}
 	if err := json.Unmarshal(body, &series); err != nil || len(series) == 0 {
 		slog.Warn("sonarr no series found, using fallback", "source", "sonarr", "error", err)
-		return fallbackSonarr(), nil
+		return fallbackSonarr(width, height), nil
 	}
 	slog.Info("sonarr data fetched successfully", "source", "sonarr", "count", len(series))
 
@@ -46,13 +46,13 @@ func (s *SonarrDS) GetPNG() (*render.RenderedImage, error) {
 	if sh.NextAir != "" {
 		data["Next"] = sh.NextAir
 	}
-	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }
 
-func fallbackSonarr() *render.RenderedImage {
+func fallbackSonarr(width, height int) *render.RenderedImage {
 	data := map[string]string{
 		"Sonarr": "no series",
 	}
-	img, _ := render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	img, _ := render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 	return img
 }

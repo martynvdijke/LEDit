@@ -14,7 +14,7 @@ type F1DS struct {
 	URL   string
 }
 
-func (f *F1DS) GetPNG() (*render.RenderedImage, error) {
+func (f *F1DS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	url := "https://api.openf1.org/v1/race-control?session_key=latest&limit=5"
 	if f.URL != "" {
 		url = f.URL
@@ -36,7 +36,7 @@ func (f *F1DS) GetPNG() (*render.RenderedImage, error) {
 			if len(messages) > 1 {
 				data["update"] = messages[1].Message
 			}
-			return render.RenderDict(data, 400, 400, themes.F1Theme, "fonts/PixelifySans.ttf")
+			return render.RenderDict(data, width, height, themes.F1Theme, "fonts/PixelifySans.ttf")
 		}
 	}
 
@@ -76,19 +76,19 @@ func (f *F1DS) GetPNG() (*render.RenderedImage, error) {
 				winner := race.Results[0]
 				data["Winner"] = fmt.Sprintf("%s %s (%s)", winner.Driver.GivenName, winner.Driver.FamilyName, winner.Constructor.Name)
 			}
-			return render.RenderDict(data, 400, 400, themes.F1Theme, "fonts/PixelifySans.ttf")
+			return render.RenderDict(data, width, height, themes.F1Theme, "fonts/PixelifySans.ttf")
 		}
 	}
 
 	slog.Warn("F1 all APIs failed, using fallback", "source", "f1")
-	return fallbackF1(), nil
+	return fallbackF1(width, height), nil
 }
 
-func fallbackF1() *render.RenderedImage {
+func fallbackF1(width, height int) *render.RenderedImage {
 	data := map[string]string{
 		"Next Race": "No data",
 		"Status":    "API unavailable",
 	}
-	img, _ := render.RenderDict(data, 400, 400, themes.F1Theme, "fonts/PixelifySans.ttf")
+	img, _ := render.RenderDict(data, width, height, themes.F1Theme, "fonts/PixelifySans.ttf")
 	return img
 }

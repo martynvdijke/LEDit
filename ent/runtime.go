@@ -89,6 +89,14 @@ func init() {
 	devicesettingsDescEnabled := devicesettingsFields[7].Descriptor()
 	// devicesettings.DefaultEnabled holds the default value on creation for the enabled field.
 	devicesettings.DefaultEnabled = devicesettingsDescEnabled.Default.(bool)
+	// devicesettingsDescToken is the schema descriptor for token field.
+	devicesettingsDescToken := devicesettingsFields[8].Descriptor()
+	// devicesettings.DefaultToken holds the default value on creation for the token field.
+	devicesettings.DefaultToken = devicesettingsDescToken.Default.(string)
+	// devicesettingsDescRefreshInterval is the schema descriptor for refresh_interval field.
+	devicesettingsDescRefreshInterval := devicesettingsFields[9].Descriptor()
+	// devicesettings.DefaultRefreshInterval holds the default value on creation for the refresh_interval field.
+	devicesettings.DefaultRefreshInterval = devicesettingsDescRefreshInterval.Default.(int)
 	emailsettingsFields := schema.EmailSettings{}.Fields()
 	_ = emailsettingsFields
 	// emailsettingsDescUseTLS is the schema descriptor for use_tls field.

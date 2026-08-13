@@ -17,6 +17,7 @@
                 <div class="mb-3"><label for="port" class="form-label">Port</label><input type="number" class="form-control" id="port" name="port" value="{{if .obj}}{{.obj.Port}}{{else}}6270{{end}}"></div>
                 <div class="mb-3"><label for="width" class="form-label">Matrix Width</label><input type="number" class="form-control" id="width" name="width" value="{{if .obj}}{{.obj.Width}}{{else}}64{{end}}"></div>
                 <div class="mb-3"><label for="height" class="form-label">Matrix Height</label><input type="number" class="form-control" id="height" name="height" value="{{if .obj}}{{.obj.Height}}{{else}}64{{end}}"></div>
+                <div class="mb-3"><label for="refresh_interval" class="form-label">Refresh Interval (seconds)</label><input type="number" class="form-control" id="refresh_interval" name="refresh_interval" value="{{if .obj}}{{.obj.RefreshInterval}}{{else}}60{{end}}"></div>
                 <div class="mb-3"><label for="username" class="form-label">Username</label><input type="text" class="form-control" id="username" name="username" value="{{if .obj}}{{.obj.Username}}{{end}}"></div>
                 <div class="mb-3"><label for="password" class="form-label">Password</label><input type="password" class="form-control" id="password" name="password" value="{{if .obj}}{{.obj.Password}}{{end}}"></div>
                 <div class="mb-3 form-check">

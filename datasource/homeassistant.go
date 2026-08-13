@@ -12,12 +12,12 @@ type HomeAssistantDS struct {
 	URL   string
 }
 
-func (h *HomeAssistantDS) GetPNG() (*render.RenderedImage, error) {
+func (h *HomeAssistantDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	if h.URL == "" || h.Token == "" {
 		slog.Warn("homeassistant not configured", "source", "homeassistant")
 		return render.RenderDict(map[string]string{
 			"HA Status": "not configured",
-		}, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+		}, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 	}
 
 	slog.Info("fetching homeassistant data", "source", "homeassistant")
@@ -26,7 +26,7 @@ func (h *HomeAssistantDS) GetPNG() (*render.RenderedImage, error) {
 	})
 	if err != nil {
 		slog.Warn("homeassistant API call failed, using fallback", "source", "homeassistant", "error", err)
-		return fallbackHA(), nil
+		return fallbackHA(width, height), nil
 	}
 
 	var states []struct {
@@ -35,7 +35,7 @@ func (h *HomeAssistantDS) GetPNG() (*render.RenderedImage, error) {
 	}
 	if err := json.Unmarshal(body, &states); err != nil || len(states) == 0 {
 		slog.Warn("homeassistant no states in response, using fallback", "source", "homeassistant", "error", err)
-		return fallbackHA(), nil
+		return fallbackHA(width, height), nil
 	}
 
 	data := map[string]string{}
@@ -56,17 +56,17 @@ func (h *HomeAssistantDS) GetPNG() (*render.RenderedImage, error) {
 	}
 	if len(data) == 0 {
 		slog.Warn("homeassistant no valid states found, using fallback", "source", "homeassistant")
-		return fallbackHA(), nil
+		return fallbackHA(width, height), nil
 	}
 	slog.Info("homeassistant data fetched successfully", "source", "homeassistant", "entity_count", count)
 
-	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }
 
-func fallbackHA() *render.RenderedImage {
+func fallbackHA(width, height int) *render.RenderedImage {
 	data := map[string]string{
 		"HA": "unavailable",
 	}
-	img, _ := render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	img, _ := render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 	return img
 }

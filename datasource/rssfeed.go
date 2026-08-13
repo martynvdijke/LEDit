@@ -13,18 +13,18 @@ type RssFeedDS struct {
 	Name string
 }
 
-func (r *RssFeedDS) GetPNG() (*render.RenderedImage, error) {
+func (r *RssFeedDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	slog.Info("fetching RSS feed", "source", "rssfeed", "url", r.URL)
 	body, err := apiGet(r.URL, "", nil)
 	if err != nil {
 		slog.Warn("RSS feed fetch failed, using fallback", "source", "rssfeed", "error", err)
-		return fallbackRSS(r.Name), nil
+		return fallbackRSS(r.Name, width, height), nil
 	}
 
 	items := parseRSS(string(body))
 	if len(items) == 0 {
 		slog.Warn("RSS feed no items found, using fallback", "source", "rssfeed")
-		return fallbackRSS(r.Name), nil
+		return fallbackRSS(r.Name, width, height), nil
 	}
 	slog.Info("RSS feed fetched successfully", "source", "rssfeed", "item_count", len(items))
 
@@ -47,7 +47,7 @@ func (r *RssFeedDS) GetPNG() (*render.RenderedImage, error) {
 		data[key] = val
 	}
 
-	return render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }
 
 func parseRSS(xml string) []string {
@@ -88,7 +88,7 @@ func parseRSS(xml string) []string {
 	return items
 }
 
-func fallbackRSS(name string) *render.RenderedImage {
+func fallbackRSS(name string, width, height int) *render.RenderedImage {
 	data := map[string]string{
 		"source": "RSS",
 		"status": "unavailable",
@@ -96,6 +96,6 @@ func fallbackRSS(name string) *render.RenderedImage {
 	if name != "" {
 		data["source"] = name
 	}
-	img, _ := render.RenderDict(data, 400, 400, DefaultTheme(), "fonts/PixelifySans.ttf")
+	img, _ := render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 	return img
 }

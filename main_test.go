@@ -88,7 +88,7 @@ func TestGeneralSettingsCreateAndQuery(t *testing.T) {
 
 func TestSonarrDatasource(t *testing.T) {
 	s := &datasource.SonarrDS{Token: "test", URL: "http://localhost"}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("Sonarr GetPNG failed: %v", err)
 	}
@@ -102,7 +102,7 @@ func TestSonarrDatasource(t *testing.T) {
 
 func TestRadarrDatasource(t *testing.T) {
 	s := &datasource.RadarrDS{Token: "test", URL: "http://localhost"}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("Radarr GetPNG failed: %v", err)
 	}
@@ -113,7 +113,7 @@ func TestRadarrDatasource(t *testing.T) {
 
 func TestF1Datasource(t *testing.T) {
 	s := &datasource.F1DS{Token: "test", URL: "http://localhost"}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("F1 GetPNG failed: %v", err)
 	}
@@ -124,7 +124,7 @@ func TestF1Datasource(t *testing.T) {
 
 func TestWeatherDatasource(t *testing.T) {
 	s := &datasource.WeatherDS{Token: "test", URL: "http://localhost"}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("Weather GetPNG failed: %v", err)
 	}
@@ -135,7 +135,7 @@ func TestWeatherDatasource(t *testing.T) {
 
 func TestHomeAssistantDatasource(t *testing.T) {
 	s := &datasource.HomeAssistantDS{Token: "test", URL: "http://localhost"}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("HomeAssistant GetPNG failed: %v", err)
 	}
@@ -146,7 +146,7 @@ func TestHomeAssistantDatasource(t *testing.T) {
 
 func TestUntappdDatasource(t *testing.T) {
 	s := &datasource.UntappdDS{Token: "test", URL: "http://localhost"}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("Untappd GetPNG failed: %v", err)
 	}
@@ -164,7 +164,7 @@ func TestImageDatasource(t *testing.T) {
 	tmpFile.Close()
 
 	s := &datasource.ImageDS{Path: tmpFile.Name()}
-	result, err := s.GetPNG()
+	result, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("Image GetPNG failed: %v", err)
 	}
@@ -175,7 +175,7 @@ func TestImageDatasource(t *testing.T) {
 
 func TestImageDatasourceNotFound(t *testing.T) {
 	s := &datasource.ImageDS{Path: "nonexistent.png"}
-	_, err := s.GetPNG()
+	_, err := s.GetPNG(400, 400)
 	if err == nil {
 		t.Error("expected error for non-existent file")
 	}
@@ -183,7 +183,7 @@ func TestImageDatasourceNotFound(t *testing.T) {
 
 func TestVideoDatasourceNotFound(t *testing.T) {
 	s := &datasource.VideoDS{Path: "nonexistent.mp4"}
-	_, err := s.GetPNG()
+	_, err := s.GetPNG(400, 400)
 	if err == nil {
 		t.Error("expected error for non-existent file")
 	}
@@ -416,7 +416,7 @@ func TestServerAdminImageNew(t *testing.T) {
 
 func TestCryptoDatasource(t *testing.T) {
 	s := &datasource.CryptoDS{Token: "bitcoin"}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("Crypto GetPNG failed: %v", err)
 	}
@@ -833,6 +833,42 @@ func TestAPIFeedNext(t *testing.T) {
 	}
 }
 
+func TestAPITrmnlStats(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv, nil)
+	req := httptest.NewRequest("GET", "/api/trmnl/stats", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	var resp map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("invalid JSON response: %v", err)
+	}
+	system, ok := resp["system"].(map[string]any)
+	if !ok {
+		t.Fatal("expected top-level system object")
+	}
+	for _, field := range []string{"cpu_cores", "go_version", "os", "memory", "load"} {
+		if _, ok := system[field]; !ok {
+			t.Errorf("expected system.%s field", field)
+		}
+	}
+	analytics, ok := resp["analytics"].(map[string]any)
+	if !ok {
+		t.Fatal("expected top-level analytics object")
+	}
+	for _, field := range []string{"total_displays", "uptime", "by_source", "recent"} {
+		if _, ok := analytics[field]; !ok {
+			t.Errorf("expected analytics.%s field", field)
+		}
+	}
+}
+
 func TestDSNFunction(t *testing.T) {
 	dsn := db.DSN()
 	if dsn == "" {
@@ -1077,7 +1113,7 @@ func TestFeedControllerPauseResume(t *testing.T) {
 
 func TestCryptoDSMultipleCoins(t *testing.T) {
 	s := &datasource.CryptoDS{Token: "bitcoin,ethereum,solana"}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("CryptoDS with multiple coins failed: %v", err)
 	}
@@ -1122,7 +1158,7 @@ func TestWebSocketUpgrade(t *testing.T) {
 
 func TestSystemStatsDatasource(t *testing.T) {
 	s := &datasource.SystemStatsDS{}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("SystemStats GetPNG failed: %v", err)
 	}
@@ -1136,7 +1172,7 @@ func TestSystemStatsDatasource(t *testing.T) {
 
 func TestRssFeedDatasource(t *testing.T) {
 	s := &datasource.RssFeedDS{URL: "", Name: "TestFeed"}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("RssFeed GetPNG failed: %v", err)
 	}
@@ -1147,7 +1183,7 @@ func TestRssFeedDatasource(t *testing.T) {
 
 func TestCalendarDatasource(t *testing.T) {
 	s := &datasource.CalendarDS{URL: "", Name: "TestCal"}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("Calendar GetPNG failed: %v", err)
 	}
@@ -1158,7 +1194,7 @@ func TestCalendarDatasource(t *testing.T) {
 
 func TestStockDatasource(t *testing.T) {
 	s := &datasource.StockDS{Token: "", URL: ""}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("Stock GetPNG failed: %v", err)
 	}
@@ -1169,7 +1205,7 @@ func TestStockDatasource(t *testing.T) {
 
 func TestTextSlideDatasource(t *testing.T) {
 	s := &datasource.TextSlideDS{Content: "Hello World", Color: "#FFFFFF", BgColor: "#000000", FontSize: 32}
-	img, err := s.GetPNG()
+	img, err := s.GetPNG(400, 400)
 	if err != nil {
 		t.Fatalf("TextSlide GetPNG failed: %v", err)
 	}
@@ -1909,5 +1945,123 @@ func TestEInkRefresh_InvalidIntervalString(t *testing.T) {
 	}
 	if refreshCookie.Value != "30" {
 		t.Errorf("expected default value '30' for invalid input, got '%s'", refreshCookie.Value)
+	}
+}
+
+func TestDeviceWebSocketValidToken(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv, nil)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	const token = "0123456789abcdef0123456789abcdef"
+	device := srv.DB.DeviceSettings.Create().
+		SetName("panel").SetIP("10.0.0.9").SetPort(6270).
+		SetWidth(64).SetHeight(64).SetEnabled(true).
+		SetToken(token).SetRefreshInterval(1).
+		SaveX(testCtx)
+
+	s := httptest.NewServer(srv.Router)
+	defer s.Close()
+
+	conn, _, err := websocket.DefaultDialer.Dial("ws"+s.URL[4:]+"/ws/device/"+token, nil)
+	if err != nil {
+		t.Skipf("WebSocket dial failed: %v", err)
+		return
+	}
+	defer conn.Close()
+	conn.SetReadDeadline(time.Now().Add(3 * time.Second))
+
+	_, msg, err := conn.ReadMessage()
+	if err != nil {
+		t.Fatalf("WebSocket read failed: %v", err)
+	}
+	var result map[string]string
+	json.Unmarshal(msg, &result)
+	if result["format"] != "PNG" && result["format"] != "MP4" {
+		t.Errorf("expected PNG/MP4 format, got %v", result)
+	}
+
+	// last_seen_at should be set once the device connected.
+	got, err := srv.DB.DeviceSettings.Get(testCtx, device.ID)
+	if err != nil {
+		t.Fatalf("query device: %v", err)
+	}
+	if got.LastSeenAt == nil {
+		t.Error("expected last_seen_at to be set after device connection")
+	}
+}
+
+func TestDeviceWebSocketUnknownToken(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv, nil)
+	req := httptest.NewRequest("GET", "/ws/device/doesnotexist", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusUnauthorized {
+		t.Errorf("expected 401 for unknown token, got %d", w.Code)
+	}
+}
+
+func TestDeviceWebSocketDisabled(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv, nil)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	const token = "fedcba9876543210fedcba9876543210"
+	srv.DB.DeviceSettings.Create().
+		SetName("off").SetIP("10.0.0.10").SetPort(6270).
+		SetWidth(64).SetHeight(64).SetEnabled(false).
+		SetToken(token).SetRefreshInterval(60).
+		SaveX(testCtx)
+
+	req := httptest.NewRequest("GET", "/ws/device/"+token, nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusForbidden {
+		t.Errorf("expected 403 for disabled device, got %d", w.Code)
+	}
+}
+
+func TestDeviceTokenGeneratedOnCreate(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv, nil)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	body := bytes.NewBufferString("name=panel1&ip=10.0.0.11&port=6270&width=64&height=64&refresh_interval=30&enabled=on")
+	req := httptest.NewRequest("POST", "/admin/devices/new", body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+
+	devices := srv.DB.DeviceSettings.Query().AllX(testCtx)
+	if len(devices) != 1 {
+		t.Fatalf("expected 1 device, got %d", len(devices))
+	}
+	d := devices[0]
+	if d.Token == "" {
+		t.Error("expected generated token to be non-empty")
+	}
+	if len(d.Token) != 32 {
+		t.Errorf("expected 32-char token, got %d chars", len(d.Token))
+	}
+	if d.RefreshInterval != 30 {
+		t.Errorf("expected refresh_interval 30, got %d", d.RefreshInterval)
 	}
 }
