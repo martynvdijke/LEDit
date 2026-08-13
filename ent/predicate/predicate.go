@@ -30,6 +30,12 @@ type F1 func(*sql.Selector)
 // GeneralSettings is the predicate function for generalsettings builders.
 type GeneralSettings func(*sql.Selector)
 
+// GenericAPI is the predicate function for genericapi builders.
+type GenericAPI func(*sql.Selector)
+
+// GoogleCalendar is the predicate function for googlecalendar builders.
+type GoogleCalendar func(*sql.Selector)
+
 // HomeAssistant is the predicate function for homeassistant builders.
 type HomeAssistant func(*sql.Selector)
 
@@ -41,6 +47,12 @@ type LogEntry func(*sql.Selector)
 
 // LogSettings is the predicate function for logsettings builders.
 type LogSettings func(*sql.Selector)
+
+// MatrixLayout is the predicate function for matrixlayout builders.
+type MatrixLayout func(*sql.Selector)
+
+// NewsFeed is the predicate function for newsfeed builders.
+type NewsFeed func(*sql.Selector)
 
 // Notification is the predicate function for notification builders.
 type Notification func(*sql.Selector)

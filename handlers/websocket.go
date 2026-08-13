@@ -129,6 +129,38 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 		sources = append(sources, sourceWithName{Name: "Text: " + ts.Content, Source: &datasource.TextSlideDS{Content: ts.Content, Color: ts.Color, BgColor: ts.BgColor, FontSize: ts.FontSize}})
 	}
 
+	gcs, _ := settings.Edges.GoogleCalendarsOrErr()
+	for _, gc := range gcs {
+		sources = append(sources, sourceWithName{Name: "Google Calendar: " + gc.Name, Source: &datasource.GoogleCalendarDS{URL: gc.URL, Name: gc.Name}})
+	}
+
+	newsFeeds, _ := settings.Edges.NewsFeedsOrErr()
+	for _, nf := range newsFeeds {
+		sources = append(sources, sourceWithName{Name: "News: " + nf.Name, Source: &datasource.NewsDS{URL: nf.URL, Name: nf.Name}})
+	}
+
+	apis, _ := settings.Edges.GenericApisOrErr()
+	for _, ga := range apis {
+		label := datasource.GenericAPITitle(ga.Config)
+		if label == "" {
+			label = "Custom API"
+		}
+		sources = append(sources, sourceWithName{Name: "API: " + label, Source: &datasource.GenericAPIDS{Token: ga.Token, URL: ga.URL, Config: ga.Config}})
+	}
+
+	// Enabled matrix layouts stream as a single "matrix:<name>" source.
+	layouts, _ := settings.Edges.MatrixLayoutsOrErr()
+	for _, ml := range layouts {
+		if !ml.Enabled {
+			continue
+		}
+		mds := h.buildMatrixDS(settings, ml, 0)
+		if mds == nil {
+			continue
+		}
+		sources = append(sources, sourceWithName{Name: "matrix:" + ml.Name, Source: mds})
+	}
+
 	if settings.Random {
 		rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 		rng.Shuffle(len(sources), func(i, j int) {
@@ -149,7 +181,7 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().Only(c.Request.Context())
+	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().Only(c.Request.Context())
 	if err != nil {
 		slog.Error("Failed to load settings for WebSocket", "error", err, "source", "websocket")
 		return
@@ -203,7 +235,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		}
 	}()
 
-	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().Only(c.Request.Context())
+	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().Only(c.Request.Context())
 	if err != nil {
 		slog.Error("Failed to load settings for device WebSocket", "error", err, "source", "websocket", "device", device.Name)
 		return

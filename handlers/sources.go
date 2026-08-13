@@ -1,0 +1,264 @@
+package handlers
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"ledit/datasource"
+	"ledit/ent"
+	"ledit/ent/generalsettings"
+)
+
+// bindingOption is one selectable source in the matrix editor's per-cell
+// selectors.
+type bindingOption struct {
+	ID    int    `json:"id"`
+	Label string `json:"label"`
+}
+
+// bindingOptions lists every configured source grouped by endpoint type so the
+// matrix editor can offer per-cell selectors (including other matrix layouts).
+func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
+	opts := map[string][]bindingOption{}
+	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
+		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
+		WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
+		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().Only(c.Request.Context())
+	if err != nil || settings == nil {
+		return opts
+	}
+	add := func(typ string, id int, label string) {
+		opts[typ] = append(opts[typ], bindingOption{ID: id, Label: label})
+	}
+
+	sonarr, _ := settings.Edges.SonarrOrErr()
+	for _, s := range sonarr {
+		add("sonarr", s.ID, "Sonarr #"+strconv.Itoa(s.ID))
+	}
+	radarr, _ := settings.Edges.RadarrOrErr()
+	for _, r := range radarr {
+		add("radarr", r.ID, "Radarr #"+strconv.Itoa(r.ID))
+	}
+	f1s, _ := settings.Edges.F1OrErr()
+	for _, f := range f1s {
+		add("f1", f.ID, "F1 #"+strconv.Itoa(f.ID))
+	}
+	weather, _ := settings.Edges.WeatherOrErr()
+	for _, w := range weather {
+		add("weather", w.ID, "Weather #"+strconv.Itoa(w.ID))
+	}
+	ha, _ := settings.Edges.HomeAssistantOrErr()
+	for _, h := range ha {
+		add("homeassistant", h.ID, "HomeAssistant #"+strconv.Itoa(h.ID))
+	}
+	untappd, _ := settings.Edges.UntappdOrErr()
+	for _, u := range untappd {
+		add("untappd", u.ID, "Untappd #"+strconv.Itoa(u.ID))
+	}
+	crypto, _ := settings.Edges.CryptoOrErr()
+	for _, cr := range crypto {
+		add("crypto", cr.ID, "Crypto #"+strconv.Itoa(cr.ID))
+	}
+	stocks, _ := settings.Edges.StocksOrErr()
+	for _, st := range stocks {
+		add("stock", st.ID, "Stock #"+strconv.Itoa(st.ID))
+	}
+	rssFeeds, _ := settings.Edges.RssFeedsOrErr()
+	for _, rs := range rssFeeds {
+		add("rssfeed", rs.ID, "RSS: "+rs.Name)
+	}
+	calendars, _ := settings.Edges.CalendarsOrErr()
+	for _, cl := range calendars {
+		add("calendar", cl.ID, "Calendar: "+cl.Name)
+	}
+	textSlides, _ := settings.Edges.TextSlidesOrErr()
+	for _, ts := range textSlides {
+		add("textslides", ts.ID, "Text: "+truncateLabel(ts.Content, 20))
+	}
+	gcs, _ := settings.Edges.GoogleCalendarsOrErr()
+	for _, gc := range gcs {
+		add("googlecalendar", gc.ID, "Google Calendar: "+gc.Name)
+	}
+	newsFeeds, _ := settings.Edges.NewsFeedsOrErr()
+	for _, nf := range newsFeeds {
+		add("newsfeed", nf.ID, "News: "+nf.Name)
+	}
+	apis, _ := settings.Edges.GenericApisOrErr()
+	for _, ga := range apis {
+		label := datasource.GenericAPITitle(ga.Config)
+		if label == "" {
+			label = "Custom API #" + strconv.Itoa(ga.ID)
+		}
+		add("genericapi", ga.ID, "API: "+label)
+	}
+	layouts, _ := settings.Edges.MatrixLayoutsOrErr()
+	for _, ml := range layouts {
+		add("matrix", ml.ID, "Matrix: "+ml.Name)
+	}
+	return opts
+}
+
+func truncateLabel(s string, max int) string {
+	if len(s) > max {
+		return s[:max] + "..."
+	}
+	return s
+}
+
+// genericAPILabel returns the configured title of a Custom API source, or ""
+// when unset.
+func genericAPILabel(config string) string {
+	return datasource.GenericAPITitle(config)
+}
+
+// sourceIndex is a lookup of every configured datasource keyed by
+// "<endpoint>:<id>", shared by the feed (matrix nesting) and the on-demand
+// preview endpoint so both resolve sources identically.
+type sourceIndex struct {
+	byKey map[string]datasource.Datasource
+	names map[string]string
+}
+
+// buildSourceIndex indexes all datasource edges of GeneralSettings using the
+// same endpoint keys as dsRegistry / admin routes.
+func buildSourceIndex(settings *ent.GeneralSettings) *sourceIndex {
+	idx := &sourceIndex{byKey: map[string]datasource.Datasource{}, names: map[string]string{}}
+	key := func(typ string, id int) string { return fmt.Sprintf("%s:%d", typ, id) }
+
+	sonarr, _ := settings.Edges.SonarrOrErr()
+	for _, s := range sonarr {
+		idx.byKey[key("sonarr", s.ID)] = &datasource.SonarrDS{Token: s.Token, URL: s.URL}
+		idx.names[key("sonarr", s.ID)] = "Sonarr"
+	}
+	radarr, _ := settings.Edges.RadarrOrErr()
+	for _, r := range radarr {
+		idx.byKey[key("radarr", r.ID)] = &datasource.RadarrDS{Token: r.Token, URL: r.URL}
+		idx.names[key("radarr", r.ID)] = "Radarr"
+	}
+	f1s, _ := settings.Edges.F1OrErr()
+	for _, f := range f1s {
+		idx.byKey[key("f1", f.ID)] = &datasource.F1DS{Token: f.Token, URL: f.URL}
+		idx.names[key("f1", f.ID)] = "F1"
+	}
+	weather, _ := settings.Edges.WeatherOrErr()
+	for _, w := range weather {
+		idx.byKey[key("weather", w.ID)] = &datasource.WeatherDS{Token: w.Token, URL: w.URL}
+		idx.names[key("weather", w.ID)] = "Weather"
+	}
+	ha, _ := settings.Edges.HomeAssistantOrErr()
+	for _, h := range ha {
+		idx.byKey[key("homeassistant", h.ID)] = &datasource.HomeAssistantDS{Token: h.Token, URL: h.URL}
+		idx.names[key("homeassistant", h.ID)] = "HomeAssistant"
+	}
+	untappd, _ := settings.Edges.UntappdOrErr()
+	for _, u := range untappd {
+		idx.byKey[key("untappd", u.ID)] = &datasource.UntappdDS{Token: u.Token, URL: u.URL}
+		idx.names[key("untappd", u.ID)] = "Untappd"
+	}
+	images, _ := settings.Edges.ImagesOrErr()
+	for _, img := range images {
+		idx.byKey[key("images", img.ID)] = &datasource.ImageDS{Path: img.Path}
+		idx.names[key("images", img.ID)] = "Image"
+	}
+	videos, _ := settings.Edges.VideosOrErr()
+	for _, vid := range videos {
+		idx.byKey[key("videos", vid.ID)] = &datasource.VideoDS{Path: vid.Path}
+		idx.names[key("videos", vid.ID)] = "Video"
+	}
+	crypto, _ := settings.Edges.CryptoOrErr()
+	for _, cr := range crypto {
+		idx.byKey[key("crypto", cr.ID)] = &datasource.CryptoDS{Token: cr.Token, URL: cr.URL}
+		idx.names[key("crypto", cr.ID)] = "Crypto"
+	}
+	stocks, _ := settings.Edges.StocksOrErr()
+	for _, st := range stocks {
+		idx.byKey[key("stock", st.ID)] = &datasource.StockDS{Token: st.Token, URL: st.URL}
+		idx.names[key("stock", st.ID)] = "Stock"
+	}
+	rssFeeds, _ := settings.Edges.RssFeedsOrErr()
+	for _, rs := range rssFeeds {
+		idx.byKey[key("rssfeed", rs.ID)] = &datasource.RssFeedDS{URL: rs.URL, Name: rs.Name}
+		idx.names[key("rssfeed", rs.ID)] = "RSS: " + rs.Name
+	}
+	calendars, _ := settings.Edges.CalendarsOrErr()
+	for _, cl := range calendars {
+		idx.byKey[key("calendar", cl.ID)] = &datasource.CalendarDS{URL: cl.URL, Name: cl.Name}
+		idx.names[key("calendar", cl.ID)] = "Calendar: " + cl.Name
+	}
+	textSlides, _ := settings.Edges.TextSlidesOrErr()
+	for _, ts := range textSlides {
+		idx.byKey[key("textslides", ts.ID)] = &datasource.TextSlideDS{Content: ts.Content, Color: ts.Color, BgColor: ts.BgColor, FontSize: ts.FontSize}
+		idx.names[key("textslides", ts.ID)] = "Text: " + ts.Content
+	}
+	gcs, _ := settings.Edges.GoogleCalendarsOrErr()
+	for _, gc := range gcs {
+		idx.byKey[key("googlecalendar", gc.ID)] = &datasource.GoogleCalendarDS{URL: gc.URL, Name: gc.Name}
+		idx.names[key("googlecalendar", gc.ID)] = "Google Calendar: " + gc.Name
+	}
+	newsFeeds, _ := settings.Edges.NewsFeedsOrErr()
+	for _, nf := range newsFeeds {
+		idx.byKey[key("newsfeed", nf.ID)] = &datasource.NewsDS{URL: nf.URL, Name: nf.Name}
+		idx.names[key("newsfeed", nf.ID)] = "News: " + nf.Name
+	}
+	apis, _ := settings.Edges.GenericApisOrErr()
+	for _, ga := range apis {
+		label := datasource.GenericAPITitle(ga.Config)
+		if label == "" {
+			label = "Custom API"
+		}
+		idx.byKey[key("genericapi", ga.ID)] = &datasource.GenericAPIDS{Token: ga.Token, URL: ga.URL, Config: ga.Config}
+		idx.names[key("genericapi", ga.ID)] = "API: " + label
+	}
+	return idx
+}
+
+// Resolve looks up a datasource by endpoint type and DB id.
+func (idx *sourceIndex) Resolve(sourceType string, sourceID int) (datasource.Datasource, string, error) {
+	if idx == nil {
+		return nil, "", fmt.Errorf("no sources indexed")
+	}
+	key := fmt.Sprintf("%s:%d", sourceType, sourceID)
+	src, ok := idx.byKey[key]
+	if !ok {
+		return nil, "", fmt.Errorf("datasource %q not found", key)
+	}
+	return src, idx.names[key], nil
+}
+
+// buildMatrixDS constructs a MatrixDS for a layout whose bindings resolve
+// against the current source index. Nested "matrix" bindings recurse with a
+// depth cap to guard against cycles. Returns nil when the layout is unusable.
+func (h *WSHub) buildMatrixDS(settings *ent.GeneralSettings, ml *ent.MatrixLayout, depth int) *datasource.MatrixDS {
+	if depth > 2 {
+		slog.Warn("matrix nesting too deep, skipping layout", "layout", ml.Name, "depth", depth)
+		return nil
+	}
+	idx := buildSourceIndex(settings)
+	mds := &datasource.MatrixDS{
+		Name:       ml.Name,
+		Rows:       ml.Rows,
+		Cols:       ml.Cols,
+		Gap:        ml.Gap,
+		Background: ml.Background,
+		Bindings:   datasource.ParseBindings(ml.Bindings),
+		Depth:      depth,
+	}
+	mds.Resolve = func(sourceType string, sourceID int) (datasource.Datasource, string, error) {
+		if sourceType == "matrix" {
+			nested, err := h.Client.MatrixLayout.Get(context.Background(), sourceID)
+			if err != nil {
+				return nil, "", err
+			}
+			inner := h.buildMatrixDS(settings, nested, depth+1)
+			if inner == nil {
+				return nil, "", fmt.Errorf("matrix nesting too deep")
+			}
+			return inner, nested.Name, nil
+		}
+		return idx.Resolve(sourceType, sourceID)
+	}
+	return mds
+}

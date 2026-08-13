@@ -297,6 +297,41 @@ func (s *Server) setupRoutes() {
 		admin.POST("/datasources/calendar/:id/edit", s.AdminCalendarUpdate)
 		admin.POST("/datasources/calendar/:id/delete", s.AdminCalendarDelete)
 
+		// Google Calendar
+		admin.GET("/datasources/googlecalendar/new", s.AdminGoogleCalendarNew)
+		admin.POST("/datasources/googlecalendar/new", s.AdminGoogleCalendarCreate)
+		admin.GET("/datasources/googlecalendar/:id/edit", s.AdminGoogleCalendarEdit)
+		admin.POST("/datasources/googlecalendar/:id/edit", s.AdminGoogleCalendarUpdate)
+		admin.POST("/datasources/googlecalendar/:id/delete", s.AdminGoogleCalendarDelete)
+
+		// News
+		admin.GET("/datasources/newsfeed/new", s.AdminNewsFeedNew)
+		admin.POST("/datasources/newsfeed/new", s.AdminNewsFeedCreate)
+		admin.GET("/datasources/newsfeed/:id/edit", s.AdminNewsFeedEdit)
+		admin.POST("/datasources/newsfeed/:id/edit", s.AdminNewsFeedUpdate)
+		admin.POST("/datasources/newsfeed/:id/delete", s.AdminNewsFeedDelete)
+
+		// Custom API
+		admin.GET("/datasources/genericapi/new", s.AdminGenericAPINew)
+		admin.POST("/datasources/genericapi/new", s.AdminGenericAPICreate)
+		admin.GET("/datasources/genericapi/:id/edit", s.AdminGenericAPIEdit)
+		admin.POST("/datasources/genericapi/:id/edit", s.AdminGenericAPIUpdate)
+		admin.POST("/datasources/genericapi/:id/delete", s.AdminGenericAPIDelete)
+		admin.POST("/datasources/genericapi/test", s.AdminGenericAPITest)
+
+		// Matrix layouts
+		admin.GET("/matrixlayouts", s.AdminMatrixLayoutList)
+		admin.GET("/matrixlayouts/new", s.AdminMatrixLayoutNew)
+		admin.POST("/matrixlayouts/new", s.AdminMatrixLayoutCreate)
+		admin.GET("/matrixlayouts/:id/edit", s.AdminMatrixLayoutEdit)
+		admin.POST("/matrixlayouts/:id/edit", s.AdminMatrixLayoutUpdate)
+		admin.POST("/matrixlayouts/:id/delete", s.AdminMatrixLayoutDelete)
+
+		// On-demand previews (live previews + PNG template export)
+		admin.GET("/preview", s.AdminPreview)
+		admin.POST("/preview/datasource", s.AdminPreviewDatasource)
+		admin.POST("/preview/matrix", s.AdminPreviewMatrix)
+
 		// Text Slides (Phase 4)
 		admin.GET("/textslides/new", s.AdminTextSlideNew)
 		admin.POST("/textslides/new", s.AdminTextSlideCreate)

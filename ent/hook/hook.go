@@ -104,6 +104,30 @@ func (f GeneralSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GeneralSettingsMutation", m)
 }
 
+// The GenericAPIFunc type is an adapter to allow the use of ordinary
+// function as GenericAPI mutator.
+type GenericAPIFunc func(context.Context, *ent.GenericAPIMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GenericAPIFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GenericAPIMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GenericAPIMutation", m)
+}
+
+// The GoogleCalendarFunc type is an adapter to allow the use of ordinary
+// function as GoogleCalendar mutator.
+type GoogleCalendarFunc func(context.Context, *ent.GoogleCalendarMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GoogleCalendarFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GoogleCalendarMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GoogleCalendarMutation", m)
+}
+
 // The HomeAssistantFunc type is an adapter to allow the use of ordinary
 // function as HomeAssistant mutator.
 type HomeAssistantFunc func(context.Context, *ent.HomeAssistantMutation) (ent.Value, error)
@@ -150,6 +174,30 @@ func (f LogSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LogSettingsMutation", m)
+}
+
+// The MatrixLayoutFunc type is an adapter to allow the use of ordinary
+// function as MatrixLayout mutator.
+type MatrixLayoutFunc func(context.Context, *ent.MatrixLayoutMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MatrixLayoutFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.MatrixLayoutMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MatrixLayoutMutation", m)
+}
+
+// The NewsFeedFunc type is an adapter to allow the use of ordinary
+// function as NewsFeed mutator.
+type NewsFeedFunc func(context.Context, *ent.NewsFeedMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NewsFeedFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NewsFeedMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NewsFeedMutation", m)
 }
 
 // The NotificationFunc type is an adapter to allow the use of ordinary

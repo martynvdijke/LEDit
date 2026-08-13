@@ -14,10 +14,14 @@ import (
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
+	"ledit/ent/genericapi"
+	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
+	"ledit/ent/matrixlayout"
+	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -103,10 +107,14 @@ func checkColumn(t, c string) error {
 			emailsettings.Table:   emailsettings.ValidColumn,
 			f1.Table:              f1.ValidColumn,
 			generalsettings.Table: generalsettings.ValidColumn,
+			genericapi.Table:      genericapi.ValidColumn,
+			googlecalendar.Table:  googlecalendar.ValidColumn,
 			homeassistant.Table:   homeassistant.ValidColumn,
 			image.Table:           image.ValidColumn,
 			logentry.Table:        logentry.ValidColumn,
 			logsettings.Table:     logsettings.ValidColumn,
+			matrixlayout.Table:    matrixlayout.ValidColumn,
+			newsfeed.Table:        newsfeed.ValidColumn,
 			notification.Table:    notification.ValidColumn,
 			radarr.Table:          radarr.ValidColumn,
 			rssfeed.Table:         rssfeed.ValidColumn,

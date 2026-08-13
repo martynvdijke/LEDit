@@ -13,8 +13,12 @@ import (
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
+	"ledit/ent/genericapi"
+	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/matrixlayout"
+	"ledit/ent/newsfeed"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -37,28 +41,32 @@ import (
 // GeneralSettingsQuery is the builder for querying GeneralSettings entities.
 type GeneralSettingsQuery struct {
 	config
-	ctx                *QueryContext
-	order              []generalsettings.OrderOption
-	inters             []Interceptor
-	predicates         []predicate.GeneralSettings
-	withSonarr         *SonarrQuery
-	withRadarr         *RadarrQuery
-	withF1             *F1Query
-	withWeather        *WeatherQuery
-	withHomeAssistant  *HomeAssistantQuery
-	withUntappd        *UntappdQuery
-	withImages         *ImageQuery
-	withVideos         *VideoQuery
-	withCrypto         *CryptoQuery
-	withSchedules      *ScheduleQuery
-	withDeviceSettings *DeviceSettingsQuery
-	withRssFeeds       *RssFeedQuery
-	withCalendars      *CalendarQuery
-	withStocks         *StockQuery
-	withTextSlides     *TextSlideQuery
-	withEmailSettings  *EmailSettingsQuery
-	withAiSettings     *AISettingsQuery
-	withUmamiSettings  *UmamiSettingsQuery
+	ctx                 *QueryContext
+	order               []generalsettings.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.GeneralSettings
+	withSonarr          *SonarrQuery
+	withRadarr          *RadarrQuery
+	withF1              *F1Query
+	withWeather         *WeatherQuery
+	withHomeAssistant   *HomeAssistantQuery
+	withUntappd         *UntappdQuery
+	withImages          *ImageQuery
+	withVideos          *VideoQuery
+	withCrypto          *CryptoQuery
+	withSchedules       *ScheduleQuery
+	withDeviceSettings  *DeviceSettingsQuery
+	withRssFeeds        *RssFeedQuery
+	withCalendars       *CalendarQuery
+	withStocks          *StockQuery
+	withTextSlides      *TextSlideQuery
+	withEmailSettings   *EmailSettingsQuery
+	withAiSettings      *AISettingsQuery
+	withUmamiSettings   *UmamiSettingsQuery
+	withGoogleCalendars *GoogleCalendarQuery
+	withNewsFeeds       *NewsFeedQuery
+	withGenericApis     *GenericAPIQuery
+	withMatrixLayouts   *MatrixLayoutQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -491,6 +499,94 @@ func (_q *GeneralSettingsQuery) QueryUmamiSettings() *UmamiSettingsQuery {
 	return query
 }
 
+// QueryGoogleCalendars chains the current query on the "google_calendars" edge.
+func (_q *GeneralSettingsQuery) QueryGoogleCalendars() *GoogleCalendarQuery {
+	query := (&GoogleCalendarClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(googlecalendar.Table, googlecalendar.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.GoogleCalendarsTable, generalsettings.GoogleCalendarsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryNewsFeeds chains the current query on the "news_feeds" edge.
+func (_q *GeneralSettingsQuery) QueryNewsFeeds() *NewsFeedQuery {
+	query := (&NewsFeedClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(newsfeed.Table, newsfeed.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.NewsFeedsTable, generalsettings.NewsFeedsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryGenericApis chains the current query on the "generic_apis" edge.
+func (_q *GeneralSettingsQuery) QueryGenericApis() *GenericAPIQuery {
+	query := (&GenericAPIClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(genericapi.Table, genericapi.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.GenericApisTable, generalsettings.GenericApisColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMatrixLayouts chains the current query on the "matrix_layouts" edge.
+func (_q *GeneralSettingsQuery) QueryMatrixLayouts() *MatrixLayoutQuery {
+	query := (&MatrixLayoutClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(matrixlayout.Table, matrixlayout.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.MatrixLayoutsTable, generalsettings.MatrixLayoutsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first GeneralSettings entity from the query.
 // Returns a *NotFoundError when no GeneralSettings was found.
 func (_q *GeneralSettingsQuery) First(ctx context.Context) (*GeneralSettings, error) {
@@ -678,29 +774,33 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		return nil
 	}
 	return &GeneralSettingsQuery{
-		config:             _q.config,
-		ctx:                _q.ctx.Clone(),
-		order:              append([]generalsettings.OrderOption{}, _q.order...),
-		inters:             append([]Interceptor{}, _q.inters...),
-		predicates:         append([]predicate.GeneralSettings{}, _q.predicates...),
-		withSonarr:         _q.withSonarr.Clone(),
-		withRadarr:         _q.withRadarr.Clone(),
-		withF1:             _q.withF1.Clone(),
-		withWeather:        _q.withWeather.Clone(),
-		withHomeAssistant:  _q.withHomeAssistant.Clone(),
-		withUntappd:        _q.withUntappd.Clone(),
-		withImages:         _q.withImages.Clone(),
-		withVideos:         _q.withVideos.Clone(),
-		withCrypto:         _q.withCrypto.Clone(),
-		withSchedules:      _q.withSchedules.Clone(),
-		withDeviceSettings: _q.withDeviceSettings.Clone(),
-		withRssFeeds:       _q.withRssFeeds.Clone(),
-		withCalendars:      _q.withCalendars.Clone(),
-		withStocks:         _q.withStocks.Clone(),
-		withTextSlides:     _q.withTextSlides.Clone(),
-		withEmailSettings:  _q.withEmailSettings.Clone(),
-		withAiSettings:     _q.withAiSettings.Clone(),
-		withUmamiSettings:  _q.withUmamiSettings.Clone(),
+		config:              _q.config,
+		ctx:                 _q.ctx.Clone(),
+		order:               append([]generalsettings.OrderOption{}, _q.order...),
+		inters:              append([]Interceptor{}, _q.inters...),
+		predicates:          append([]predicate.GeneralSettings{}, _q.predicates...),
+		withSonarr:          _q.withSonarr.Clone(),
+		withRadarr:          _q.withRadarr.Clone(),
+		withF1:              _q.withF1.Clone(),
+		withWeather:         _q.withWeather.Clone(),
+		withHomeAssistant:   _q.withHomeAssistant.Clone(),
+		withUntappd:         _q.withUntappd.Clone(),
+		withImages:          _q.withImages.Clone(),
+		withVideos:          _q.withVideos.Clone(),
+		withCrypto:          _q.withCrypto.Clone(),
+		withSchedules:       _q.withSchedules.Clone(),
+		withDeviceSettings:  _q.withDeviceSettings.Clone(),
+		withRssFeeds:        _q.withRssFeeds.Clone(),
+		withCalendars:       _q.withCalendars.Clone(),
+		withStocks:          _q.withStocks.Clone(),
+		withTextSlides:      _q.withTextSlides.Clone(),
+		withEmailSettings:   _q.withEmailSettings.Clone(),
+		withAiSettings:      _q.withAiSettings.Clone(),
+		withUmamiSettings:   _q.withUmamiSettings.Clone(),
+		withGoogleCalendars: _q.withGoogleCalendars.Clone(),
+		withNewsFeeds:       _q.withNewsFeeds.Clone(),
+		withGenericApis:     _q.withGenericApis.Clone(),
+		withMatrixLayouts:   _q.withMatrixLayouts.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -905,6 +1005,50 @@ func (_q *GeneralSettingsQuery) WithUmamiSettings(opts ...func(*UmamiSettingsQue
 	return _q
 }
 
+// WithGoogleCalendars tells the query-builder to eager-load the nodes that are connected to
+// the "google_calendars" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithGoogleCalendars(opts ...func(*GoogleCalendarQuery)) *GeneralSettingsQuery {
+	query := (&GoogleCalendarClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGoogleCalendars = query
+	return _q
+}
+
+// WithNewsFeeds tells the query-builder to eager-load the nodes that are connected to
+// the "news_feeds" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithNewsFeeds(opts ...func(*NewsFeedQuery)) *GeneralSettingsQuery {
+	query := (&NewsFeedClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withNewsFeeds = query
+	return _q
+}
+
+// WithGenericApis tells the query-builder to eager-load the nodes that are connected to
+// the "generic_apis" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithGenericApis(opts ...func(*GenericAPIQuery)) *GeneralSettingsQuery {
+	query := (&GenericAPIClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGenericApis = query
+	return _q
+}
+
+// WithMatrixLayouts tells the query-builder to eager-load the nodes that are connected to
+// the "matrix_layouts" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithMatrixLayouts(opts ...func(*MatrixLayoutQuery)) *GeneralSettingsQuery {
+	query := (&MatrixLayoutClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withMatrixLayouts = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -983,7 +1127,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [18]bool{
+		loadedTypes = [22]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -1002,6 +1146,10 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withEmailSettings != nil,
 			_q.withAiSettings != nil,
 			_q.withUmamiSettings != nil,
+			_q.withGoogleCalendars != nil,
+			_q.withNewsFeeds != nil,
+			_q.withGenericApis != nil,
+			_q.withMatrixLayouts != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -1147,6 +1295,36 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := _q.loadUmamiSettings(ctx, query, nodes,
 			func(n *GeneralSettings) { n.Edges.UmamiSettings = []*UmamiSettings{} },
 			func(n *GeneralSettings, e *UmamiSettings) { n.Edges.UmamiSettings = append(n.Edges.UmamiSettings, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGoogleCalendars; query != nil {
+		if err := _q.loadGoogleCalendars(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.GoogleCalendars = []*GoogleCalendar{} },
+			func(n *GeneralSettings, e *GoogleCalendar) {
+				n.Edges.GoogleCalendars = append(n.Edges.GoogleCalendars, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withNewsFeeds; query != nil {
+		if err := _q.loadNewsFeeds(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.NewsFeeds = []*NewsFeed{} },
+			func(n *GeneralSettings, e *NewsFeed) { n.Edges.NewsFeeds = append(n.Edges.NewsFeeds, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGenericApis; query != nil {
+		if err := _q.loadGenericApis(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.GenericApis = []*GenericAPI{} },
+			func(n *GeneralSettings, e *GenericAPI) { n.Edges.GenericApis = append(n.Edges.GenericApis, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withMatrixLayouts; query != nil {
+		if err := _q.loadMatrixLayouts(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.MatrixLayouts = []*MatrixLayout{} },
+			func(n *GeneralSettings, e *MatrixLayout) { n.Edges.MatrixLayouts = append(n.Edges.MatrixLayouts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1706,6 +1884,130 @@ func (_q *GeneralSettingsQuery) loadUmamiSettings(ctx context.Context, query *Um
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_umami_settings" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadGoogleCalendars(ctx context.Context, query *GoogleCalendarQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *GoogleCalendar)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.GoogleCalendar(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.GoogleCalendarsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_google_calendars
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_google_calendars" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_google_calendars" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadNewsFeeds(ctx context.Context, query *NewsFeedQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *NewsFeed)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.NewsFeed(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.NewsFeedsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_news_feeds
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_news_feeds" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_news_feeds" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadGenericApis(ctx context.Context, query *GenericAPIQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *GenericAPI)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.GenericAPI(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.GenericApisColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_generic_apis
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_generic_apis" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_generic_apis" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadMatrixLayouts(ctx context.Context, query *MatrixLayoutQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *MatrixLayout)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.MatrixLayout(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.MatrixLayoutsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_matrix_layouts
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_matrix_layouts" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_matrix_layouts" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

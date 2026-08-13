@@ -3,6 +3,7 @@ ledit.db
 ledit.db-shm
 ledit.db-wal
 data/
+data-e2e/
 tmp/
 vendor/
 *.exe

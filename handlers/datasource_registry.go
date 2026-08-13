@@ -19,6 +19,12 @@ type dsEntry struct {
 	Update   func(*ent.Client, context.Context, int, string, string) error
 	Delete   func(*ent.Client, context.Context, int) error
 	AddEdge  func(*ent.GeneralSettingsUpdateOne, any) *ent.GeneralSettingsUpdateOne
+	// CreateFields/UpdateFields are optional field-based variants used by
+	// datasources with extra form fields (display name, config JSON). When
+	// nil, the plain token/url path is used. Fields map keys: token, url,
+	// name, config.
+	CreateFields func(*ent.Client, context.Context, map[string]string) (any, error)
+	UpdateFields func(*ent.Client, context.Context, int, map[string]string) error
 }
 
 var dsRegistry map[string]*dsEntry
@@ -139,6 +145,60 @@ func init() {
 				return u.AddStocks(obj.(*ent.Stock))
 			},
 		},
+		"googlecalendar": {
+			TypeName: "Google Calendar",
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) {
+				return db.GoogleCalendar.Get(ctx, id)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error {
+				return db.GoogleCalendar.DeleteOneID(id).Exec(ctx)
+			},
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddGoogleCalendars(obj.(*ent.GoogleCalendar))
+			},
+			CreateFields: func(db *ent.Client, ctx context.Context, f map[string]string) (any, error) {
+				return db.GoogleCalendar.Create().SetURL(f["url"]).SetName(f["name"]).Save(ctx)
+			},
+			UpdateFields: func(db *ent.Client, ctx context.Context, id int, f map[string]string) error {
+				return db.GoogleCalendar.UpdateOneID(id).SetURL(f["url"]).SetName(f["name"]).Exec(ctx)
+			},
+		},
+		"newsfeed": {
+			TypeName: "News",
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) {
+				return db.NewsFeed.Get(ctx, id)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error {
+				return db.NewsFeed.DeleteOneID(id).Exec(ctx)
+			},
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddNewsFeeds(obj.(*ent.NewsFeed))
+			},
+			CreateFields: func(db *ent.Client, ctx context.Context, f map[string]string) (any, error) {
+				return db.NewsFeed.Create().SetURL(f["url"]).SetName(f["name"]).Save(ctx)
+			},
+			UpdateFields: func(db *ent.Client, ctx context.Context, id int, f map[string]string) error {
+				return db.NewsFeed.UpdateOneID(id).SetURL(f["url"]).SetName(f["name"]).Exec(ctx)
+			},
+		},
+		"genericapi": {
+			TypeName: "Custom API",
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) {
+				return db.GenericAPI.Get(ctx, id)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error {
+				return db.GenericAPI.DeleteOneID(id).Exec(ctx)
+			},
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddGenericApis(obj.(*ent.GenericAPI))
+			},
+			CreateFields: func(db *ent.Client, ctx context.Context, f map[string]string) (any, error) {
+				return db.GenericAPI.Create().SetToken(f["token"]).SetURL(f["url"]).SetConfig(f["config"]).Save(ctx)
+			},
+			UpdateFields: func(db *ent.Client, ctx context.Context, id int, f map[string]string) error {
+				return db.GenericAPI.UpdateOneID(id).SetToken(f["token"]).SetURL(f["url"]).SetConfig(f["config"]).Exec(ctx)
+			},
+		},
 	}
 }
 
@@ -225,4 +285,104 @@ func datasourceTypeName(endpoint string) string {
 		return entry.TypeName
 	}
 	return endpoint
+}
+
+// formFields collects the standard datasource form fields into a map for the
+// field-based CreateFields/UpdateFields registry variants.
+func formFields(c *gin.Context) map[string]string {
+	return map[string]string{
+		"token":  c.PostForm("token"),
+		"url":    c.PostForm("url"),
+		"name":   c.PostForm("name"),
+		"config": c.PostForm("config"),
+	}
+}
+
+// createFieldDS creates a datasource through its field-based registry entry
+// (name/url or token/url/config forms) and wires it into GeneralSettings.
+func (s *Server) createFieldDS(c *gin.Context, endpoint string) {
+	entry, ok := dsRegistry[endpoint]
+	if !ok || entry.CreateFields == nil {
+		SetFlash(c, "danger", "Unknown datasource type")
+		c.Redirect(http.StatusFound, "/admin/")
+		return
+	}
+	if endpoint == "genericapi" && c.PostForm("url") == "" {
+		SetFlash(c, "danger", "URL is required")
+		c.Redirect(http.StatusFound, "/admin/datasources/"+endpoint+"/new")
+		return
+	}
+	obj, err := entry.CreateFields(s.DB, s.Ctx, formFields(c))
+	if err != nil {
+		slog.Error("failed to create datasource", "endpoint", endpoint, "error", err)
+		SetFlash(c, "danger", "Failed to create: "+err.Error())
+		c.Redirect(http.StatusFound, "/admin/")
+		return
+	}
+	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx)
+	if err == nil && settings != nil {
+		entry.AddEdge(s.DB.GeneralSettings.UpdateOne(settings), obj).Exec(s.Ctx)
+	}
+	SetFlash(c, "success", datasourceTypeName(endpoint)+" created")
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+// editFieldDS renders the form for a field-based datasource.
+func (s *Server) editFieldDS(c *gin.Context, endpoint string, extra gin.H) {
+	entry, ok := dsRegistry[endpoint]
+	if !ok {
+		c.Redirect(http.StatusFound, "/admin/")
+		return
+	}
+	id, _ := strconv.Atoi(c.Param("id"))
+	obj, err := entry.Get(s.DB, s.Ctx, id)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/admin/")
+		return
+	}
+	data := gin.H{
+		"type":     entry.TypeName,
+		"endpoint": endpoint,
+		"obj":      obj,
+		"edit":     true,
+	}
+	if entry.CreateFields != nil {
+		data["has_name"] = endpoint != "genericapi"
+		data["has_config"] = endpoint == "genericapi"
+	}
+	for k, v := range extra {
+		data[k] = v
+	}
+	s.renderPage(c, http.StatusOK, "datasource_form.html", data)
+}
+
+// updateFieldDS updates a datasource through its field-based registry entry.
+func (s *Server) updateFieldDS(c *gin.Context, endpoint string) {
+	entry, ok := dsRegistry[endpoint]
+	if !ok || entry.UpdateFields == nil {
+		c.Redirect(http.StatusFound, "/admin/")
+		return
+	}
+	id, _ := strconv.Atoi(c.Param("id"))
+	if err := entry.UpdateFields(s.DB, s.Ctx, id, formFields(c)); err != nil {
+		slog.Error("failed to update datasource", "endpoint", endpoint, "id", id, "error", err)
+		SetFlash(c, "danger", "Failed to update: "+err.Error())
+	}
+	SetFlash(c, "success", datasourceTypeName(endpoint)+" updated")
+	c.Redirect(http.StatusFound, "/admin/")
+}
+
+// deleteFieldDS deletes a datasource through its registry entry.
+func (s *Server) deleteFieldDS(c *gin.Context, endpoint string) {
+	entry, ok := dsRegistry[endpoint]
+	if !ok {
+		c.Redirect(http.StatusFound, "/admin/")
+		return
+	}
+	id, _ := strconv.Atoi(c.Param("id"))
+	if err := entry.Delete(s.DB, s.Ctx, id); err != nil {
+		slog.Error("failed to delete datasource", "endpoint", endpoint, "id", id, "error", err)
+	}
+	SetFlash(c, "success", datasourceTypeName(endpoint)+" deleted")
+	c.Redirect(http.StatusFound, "/admin/")
 }

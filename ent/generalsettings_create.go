@@ -13,8 +13,12 @@ import (
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
+	"ledit/ent/genericapi"
+	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/matrixlayout"
+	"ledit/ent/newsfeed"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -373,6 +377,66 @@ func (_c *GeneralSettingsCreate) AddUmamiSettings(v ...*UmamiSettings) *GeneralS
 		ids[i] = v[i].ID
 	}
 	return _c.AddUmamiSettingIDs(ids...)
+}
+
+// AddGoogleCalendarIDs adds the "google_calendars" edge to the GoogleCalendar entity by IDs.
+func (_c *GeneralSettingsCreate) AddGoogleCalendarIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddGoogleCalendarIDs(ids...)
+	return _c
+}
+
+// AddGoogleCalendars adds the "google_calendars" edges to the GoogleCalendar entity.
+func (_c *GeneralSettingsCreate) AddGoogleCalendars(v ...*GoogleCalendar) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddGoogleCalendarIDs(ids...)
+}
+
+// AddNewsFeedIDs adds the "news_feeds" edge to the NewsFeed entity by IDs.
+func (_c *GeneralSettingsCreate) AddNewsFeedIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddNewsFeedIDs(ids...)
+	return _c
+}
+
+// AddNewsFeeds adds the "news_feeds" edges to the NewsFeed entity.
+func (_c *GeneralSettingsCreate) AddNewsFeeds(v ...*NewsFeed) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddNewsFeedIDs(ids...)
+}
+
+// AddGenericAPIIDs adds the "generic_apis" edge to the GenericAPI entity by IDs.
+func (_c *GeneralSettingsCreate) AddGenericAPIIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddGenericAPIIDs(ids...)
+	return _c
+}
+
+// AddGenericApis adds the "generic_apis" edges to the GenericAPI entity.
+func (_c *GeneralSettingsCreate) AddGenericApis(v ...*GenericAPI) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddGenericAPIIDs(ids...)
+}
+
+// AddMatrixLayoutIDs adds the "matrix_layouts" edge to the MatrixLayout entity by IDs.
+func (_c *GeneralSettingsCreate) AddMatrixLayoutIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddMatrixLayoutIDs(ids...)
+	return _c
+}
+
+// AddMatrixLayouts adds the "matrix_layouts" edges to the MatrixLayout entity.
+func (_c *GeneralSettingsCreate) AddMatrixLayouts(v ...*MatrixLayout) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddMatrixLayoutIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -773,6 +837,70 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(umamisettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GoogleCalendarsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GoogleCalendarsTable,
+			Columns: []string{generalsettings.GoogleCalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(googlecalendar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.NewsFeedsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NewsFeedsTable,
+			Columns: []string{generalsettings.NewsFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(newsfeed.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GenericApisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GenericApisTable,
+			Columns: []string{generalsettings.GenericApisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(genericapi.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.MatrixLayoutsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MatrixLayoutsTable,
+			Columns: []string{generalsettings.MatrixLayoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(matrixlayout.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

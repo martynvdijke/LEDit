@@ -125,6 +125,38 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Google Calendar</h5>
+                            <p class="card-text display-6">{{.googlecalendar_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">News</h5>
+                            <p class="card-text display-6">{{.newsfeed_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-secondary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Custom APIs</h5>
+                            <p class="card-text display-6">{{.genericapi_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Matrix Layouts</h5>
+                            <p class="card-text display-6">{{.matrixlayout_count}}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <h2 class="mt-5">Datasources</h2>
@@ -146,10 +178,18 @@
                         <td>{{if .Token}}{{.Token}}{{else}}{{.Path}}{{end}}</td>
                         <td>{{.URL}}</td>
                         <td>
+                            {{if eq .Endpoint "matrixlayout"}}
+                            <a href="/admin/matrixlayouts/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            <a href="/admin/preview?type=matrix&id={{.ID}}&w=128&h=128" target="_blank" class="btn btn-sm btn-secondary">Preview</a>
+                            <form method="POST" action="/admin/matrixlayouts/{{.ID}}/delete" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                            {{else}}
                             <a href="/admin/datasources/{{.Endpoint}}/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
                             <form method="POST" action="/admin/datasources/{{.Endpoint}}/{{.ID}}/delete" style="display:inline">
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                             </form>
+                            {{end}}
                         </td>
                     </tr>
                     {{else}}

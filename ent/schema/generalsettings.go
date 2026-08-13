@@ -41,5 +41,9 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("email_settings", EmailSettings.Type),
 		edge.To("ai_settings", AISettings.Type),
 		edge.To("umami_settings", UmamiSettings.Type),
+		edge.To("google_calendars", GoogleCalendar.Type),
+		edge.To("news_feeds", NewsFeed.Type),
+		edge.To("generic_apis", GenericAPI.Type),
+		edge.To("matrix_layouts", MatrixLayout.Type),
 	}
 }

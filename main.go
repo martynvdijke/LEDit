@@ -35,8 +35,12 @@ func main() {
 		logging.InitMetrics(telemetry.Meter())
 	}
 
-	slog.Info("LEDit server starting", "port", 8080)
-	if err := srv.Router.Run(":8080"); err != nil {
+	port := os.Getenv("LEDIT_PORT")
+	if port == "" {
+		port = "8080"
+	}
+	slog.Info("LEDit server starting", "port", port)
+	if err := srv.Router.Run(":" + port); err != nil {
 		slog.Error("Failed to start server", "error", err)
 		os.Exit(1)
 	}

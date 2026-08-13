@@ -72,9 +72,17 @@ type GeneralSettingsEdges struct {
 	AiSettings []*AISettings `json:"ai_settings,omitempty"`
 	// UmamiSettings holds the value of the umami_settings edge.
 	UmamiSettings []*UmamiSettings `json:"umami_settings,omitempty"`
+	// GoogleCalendars holds the value of the google_calendars edge.
+	GoogleCalendars []*GoogleCalendar `json:"google_calendars,omitempty"`
+	// NewsFeeds holds the value of the news_feeds edge.
+	NewsFeeds []*NewsFeed `json:"news_feeds,omitempty"`
+	// GenericApis holds the value of the generic_apis edge.
+	GenericApis []*GenericAPI `json:"generic_apis,omitempty"`
+	// MatrixLayouts holds the value of the matrix_layouts edge.
+	MatrixLayouts []*MatrixLayout `json:"matrix_layouts,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [18]bool
+	loadedTypes [22]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -237,6 +245,42 @@ func (e GeneralSettingsEdges) UmamiSettingsOrErr() ([]*UmamiSettings, error) {
 		return e.UmamiSettings, nil
 	}
 	return nil, &NotLoadedError{edge: "umami_settings"}
+}
+
+// GoogleCalendarsOrErr returns the GoogleCalendars value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) GoogleCalendarsOrErr() ([]*GoogleCalendar, error) {
+	if e.loadedTypes[18] {
+		return e.GoogleCalendars, nil
+	}
+	return nil, &NotLoadedError{edge: "google_calendars"}
+}
+
+// NewsFeedsOrErr returns the NewsFeeds value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) NewsFeedsOrErr() ([]*NewsFeed, error) {
+	if e.loadedTypes[19] {
+		return e.NewsFeeds, nil
+	}
+	return nil, &NotLoadedError{edge: "news_feeds"}
+}
+
+// GenericApisOrErr returns the GenericApis value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) GenericApisOrErr() ([]*GenericAPI, error) {
+	if e.loadedTypes[20] {
+		return e.GenericApis, nil
+	}
+	return nil, &NotLoadedError{edge: "generic_apis"}
+}
+
+// MatrixLayoutsOrErr returns the MatrixLayouts value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) MatrixLayoutsOrErr() ([]*MatrixLayout, error) {
+	if e.loadedTypes[21] {
+		return e.MatrixLayouts, nil
+	}
+	return nil, &NotLoadedError{edge: "matrix_layouts"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -410,6 +454,26 @@ func (_m *GeneralSettings) QueryAiSettings() *AISettingsQuery {
 // QueryUmamiSettings queries the "umami_settings" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryUmamiSettings() *UmamiSettingsQuery {
 	return NewGeneralSettingsClient(_m.config).QueryUmamiSettings(_m)
+}
+
+// QueryGoogleCalendars queries the "google_calendars" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryGoogleCalendars() *GoogleCalendarQuery {
+	return NewGeneralSettingsClient(_m.config).QueryGoogleCalendars(_m)
+}
+
+// QueryNewsFeeds queries the "news_feeds" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryNewsFeeds() *NewsFeedQuery {
+	return NewGeneralSettingsClient(_m.config).QueryNewsFeeds(_m)
+}
+
+// QueryGenericApis queries the "generic_apis" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryGenericApis() *GenericAPIQuery {
+	return NewGeneralSettingsClient(_m.config).QueryGenericApis(_m)
+}
+
+// QueryMatrixLayouts queries the "matrix_layouts" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryMatrixLayouts() *MatrixLayoutQuery {
+	return NewGeneralSettingsClient(_m.config).QueryMatrixLayouts(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

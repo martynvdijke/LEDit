@@ -13,8 +13,12 @@ import (
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
+	"ledit/ent/genericapi"
+	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/matrixlayout"
+	"ledit/ent/newsfeed"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -432,6 +436,66 @@ func (_u *GeneralSettingsUpdate) AddUmamiSettings(v ...*UmamiSettings) *GeneralS
 	return _u.AddUmamiSettingIDs(ids...)
 }
 
+// AddGoogleCalendarIDs adds the "google_calendars" edge to the GoogleCalendar entity by IDs.
+func (_u *GeneralSettingsUpdate) AddGoogleCalendarIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddGoogleCalendarIDs(ids...)
+	return _u
+}
+
+// AddGoogleCalendars adds the "google_calendars" edges to the GoogleCalendar entity.
+func (_u *GeneralSettingsUpdate) AddGoogleCalendars(v ...*GoogleCalendar) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGoogleCalendarIDs(ids...)
+}
+
+// AddNewsFeedIDs adds the "news_feeds" edge to the NewsFeed entity by IDs.
+func (_u *GeneralSettingsUpdate) AddNewsFeedIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddNewsFeedIDs(ids...)
+	return _u
+}
+
+// AddNewsFeeds adds the "news_feeds" edges to the NewsFeed entity.
+func (_u *GeneralSettingsUpdate) AddNewsFeeds(v ...*NewsFeed) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNewsFeedIDs(ids...)
+}
+
+// AddGenericAPIIDs adds the "generic_apis" edge to the GenericAPI entity by IDs.
+func (_u *GeneralSettingsUpdate) AddGenericAPIIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddGenericAPIIDs(ids...)
+	return _u
+}
+
+// AddGenericApis adds the "generic_apis" edges to the GenericAPI entity.
+func (_u *GeneralSettingsUpdate) AddGenericApis(v ...*GenericAPI) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGenericAPIIDs(ids...)
+}
+
+// AddMatrixLayoutIDs adds the "matrix_layouts" edge to the MatrixLayout entity by IDs.
+func (_u *GeneralSettingsUpdate) AddMatrixLayoutIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddMatrixLayoutIDs(ids...)
+	return _u
+}
+
+// AddMatrixLayouts adds the "matrix_layouts" edges to the MatrixLayout entity.
+func (_u *GeneralSettingsUpdate) AddMatrixLayouts(v ...*MatrixLayout) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddMatrixLayoutIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdate) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -813,6 +877,90 @@ func (_u *GeneralSettingsUpdate) RemoveUmamiSettings(v ...*UmamiSettings) *Gener
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUmamiSettingIDs(ids...)
+}
+
+// ClearGoogleCalendars clears all "google_calendars" edges to the GoogleCalendar entity.
+func (_u *GeneralSettingsUpdate) ClearGoogleCalendars() *GeneralSettingsUpdate {
+	_u.mutation.ClearGoogleCalendars()
+	return _u
+}
+
+// RemoveGoogleCalendarIDs removes the "google_calendars" edge to GoogleCalendar entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveGoogleCalendarIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveGoogleCalendarIDs(ids...)
+	return _u
+}
+
+// RemoveGoogleCalendars removes "google_calendars" edges to GoogleCalendar entities.
+func (_u *GeneralSettingsUpdate) RemoveGoogleCalendars(v ...*GoogleCalendar) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGoogleCalendarIDs(ids...)
+}
+
+// ClearNewsFeeds clears all "news_feeds" edges to the NewsFeed entity.
+func (_u *GeneralSettingsUpdate) ClearNewsFeeds() *GeneralSettingsUpdate {
+	_u.mutation.ClearNewsFeeds()
+	return _u
+}
+
+// RemoveNewsFeedIDs removes the "news_feeds" edge to NewsFeed entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveNewsFeedIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveNewsFeedIDs(ids...)
+	return _u
+}
+
+// RemoveNewsFeeds removes "news_feeds" edges to NewsFeed entities.
+func (_u *GeneralSettingsUpdate) RemoveNewsFeeds(v ...*NewsFeed) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNewsFeedIDs(ids...)
+}
+
+// ClearGenericApis clears all "generic_apis" edges to the GenericAPI entity.
+func (_u *GeneralSettingsUpdate) ClearGenericApis() *GeneralSettingsUpdate {
+	_u.mutation.ClearGenericApis()
+	return _u
+}
+
+// RemoveGenericAPIIDs removes the "generic_apis" edge to GenericAPI entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveGenericAPIIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveGenericAPIIDs(ids...)
+	return _u
+}
+
+// RemoveGenericApis removes "generic_apis" edges to GenericAPI entities.
+func (_u *GeneralSettingsUpdate) RemoveGenericApis(v ...*GenericAPI) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGenericAPIIDs(ids...)
+}
+
+// ClearMatrixLayouts clears all "matrix_layouts" edges to the MatrixLayout entity.
+func (_u *GeneralSettingsUpdate) ClearMatrixLayouts() *GeneralSettingsUpdate {
+	_u.mutation.ClearMatrixLayouts()
+	return _u
+}
+
+// RemoveMatrixLayoutIDs removes the "matrix_layouts" edge to MatrixLayout entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveMatrixLayoutIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveMatrixLayoutIDs(ids...)
+	return _u
+}
+
+// RemoveMatrixLayouts removes "matrix_layouts" edges to MatrixLayout entities.
+func (_u *GeneralSettingsUpdate) RemoveMatrixLayouts(v ...*MatrixLayout) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveMatrixLayoutIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1694,6 +1842,186 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.GoogleCalendarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GoogleCalendarsTable,
+			Columns: []string{generalsettings.GoogleCalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(googlecalendar.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGoogleCalendarsIDs(); len(nodes) > 0 && !_u.mutation.GoogleCalendarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GoogleCalendarsTable,
+			Columns: []string{generalsettings.GoogleCalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(googlecalendar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GoogleCalendarsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GoogleCalendarsTable,
+			Columns: []string{generalsettings.GoogleCalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(googlecalendar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.NewsFeedsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NewsFeedsTable,
+			Columns: []string{generalsettings.NewsFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(newsfeed.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNewsFeedsIDs(); len(nodes) > 0 && !_u.mutation.NewsFeedsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NewsFeedsTable,
+			Columns: []string{generalsettings.NewsFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(newsfeed.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NewsFeedsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NewsFeedsTable,
+			Columns: []string{generalsettings.NewsFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(newsfeed.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GenericApisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GenericApisTable,
+			Columns: []string{generalsettings.GenericApisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(genericapi.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGenericApisIDs(); len(nodes) > 0 && !_u.mutation.GenericApisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GenericApisTable,
+			Columns: []string{generalsettings.GenericApisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(genericapi.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GenericApisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GenericApisTable,
+			Columns: []string{generalsettings.GenericApisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(genericapi.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.MatrixLayoutsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MatrixLayoutsTable,
+			Columns: []string{generalsettings.MatrixLayoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(matrixlayout.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedMatrixLayoutsIDs(); len(nodes) > 0 && !_u.mutation.MatrixLayoutsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MatrixLayoutsTable,
+			Columns: []string{generalsettings.MatrixLayoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(matrixlayout.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MatrixLayoutsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MatrixLayoutsTable,
+			Columns: []string{generalsettings.MatrixLayoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(matrixlayout.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -2101,6 +2429,66 @@ func (_u *GeneralSettingsUpdateOne) AddUmamiSettings(v ...*UmamiSettings) *Gener
 	return _u.AddUmamiSettingIDs(ids...)
 }
 
+// AddGoogleCalendarIDs adds the "google_calendars" edge to the GoogleCalendar entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddGoogleCalendarIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddGoogleCalendarIDs(ids...)
+	return _u
+}
+
+// AddGoogleCalendars adds the "google_calendars" edges to the GoogleCalendar entity.
+func (_u *GeneralSettingsUpdateOne) AddGoogleCalendars(v ...*GoogleCalendar) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGoogleCalendarIDs(ids...)
+}
+
+// AddNewsFeedIDs adds the "news_feeds" edge to the NewsFeed entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddNewsFeedIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddNewsFeedIDs(ids...)
+	return _u
+}
+
+// AddNewsFeeds adds the "news_feeds" edges to the NewsFeed entity.
+func (_u *GeneralSettingsUpdateOne) AddNewsFeeds(v ...*NewsFeed) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNewsFeedIDs(ids...)
+}
+
+// AddGenericAPIIDs adds the "generic_apis" edge to the GenericAPI entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddGenericAPIIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddGenericAPIIDs(ids...)
+	return _u
+}
+
+// AddGenericApis adds the "generic_apis" edges to the GenericAPI entity.
+func (_u *GeneralSettingsUpdateOne) AddGenericApis(v ...*GenericAPI) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGenericAPIIDs(ids...)
+}
+
+// AddMatrixLayoutIDs adds the "matrix_layouts" edge to the MatrixLayout entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddMatrixLayoutIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddMatrixLayoutIDs(ids...)
+	return _u
+}
+
+// AddMatrixLayouts adds the "matrix_layouts" edges to the MatrixLayout entity.
+func (_u *GeneralSettingsUpdateOne) AddMatrixLayouts(v ...*MatrixLayout) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddMatrixLayoutIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdateOne) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -2482,6 +2870,90 @@ func (_u *GeneralSettingsUpdateOne) RemoveUmamiSettings(v ...*UmamiSettings) *Ge
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUmamiSettingIDs(ids...)
+}
+
+// ClearGoogleCalendars clears all "google_calendars" edges to the GoogleCalendar entity.
+func (_u *GeneralSettingsUpdateOne) ClearGoogleCalendars() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearGoogleCalendars()
+	return _u
+}
+
+// RemoveGoogleCalendarIDs removes the "google_calendars" edge to GoogleCalendar entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveGoogleCalendarIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveGoogleCalendarIDs(ids...)
+	return _u
+}
+
+// RemoveGoogleCalendars removes "google_calendars" edges to GoogleCalendar entities.
+func (_u *GeneralSettingsUpdateOne) RemoveGoogleCalendars(v ...*GoogleCalendar) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGoogleCalendarIDs(ids...)
+}
+
+// ClearNewsFeeds clears all "news_feeds" edges to the NewsFeed entity.
+func (_u *GeneralSettingsUpdateOne) ClearNewsFeeds() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearNewsFeeds()
+	return _u
+}
+
+// RemoveNewsFeedIDs removes the "news_feeds" edge to NewsFeed entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveNewsFeedIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveNewsFeedIDs(ids...)
+	return _u
+}
+
+// RemoveNewsFeeds removes "news_feeds" edges to NewsFeed entities.
+func (_u *GeneralSettingsUpdateOne) RemoveNewsFeeds(v ...*NewsFeed) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNewsFeedIDs(ids...)
+}
+
+// ClearGenericApis clears all "generic_apis" edges to the GenericAPI entity.
+func (_u *GeneralSettingsUpdateOne) ClearGenericApis() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearGenericApis()
+	return _u
+}
+
+// RemoveGenericAPIIDs removes the "generic_apis" edge to GenericAPI entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveGenericAPIIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveGenericAPIIDs(ids...)
+	return _u
+}
+
+// RemoveGenericApis removes "generic_apis" edges to GenericAPI entities.
+func (_u *GeneralSettingsUpdateOne) RemoveGenericApis(v ...*GenericAPI) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGenericAPIIDs(ids...)
+}
+
+// ClearMatrixLayouts clears all "matrix_layouts" edges to the MatrixLayout entity.
+func (_u *GeneralSettingsUpdateOne) ClearMatrixLayouts() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearMatrixLayouts()
+	return _u
+}
+
+// RemoveMatrixLayoutIDs removes the "matrix_layouts" edge to MatrixLayout entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveMatrixLayoutIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveMatrixLayoutIDs(ids...)
+	return _u
+}
+
+// RemoveMatrixLayouts removes "matrix_layouts" edges to MatrixLayout entities.
+func (_u *GeneralSettingsUpdateOne) RemoveMatrixLayouts(v ...*MatrixLayout) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveMatrixLayoutIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -3386,6 +3858,186 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(umamisettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GoogleCalendarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GoogleCalendarsTable,
+			Columns: []string{generalsettings.GoogleCalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(googlecalendar.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGoogleCalendarsIDs(); len(nodes) > 0 && !_u.mutation.GoogleCalendarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GoogleCalendarsTable,
+			Columns: []string{generalsettings.GoogleCalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(googlecalendar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GoogleCalendarsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GoogleCalendarsTable,
+			Columns: []string{generalsettings.GoogleCalendarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(googlecalendar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.NewsFeedsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NewsFeedsTable,
+			Columns: []string{generalsettings.NewsFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(newsfeed.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNewsFeedsIDs(); len(nodes) > 0 && !_u.mutation.NewsFeedsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NewsFeedsTable,
+			Columns: []string{generalsettings.NewsFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(newsfeed.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NewsFeedsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NewsFeedsTable,
+			Columns: []string{generalsettings.NewsFeedsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(newsfeed.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GenericApisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GenericApisTable,
+			Columns: []string{generalsettings.GenericApisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(genericapi.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGenericApisIDs(); len(nodes) > 0 && !_u.mutation.GenericApisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GenericApisTable,
+			Columns: []string{generalsettings.GenericApisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(genericapi.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GenericApisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GenericApisTable,
+			Columns: []string{generalsettings.GenericApisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(genericapi.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.MatrixLayoutsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MatrixLayoutsTable,
+			Columns: []string{generalsettings.MatrixLayoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(matrixlayout.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedMatrixLayoutsIDs(); len(nodes) > 0 && !_u.mutation.MatrixLayoutsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MatrixLayoutsTable,
+			Columns: []string{generalsettings.MatrixLayoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(matrixlayout.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MatrixLayoutsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MatrixLayoutsTable,
+			Columns: []string{generalsettings.MatrixLayoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(matrixlayout.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -177,6 +177,49 @@ var (
 		Columns:    GeneralSettingsColumns,
 		PrimaryKey: []*schema.Column{GeneralSettingsColumns[0]},
 	}
+	// GenericApIsColumns holds the columns for the "generic_ap_is" table.
+	GenericApIsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString},
+		{Name: "config", Type: field.TypeString, Size: 2147483647, Default: "{}"},
+		{Name: "general_settings_generic_apis", Type: field.TypeInt, Nullable: true},
+	}
+	// GenericApIsTable holds the schema information for the "generic_ap_is" table.
+	GenericApIsTable = &schema.Table{
+		Name:       "generic_ap_is",
+		Columns:    GenericApIsColumns,
+		PrimaryKey: []*schema.Column{GenericApIsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "generic_ap_is_general_settings_generic_apis",
+				Columns:    []*schema.Column{GenericApIsColumns[4]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// GoogleCalendarsColumns holds the columns for the "google_calendars" table.
+	GoogleCalendarsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "url", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString, Default: ""},
+		{Name: "general_settings_google_calendars", Type: field.TypeInt, Nullable: true},
+	}
+	// GoogleCalendarsTable holds the schema information for the "google_calendars" table.
+	GoogleCalendarsTable = &schema.Table{
+		Name:       "google_calendars",
+		Columns:    GoogleCalendarsColumns,
+		PrimaryKey: []*schema.Column{GoogleCalendarsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "google_calendars_general_settings_google_calendars",
+				Columns:    []*schema.Column{GoogleCalendarsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// HomeAssistantsColumns holds the columns for the "home_assistants" table.
 	HomeAssistantsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -254,6 +297,53 @@ var (
 		Name:       "log_settings",
 		Columns:    LogSettingsColumns,
 		PrimaryKey: []*schema.Column{LogSettingsColumns[0]},
+	}
+	// MatrixLayoutsColumns holds the columns for the "matrix_layouts" table.
+	MatrixLayoutsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "rows", Type: field.TypeInt, Default: 2},
+		{Name: "cols", Type: field.TypeInt, Default: 2},
+		{Name: "gap", Type: field.TypeInt, Default: 2},
+		{Name: "background", Type: field.TypeString, Default: "#282a36"},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "bindings", Type: field.TypeString, Size: 2147483647, Default: "[]"},
+		{Name: "general_settings_matrix_layouts", Type: field.TypeInt, Nullable: true},
+	}
+	// MatrixLayoutsTable holds the schema information for the "matrix_layouts" table.
+	MatrixLayoutsTable = &schema.Table{
+		Name:       "matrix_layouts",
+		Columns:    MatrixLayoutsColumns,
+		PrimaryKey: []*schema.Column{MatrixLayoutsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "matrix_layouts_general_settings_matrix_layouts",
+				Columns:    []*schema.Column{MatrixLayoutsColumns[8]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// NewsFeedsColumns holds the columns for the "news_feeds" table.
+	NewsFeedsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "url", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString, Default: ""},
+		{Name: "general_settings_news_feeds", Type: field.TypeInt, Nullable: true},
+	}
+	// NewsFeedsTable holds the schema information for the "news_feeds" table.
+	NewsFeedsTable = &schema.Table{
+		Name:       "news_feeds",
+		Columns:    NewsFeedsColumns,
+		PrimaryKey: []*schema.Column{NewsFeedsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "news_feeds_general_settings_news_feeds",
+				Columns:    []*schema.Column{NewsFeedsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// NotificationsColumns holds the columns for the "notifications" table.
 	NotificationsColumns = []*schema.Column{
@@ -491,10 +581,14 @@ var (
 		EmailSettingsTable,
 		F1sTable,
 		GeneralSettingsTable,
+		GenericApIsTable,
+		GoogleCalendarsTable,
 		HomeAssistantsTable,
 		ImagesTable,
 		LogEntriesTable,
 		LogSettingsTable,
+		MatrixLayoutsTable,
+		NewsFeedsTable,
 		NotificationsTable,
 		RadarrsTable,
 		RssFeedsTable,
@@ -516,8 +610,12 @@ func init() {
 	DeviceSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	EmailSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	F1sTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	GenericApIsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	GoogleCalendarsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	HomeAssistantsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	ImagesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	MatrixLayoutsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	NewsFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RadarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RssFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SchedulesTable.ForeignKeys[0].RefTable = GeneralSettingsTable

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Matrix Layouts</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Matrix Layouts</h1>
+                <a href="/admin/matrixlayouts/new" class="btn btn-primary">New Layout</a>
+            </div>
+            {{if .layouts}}
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Grid</th>
+                        <th>Gap</th>
+                        <th>Background</th>
+                        <th>Enabled</th>
+                        <th>Preview</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .layouts}}
+                    <tr>
+                        <td>{{.ID}}</td>
+                        <td>{{.Name}}</td>
+                        <td>{{.Rows}} × {{.Cols}}</td>
+                        <td>{{.Gap}}px</td>
+                        <td><span class="badge bg-dark" style="background:{{.Background}}">{{.Background}}</span></td>
+                        <td>{{if .Enabled}}<span class="badge bg-success">on</span>{{else}}<span class="badge bg-secondary">off</span>{{end}}</td>
+                        <td>
+                            <a href="/admin/preview?type=matrix&id={{.ID}}&w=128&h=128" target="_blank">
+                                <img src="/admin/preview?type=matrix&id={{.ID}}&w=128&h=128" alt="{{.Name}} preview" width="128" height="128" class="border bg-dark" style="image-rendering:pixelated">
+                            </a>
+                            <a href="/admin/preview?type=matrix&id={{.ID}}&w=256&h=256&template=1" target="_blank" class="btn btn-sm btn-outline-secondary ms-1">Template</a>
+                        </td>
+                        <td>
+                            <a href="/admin/matrixlayouts/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            <form method="POST" action="/admin/matrixlayouts/{{.ID}}/delete" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            {{else}}
+            <p class="text-muted mt-4">No matrix layouts yet. <a href="/admin/matrixlayouts/new">Create one</a> to render multiple datasources as a grid.</p>
+            {{end}}
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Matrix Layout</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Matrix Layout</h1>
+            <div class="row">
+                <div class="col-md-6">
+                    <form method="POST" action="/admin/matrixlayouts{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4" data-matrix-editor data-live-preview-form data-preview-endpoint="/admin/preview/matrix">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{if .edit}}{{.obj.Name}}{{end}}" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="rows" class="form-label">Rows (1-8)</label>
+                                <input type="number" class="form-control" id="rows" name="rows" value="{{.rows}}" min="1" max="8" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="cols" class="form-label">Columns (1-8)</label>
+                                <input type="number" class="form-control" id="cols" name="cols" value="{{.cols}}" min="1" max="8" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="gap" class="form-label">Gap (px)</label>
+                                <input type="number" class="form-control" id="gap" name="gap" value="{{.gap}}" min="0" max="16">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="background" class="form-label">Background</label>
+                            <input type="color" class="form-control form-control-color" id="background" name="background" value="{{.background}}">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if .enabled}}checked{{end}}>
+                            <label for="enabled" class="form-check-label">Enabled (shown in feed)</label>
+                        </div>
+                        <div class="alert alert-warning" data-matrix-warning role="alert" style="display:none">Rows and columns must be between 1 and 8. Preview is paused until valid.</div>
+                        <input type="hidden" name="bindings" value="{{.bindings}}">
+                        <div class="mb-3">
+                            <label class="form-label">Cell bindings</label>
+                            <div data-matrix-grid></div>
+                            <small class="text-muted">Bind each cell to a datasource; unbound cells render as empty.</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                        <button type="button" class="btn btn-outline-secondary" data-matrix-template>Export PNG template</button>
+                        <a href="/admin/matrixlayouts" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mt-4">Live preview</h5>
+                    <img data-live-preview-img alt="Matrix live preview" width="256" height="256" class="border bg-dark" style="image-rendering:pixelated">
+                    {{if .edit}}
+                    <div class="mt-2">
+                        <a href="/admin/preview?type=matrix&id={{.obj.ID}}&w=256&h=256" target="_blank" class="btn btn-sm btn-outline-secondary">Full preview</a>
+                        <a href="/admin/preview?type=matrix&id={{.obj.ID}}&w=256&h=256&template=1" target="_blank" class="btn btn-sm btn-outline-secondary">Template</a>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>window.BINDING_OPTS = {{.binding_opts_json}};</script>
+<script type="module" src="/static/assets/app.js"></script>
+</html>

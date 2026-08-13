@@ -29,6 +29,7 @@ var pathToActive = map[string]string{
 	"/admin/settings/umami": "umami",
 	"/admin/notifications":  "notifications",
 	"/admin/password":       "password",
+	"/admin/matrixlayouts":  "matrixlayouts",
 }
 
 func activePage(c *gin.Context) string {
@@ -89,7 +90,7 @@ func (s *Server) IndexHandler(c *gin.Context) {
 }
 
 func (s *Server) AdminDashboard(c *gin.Context) {
-	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithEmailSettings().WithAiSettings().Only(s.Ctx)
+	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithEmailSettings().WithAiSettings().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().Only(s.Ctx)
 
 	stats := gin.H{
 		"has_settings": err == nil,
@@ -108,6 +109,10 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		calendarItems, _ := settings.Edges.CalendarsOrErr()
 		stockItems, _ := settings.Edges.StocksOrErr()
 		textSlideItems, _ := settings.Edges.TextSlidesOrErr()
+		googleCalendarItems, _ := settings.Edges.GoogleCalendarsOrErr()
+		newsFeedItems, _ := settings.Edges.NewsFeedsOrErr()
+		genericAPIItems, _ := settings.Edges.GenericApisOrErr()
+		matrixLayoutItems, _ := settings.Edges.MatrixLayoutsOrErr()
 
 		type sourceEntry struct {
 			ID       int
@@ -160,25 +165,41 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		for _, ts := range textSlideItems {
 			sources = append(sources, sourceEntry{ID: ts.ID, Type: "Text Slide", Endpoint: "textslides", Content: ts.Content, Color: ts.Color})
 		}
+		for _, gc := range googleCalendarItems {
+			sources = append(sources, sourceEntry{ID: gc.ID, Type: "Google Calendar", Endpoint: "googlecalendar", URL: gc.URL, Name: gc.Name})
+		}
+		for _, nf := range newsFeedItems {
+			sources = append(sources, sourceEntry{ID: nf.ID, Type: "News", Endpoint: "newsfeed", URL: nf.URL, Name: nf.Name})
+		}
+		for _, ga := range genericAPIItems {
+			sources = append(sources, sourceEntry{ID: ga.ID, Type: "Custom API", Endpoint: "genericapi", Token: ga.Token, URL: ga.URL, Name: genericAPILabel(ga.Config)})
+		}
+		for _, ml := range matrixLayoutItems {
+			sources = append(sources, sourceEntry{ID: ml.ID, Type: "Matrix Layout", Endpoint: "matrixlayout", Name: ml.Name})
+		}
 
 		stats = gin.H{
-			"has_settings":    true,
-			"settings":        settings,
-			"sources":         sources,
-			"sonarr_count":    len(sonarrItems),
-			"radarr_count":    len(radarrItems),
-			"f1_count":        len(f1Items),
-			"weather_count":   len(weatherItems),
-			"ha_count":        len(haItems),
-			"untappd_count":   len(untappdItems),
-			"image_count":     len(imageItems),
-			"video_count":     len(videoItems),
-			"crypto_count":    len(cryptoItems),
-			"rssfeed_count":   len(rssItems),
-			"calendar_count":  len(calendarItems),
-			"stock_count":     len(stockItems),
-			"textslide_count": len(textSlideItems),
-			"total_sources":   len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems),
+			"has_settings":         true,
+			"settings":             settings,
+			"sources":              sources,
+			"sonarr_count":         len(sonarrItems),
+			"radarr_count":         len(radarrItems),
+			"f1_count":             len(f1Items),
+			"weather_count":        len(weatherItems),
+			"ha_count":             len(haItems),
+			"untappd_count":        len(untappdItems),
+			"image_count":          len(imageItems),
+			"video_count":          len(videoItems),
+			"crypto_count":         len(cryptoItems),
+			"rssfeed_count":        len(rssItems),
+			"calendar_count":       len(calendarItems),
+			"stock_count":          len(stockItems),
+			"textslide_count":      len(textSlideItems),
+			"googlecalendar_count": len(googleCalendarItems),
+			"newsfeed_count":       len(newsFeedItems),
+			"genericapi_count":     len(genericAPIItems),
+			"matrixlayout_count":   len(matrixLayoutItems),
+			"total_sources":        len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems),
 		}
 	}
 	s.renderPage(c, http.StatusOK, "dashboard.html", stats)

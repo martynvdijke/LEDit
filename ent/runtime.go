@@ -10,8 +10,12 @@ import (
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
+	"ledit/ent/genericapi"
+	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/logsettings"
+	"ledit/ent/matrixlayout"
+	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -131,6 +135,22 @@ func init() {
 	generalsettingsDescEinkMode := generalsettingsFields[5].Descriptor()
 	// generalsettings.DefaultEinkMode holds the default value on creation for the eink_mode field.
 	generalsettings.DefaultEinkMode = generalsettingsDescEinkMode.Default.(bool)
+	genericapiFields := schema.GenericAPI{}.Fields()
+	_ = genericapiFields
+	// genericapiDescToken is the schema descriptor for token field.
+	genericapiDescToken := genericapiFields[0].Descriptor()
+	// genericapi.DefaultToken holds the default value on creation for the token field.
+	genericapi.DefaultToken = genericapiDescToken.Default.(string)
+	// genericapiDescConfig is the schema descriptor for config field.
+	genericapiDescConfig := genericapiFields[2].Descriptor()
+	// genericapi.DefaultConfig holds the default value on creation for the config field.
+	genericapi.DefaultConfig = genericapiDescConfig.Default.(string)
+	googlecalendarFields := schema.GoogleCalendar{}.Fields()
+	_ = googlecalendarFields
+	// googlecalendarDescName is the schema descriptor for name field.
+	googlecalendarDescName := googlecalendarFields[1].Descriptor()
+	// googlecalendar.DefaultName holds the default value on creation for the name field.
+	googlecalendar.DefaultName = googlecalendarDescName.Default.(string)
 	homeassistantFields := schema.HomeAssistant{}.Fields()
 	_ = homeassistantFields
 	// homeassistantDescToken is the schema descriptor for token field.
@@ -155,6 +175,38 @@ func init() {
 	logsettingsDescOtelEnabled := logsettingsFields[5].Descriptor()
 	// logsettings.DefaultOtelEnabled holds the default value on creation for the otel_enabled field.
 	logsettings.DefaultOtelEnabled = logsettingsDescOtelEnabled.Default.(bool)
+	matrixlayoutFields := schema.MatrixLayout{}.Fields()
+	_ = matrixlayoutFields
+	// matrixlayoutDescRows is the schema descriptor for rows field.
+	matrixlayoutDescRows := matrixlayoutFields[1].Descriptor()
+	// matrixlayout.DefaultRows holds the default value on creation for the rows field.
+	matrixlayout.DefaultRows = matrixlayoutDescRows.Default.(int)
+	// matrixlayoutDescCols is the schema descriptor for cols field.
+	matrixlayoutDescCols := matrixlayoutFields[2].Descriptor()
+	// matrixlayout.DefaultCols holds the default value on creation for the cols field.
+	matrixlayout.DefaultCols = matrixlayoutDescCols.Default.(int)
+	// matrixlayoutDescGap is the schema descriptor for gap field.
+	matrixlayoutDescGap := matrixlayoutFields[3].Descriptor()
+	// matrixlayout.DefaultGap holds the default value on creation for the gap field.
+	matrixlayout.DefaultGap = matrixlayoutDescGap.Default.(int)
+	// matrixlayoutDescBackground is the schema descriptor for background field.
+	matrixlayoutDescBackground := matrixlayoutFields[4].Descriptor()
+	// matrixlayout.DefaultBackground holds the default value on creation for the background field.
+	matrixlayout.DefaultBackground = matrixlayoutDescBackground.Default.(string)
+	// matrixlayoutDescEnabled is the schema descriptor for enabled field.
+	matrixlayoutDescEnabled := matrixlayoutFields[5].Descriptor()
+	// matrixlayout.DefaultEnabled holds the default value on creation for the enabled field.
+	matrixlayout.DefaultEnabled = matrixlayoutDescEnabled.Default.(bool)
+	// matrixlayoutDescBindings is the schema descriptor for bindings field.
+	matrixlayoutDescBindings := matrixlayoutFields[6].Descriptor()
+	// matrixlayout.DefaultBindings holds the default value on creation for the bindings field.
+	matrixlayout.DefaultBindings = matrixlayoutDescBindings.Default.(string)
+	newsfeedFields := schema.NewsFeed{}.Fields()
+	_ = newsfeedFields
+	// newsfeedDescName is the schema descriptor for name field.
+	newsfeedDescName := newsfeedFields[1].Descriptor()
+	// newsfeed.DefaultName holds the default value on creation for the name field.
+	newsfeed.DefaultName = newsfeedDescName.Default.(string)
 	notificationFields := schema.Notification{}.Fields()
 	_ = notificationFields
 	// notificationDescTitle is the schema descriptor for title field.

@@ -14,10 +14,14 @@ import (
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
+	"ledit/ent/genericapi"
+	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
+	"ledit/ent/matrixlayout"
+	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
@@ -54,10 +58,14 @@ const (
 	TypeEmailSettings   = "EmailSettings"
 	TypeF1              = "F1"
 	TypeGeneralSettings = "GeneralSettings"
+	TypeGenericAPI      = "GenericAPI"
+	TypeGoogleCalendar  = "GoogleCalendar"
 	TypeHomeAssistant   = "HomeAssistant"
 	TypeImage           = "Image"
 	TypeLogEntry        = "LogEntry"
 	TypeLogSettings     = "LogSettings"
+	TypeMatrixLayout    = "MatrixLayout"
+	TypeNewsFeed        = "NewsFeed"
 	TypeNotification    = "Notification"
 	TypeRadarr          = "Radarr"
 	TypeRssFeed         = "RssFeed"
@@ -3777,76 +3785,88 @@ func (m *F1Mutation) ResetEdge(name string) error {
 // GeneralSettingsMutation represents an operation that mutates the GeneralSettings nodes in the graph.
 type GeneralSettingsMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *int
-	timeout                *float64
-	addtimeout             *float64
-	random                 *bool
-	width                  *int
-	addwidth               *int
-	height                 *int
-	addheight              *int
-	theme                  *string
-	eink_mode              *bool
-	clearedFields          map[string]struct{}
-	sonarr                 map[int]struct{}
-	removedsonarr          map[int]struct{}
-	clearedsonarr          bool
-	radarr                 map[int]struct{}
-	removedradarr          map[int]struct{}
-	clearedradarr          bool
-	f1                     map[int]struct{}
-	removedf1              map[int]struct{}
-	clearedf1              bool
-	weather                map[int]struct{}
-	removedweather         map[int]struct{}
-	clearedweather         bool
-	home_assistant         map[int]struct{}
-	removedhome_assistant  map[int]struct{}
-	clearedhome_assistant  bool
-	untappd                map[int]struct{}
-	removeduntappd         map[int]struct{}
-	cleareduntappd         bool
-	images                 map[int]struct{}
-	removedimages          map[int]struct{}
-	clearedimages          bool
-	videos                 map[int]struct{}
-	removedvideos          map[int]struct{}
-	clearedvideos          bool
-	crypto                 map[int]struct{}
-	removedcrypto          map[int]struct{}
-	clearedcrypto          bool
-	schedules              map[int]struct{}
-	removedschedules       map[int]struct{}
-	clearedschedules       bool
-	device_settings        map[int]struct{}
-	removeddevice_settings map[int]struct{}
-	cleareddevice_settings bool
-	rss_feeds              map[int]struct{}
-	removedrss_feeds       map[int]struct{}
-	clearedrss_feeds       bool
-	calendars              map[int]struct{}
-	removedcalendars       map[int]struct{}
-	clearedcalendars       bool
-	stocks                 map[int]struct{}
-	removedstocks          map[int]struct{}
-	clearedstocks          bool
-	text_slides            map[int]struct{}
-	removedtext_slides     map[int]struct{}
-	clearedtext_slides     bool
-	email_settings         map[int]struct{}
-	removedemail_settings  map[int]struct{}
-	clearedemail_settings  bool
-	ai_settings            map[int]struct{}
-	removedai_settings     map[int]struct{}
-	clearedai_settings     bool
-	umami_settings         map[int]struct{}
-	removedumami_settings  map[int]struct{}
-	clearedumami_settings  bool
-	done                   bool
-	oldValue               func(context.Context) (*GeneralSettings, error)
-	predicates             []predicate.GeneralSettings
+	op                      Op
+	typ                     string
+	id                      *int
+	timeout                 *float64
+	addtimeout              *float64
+	random                  *bool
+	width                   *int
+	addwidth                *int
+	height                  *int
+	addheight               *int
+	theme                   *string
+	eink_mode               *bool
+	clearedFields           map[string]struct{}
+	sonarr                  map[int]struct{}
+	removedsonarr           map[int]struct{}
+	clearedsonarr           bool
+	radarr                  map[int]struct{}
+	removedradarr           map[int]struct{}
+	clearedradarr           bool
+	f1                      map[int]struct{}
+	removedf1               map[int]struct{}
+	clearedf1               bool
+	weather                 map[int]struct{}
+	removedweather          map[int]struct{}
+	clearedweather          bool
+	home_assistant          map[int]struct{}
+	removedhome_assistant   map[int]struct{}
+	clearedhome_assistant   bool
+	untappd                 map[int]struct{}
+	removeduntappd          map[int]struct{}
+	cleareduntappd          bool
+	images                  map[int]struct{}
+	removedimages           map[int]struct{}
+	clearedimages           bool
+	videos                  map[int]struct{}
+	removedvideos           map[int]struct{}
+	clearedvideos           bool
+	crypto                  map[int]struct{}
+	removedcrypto           map[int]struct{}
+	clearedcrypto           bool
+	schedules               map[int]struct{}
+	removedschedules        map[int]struct{}
+	clearedschedules        bool
+	device_settings         map[int]struct{}
+	removeddevice_settings  map[int]struct{}
+	cleareddevice_settings  bool
+	rss_feeds               map[int]struct{}
+	removedrss_feeds        map[int]struct{}
+	clearedrss_feeds        bool
+	calendars               map[int]struct{}
+	removedcalendars        map[int]struct{}
+	clearedcalendars        bool
+	stocks                  map[int]struct{}
+	removedstocks           map[int]struct{}
+	clearedstocks           bool
+	text_slides             map[int]struct{}
+	removedtext_slides      map[int]struct{}
+	clearedtext_slides      bool
+	email_settings          map[int]struct{}
+	removedemail_settings   map[int]struct{}
+	clearedemail_settings   bool
+	ai_settings             map[int]struct{}
+	removedai_settings      map[int]struct{}
+	clearedai_settings      bool
+	umami_settings          map[int]struct{}
+	removedumami_settings   map[int]struct{}
+	clearedumami_settings   bool
+	google_calendars        map[int]struct{}
+	removedgoogle_calendars map[int]struct{}
+	clearedgoogle_calendars bool
+	news_feeds              map[int]struct{}
+	removednews_feeds       map[int]struct{}
+	clearednews_feeds       bool
+	generic_apis            map[int]struct{}
+	removedgeneric_apis     map[int]struct{}
+	clearedgeneric_apis     bool
+	matrix_layouts          map[int]struct{}
+	removedmatrix_layouts   map[int]struct{}
+	clearedmatrix_layouts   bool
+	done                    bool
+	oldValue                func(context.Context) (*GeneralSettings, error)
+	predicates              []predicate.GeneralSettings
 }
 
 var _ ent.Mutation = (*GeneralSettingsMutation)(nil)
@@ -5221,6 +5241,222 @@ func (m *GeneralSettingsMutation) ResetUmamiSettings() {
 	m.removedumami_settings = nil
 }
 
+// AddGoogleCalendarIDs adds the "google_calendars" edge to the GoogleCalendar entity by ids.
+func (m *GeneralSettingsMutation) AddGoogleCalendarIDs(ids ...int) {
+	if m.google_calendars == nil {
+		m.google_calendars = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.google_calendars[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGoogleCalendars clears the "google_calendars" edge to the GoogleCalendar entity.
+func (m *GeneralSettingsMutation) ClearGoogleCalendars() {
+	m.clearedgoogle_calendars = true
+}
+
+// GoogleCalendarsCleared reports if the "google_calendars" edge to the GoogleCalendar entity was cleared.
+func (m *GeneralSettingsMutation) GoogleCalendarsCleared() bool {
+	return m.clearedgoogle_calendars
+}
+
+// RemoveGoogleCalendarIDs removes the "google_calendars" edge to the GoogleCalendar entity by IDs.
+func (m *GeneralSettingsMutation) RemoveGoogleCalendarIDs(ids ...int) {
+	if m.removedgoogle_calendars == nil {
+		m.removedgoogle_calendars = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.google_calendars, ids[i])
+		m.removedgoogle_calendars[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGoogleCalendars returns the removed IDs of the "google_calendars" edge to the GoogleCalendar entity.
+func (m *GeneralSettingsMutation) RemovedGoogleCalendarsIDs() (ids []int) {
+	for id := range m.removedgoogle_calendars {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GoogleCalendarsIDs returns the "google_calendars" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) GoogleCalendarsIDs() (ids []int) {
+	for id := range m.google_calendars {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGoogleCalendars resets all changes to the "google_calendars" edge.
+func (m *GeneralSettingsMutation) ResetGoogleCalendars() {
+	m.google_calendars = nil
+	m.clearedgoogle_calendars = false
+	m.removedgoogle_calendars = nil
+}
+
+// AddNewsFeedIDs adds the "news_feeds" edge to the NewsFeed entity by ids.
+func (m *GeneralSettingsMutation) AddNewsFeedIDs(ids ...int) {
+	if m.news_feeds == nil {
+		m.news_feeds = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.news_feeds[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNewsFeeds clears the "news_feeds" edge to the NewsFeed entity.
+func (m *GeneralSettingsMutation) ClearNewsFeeds() {
+	m.clearednews_feeds = true
+}
+
+// NewsFeedsCleared reports if the "news_feeds" edge to the NewsFeed entity was cleared.
+func (m *GeneralSettingsMutation) NewsFeedsCleared() bool {
+	return m.clearednews_feeds
+}
+
+// RemoveNewsFeedIDs removes the "news_feeds" edge to the NewsFeed entity by IDs.
+func (m *GeneralSettingsMutation) RemoveNewsFeedIDs(ids ...int) {
+	if m.removednews_feeds == nil {
+		m.removednews_feeds = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.news_feeds, ids[i])
+		m.removednews_feeds[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNewsFeeds returns the removed IDs of the "news_feeds" edge to the NewsFeed entity.
+func (m *GeneralSettingsMutation) RemovedNewsFeedsIDs() (ids []int) {
+	for id := range m.removednews_feeds {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NewsFeedsIDs returns the "news_feeds" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) NewsFeedsIDs() (ids []int) {
+	for id := range m.news_feeds {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNewsFeeds resets all changes to the "news_feeds" edge.
+func (m *GeneralSettingsMutation) ResetNewsFeeds() {
+	m.news_feeds = nil
+	m.clearednews_feeds = false
+	m.removednews_feeds = nil
+}
+
+// AddGenericAPIIDs adds the "generic_apis" edge to the GenericAPI entity by ids.
+func (m *GeneralSettingsMutation) AddGenericAPIIDs(ids ...int) {
+	if m.generic_apis == nil {
+		m.generic_apis = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.generic_apis[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGenericApis clears the "generic_apis" edge to the GenericAPI entity.
+func (m *GeneralSettingsMutation) ClearGenericApis() {
+	m.clearedgeneric_apis = true
+}
+
+// GenericApisCleared reports if the "generic_apis" edge to the GenericAPI entity was cleared.
+func (m *GeneralSettingsMutation) GenericApisCleared() bool {
+	return m.clearedgeneric_apis
+}
+
+// RemoveGenericAPIIDs removes the "generic_apis" edge to the GenericAPI entity by IDs.
+func (m *GeneralSettingsMutation) RemoveGenericAPIIDs(ids ...int) {
+	if m.removedgeneric_apis == nil {
+		m.removedgeneric_apis = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.generic_apis, ids[i])
+		m.removedgeneric_apis[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGenericApis returns the removed IDs of the "generic_apis" edge to the GenericAPI entity.
+func (m *GeneralSettingsMutation) RemovedGenericApisIDs() (ids []int) {
+	for id := range m.removedgeneric_apis {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GenericApisIDs returns the "generic_apis" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) GenericApisIDs() (ids []int) {
+	for id := range m.generic_apis {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGenericApis resets all changes to the "generic_apis" edge.
+func (m *GeneralSettingsMutation) ResetGenericApis() {
+	m.generic_apis = nil
+	m.clearedgeneric_apis = false
+	m.removedgeneric_apis = nil
+}
+
+// AddMatrixLayoutIDs adds the "matrix_layouts" edge to the MatrixLayout entity by ids.
+func (m *GeneralSettingsMutation) AddMatrixLayoutIDs(ids ...int) {
+	if m.matrix_layouts == nil {
+		m.matrix_layouts = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.matrix_layouts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMatrixLayouts clears the "matrix_layouts" edge to the MatrixLayout entity.
+func (m *GeneralSettingsMutation) ClearMatrixLayouts() {
+	m.clearedmatrix_layouts = true
+}
+
+// MatrixLayoutsCleared reports if the "matrix_layouts" edge to the MatrixLayout entity was cleared.
+func (m *GeneralSettingsMutation) MatrixLayoutsCleared() bool {
+	return m.clearedmatrix_layouts
+}
+
+// RemoveMatrixLayoutIDs removes the "matrix_layouts" edge to the MatrixLayout entity by IDs.
+func (m *GeneralSettingsMutation) RemoveMatrixLayoutIDs(ids ...int) {
+	if m.removedmatrix_layouts == nil {
+		m.removedmatrix_layouts = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.matrix_layouts, ids[i])
+		m.removedmatrix_layouts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMatrixLayouts returns the removed IDs of the "matrix_layouts" edge to the MatrixLayout entity.
+func (m *GeneralSettingsMutation) RemovedMatrixLayoutsIDs() (ids []int) {
+	for id := range m.removedmatrix_layouts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MatrixLayoutsIDs returns the "matrix_layouts" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) MatrixLayoutsIDs() (ids []int) {
+	for id := range m.matrix_layouts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMatrixLayouts resets all changes to the "matrix_layouts" edge.
+func (m *GeneralSettingsMutation) ResetMatrixLayouts() {
+	m.matrix_layouts = nil
+	m.clearedmatrix_layouts = false
+	m.removedmatrix_layouts = nil
+}
+
 // Where appends a list predicates to the GeneralSettingsMutation builder.
 func (m *GeneralSettingsMutation) Where(ps ...predicate.GeneralSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -5493,7 +5729,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 22)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -5547,6 +5783,18 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.umami_settings != nil {
 		edges = append(edges, generalsettings.EdgeUmamiSettings)
+	}
+	if m.google_calendars != nil {
+		edges = append(edges, generalsettings.EdgeGoogleCalendars)
+	}
+	if m.news_feeds != nil {
+		edges = append(edges, generalsettings.EdgeNewsFeeds)
+	}
+	if m.generic_apis != nil {
+		edges = append(edges, generalsettings.EdgeGenericApis)
+	}
+	if m.matrix_layouts != nil {
+		edges = append(edges, generalsettings.EdgeMatrixLayouts)
 	}
 	return edges
 }
@@ -5663,13 +5911,37 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeGoogleCalendars:
+		ids := make([]ent.Value, 0, len(m.google_calendars))
+		for id := range m.google_calendars {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeNewsFeeds:
+		ids := make([]ent.Value, 0, len(m.news_feeds))
+		for id := range m.news_feeds {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeGenericApis:
+		ids := make([]ent.Value, 0, len(m.generic_apis))
+		for id := range m.generic_apis {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeMatrixLayouts:
+		ids := make([]ent.Value, 0, len(m.matrix_layouts))
+		for id := range m.matrix_layouts {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 22)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -5723,6 +5995,18 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removedumami_settings != nil {
 		edges = append(edges, generalsettings.EdgeUmamiSettings)
+	}
+	if m.removedgoogle_calendars != nil {
+		edges = append(edges, generalsettings.EdgeGoogleCalendars)
+	}
+	if m.removednews_feeds != nil {
+		edges = append(edges, generalsettings.EdgeNewsFeeds)
+	}
+	if m.removedgeneric_apis != nil {
+		edges = append(edges, generalsettings.EdgeGenericApis)
+	}
+	if m.removedmatrix_layouts != nil {
+		edges = append(edges, generalsettings.EdgeMatrixLayouts)
 	}
 	return edges
 }
@@ -5839,13 +6123,37 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeGoogleCalendars:
+		ids := make([]ent.Value, 0, len(m.removedgoogle_calendars))
+		for id := range m.removedgoogle_calendars {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeNewsFeeds:
+		ids := make([]ent.Value, 0, len(m.removednews_feeds))
+		for id := range m.removednews_feeds {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeGenericApis:
+		ids := make([]ent.Value, 0, len(m.removedgeneric_apis))
+		for id := range m.removedgeneric_apis {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeMatrixLayouts:
+		ids := make([]ent.Value, 0, len(m.removedmatrix_layouts))
+		for id := range m.removedmatrix_layouts {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 22)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -5900,6 +6208,18 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	if m.clearedumami_settings {
 		edges = append(edges, generalsettings.EdgeUmamiSettings)
 	}
+	if m.clearedgoogle_calendars {
+		edges = append(edges, generalsettings.EdgeGoogleCalendars)
+	}
+	if m.clearednews_feeds {
+		edges = append(edges, generalsettings.EdgeNewsFeeds)
+	}
+	if m.clearedgeneric_apis {
+		edges = append(edges, generalsettings.EdgeGenericApis)
+	}
+	if m.clearedmatrix_layouts {
+		edges = append(edges, generalsettings.EdgeMatrixLayouts)
+	}
 	return edges
 }
 
@@ -5943,6 +6263,14 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedai_settings
 	case generalsettings.EdgeUmamiSettings:
 		return m.clearedumami_settings
+	case generalsettings.EdgeGoogleCalendars:
+		return m.clearedgoogle_calendars
+	case generalsettings.EdgeNewsFeeds:
+		return m.clearednews_feeds
+	case generalsettings.EdgeGenericApis:
+		return m.clearedgeneric_apis
+	case generalsettings.EdgeMatrixLayouts:
+		return m.clearedmatrix_layouts
 	}
 	return false
 }
@@ -6013,8 +6341,834 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 	case generalsettings.EdgeUmamiSettings:
 		m.ResetUmamiSettings()
 		return nil
+	case generalsettings.EdgeGoogleCalendars:
+		m.ResetGoogleCalendars()
+		return nil
+	case generalsettings.EdgeNewsFeeds:
+		m.ResetNewsFeeds()
+		return nil
+	case generalsettings.EdgeGenericApis:
+		m.ResetGenericApis()
+		return nil
+	case generalsettings.EdgeMatrixLayouts:
+		m.ResetMatrixLayouts()
+		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings edge %s", name)
+}
+
+// GenericAPIMutation represents an operation that mutates the GenericAPI nodes in the graph.
+type GenericAPIMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	token         *string
+	url           *string
+	_config       *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*GenericAPI, error)
+	predicates    []predicate.GenericAPI
+}
+
+var _ ent.Mutation = (*GenericAPIMutation)(nil)
+
+// genericapiOption allows management of the mutation configuration using functional options.
+type genericapiOption func(*GenericAPIMutation)
+
+// newGenericAPIMutation creates new mutation for the GenericAPI entity.
+func newGenericAPIMutation(c config, op Op, opts ...genericapiOption) *GenericAPIMutation {
+	m := &GenericAPIMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGenericAPI,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGenericAPIID sets the ID field of the mutation.
+func withGenericAPIID(id int) genericapiOption {
+	return func(m *GenericAPIMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GenericAPI
+		)
+		m.oldValue = func(ctx context.Context) (*GenericAPI, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GenericAPI.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGenericAPI sets the old GenericAPI of the mutation.
+func withGenericAPI(node *GenericAPI) genericapiOption {
+	return func(m *GenericAPIMutation) {
+		m.oldValue = func(context.Context) (*GenericAPI, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GenericAPIMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GenericAPIMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GenericAPIMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GenericAPIMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().GenericAPI.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetToken sets the "token" field.
+func (m *GenericAPIMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *GenericAPIMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the GenericAPI entity.
+// If the GenericAPI object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GenericAPIMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *GenericAPIMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetURL sets the "url" field.
+func (m *GenericAPIMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *GenericAPIMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the GenericAPI entity.
+// If the GenericAPI object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GenericAPIMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *GenericAPIMutation) ResetURL() {
+	m.url = nil
+}
+
+// SetConfig sets the "config" field.
+func (m *GenericAPIMutation) SetConfig(s string) {
+	m._config = &s
+}
+
+// Config returns the value of the "config" field in the mutation.
+func (m *GenericAPIMutation) Config() (r string, exists bool) {
+	v := m._config
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfig returns the old "config" field's value of the GenericAPI entity.
+// If the GenericAPI object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GenericAPIMutation) OldConfig(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfig requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
+	}
+	return oldValue.Config, nil
+}
+
+// ResetConfig resets all changes to the "config" field.
+func (m *GenericAPIMutation) ResetConfig() {
+	m._config = nil
+}
+
+// Where appends a list predicates to the GenericAPIMutation builder.
+func (m *GenericAPIMutation) Where(ps ...predicate.GenericAPI) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the GenericAPIMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *GenericAPIMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.GenericAPI, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *GenericAPIMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *GenericAPIMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (GenericAPI).
+func (m *GenericAPIMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GenericAPIMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.token != nil {
+		fields = append(fields, genericapi.FieldToken)
+	}
+	if m.url != nil {
+		fields = append(fields, genericapi.FieldURL)
+	}
+	if m._config != nil {
+		fields = append(fields, genericapi.FieldConfig)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GenericAPIMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case genericapi.FieldToken:
+		return m.Token()
+	case genericapi.FieldURL:
+		return m.URL()
+	case genericapi.FieldConfig:
+		return m.Config()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GenericAPIMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case genericapi.FieldToken:
+		return m.OldToken(ctx)
+	case genericapi.FieldURL:
+		return m.OldURL(ctx)
+	case genericapi.FieldConfig:
+		return m.OldConfig(ctx)
+	}
+	return nil, fmt.Errorf("unknown GenericAPI field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GenericAPIMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case genericapi.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case genericapi.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	case genericapi.FieldConfig:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfig(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GenericAPI field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GenericAPIMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GenericAPIMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GenericAPIMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GenericAPI numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GenericAPIMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GenericAPIMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GenericAPIMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown GenericAPI nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GenericAPIMutation) ResetField(name string) error {
+	switch name {
+	case genericapi.FieldToken:
+		m.ResetToken()
+		return nil
+	case genericapi.FieldURL:
+		m.ResetURL()
+		return nil
+	case genericapi.FieldConfig:
+		m.ResetConfig()
+		return nil
+	}
+	return fmt.Errorf("unknown GenericAPI field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GenericAPIMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GenericAPIMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GenericAPIMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GenericAPIMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GenericAPIMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GenericAPIMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GenericAPIMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown GenericAPI unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GenericAPIMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown GenericAPI edge %s", name)
+}
+
+// GoogleCalendarMutation represents an operation that mutates the GoogleCalendar nodes in the graph.
+type GoogleCalendarMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	url           *string
+	name          *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*GoogleCalendar, error)
+	predicates    []predicate.GoogleCalendar
+}
+
+var _ ent.Mutation = (*GoogleCalendarMutation)(nil)
+
+// googlecalendarOption allows management of the mutation configuration using functional options.
+type googlecalendarOption func(*GoogleCalendarMutation)
+
+// newGoogleCalendarMutation creates new mutation for the GoogleCalendar entity.
+func newGoogleCalendarMutation(c config, op Op, opts ...googlecalendarOption) *GoogleCalendarMutation {
+	m := &GoogleCalendarMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGoogleCalendar,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGoogleCalendarID sets the ID field of the mutation.
+func withGoogleCalendarID(id int) googlecalendarOption {
+	return func(m *GoogleCalendarMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GoogleCalendar
+		)
+		m.oldValue = func(ctx context.Context) (*GoogleCalendar, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GoogleCalendar.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGoogleCalendar sets the old GoogleCalendar of the mutation.
+func withGoogleCalendar(node *GoogleCalendar) googlecalendarOption {
+	return func(m *GoogleCalendarMutation) {
+		m.oldValue = func(context.Context) (*GoogleCalendar, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GoogleCalendarMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GoogleCalendarMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GoogleCalendarMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GoogleCalendarMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().GoogleCalendar.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetURL sets the "url" field.
+func (m *GoogleCalendarMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *GoogleCalendarMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the GoogleCalendar entity.
+// If the GoogleCalendar object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GoogleCalendarMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *GoogleCalendarMutation) ResetURL() {
+	m.url = nil
+}
+
+// SetName sets the "name" field.
+func (m *GoogleCalendarMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *GoogleCalendarMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the GoogleCalendar entity.
+// If the GoogleCalendar object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GoogleCalendarMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *GoogleCalendarMutation) ResetName() {
+	m.name = nil
+}
+
+// Where appends a list predicates to the GoogleCalendarMutation builder.
+func (m *GoogleCalendarMutation) Where(ps ...predicate.GoogleCalendar) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the GoogleCalendarMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *GoogleCalendarMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.GoogleCalendar, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *GoogleCalendarMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *GoogleCalendarMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (GoogleCalendar).
+func (m *GoogleCalendarMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GoogleCalendarMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.url != nil {
+		fields = append(fields, googlecalendar.FieldURL)
+	}
+	if m.name != nil {
+		fields = append(fields, googlecalendar.FieldName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GoogleCalendarMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case googlecalendar.FieldURL:
+		return m.URL()
+	case googlecalendar.FieldName:
+		return m.Name()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GoogleCalendarMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case googlecalendar.FieldURL:
+		return m.OldURL(ctx)
+	case googlecalendar.FieldName:
+		return m.OldName(ctx)
+	}
+	return nil, fmt.Errorf("unknown GoogleCalendar field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GoogleCalendarMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case googlecalendar.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	case googlecalendar.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GoogleCalendar field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GoogleCalendarMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GoogleCalendarMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GoogleCalendarMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GoogleCalendar numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GoogleCalendarMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GoogleCalendarMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GoogleCalendarMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown GoogleCalendar nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GoogleCalendarMutation) ResetField(name string) error {
+	switch name {
+	case googlecalendar.FieldURL:
+		m.ResetURL()
+		return nil
+	case googlecalendar.FieldName:
+		m.ResetName()
+		return nil
+	}
+	return fmt.Errorf("unknown GoogleCalendar field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GoogleCalendarMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GoogleCalendarMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GoogleCalendarMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GoogleCalendarMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GoogleCalendarMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GoogleCalendarMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GoogleCalendarMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown GoogleCalendar unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GoogleCalendarMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown GoogleCalendar edge %s", name)
 }
 
 // HomeAssistantMutation represents an operation that mutates the HomeAssistant nodes in the graph.
@@ -7916,6 +9070,1138 @@ func (m *LogSettingsMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *LogSettingsMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown LogSettings edge %s", name)
+}
+
+// MatrixLayoutMutation represents an operation that mutates the MatrixLayout nodes in the graph.
+type MatrixLayoutMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	name          *string
+	rows          *int
+	addrows       *int
+	cols          *int
+	addcols       *int
+	gap           *int
+	addgap        *int
+	background    *string
+	enabled       *bool
+	bindings      *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*MatrixLayout, error)
+	predicates    []predicate.MatrixLayout
+}
+
+var _ ent.Mutation = (*MatrixLayoutMutation)(nil)
+
+// matrixlayoutOption allows management of the mutation configuration using functional options.
+type matrixlayoutOption func(*MatrixLayoutMutation)
+
+// newMatrixLayoutMutation creates new mutation for the MatrixLayout entity.
+func newMatrixLayoutMutation(c config, op Op, opts ...matrixlayoutOption) *MatrixLayoutMutation {
+	m := &MatrixLayoutMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeMatrixLayout,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withMatrixLayoutID sets the ID field of the mutation.
+func withMatrixLayoutID(id int) matrixlayoutOption {
+	return func(m *MatrixLayoutMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *MatrixLayout
+		)
+		m.oldValue = func(ctx context.Context) (*MatrixLayout, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().MatrixLayout.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withMatrixLayout sets the old MatrixLayout of the mutation.
+func withMatrixLayout(node *MatrixLayout) matrixlayoutOption {
+	return func(m *MatrixLayoutMutation) {
+		m.oldValue = func(context.Context) (*MatrixLayout, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m MatrixLayoutMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m MatrixLayoutMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *MatrixLayoutMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *MatrixLayoutMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().MatrixLayout.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *MatrixLayoutMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *MatrixLayoutMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the MatrixLayout entity.
+// If the MatrixLayout object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MatrixLayoutMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *MatrixLayoutMutation) ResetName() {
+	m.name = nil
+}
+
+// SetRows sets the "rows" field.
+func (m *MatrixLayoutMutation) SetRows(i int) {
+	m.rows = &i
+	m.addrows = nil
+}
+
+// Rows returns the value of the "rows" field in the mutation.
+func (m *MatrixLayoutMutation) Rows() (r int, exists bool) {
+	v := m.rows
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRows returns the old "rows" field's value of the MatrixLayout entity.
+// If the MatrixLayout object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MatrixLayoutMutation) OldRows(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRows is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRows requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRows: %w", err)
+	}
+	return oldValue.Rows, nil
+}
+
+// AddRows adds i to the "rows" field.
+func (m *MatrixLayoutMutation) AddRows(i int) {
+	if m.addrows != nil {
+		*m.addrows += i
+	} else {
+		m.addrows = &i
+	}
+}
+
+// AddedRows returns the value that was added to the "rows" field in this mutation.
+func (m *MatrixLayoutMutation) AddedRows() (r int, exists bool) {
+	v := m.addrows
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRows resets all changes to the "rows" field.
+func (m *MatrixLayoutMutation) ResetRows() {
+	m.rows = nil
+	m.addrows = nil
+}
+
+// SetCols sets the "cols" field.
+func (m *MatrixLayoutMutation) SetCols(i int) {
+	m.cols = &i
+	m.addcols = nil
+}
+
+// Cols returns the value of the "cols" field in the mutation.
+func (m *MatrixLayoutMutation) Cols() (r int, exists bool) {
+	v := m.cols
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCols returns the old "cols" field's value of the MatrixLayout entity.
+// If the MatrixLayout object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MatrixLayoutMutation) OldCols(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCols is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCols requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCols: %w", err)
+	}
+	return oldValue.Cols, nil
+}
+
+// AddCols adds i to the "cols" field.
+func (m *MatrixLayoutMutation) AddCols(i int) {
+	if m.addcols != nil {
+		*m.addcols += i
+	} else {
+		m.addcols = &i
+	}
+}
+
+// AddedCols returns the value that was added to the "cols" field in this mutation.
+func (m *MatrixLayoutMutation) AddedCols() (r int, exists bool) {
+	v := m.addcols
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCols resets all changes to the "cols" field.
+func (m *MatrixLayoutMutation) ResetCols() {
+	m.cols = nil
+	m.addcols = nil
+}
+
+// SetGap sets the "gap" field.
+func (m *MatrixLayoutMutation) SetGap(i int) {
+	m.gap = &i
+	m.addgap = nil
+}
+
+// Gap returns the value of the "gap" field in the mutation.
+func (m *MatrixLayoutMutation) Gap() (r int, exists bool) {
+	v := m.gap
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGap returns the old "gap" field's value of the MatrixLayout entity.
+// If the MatrixLayout object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MatrixLayoutMutation) OldGap(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGap is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGap requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGap: %w", err)
+	}
+	return oldValue.Gap, nil
+}
+
+// AddGap adds i to the "gap" field.
+func (m *MatrixLayoutMutation) AddGap(i int) {
+	if m.addgap != nil {
+		*m.addgap += i
+	} else {
+		m.addgap = &i
+	}
+}
+
+// AddedGap returns the value that was added to the "gap" field in this mutation.
+func (m *MatrixLayoutMutation) AddedGap() (r int, exists bool) {
+	v := m.addgap
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetGap resets all changes to the "gap" field.
+func (m *MatrixLayoutMutation) ResetGap() {
+	m.gap = nil
+	m.addgap = nil
+}
+
+// SetBackground sets the "background" field.
+func (m *MatrixLayoutMutation) SetBackground(s string) {
+	m.background = &s
+}
+
+// Background returns the value of the "background" field in the mutation.
+func (m *MatrixLayoutMutation) Background() (r string, exists bool) {
+	v := m.background
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackground returns the old "background" field's value of the MatrixLayout entity.
+// If the MatrixLayout object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MatrixLayoutMutation) OldBackground(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackground is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackground requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackground: %w", err)
+	}
+	return oldValue.Background, nil
+}
+
+// ResetBackground resets all changes to the "background" field.
+func (m *MatrixLayoutMutation) ResetBackground() {
+	m.background = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *MatrixLayoutMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *MatrixLayoutMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the MatrixLayout entity.
+// If the MatrixLayout object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MatrixLayoutMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *MatrixLayoutMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetBindings sets the "bindings" field.
+func (m *MatrixLayoutMutation) SetBindings(s string) {
+	m.bindings = &s
+}
+
+// Bindings returns the value of the "bindings" field in the mutation.
+func (m *MatrixLayoutMutation) Bindings() (r string, exists bool) {
+	v := m.bindings
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBindings returns the old "bindings" field's value of the MatrixLayout entity.
+// If the MatrixLayout object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MatrixLayoutMutation) OldBindings(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBindings is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBindings requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBindings: %w", err)
+	}
+	return oldValue.Bindings, nil
+}
+
+// ResetBindings resets all changes to the "bindings" field.
+func (m *MatrixLayoutMutation) ResetBindings() {
+	m.bindings = nil
+}
+
+// Where appends a list predicates to the MatrixLayoutMutation builder.
+func (m *MatrixLayoutMutation) Where(ps ...predicate.MatrixLayout) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the MatrixLayoutMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *MatrixLayoutMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.MatrixLayout, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *MatrixLayoutMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *MatrixLayoutMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (MatrixLayout).
+func (m *MatrixLayoutMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *MatrixLayoutMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.name != nil {
+		fields = append(fields, matrixlayout.FieldName)
+	}
+	if m.rows != nil {
+		fields = append(fields, matrixlayout.FieldRows)
+	}
+	if m.cols != nil {
+		fields = append(fields, matrixlayout.FieldCols)
+	}
+	if m.gap != nil {
+		fields = append(fields, matrixlayout.FieldGap)
+	}
+	if m.background != nil {
+		fields = append(fields, matrixlayout.FieldBackground)
+	}
+	if m.enabled != nil {
+		fields = append(fields, matrixlayout.FieldEnabled)
+	}
+	if m.bindings != nil {
+		fields = append(fields, matrixlayout.FieldBindings)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *MatrixLayoutMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case matrixlayout.FieldName:
+		return m.Name()
+	case matrixlayout.FieldRows:
+		return m.Rows()
+	case matrixlayout.FieldCols:
+		return m.Cols()
+	case matrixlayout.FieldGap:
+		return m.Gap()
+	case matrixlayout.FieldBackground:
+		return m.Background()
+	case matrixlayout.FieldEnabled:
+		return m.Enabled()
+	case matrixlayout.FieldBindings:
+		return m.Bindings()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *MatrixLayoutMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case matrixlayout.FieldName:
+		return m.OldName(ctx)
+	case matrixlayout.FieldRows:
+		return m.OldRows(ctx)
+	case matrixlayout.FieldCols:
+		return m.OldCols(ctx)
+	case matrixlayout.FieldGap:
+		return m.OldGap(ctx)
+	case matrixlayout.FieldBackground:
+		return m.OldBackground(ctx)
+	case matrixlayout.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case matrixlayout.FieldBindings:
+		return m.OldBindings(ctx)
+	}
+	return nil, fmt.Errorf("unknown MatrixLayout field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MatrixLayoutMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case matrixlayout.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case matrixlayout.FieldRows:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRows(v)
+		return nil
+	case matrixlayout.FieldCols:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCols(v)
+		return nil
+	case matrixlayout.FieldGap:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGap(v)
+		return nil
+	case matrixlayout.FieldBackground:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackground(v)
+		return nil
+	case matrixlayout.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case matrixlayout.FieldBindings:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBindings(v)
+		return nil
+	}
+	return fmt.Errorf("unknown MatrixLayout field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *MatrixLayoutMutation) AddedFields() []string {
+	var fields []string
+	if m.addrows != nil {
+		fields = append(fields, matrixlayout.FieldRows)
+	}
+	if m.addcols != nil {
+		fields = append(fields, matrixlayout.FieldCols)
+	}
+	if m.addgap != nil {
+		fields = append(fields, matrixlayout.FieldGap)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *MatrixLayoutMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case matrixlayout.FieldRows:
+		return m.AddedRows()
+	case matrixlayout.FieldCols:
+		return m.AddedCols()
+	case matrixlayout.FieldGap:
+		return m.AddedGap()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MatrixLayoutMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case matrixlayout.FieldRows:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRows(v)
+		return nil
+	case matrixlayout.FieldCols:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCols(v)
+		return nil
+	case matrixlayout.FieldGap:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddGap(v)
+		return nil
+	}
+	return fmt.Errorf("unknown MatrixLayout numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *MatrixLayoutMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *MatrixLayoutMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *MatrixLayoutMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown MatrixLayout nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *MatrixLayoutMutation) ResetField(name string) error {
+	switch name {
+	case matrixlayout.FieldName:
+		m.ResetName()
+		return nil
+	case matrixlayout.FieldRows:
+		m.ResetRows()
+		return nil
+	case matrixlayout.FieldCols:
+		m.ResetCols()
+		return nil
+	case matrixlayout.FieldGap:
+		m.ResetGap()
+		return nil
+	case matrixlayout.FieldBackground:
+		m.ResetBackground()
+		return nil
+	case matrixlayout.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case matrixlayout.FieldBindings:
+		m.ResetBindings()
+		return nil
+	}
+	return fmt.Errorf("unknown MatrixLayout field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *MatrixLayoutMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *MatrixLayoutMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *MatrixLayoutMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *MatrixLayoutMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *MatrixLayoutMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *MatrixLayoutMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *MatrixLayoutMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown MatrixLayout unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *MatrixLayoutMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown MatrixLayout edge %s", name)
+}
+
+// NewsFeedMutation represents an operation that mutates the NewsFeed nodes in the graph.
+type NewsFeedMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	url           *string
+	name          *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*NewsFeed, error)
+	predicates    []predicate.NewsFeed
+}
+
+var _ ent.Mutation = (*NewsFeedMutation)(nil)
+
+// newsfeedOption allows management of the mutation configuration using functional options.
+type newsfeedOption func(*NewsFeedMutation)
+
+// newNewsFeedMutation creates new mutation for the NewsFeed entity.
+func newNewsFeedMutation(c config, op Op, opts ...newsfeedOption) *NewsFeedMutation {
+	m := &NewsFeedMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNewsFeed,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNewsFeedID sets the ID field of the mutation.
+func withNewsFeedID(id int) newsfeedOption {
+	return func(m *NewsFeedMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *NewsFeed
+		)
+		m.oldValue = func(ctx context.Context) (*NewsFeed, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().NewsFeed.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNewsFeed sets the old NewsFeed of the mutation.
+func withNewsFeed(node *NewsFeed) newsfeedOption {
+	return func(m *NewsFeedMutation) {
+		m.oldValue = func(context.Context) (*NewsFeed, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NewsFeedMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NewsFeedMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NewsFeedMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NewsFeedMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().NewsFeed.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetURL sets the "url" field.
+func (m *NewsFeedMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *NewsFeedMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the NewsFeed entity.
+// If the NewsFeed object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsFeedMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *NewsFeedMutation) ResetURL() {
+	m.url = nil
+}
+
+// SetName sets the "name" field.
+func (m *NewsFeedMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *NewsFeedMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the NewsFeed entity.
+// If the NewsFeed object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsFeedMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *NewsFeedMutation) ResetName() {
+	m.name = nil
+}
+
+// Where appends a list predicates to the NewsFeedMutation builder.
+func (m *NewsFeedMutation) Where(ps ...predicate.NewsFeed) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NewsFeedMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NewsFeedMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NewsFeed, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NewsFeedMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NewsFeedMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (NewsFeed).
+func (m *NewsFeedMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NewsFeedMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.url != nil {
+		fields = append(fields, newsfeed.FieldURL)
+	}
+	if m.name != nil {
+		fields = append(fields, newsfeed.FieldName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NewsFeedMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case newsfeed.FieldURL:
+		return m.URL()
+	case newsfeed.FieldName:
+		return m.Name()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NewsFeedMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case newsfeed.FieldURL:
+		return m.OldURL(ctx)
+	case newsfeed.FieldName:
+		return m.OldName(ctx)
+	}
+	return nil, fmt.Errorf("unknown NewsFeed field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NewsFeedMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case newsfeed.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	case newsfeed.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NewsFeed field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NewsFeedMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NewsFeedMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NewsFeedMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown NewsFeed numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NewsFeedMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NewsFeedMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NewsFeedMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown NewsFeed nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NewsFeedMutation) ResetField(name string) error {
+	switch name {
+	case newsfeed.FieldURL:
+		m.ResetURL()
+		return nil
+	case newsfeed.FieldName:
+		m.ResetName()
+		return nil
+	}
+	return fmt.Errorf("unknown NewsFeed field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NewsFeedMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NewsFeedMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NewsFeedMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NewsFeedMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NewsFeedMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NewsFeedMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NewsFeedMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown NewsFeed unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NewsFeedMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown NewsFeed edge %s", name)
 }
 
 // NotificationMutation represents an operation that mutates the Notification nodes in the graph.

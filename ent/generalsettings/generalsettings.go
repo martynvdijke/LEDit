@@ -60,6 +60,14 @@ const (
 	EdgeAiSettings = "ai_settings"
 	// EdgeUmamiSettings holds the string denoting the umami_settings edge name in mutations.
 	EdgeUmamiSettings = "umami_settings"
+	// EdgeGoogleCalendars holds the string denoting the google_calendars edge name in mutations.
+	EdgeGoogleCalendars = "google_calendars"
+	// EdgeNewsFeeds holds the string denoting the news_feeds edge name in mutations.
+	EdgeNewsFeeds = "news_feeds"
+	// EdgeGenericApis holds the string denoting the generic_apis edge name in mutations.
+	EdgeGenericApis = "generic_apis"
+	// EdgeMatrixLayouts holds the string denoting the matrix_layouts edge name in mutations.
+	EdgeMatrixLayouts = "matrix_layouts"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -188,6 +196,34 @@ const (
 	UmamiSettingsInverseTable = "umami_settings"
 	// UmamiSettingsColumn is the table column denoting the umami_settings relation/edge.
 	UmamiSettingsColumn = "general_settings_umami_settings"
+	// GoogleCalendarsTable is the table that holds the google_calendars relation/edge.
+	GoogleCalendarsTable = "google_calendars"
+	// GoogleCalendarsInverseTable is the table name for the GoogleCalendar entity.
+	// It exists in this package in order to avoid circular dependency with the "googlecalendar" package.
+	GoogleCalendarsInverseTable = "google_calendars"
+	// GoogleCalendarsColumn is the table column denoting the google_calendars relation/edge.
+	GoogleCalendarsColumn = "general_settings_google_calendars"
+	// NewsFeedsTable is the table that holds the news_feeds relation/edge.
+	NewsFeedsTable = "news_feeds"
+	// NewsFeedsInverseTable is the table name for the NewsFeed entity.
+	// It exists in this package in order to avoid circular dependency with the "newsfeed" package.
+	NewsFeedsInverseTable = "news_feeds"
+	// NewsFeedsColumn is the table column denoting the news_feeds relation/edge.
+	NewsFeedsColumn = "general_settings_news_feeds"
+	// GenericApisTable is the table that holds the generic_apis relation/edge.
+	GenericApisTable = "generic_ap_is"
+	// GenericApisInverseTable is the table name for the GenericAPI entity.
+	// It exists in this package in order to avoid circular dependency with the "genericapi" package.
+	GenericApisInverseTable = "generic_ap_is"
+	// GenericApisColumn is the table column denoting the generic_apis relation/edge.
+	GenericApisColumn = "general_settings_generic_apis"
+	// MatrixLayoutsTable is the table that holds the matrix_layouts relation/edge.
+	MatrixLayoutsTable = "matrix_layouts"
+	// MatrixLayoutsInverseTable is the table name for the MatrixLayout entity.
+	// It exists in this package in order to avoid circular dependency with the "matrixlayout" package.
+	MatrixLayoutsInverseTable = "matrix_layouts"
+	// MatrixLayoutsColumn is the table column denoting the matrix_layouts relation/edge.
+	MatrixLayoutsColumn = "general_settings_matrix_layouts"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -511,6 +547,62 @@ func ByUmamiSettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUmamiSettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByGoogleCalendarsCount orders the results by google_calendars count.
+func ByGoogleCalendarsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGoogleCalendarsStep(), opts...)
+	}
+}
+
+// ByGoogleCalendars orders the results by google_calendars terms.
+func ByGoogleCalendars(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGoogleCalendarsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByNewsFeedsCount orders the results by news_feeds count.
+func ByNewsFeedsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newNewsFeedsStep(), opts...)
+	}
+}
+
+// ByNewsFeeds orders the results by news_feeds terms.
+func ByNewsFeeds(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newNewsFeedsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByGenericApisCount orders the results by generic_apis count.
+func ByGenericApisCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGenericApisStep(), opts...)
+	}
+}
+
+// ByGenericApis orders the results by generic_apis terms.
+func ByGenericApis(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGenericApisStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByMatrixLayoutsCount orders the results by matrix_layouts count.
+func ByMatrixLayoutsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMatrixLayoutsStep(), opts...)
+	}
+}
+
+// ByMatrixLayouts orders the results by matrix_layouts terms.
+func ByMatrixLayouts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMatrixLayoutsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -635,5 +727,33 @@ func newUmamiSettingsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UmamiSettingsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, UmamiSettingsTable, UmamiSettingsColumn),
+	)
+}
+func newGoogleCalendarsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GoogleCalendarsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, GoogleCalendarsTable, GoogleCalendarsColumn),
+	)
+}
+func newNewsFeedsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(NewsFeedsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, NewsFeedsTable, NewsFeedsColumn),
+	)
+}
+func newGenericApisStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GenericApisInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, GenericApisTable, GenericApisColumn),
+	)
+}
+func newMatrixLayoutsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MatrixLayoutsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MatrixLayoutsTable, MatrixLayoutsColumn),
 	)
 }

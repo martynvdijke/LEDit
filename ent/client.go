@@ -19,10 +19,14 @@ import (
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
+	"ledit/ent/genericapi"
+	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
+	"ledit/ent/matrixlayout"
+	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -62,6 +66,10 @@ type Client struct {
 	F1 *F1Client
 	// GeneralSettings is the client for interacting with the GeneralSettings builders.
 	GeneralSettings *GeneralSettingsClient
+	// GenericAPI is the client for interacting with the GenericAPI builders.
+	GenericAPI *GenericAPIClient
+	// GoogleCalendar is the client for interacting with the GoogleCalendar builders.
+	GoogleCalendar *GoogleCalendarClient
 	// HomeAssistant is the client for interacting with the HomeAssistant builders.
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
@@ -70,6 +78,10 @@ type Client struct {
 	LogEntry *LogEntryClient
 	// LogSettings is the client for interacting with the LogSettings builders.
 	LogSettings *LogSettingsClient
+	// MatrixLayout is the client for interacting with the MatrixLayout builders.
+	MatrixLayout *MatrixLayoutClient
+	// NewsFeed is the client for interacting with the NewsFeed builders.
+	NewsFeed *NewsFeedClient
 	// Notification is the client for interacting with the Notification builders.
 	Notification *NotificationClient
 	// Radarr is the client for interacting with the Radarr builders.
@@ -111,10 +123,14 @@ func (c *Client) init() {
 	c.EmailSettings = NewEmailSettingsClient(c.config)
 	c.F1 = NewF1Client(c.config)
 	c.GeneralSettings = NewGeneralSettingsClient(c.config)
+	c.GenericAPI = NewGenericAPIClient(c.config)
+	c.GoogleCalendar = NewGoogleCalendarClient(c.config)
 	c.HomeAssistant = NewHomeAssistantClient(c.config)
 	c.Image = NewImageClient(c.config)
 	c.LogEntry = NewLogEntryClient(c.config)
 	c.LogSettings = NewLogSettingsClient(c.config)
+	c.MatrixLayout = NewMatrixLayoutClient(c.config)
+	c.NewsFeed = NewNewsFeedClient(c.config)
 	c.Notification = NewNotificationClient(c.config)
 	c.Radarr = NewRadarrClient(c.config)
 	c.RssFeed = NewRssFeedClient(c.config)
@@ -226,10 +242,14 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		EmailSettings:   NewEmailSettingsClient(cfg),
 		F1:              NewF1Client(cfg),
 		GeneralSettings: NewGeneralSettingsClient(cfg),
+		GenericAPI:      NewGenericAPIClient(cfg),
+		GoogleCalendar:  NewGoogleCalendarClient(cfg),
 		HomeAssistant:   NewHomeAssistantClient(cfg),
 		Image:           NewImageClient(cfg),
 		LogEntry:        NewLogEntryClient(cfg),
 		LogSettings:     NewLogSettingsClient(cfg),
+		MatrixLayout:    NewMatrixLayoutClient(cfg),
+		NewsFeed:        NewNewsFeedClient(cfg),
 		Notification:    NewNotificationClient(cfg),
 		Radarr:          NewRadarrClient(cfg),
 		RssFeed:         NewRssFeedClient(cfg),
@@ -268,10 +288,14 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		EmailSettings:   NewEmailSettingsClient(cfg),
 		F1:              NewF1Client(cfg),
 		GeneralSettings: NewGeneralSettingsClient(cfg),
+		GenericAPI:      NewGenericAPIClient(cfg),
+		GoogleCalendar:  NewGoogleCalendarClient(cfg),
 		HomeAssistant:   NewHomeAssistantClient(cfg),
 		Image:           NewImageClient(cfg),
 		LogEntry:        NewLogEntryClient(cfg),
 		LogSettings:     NewLogSettingsClient(cfg),
+		MatrixLayout:    NewMatrixLayoutClient(cfg),
+		NewsFeed:        NewNewsFeedClient(cfg),
 		Notification:    NewNotificationClient(cfg),
 		Radarr:          NewRadarrClient(cfg),
 		RssFeed:         NewRssFeedClient(cfg),
@@ -313,9 +337,10 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AISettings, c.AdminSettings, c.Calendar, c.Crypto, c.DeviceSettings,
-		c.EmailSettings, c.F1, c.GeneralSettings, c.HomeAssistant, c.Image, c.LogEntry,
-		c.LogSettings, c.Notification, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr,
-		c.Stock, c.TextSlide, c.UmamiSettings, c.Untappd, c.Video, c.Weather,
+		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GoogleCalendar,
+		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MatrixLayout,
+		c.NewsFeed, c.Notification, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
+		c.TextSlide, c.UmamiSettings, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Use(hooks...)
 	}
@@ -326,9 +351,10 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AISettings, c.AdminSettings, c.Calendar, c.Crypto, c.DeviceSettings,
-		c.EmailSettings, c.F1, c.GeneralSettings, c.HomeAssistant, c.Image, c.LogEntry,
-		c.LogSettings, c.Notification, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr,
-		c.Stock, c.TextSlide, c.UmamiSettings, c.Untappd, c.Video, c.Weather,
+		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GoogleCalendar,
+		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MatrixLayout,
+		c.NewsFeed, c.Notification, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
+		c.TextSlide, c.UmamiSettings, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -353,6 +379,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.F1.mutate(ctx, m)
 	case *GeneralSettingsMutation:
 		return c.GeneralSettings.mutate(ctx, m)
+	case *GenericAPIMutation:
+		return c.GenericAPI.mutate(ctx, m)
+	case *GoogleCalendarMutation:
+		return c.GoogleCalendar.mutate(ctx, m)
 	case *HomeAssistantMutation:
 		return c.HomeAssistant.mutate(ctx, m)
 	case *ImageMutation:
@@ -361,6 +391,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.LogEntry.mutate(ctx, m)
 	case *LogSettingsMutation:
 		return c.LogSettings.mutate(ctx, m)
+	case *MatrixLayoutMutation:
+		return c.MatrixLayout.mutate(ctx, m)
+	case *NewsFeedMutation:
+		return c.NewsFeed.mutate(ctx, m)
 	case *NotificationMutation:
 		return c.Notification.mutate(ctx, m)
 	case *RadarrMutation:
@@ -1715,6 +1749,70 @@ func (c *GeneralSettingsClient) QueryUmamiSettings(_m *GeneralSettings) *UmamiSe
 	return query
 }
 
+// QueryGoogleCalendars queries the google_calendars edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryGoogleCalendars(_m *GeneralSettings) *GoogleCalendarQuery {
+	query := (&GoogleCalendarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(googlecalendar.Table, googlecalendar.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.GoogleCalendarsTable, generalsettings.GoogleCalendarsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNewsFeeds queries the news_feeds edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryNewsFeeds(_m *GeneralSettings) *NewsFeedQuery {
+	query := (&NewsFeedClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(newsfeed.Table, newsfeed.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.NewsFeedsTable, generalsettings.NewsFeedsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGenericApis queries the generic_apis edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryGenericApis(_m *GeneralSettings) *GenericAPIQuery {
+	query := (&GenericAPIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(genericapi.Table, genericapi.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.GenericApisTable, generalsettings.GenericApisColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMatrixLayouts queries the matrix_layouts edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryMatrixLayouts(_m *GeneralSettings) *MatrixLayoutQuery {
+	query := (&MatrixLayoutClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(matrixlayout.Table, matrixlayout.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.MatrixLayoutsTable, generalsettings.MatrixLayoutsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GeneralSettingsClient) Hooks() []Hook {
 	return c.hooks.GeneralSettings
@@ -1737,6 +1835,272 @@ func (c *GeneralSettingsClient) mutate(ctx context.Context, m *GeneralSettingsMu
 		return (&GeneralSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown GeneralSettings mutation op: %q", m.Op())
+	}
+}
+
+// GenericAPIClient is a client for the GenericAPI schema.
+type GenericAPIClient struct {
+	config
+}
+
+// NewGenericAPIClient returns a client for the GenericAPI from the given config.
+func NewGenericAPIClient(c config) *GenericAPIClient {
+	return &GenericAPIClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `genericapi.Hooks(f(g(h())))`.
+func (c *GenericAPIClient) Use(hooks ...Hook) {
+	c.hooks.GenericAPI = append(c.hooks.GenericAPI, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `genericapi.Intercept(f(g(h())))`.
+func (c *GenericAPIClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GenericAPI = append(c.inters.GenericAPI, interceptors...)
+}
+
+// Create returns a builder for creating a GenericAPI entity.
+func (c *GenericAPIClient) Create() *GenericAPICreate {
+	mutation := newGenericAPIMutation(c.config, OpCreate)
+	return &GenericAPICreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GenericAPI entities.
+func (c *GenericAPIClient) CreateBulk(builders ...*GenericAPICreate) *GenericAPICreateBulk {
+	return &GenericAPICreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GenericAPIClient) MapCreateBulk(slice any, setFunc func(*GenericAPICreate, int)) *GenericAPICreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GenericAPICreateBulk{err: fmt.Errorf("calling to GenericAPIClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GenericAPICreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GenericAPICreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GenericAPI.
+func (c *GenericAPIClient) Update() *GenericAPIUpdate {
+	mutation := newGenericAPIMutation(c.config, OpUpdate)
+	return &GenericAPIUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GenericAPIClient) UpdateOne(_m *GenericAPI) *GenericAPIUpdateOne {
+	mutation := newGenericAPIMutation(c.config, OpUpdateOne, withGenericAPI(_m))
+	return &GenericAPIUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GenericAPIClient) UpdateOneID(id int) *GenericAPIUpdateOne {
+	mutation := newGenericAPIMutation(c.config, OpUpdateOne, withGenericAPIID(id))
+	return &GenericAPIUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GenericAPI.
+func (c *GenericAPIClient) Delete() *GenericAPIDelete {
+	mutation := newGenericAPIMutation(c.config, OpDelete)
+	return &GenericAPIDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GenericAPIClient) DeleteOne(_m *GenericAPI) *GenericAPIDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GenericAPIClient) DeleteOneID(id int) *GenericAPIDeleteOne {
+	builder := c.Delete().Where(genericapi.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GenericAPIDeleteOne{builder}
+}
+
+// Query returns a query builder for GenericAPI.
+func (c *GenericAPIClient) Query() *GenericAPIQuery {
+	return &GenericAPIQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGenericAPI},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GenericAPI entity by its id.
+func (c *GenericAPIClient) Get(ctx context.Context, id int) (*GenericAPI, error) {
+	return c.Query().Where(genericapi.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GenericAPIClient) GetX(ctx context.Context, id int) *GenericAPI {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *GenericAPIClient) Hooks() []Hook {
+	return c.hooks.GenericAPI
+}
+
+// Interceptors returns the client interceptors.
+func (c *GenericAPIClient) Interceptors() []Interceptor {
+	return c.inters.GenericAPI
+}
+
+func (c *GenericAPIClient) mutate(ctx context.Context, m *GenericAPIMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GenericAPICreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GenericAPIUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GenericAPIUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GenericAPIDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GenericAPI mutation op: %q", m.Op())
+	}
+}
+
+// GoogleCalendarClient is a client for the GoogleCalendar schema.
+type GoogleCalendarClient struct {
+	config
+}
+
+// NewGoogleCalendarClient returns a client for the GoogleCalendar from the given config.
+func NewGoogleCalendarClient(c config) *GoogleCalendarClient {
+	return &GoogleCalendarClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `googlecalendar.Hooks(f(g(h())))`.
+func (c *GoogleCalendarClient) Use(hooks ...Hook) {
+	c.hooks.GoogleCalendar = append(c.hooks.GoogleCalendar, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `googlecalendar.Intercept(f(g(h())))`.
+func (c *GoogleCalendarClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GoogleCalendar = append(c.inters.GoogleCalendar, interceptors...)
+}
+
+// Create returns a builder for creating a GoogleCalendar entity.
+func (c *GoogleCalendarClient) Create() *GoogleCalendarCreate {
+	mutation := newGoogleCalendarMutation(c.config, OpCreate)
+	return &GoogleCalendarCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GoogleCalendar entities.
+func (c *GoogleCalendarClient) CreateBulk(builders ...*GoogleCalendarCreate) *GoogleCalendarCreateBulk {
+	return &GoogleCalendarCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GoogleCalendarClient) MapCreateBulk(slice any, setFunc func(*GoogleCalendarCreate, int)) *GoogleCalendarCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GoogleCalendarCreateBulk{err: fmt.Errorf("calling to GoogleCalendarClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GoogleCalendarCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GoogleCalendarCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GoogleCalendar.
+func (c *GoogleCalendarClient) Update() *GoogleCalendarUpdate {
+	mutation := newGoogleCalendarMutation(c.config, OpUpdate)
+	return &GoogleCalendarUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GoogleCalendarClient) UpdateOne(_m *GoogleCalendar) *GoogleCalendarUpdateOne {
+	mutation := newGoogleCalendarMutation(c.config, OpUpdateOne, withGoogleCalendar(_m))
+	return &GoogleCalendarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GoogleCalendarClient) UpdateOneID(id int) *GoogleCalendarUpdateOne {
+	mutation := newGoogleCalendarMutation(c.config, OpUpdateOne, withGoogleCalendarID(id))
+	return &GoogleCalendarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GoogleCalendar.
+func (c *GoogleCalendarClient) Delete() *GoogleCalendarDelete {
+	mutation := newGoogleCalendarMutation(c.config, OpDelete)
+	return &GoogleCalendarDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GoogleCalendarClient) DeleteOne(_m *GoogleCalendar) *GoogleCalendarDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GoogleCalendarClient) DeleteOneID(id int) *GoogleCalendarDeleteOne {
+	builder := c.Delete().Where(googlecalendar.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GoogleCalendarDeleteOne{builder}
+}
+
+// Query returns a query builder for GoogleCalendar.
+func (c *GoogleCalendarClient) Query() *GoogleCalendarQuery {
+	return &GoogleCalendarQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGoogleCalendar},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GoogleCalendar entity by its id.
+func (c *GoogleCalendarClient) Get(ctx context.Context, id int) (*GoogleCalendar, error) {
+	return c.Query().Where(googlecalendar.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GoogleCalendarClient) GetX(ctx context.Context, id int) *GoogleCalendar {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *GoogleCalendarClient) Hooks() []Hook {
+	return c.hooks.GoogleCalendar
+}
+
+// Interceptors returns the client interceptors.
+func (c *GoogleCalendarClient) Interceptors() []Interceptor {
+	return c.inters.GoogleCalendar
+}
+
+func (c *GoogleCalendarClient) mutate(ctx context.Context, m *GoogleCalendarMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GoogleCalendarCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GoogleCalendarUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GoogleCalendarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GoogleCalendarDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GoogleCalendar mutation op: %q", m.Op())
 	}
 }
 
@@ -2269,6 +2633,272 @@ func (c *LogSettingsClient) mutate(ctx context.Context, m *LogSettingsMutation) 
 		return (&LogSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown LogSettings mutation op: %q", m.Op())
+	}
+}
+
+// MatrixLayoutClient is a client for the MatrixLayout schema.
+type MatrixLayoutClient struct {
+	config
+}
+
+// NewMatrixLayoutClient returns a client for the MatrixLayout from the given config.
+func NewMatrixLayoutClient(c config) *MatrixLayoutClient {
+	return &MatrixLayoutClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `matrixlayout.Hooks(f(g(h())))`.
+func (c *MatrixLayoutClient) Use(hooks ...Hook) {
+	c.hooks.MatrixLayout = append(c.hooks.MatrixLayout, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `matrixlayout.Intercept(f(g(h())))`.
+func (c *MatrixLayoutClient) Intercept(interceptors ...Interceptor) {
+	c.inters.MatrixLayout = append(c.inters.MatrixLayout, interceptors...)
+}
+
+// Create returns a builder for creating a MatrixLayout entity.
+func (c *MatrixLayoutClient) Create() *MatrixLayoutCreate {
+	mutation := newMatrixLayoutMutation(c.config, OpCreate)
+	return &MatrixLayoutCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of MatrixLayout entities.
+func (c *MatrixLayoutClient) CreateBulk(builders ...*MatrixLayoutCreate) *MatrixLayoutCreateBulk {
+	return &MatrixLayoutCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MatrixLayoutClient) MapCreateBulk(slice any, setFunc func(*MatrixLayoutCreate, int)) *MatrixLayoutCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MatrixLayoutCreateBulk{err: fmt.Errorf("calling to MatrixLayoutClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MatrixLayoutCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MatrixLayoutCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for MatrixLayout.
+func (c *MatrixLayoutClient) Update() *MatrixLayoutUpdate {
+	mutation := newMatrixLayoutMutation(c.config, OpUpdate)
+	return &MatrixLayoutUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MatrixLayoutClient) UpdateOne(_m *MatrixLayout) *MatrixLayoutUpdateOne {
+	mutation := newMatrixLayoutMutation(c.config, OpUpdateOne, withMatrixLayout(_m))
+	return &MatrixLayoutUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MatrixLayoutClient) UpdateOneID(id int) *MatrixLayoutUpdateOne {
+	mutation := newMatrixLayoutMutation(c.config, OpUpdateOne, withMatrixLayoutID(id))
+	return &MatrixLayoutUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for MatrixLayout.
+func (c *MatrixLayoutClient) Delete() *MatrixLayoutDelete {
+	mutation := newMatrixLayoutMutation(c.config, OpDelete)
+	return &MatrixLayoutDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MatrixLayoutClient) DeleteOne(_m *MatrixLayout) *MatrixLayoutDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MatrixLayoutClient) DeleteOneID(id int) *MatrixLayoutDeleteOne {
+	builder := c.Delete().Where(matrixlayout.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MatrixLayoutDeleteOne{builder}
+}
+
+// Query returns a query builder for MatrixLayout.
+func (c *MatrixLayoutClient) Query() *MatrixLayoutQuery {
+	return &MatrixLayoutQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMatrixLayout},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a MatrixLayout entity by its id.
+func (c *MatrixLayoutClient) Get(ctx context.Context, id int) (*MatrixLayout, error) {
+	return c.Query().Where(matrixlayout.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MatrixLayoutClient) GetX(ctx context.Context, id int) *MatrixLayout {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *MatrixLayoutClient) Hooks() []Hook {
+	return c.hooks.MatrixLayout
+}
+
+// Interceptors returns the client interceptors.
+func (c *MatrixLayoutClient) Interceptors() []Interceptor {
+	return c.inters.MatrixLayout
+}
+
+func (c *MatrixLayoutClient) mutate(ctx context.Context, m *MatrixLayoutMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MatrixLayoutCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MatrixLayoutUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MatrixLayoutUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MatrixLayoutDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown MatrixLayout mutation op: %q", m.Op())
+	}
+}
+
+// NewsFeedClient is a client for the NewsFeed schema.
+type NewsFeedClient struct {
+	config
+}
+
+// NewNewsFeedClient returns a client for the NewsFeed from the given config.
+func NewNewsFeedClient(c config) *NewsFeedClient {
+	return &NewsFeedClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `newsfeed.Hooks(f(g(h())))`.
+func (c *NewsFeedClient) Use(hooks ...Hook) {
+	c.hooks.NewsFeed = append(c.hooks.NewsFeed, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `newsfeed.Intercept(f(g(h())))`.
+func (c *NewsFeedClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NewsFeed = append(c.inters.NewsFeed, interceptors...)
+}
+
+// Create returns a builder for creating a NewsFeed entity.
+func (c *NewsFeedClient) Create() *NewsFeedCreate {
+	mutation := newNewsFeedMutation(c.config, OpCreate)
+	return &NewsFeedCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NewsFeed entities.
+func (c *NewsFeedClient) CreateBulk(builders ...*NewsFeedCreate) *NewsFeedCreateBulk {
+	return &NewsFeedCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NewsFeedClient) MapCreateBulk(slice any, setFunc func(*NewsFeedCreate, int)) *NewsFeedCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NewsFeedCreateBulk{err: fmt.Errorf("calling to NewsFeedClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NewsFeedCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NewsFeedCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NewsFeed.
+func (c *NewsFeedClient) Update() *NewsFeedUpdate {
+	mutation := newNewsFeedMutation(c.config, OpUpdate)
+	return &NewsFeedUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NewsFeedClient) UpdateOne(_m *NewsFeed) *NewsFeedUpdateOne {
+	mutation := newNewsFeedMutation(c.config, OpUpdateOne, withNewsFeed(_m))
+	return &NewsFeedUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NewsFeedClient) UpdateOneID(id int) *NewsFeedUpdateOne {
+	mutation := newNewsFeedMutation(c.config, OpUpdateOne, withNewsFeedID(id))
+	return &NewsFeedUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NewsFeed.
+func (c *NewsFeedClient) Delete() *NewsFeedDelete {
+	mutation := newNewsFeedMutation(c.config, OpDelete)
+	return &NewsFeedDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NewsFeedClient) DeleteOne(_m *NewsFeed) *NewsFeedDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NewsFeedClient) DeleteOneID(id int) *NewsFeedDeleteOne {
+	builder := c.Delete().Where(newsfeed.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NewsFeedDeleteOne{builder}
+}
+
+// Query returns a query builder for NewsFeed.
+func (c *NewsFeedClient) Query() *NewsFeedQuery {
+	return &NewsFeedQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNewsFeed},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NewsFeed entity by its id.
+func (c *NewsFeedClient) Get(ctx context.Context, id int) (*NewsFeed, error) {
+	return c.Query().Where(newsfeed.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NewsFeedClient) GetX(ctx context.Context, id int) *NewsFeed {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *NewsFeedClient) Hooks() []Hook {
+	return c.hooks.NewsFeed
+}
+
+// Interceptors returns the client interceptors.
+func (c *NewsFeedClient) Interceptors() []Interceptor {
+	return c.inters.NewsFeed
+}
+
+func (c *NewsFeedClient) mutate(ctx context.Context, m *NewsFeedMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NewsFeedCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NewsFeedUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NewsFeedUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NewsFeedDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NewsFeed mutation op: %q", m.Op())
 	}
 }
 
@@ -3739,14 +4369,15 @@ func (c *WeatherClient) mutate(ctx context.Context, m *WeatherMutation) (Value, 
 type (
 	hooks struct {
 		AISettings, AdminSettings, Calendar, Crypto, DeviceSettings, EmailSettings, F1,
-		GeneralSettings, HomeAssistant, Image, LogEntry, LogSettings, Notification,
-		Radarr, RssFeed, Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd,
-		Video, Weather []ent.Hook
+		GeneralSettings, GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry,
+		LogSettings, MatrixLayout, NewsFeed, Notification, Radarr, RssFeed, Schedule,
+		Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video, Weather []ent.Hook
 	}
 	inters struct {
 		AISettings, AdminSettings, Calendar, Crypto, DeviceSettings, EmailSettings, F1,
-		GeneralSettings, HomeAssistant, Image, LogEntry, LogSettings, Notification,
-		Radarr, RssFeed, Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd,
-		Video, Weather []ent.Interceptor
+		GeneralSettings, GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry,
+		LogSettings, MatrixLayout, NewsFeed, Notification, Radarr, RssFeed, Schedule,
+		Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
+		Weather []ent.Interceptor
 	}
 )

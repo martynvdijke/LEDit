@@ -723,6 +723,98 @@ func HasUmamiSettingsWith(preds ...predicate.UmamiSettings) predicate.GeneralSet
 	})
 }
 
+// HasGoogleCalendars applies the HasEdge predicate on the "google_calendars" edge.
+func HasGoogleCalendars() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, GoogleCalendarsTable, GoogleCalendarsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGoogleCalendarsWith applies the HasEdge predicate on the "google_calendars" edge with a given conditions (other predicates).
+func HasGoogleCalendarsWith(preds ...predicate.GoogleCalendar) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newGoogleCalendarsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasNewsFeeds applies the HasEdge predicate on the "news_feeds" edge.
+func HasNewsFeeds() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NewsFeedsTable, NewsFeedsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNewsFeedsWith applies the HasEdge predicate on the "news_feeds" edge with a given conditions (other predicates).
+func HasNewsFeedsWith(preds ...predicate.NewsFeed) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newNewsFeedsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasGenericApis applies the HasEdge predicate on the "generic_apis" edge.
+func HasGenericApis() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, GenericApisTable, GenericApisColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGenericApisWith applies the HasEdge predicate on the "generic_apis" edge with a given conditions (other predicates).
+func HasGenericApisWith(preds ...predicate.GenericAPI) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newGenericApisStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMatrixLayouts applies the HasEdge predicate on the "matrix_layouts" edge.
+func HasMatrixLayouts() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MatrixLayoutsTable, MatrixLayoutsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMatrixLayoutsWith applies the HasEdge predicate on the "matrix_layouts" edge with a given conditions (other predicates).
+func HasMatrixLayoutsWith(preds ...predicate.MatrixLayout) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newMatrixLayoutsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.GeneralSettings) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.AndPredicates(predicates...))

@@ -28,6 +28,10 @@ type Tx struct {
 	F1 *F1Client
 	// GeneralSettings is the client for interacting with the GeneralSettings builders.
 	GeneralSettings *GeneralSettingsClient
+	// GenericAPI is the client for interacting with the GenericAPI builders.
+	GenericAPI *GenericAPIClient
+	// GoogleCalendar is the client for interacting with the GoogleCalendar builders.
+	GoogleCalendar *GoogleCalendarClient
 	// HomeAssistant is the client for interacting with the HomeAssistant builders.
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
@@ -36,6 +40,10 @@ type Tx struct {
 	LogEntry *LogEntryClient
 	// LogSettings is the client for interacting with the LogSettings builders.
 	LogSettings *LogSettingsClient
+	// MatrixLayout is the client for interacting with the MatrixLayout builders.
+	MatrixLayout *MatrixLayoutClient
+	// NewsFeed is the client for interacting with the NewsFeed builders.
+	NewsFeed *NewsFeedClient
 	// Notification is the client for interacting with the Notification builders.
 	Notification *NotificationClient
 	// Radarr is the client for interacting with the Radarr builders.
@@ -197,10 +205,14 @@ func (tx *Tx) init() {
 	tx.EmailSettings = NewEmailSettingsClient(tx.config)
 	tx.F1 = NewF1Client(tx.config)
 	tx.GeneralSettings = NewGeneralSettingsClient(tx.config)
+	tx.GenericAPI = NewGenericAPIClient(tx.config)
+	tx.GoogleCalendar = NewGoogleCalendarClient(tx.config)
 	tx.HomeAssistant = NewHomeAssistantClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
 	tx.LogEntry = NewLogEntryClient(tx.config)
 	tx.LogSettings = NewLogSettingsClient(tx.config)
+	tx.MatrixLayout = NewMatrixLayoutClient(tx.config)
+	tx.NewsFeed = NewNewsFeedClient(tx.config)
 	tx.Notification = NewNotificationClient(tx.config)
 	tx.Radarr = NewRadarrClient(tx.config)
 	tx.RssFeed = NewRssFeedClient(tx.config)
