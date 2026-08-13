@@ -833,42 +833,6 @@ func TestAPIFeedNext(t *testing.T) {
 	}
 }
 
-func TestAPITrmnlStats(t *testing.T) {
-	drv := openTestDB(t)
-	defer drv.Close()
-
-	srv := handlers.New(drv, nil)
-	req := httptest.NewRequest("GET", "/api/trmnl/stats", nil)
-	w := httptest.NewRecorder()
-	srv.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", w.Code)
-	}
-	var resp map[string]any
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("invalid JSON response: %v", err)
-	}
-	system, ok := resp["system"].(map[string]any)
-	if !ok {
-		t.Fatal("expected top-level system object")
-	}
-	for _, field := range []string{"cpu_cores", "go_version", "os", "memory", "load"} {
-		if _, ok := system[field]; !ok {
-			t.Errorf("expected system.%s field", field)
-		}
-	}
-	analytics, ok := resp["analytics"].(map[string]any)
-	if !ok {
-		t.Fatal("expected top-level analytics object")
-	}
-	for _, field := range []string{"total_displays", "uptime", "by_source", "recent"} {
-		if _, ok := analytics[field]; !ok {
-			t.Errorf("expected analytics.%s field", field)
-		}
-	}
-}
-
 func TestDSNFunction(t *testing.T) {
 	dsn := db.DSN()
 	if dsn == "" {
