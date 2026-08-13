@@ -1,0 +1,60 @@
+<div class="layout layout--col gap">
+  <div class="grid grid--cols-2">
+    <div class="col col--start gap">
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="label">System</span>
+          <span class="value value--large">{{ IDX_0.system.cpu_cores }} cores</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="value value--small">Memory - {{ IDX_0.system.memory }}</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="value value--small">Load - {{ IDX_0.system.load }}</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="label">{{ IDX_0.system.go_version }} / {{ IDX_0.system.os }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col col--start gap">
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="label">Analytics</span>
+          <span class="value value--large">{{ IDX_0.analytics.total_displays }}</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="value value--small">Uptime - {{ IDX_0.analytics.uptime }}</span>
+        </div>
+      </div>
+      {% for stat in IDX_0.analytics.by_source %}
+        <div class="item">
+          <div class="meta"></div>
+          <div class="content">
+            <span class="value value--small">{{ stat[0] }} - {{ stat[1] }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="title_bar">
+  <img class="image image--contain" src="{{ trml.plugin_settings.custom_fields_values.url }}/static/pwa/icon.svg">
+  <span class="title">LEDit Stats</span>
+</div>

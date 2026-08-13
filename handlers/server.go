@@ -178,6 +178,7 @@ func (s *Server) setupRoutes() {
 		api.POST("/feed/priority", s.APIFeedPriority)
 		api.POST("/webhook/notify", s.APIWebhookNotify)
 		api.GET("/notifications", s.APINotificationHistory)
+		api.GET("/trmnl/stats", s.APITrmnlStats)
 	}
 
 	s.Router.GET("/login", s.LoginPage)

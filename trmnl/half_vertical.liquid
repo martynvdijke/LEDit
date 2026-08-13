@@ -1,0 +1,41 @@
+<div class="layout layout--col gap">
+  <div class="item">
+    <div class="meta"></div>
+    <div class="content">
+      <span class="label">System</span>
+      <span class="value value--large">{{ IDX_0.system.cpu_cores }} cores</span>
+    </div>
+  </div>
+  <div class="hr"></div>
+  <div class="grid grid--cols-2">
+    <div class="item">
+      <div class="meta"></div>
+      <div class="content">
+        <span class="value value--small">Mem - {{ IDX_0.system.memory }}</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="meta"></div>
+      <div class="content">
+        <span class="value value--small">Load - {{ IDX_0.system.load }}</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="meta"></div>
+      <div class="content">
+        <span class="value value--small">Displays - {{ IDX_0.analytics.total_displays }}</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="meta"></div>
+      <div class="content">
+        <span class="value value--small">Uptime - {{ IDX_0.analytics.uptime }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="title_bar">
+  <img class="image image--contain" src="{{ trml.plugin_settings.custom_fields_values.url }}/static/pwa/icon.svg">
+  <span class="title">LEDit Stats</span>
+</div>
