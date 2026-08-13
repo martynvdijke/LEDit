@@ -1,3 +1,16 @@
+# [1.12.0](https://github.com/martynvdijke/LEDit/compare/v1.11.0...v1.12.0) (2026-08-13)
+
+
+### Bug Fixes
+
+* remove stray trmnl route breaking release build ([ce111f2](https://github.com/martynvdijke/LEDit/commit/ce111f258567a8d76e56d259e10487eb0e71a233))
+* remove trmnl stats test for uncommitted feature ([f5e728b](https://github.com/martynvdijke/LEDit/commit/f5e728b701a68c7015b49f39ca71d44bc3a344e1))
+
+
+### Features
+
+* add device library for LED matrix streaming ([e2949b2](https://github.com/martynvdijke/LEDit/commit/e2949b26a4abdff9a7c5deabd4b7bc95df164fc0))
+
 # [1.11.0](https://github.com/martynvdijke/LEDit/compare/v1.10.12...v1.11.0) (2026-08-12)
 
 
