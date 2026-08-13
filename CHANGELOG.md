@@ -1,3 +1,15 @@
+# [1.14.0](https://github.com/martynvdijke/LEDit/compare/v1.13.0...v1.14.0) (2026-08-13)
+
+
+### Bug Fixes
+
+* restore global playwright webServer for CI ([ecdaaa8](https://github.com/martynvdijke/LEDit/commit/ecdaaa8876b28201c05d3d8b802651067a013d1b))
+
+
+### Features
+
+* matrix dashboard rendering ([3a6bc7e](https://github.com/martynvdijke/LEDit/commit/3a6bc7e9e194338d94d8e0df02acda4ea750cd4e))
+
 # [1.13.0](https://github.com/martynvdijke/LEDit/compare/v1.12.0...v1.13.0) (2026-08-13)
 
 
