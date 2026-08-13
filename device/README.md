@@ -105,4 +105,16 @@ device/
     config.py             # env-var config + logging
     display.py            # MatrixDisplay / FileDisplay abstractions
     client.py             # WebSocket frame handling + rendering
+  tests/
+    test_client.py        # unit tests (no hardware required)
+```
+
+## Running tests
+
+The unit tests use a `FileDisplay` (writes PNGs to a temp dir), so they run
+without a panel or the `rgbmatrix` bindings installed:
+
+```bash
+cd device
+python3 -m unittest discover -s tests -v
 ```

@@ -2065,3 +2065,71 @@ func TestDeviceTokenGeneratedOnCreate(t *testing.T) {
 		t.Errorf("expected refresh_interval 30, got %d", d.RefreshInterval)
 	}
 }
+
+func TestNotificationBroadcast(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv, nil)
+
+	start := handlers.CurrentNotifSeq()
+
+	srv.AddNotification("Alert", "First")
+	srv.AddNotification("Alert", "Second")
+
+	after := handlers.NotificationsAfter(start)
+	if len(after) != 2 {
+		t.Fatalf("expected 2 notifications after cursor %d, got %d", start, len(after))
+	}
+	if after[0].Title != "Alert" || after[0].Message != "First" {
+		t.Errorf("expected first notification Alert/First, got %+v", after[0])
+	}
+	if after[1].Message != "Second" {
+		t.Errorf("expected second notification message Second, got %+v", after[1])
+	}
+	if after[0].ID >= after[1].ID {
+		t.Errorf("expected ascending IDs, got %d then %d", after[0].ID, after[1].ID)
+	}
+	if handlers.CurrentNotifSeq() != start+2 {
+		t.Errorf("expected seq %d, got %d", start+2, handlers.CurrentNotifSeq())
+	}
+
+	// After consuming both (cursor = last ID), no new notifications remain.
+	remaining := handlers.NotificationsAfter(after[1].ID)
+	if len(remaining) != 0 {
+		t.Errorf("expected 0 notifications after consuming cursor, got %d", len(remaining))
+	}
+}
+
+func TestDeviceTokenBackfill(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	// Pre-seed a legacy device with an empty token on a separate client sharing
+	// the same driver, so that handlers.New's backfill picks it up.
+	seed := ent.NewClient(ent.Driver(drv))
+	if err := seed.Schema.Create(testCtx); err != nil {
+		t.Fatalf("seed schema: %v", err)
+	}
+	dev, err := seed.DeviceSettings.Create().
+		SetName("legacy").SetIP("10.0.0.20").SetPort(6270).
+		SetWidth(64).SetHeight(64).SetEnabled(true).
+		Save(testCtx)
+	if err != nil {
+		t.Fatalf("seed device: %v", err)
+	}
+
+	// handlers.New runs backfillDeviceTokens over existing rows.
+	srv := handlers.New(drv, nil)
+
+	got, err := srv.DB.DeviceSettings.Get(testCtx, dev.ID)
+	if err != nil {
+		t.Fatalf("query device: %v", err)
+	}
+	if got.Token == "" {
+		t.Error("expected backfilled token to be non-empty")
+	}
+	if len(got.Token) != 32 {
+		t.Errorf("expected 32-char token, got %d chars", len(got.Token))
+	}
+}
