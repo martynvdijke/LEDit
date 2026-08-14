@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/martynvdijke/LEDit/compare/v1.14.0...v1.15.0) (2026-08-14)
+
+
+### Features
+
+* add OpenTelemetry support to device library ([aba8082](https://github.com/martynvdijke/LEDit/commit/aba8082d84fe47831e2a7369461ef8458eea6569))
+
 # [1.14.0](https://github.com/martynvdijke/LEDit/compare/v1.13.0...v1.14.0) (2026-08-13)
 
 
