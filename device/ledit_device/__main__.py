@@ -8,24 +8,30 @@ import websocket  # websocket-client
 from .client import Client
 from .config import log, server_url, token
 from .display import make_display
+from .telemetry import init_telemetry
 
 
 def main():
-    token_value = token()
-    url = "%s/ws/device/%s" % (server_url(), token_value)
+    telemetry = init_telemetry()
+    try:
+        token_value = token()
+        url = "%s/ws/device/%s" % (server_url(), token_value)
 
-    display = make_display()
-    client = Client(display)
-    log("info", "connecting to %s (matrix %dx%d)" % (url, display.width, display.height))
+        display = make_display()
+        client = Client(display)
+        log("info", "connecting to %s (matrix %dx%d)" % (url, display.width, display.height))
 
-    ws = websocket.WebSocketApp(
-        url,
-        on_message=client.on_message,
-        on_error=client.on_error,
-        on_close=client.on_close,
-    )
-    # run_forever with reconnect=True keeps the device online across drops.
-    ws.run_forever(ping_interval=30, ping_timeout=10, reconnect=5)
+        ws = websocket.WebSocketApp(
+            url,
+            on_message=client.on_message,
+            on_error=client.on_error,
+            on_close=client.on_close,
+            on_reconnect=client.on_reconnect,
+        )
+        # run_forever with reconnect=True keeps the device online across drops.
+        ws.run_forever(ping_interval=30, ping_timeout=10, reconnect=5)
+    finally:
+        telemetry.shutdown()
 
 
 if __name__ == "__main__":

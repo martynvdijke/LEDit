@@ -1,12 +1,24 @@
 """Configuration and small helpers read from environment variables."""
 
+import logging
 import os
 import sys
-import time
+
+# All device log output goes through this logger. When OTel telemetry is
+# enabled (see telemetry.py) an OTLP handler with trace-context correlation
+# is attached; the stderr handler below keeps console output unchanged.
+_logger = logging.getLogger("ledit_device")
+_logger.setLevel(logging.INFO)
+if not _logger.handlers:
+    _handler = logging.StreamHandler(sys.stderr)
+    _handler.setFormatter(
+        logging.Formatter("[%(asctime)s] %(message)s", datefmt="%H:%M:%S")
+    )
+    _logger.addHandler(_handler)
 
 
 def log(level, msg):
-    sys.stderr.write("[%s] %s\n" % (time.strftime("%H:%M:%S"), msg))
+    getattr(_logger, level, _logger.info)(msg)
 
 
 def env_int(name, default):

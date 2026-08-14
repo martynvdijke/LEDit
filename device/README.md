@@ -22,7 +22,8 @@ no changes to the device — new features appear automatically on the next frame
 - Python 3.8+
 - [rpi-rgb-led-matrix](https://github.com/hzeller/rpi-rgb-led-matrix) (C++
   library + Python bindings, installed separately)
-- `Pillow` and `websocket-client` (installed automatically by pip)
+- `Pillow`, `websocket-client`, and the OpenTelemetry packages (installed
+  automatically by pip)
 
 ### Install on a Pi Zero
 
@@ -63,6 +64,32 @@ All configuration is via environment variables:
 | `LEDIT_GPIO_SLOWDOWN`   | `1`                   | Set >1 on Pi 4 / fast boards     |
 | `LEDIT_PREVIEW_DIR`     | *(unset)*             | Save frames as PNGs (no hardware)|
 
+## OpenTelemetry
+
+The device exports **traces, metrics, and logs** to an OTLP-compatible backend
+(the same way the LEDit server does). Everything is off by default — if
+`OTEL_EXPORTER_OTLP_ENDPOINT` is not set the client runs exactly as before,
+with no telemetry overhead.
+
+| Variable                       | Default          | Purpose                                        |
+| ------------------------------ | ---------------- | ---------------------------------------------- |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`  | *(unset)*        | OTLP collector endpoint; unset disables telemetry |
+| `OTEL_EXPORTER_OTLP_PROTOCOL`  | `grpc`           | `grpc` or `http/protobuf`                      |
+| `OTEL_SERVICE_NAME`            | `ledit-device`   | Service name attached to exported telemetry   |
+| `OTEL_RESOURCE_ATTRIBUTES`     | *(unset)*        | Extra resource attributes (e.g. `rack=42,zone=west`) |
+| `OTEL_TRACES_SAMPLER`          | *(default)*      | `always_on`, `always_off`, `traceidratio`, `parentbased_*` |
+
+Spans cover the WebSocket lifecycle (message received, image/text render,
+connection errors) and metrics include `device.frames_rendered_total`,
+`device.connection_errors_total`, and `device.reconnects_total`. Device logs
+are forwarded to the OTLP backend with trace-context correlation.
+
+Example with a local collector:
+
+```bash
+LEDIT_TOKEN=<token> OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317 ledit-device
+```
+
 ## Getting the token
 
 1. Open the LEDit admin UI → **Devices**.
@@ -97,16 +124,18 @@ This writes each received frame as a PNG into `LEDIT_PREVIEW_DIR`.
 ## Package layout
 
 ```
-device/
-  pyproject.toml          # package metadata + console script
-  ledit_device/
-    __init__.py           # version + public exports
-    __main__.py           # entry point (python -m ledit_device)
-    config.py             # env-var config + logging
-    display.py            # MatrixDisplay / FileDisplay abstractions
-    client.py             # WebSocket frame handling + rendering
-  tests/
-    test_client.py        # unit tests (no hardware required)
+  device/
+    pyproject.toml          # package metadata + console script
+    ledit_device/
+      __init__.py           # version + public exports
+      __main__.py           # entry point (python -m ledit_device)
+      config.py             # env-var config + logging
+      display.py            # MatrixDisplay / FileDisplay abstractions
+      client.py             # WebSocket frame handling + rendering
+      telemetry.py          # OpenTelemetry init/shutdown (traces, metrics, logs)
+    tests/
+      test_client.py        # unit tests (no hardware required)
+      test_telemetry.py     # telemetry unit tests
 ```
 
 ## Running tests
