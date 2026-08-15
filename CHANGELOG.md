@@ -1,3 +1,15 @@
+# [1.16.0](https://github.com/martynvdijke/LEDit/compare/v1.15.0...v1.16.0) (2026-08-15)
+
+
+### Bug Fixes
+
+* allow same-origin WebSocket connections on any port ([4c3e6ec](https://github.com/martynvdijke/LEDit/commit/4c3e6ecef78a8470f43ebaaad31dbe7f6a790236))
+
+
+### Features
+
+* add live preview, LKG cache, ambience modes, AI features, health monitoring and alerting ([6343db5](https://github.com/martynvdijke/LEDit/commit/6343db5c16424bb0da8cd5a53b207a533edd549a))
+
 # [1.15.0](https://github.com/martynvdijke/LEDit/compare/v1.14.0...v1.15.0) (2026-08-14)
 
 
