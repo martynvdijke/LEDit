@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/martynvdijke/LEDit/compare/v1.16.0...v1.17.0) (2026-08-15)
+
+
+### Features
+
+* TRMNL plugin CI lint and release deploy ([fe31223](https://github.com/martynvdijke/LEDit/commit/fe31223d61bce103a2bb1f164a529d799247abb9))
+
 # [1.16.0](https://github.com/martynvdijke/LEDit/compare/v1.15.0...v1.16.0) (2026-08-15)
 
 
