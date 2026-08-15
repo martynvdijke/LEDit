@@ -49,11 +49,14 @@ test.describe('Web live preview', () => {
     const select = page.locator('[data-device-select]');
     await expect(select).toBeVisible();
     await expect(select.locator('option')).toHaveCount(2); // shared + device
-    await expect(select.locator(`option:has-text("${DEVICE_NAME}")`)).toBeVisible();
+    // Options in a closed native <select> report as hidden to Playwright, so
+    // assert DOM presence (and the round-trip via selectOption below) instead
+    // of visibility.
+    await expect(select.locator(`option:has-text("${DEVICE_NAME}")`)).toHaveCount(1);
 
     // 3.4 — switching reconnects to the device-accurate endpoint and frames
     // continue flowing.
-    await select.selectOption({ label: new RegExp(`${DEVICE_NAME}`) });
+    await select.selectOption({ label: `${DEVICE_NAME} (32×64)` });
     await expect(page.locator('#status-text')).toContainText(/Receiving|Connected/, { timeout: 15000 });
     await expect(page.locator('#media-display')).toHaveAttribute('src', /^data:image\/png/, { timeout: 15000 });
 

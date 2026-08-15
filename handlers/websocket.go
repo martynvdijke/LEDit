@@ -7,7 +7,9 @@ import (
 	"log/slog"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -21,9 +23,13 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		// Allow same-origin requests (admin panel)
+		// Allow same-origin requests (browser preview / admin panel):
+		// the Origin host:port must match the request's Host header.
 		origin := r.Header.Get("Origin")
 		if origin == "" {
+			return true
+		}
+		if u, err := url.Parse(origin); err == nil && strings.EqualFold(u.Host, r.Host) {
 			return true
 		}
 		// Allow configured device origins
