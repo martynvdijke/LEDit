@@ -119,6 +119,35 @@ jobs:
           notification_title: 'Release Failed'
           notification_message: 'The release workflow has failed. ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           notification_priority: 5
+  trml:
+    needs: [release]
+    name: TRMNL Lint and Push
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+
+      - name: Install trmnlp
+        run: gem install trmnl_preview
+
+      - name: Lint TRMNL plugin
+        working-directory: trmnl
+        run: trmnlp lint
+
+      - name: Push TRMNL plugin
+        working-directory: trmnl
+        run: trmnlp push --force
+        env:
+          TRMNL_API_KEY: ${{ secrets.TRML_TOKEN }}
   otel:
     permissions:
       contents: read # Required. To access the private repository
@@ -128,7 +157,7 @@ jobs:
     if: always()
     name: OpenTelemetry Export Trace
     runs-on: ubuntu-latest
-    needs: [ci, release, notify]
+    needs: [ci, release, notify, trml]
     steps:
       - name: Export workflow
         uses: corentinmusard/otel-cicd-action@v4

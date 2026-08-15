@@ -6,7 +6,7 @@ static_data: ''
 polling_verb: get
 framework_version: 2.3.7
 serverless_language:
-polling_url: "https://ledit.example.com/api/trmnl/stats"
+polling_url: "{{url}}/api/trmnl/stats"
 polling_headers: ''
 polling_body: ''
 id:
@@ -46,5 +46,5 @@ custom_fields:
   placeholder: https://ledit.example.com
   help_text: Please include http:// or https:// - replace the host in the polling URL with this value.
 name: LEDit Stats
-description:
+description: LEDit system stats & analytics
 refresh_interval: 1440

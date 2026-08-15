@@ -1,0 +1,12 @@
+# TRMNLP configuration
+# {{ env.VARIABLE }} interpolation is available here
+---
+watch:
+  - .trmnlp.yml
+  - src
+
+custom_fields:
+  url: ""
+
+variables:
+  trmnl: {}
