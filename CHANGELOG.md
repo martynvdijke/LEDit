@@ -1,3 +1,10 @@
+## [1.17.1](https://github.com/martynvdijke/LEDit/compare/v1.17.0...v1.17.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* **trmnl:** pin plugin ID and gate trmnlp push on release ([e413218](https://github.com/martynvdijke/LEDit/commit/e413218caac1cfe2245cf546094e7be1fe1251a2))
+
 # [1.17.0](https://github.com/martynvdijke/LEDit/compare/v1.16.0...v1.17.0) (2026-08-15)
 
 
