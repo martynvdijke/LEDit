@@ -121,6 +121,9 @@ jobs:
           notification_priority: 5
   trml:
     needs: [release]
+    if: >-
+      needs.release.result == 'success' &&
+      needs.release.outputs.new_release_published == 'true'
     name: TRMNL Lint and Push
     runs-on: ubuntu-latest
 
@@ -142,6 +145,16 @@ jobs:
       - name: Lint TRMNL plugin
         working-directory: trmnl
         run: trmnlp lint
+
+      - name: Require existing TRMNL plugin ID
+        working-directory: trmnl
+        run: |
+          plugin_id=$(ruby -e 'require "yaml"; puts YAML.load_file("src/settings.yml")["id"].to_s.strip')
+          if [ -z "$plugin_id" ]; then
+            echo "::error::src/settings.yml has no 'id' set. Set the plugin ID (see 'trmnlp list' or the TRMNL dashboard) so 'trmnlp push' updates the existing plugin instead of creating a new one."
+            exit 1
+          fi
+          echo "TRMNL plugin ID: $plugin_id"
 
       - name: Push TRMNL plugin
         working-directory: trmnl
