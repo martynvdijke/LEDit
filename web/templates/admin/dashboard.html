@@ -157,6 +157,43 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Countdowns</h5>
+                            <p class="card-text display-6">{{.countdown_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">AI Digests</h5>
+                            <p class="card-text display-6">{{.aidigest_count}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Source Health</h5>
+                            <p class="card-text">
+                                <span class="text-success">{{.health_green}} green</span> ·
+                                <span class="text-warning">{{.health_yellow}} yellow</span> ·
+                                <span class="text-danger">{{.health_red}} red</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-dark mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Render Metrics</h5>
+                            <p class="card-text mb-0">Avg render: {{printf "%.1f" .avg_ewma_ms}}ms</p>
+                            <p class="card-text mb-0">Matrix cache hit: {{.cache_hit_ratio_percent}}%</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <h2 class="mt-5">Datasources</h2>
@@ -165,6 +202,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Type</th>
+                        <th>Name</th>
                         <th>Token / Path</th>
                         <th>URL</th>
                         <th>Actions</th>
@@ -174,7 +212,11 @@
                     {{range .sources}}
                     <tr>
                         <td>{{.ID}}</td>
-                        <td>{{.Type}}</td>
+                        <td>
+                            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{if eq .Health "red"}}#dc3545{{else if eq .Health "yellow"}}#ffc107{{else if eq .Health "green"}}#28a745{{else}}#6c757d{{end}}" title="Health: {{.Health}}"></span>
+                            {{.Type}}
+                        </td>
+                        <td>{{.Name}}</td>
                         <td>{{if .Token}}{{.Token}}{{else}}{{.Path}}{{end}}</td>
                         <td>{{.URL}}</td>
                         <td>
@@ -182,6 +224,18 @@
                             <a href="/admin/matrixlayouts/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
                             <a href="/admin/preview?type=matrix&id={{.ID}}&w=128&h=128" target="_blank" class="btn btn-sm btn-secondary">Preview</a>
                             <form method="POST" action="/admin/matrixlayouts/{{.ID}}/delete" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                            {{else if eq .Endpoint "countdowns"}}
+                            <a href="/admin/countdowns/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            <a href="/admin/preview?type=countdown&id={{.ID}}&w=64&h=32" target="_blank" class="btn btn-sm btn-secondary">Preview</a>
+                            <form method="POST" action="/admin/countdowns/{{.ID}}/delete" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                            {{else if eq .Endpoint "aidigests"}}
+                            <a href="/admin/aidigests/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            <a href="/admin/preview?type=aidigest&id={{.ID}}&w=64&h=32" target="_blank" class="btn btn-sm btn-secondary">Preview</a>
+                            <form method="POST" action="/admin/aidigests/{{.ID}}/delete" style="display:inline">
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                             </form>
                             {{else}}
@@ -194,7 +248,7 @@
                     </tr>
                     {{else}}
                     <tr>
-                        <td colspan="5" class="text-muted">No datasources configured.</td>
+                        <td colspan="6" class="text-muted">No datasources configured.</td>
                     </tr>
                     {{end}}
                 </tbody>

@@ -216,6 +216,27 @@ func (_u *DeviceSettingsUpdate) ClearLastSeenAt() *DeviceSettingsUpdate {
 	return _u
 }
 
+// SetFramesServed sets the "frames_served" field.
+func (_u *DeviceSettingsUpdate) SetFramesServed(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetFramesServed()
+	_u.mutation.SetFramesServed(v)
+	return _u
+}
+
+// SetNillableFramesServed sets the "frames_served" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableFramesServed(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetFramesServed(*v)
+	}
+	return _u
+}
+
+// AddFramesServed adds value to the "frames_served" field.
+func (_u *DeviceSettingsUpdate) AddFramesServed(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddFramesServed(v)
+	return _u
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_u *DeviceSettingsUpdate) Mutation() *DeviceSettingsMutation {
 	return _u.mutation
@@ -304,6 +325,12 @@ func (_u *DeviceSettingsUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if _u.mutation.LastSeenAtCleared() {
 		_spec.ClearField(devicesettings.FieldLastSeenAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.FramesServed(); ok {
+		_spec.SetField(devicesettings.FieldFramesServed, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedFramesServed(); ok {
+		_spec.AddField(devicesettings.FieldFramesServed, field.TypeInt, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -513,6 +540,27 @@ func (_u *DeviceSettingsUpdateOne) ClearLastSeenAt() *DeviceSettingsUpdateOne {
 	return _u
 }
 
+// SetFramesServed sets the "frames_served" field.
+func (_u *DeviceSettingsUpdateOne) SetFramesServed(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetFramesServed()
+	_u.mutation.SetFramesServed(v)
+	return _u
+}
+
+// SetNillableFramesServed sets the "frames_served" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableFramesServed(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetFramesServed(*v)
+	}
+	return _u
+}
+
+// AddFramesServed adds value to the "frames_served" field.
+func (_u *DeviceSettingsUpdateOne) AddFramesServed(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddFramesServed(v)
+	return _u
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_u *DeviceSettingsUpdateOne) Mutation() *DeviceSettingsMutation {
 	return _u.mutation
@@ -631,6 +679,12 @@ func (_u *DeviceSettingsUpdateOne) sqlSave(ctx context.Context) (_node *DeviceSe
 	}
 	if _u.mutation.LastSeenAtCleared() {
 		_spec.ClearField(devicesettings.FieldLastSeenAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.FramesServed(); ok {
+		_spec.SetField(devicesettings.FieldFramesServed, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedFramesServed(); ok {
+		_spec.AddField(devicesettings.FieldFramesServed, field.TypeInt, value)
 	}
 	_node = &DeviceSettings{config: _u.config}
 	_spec.Assign = _node.assignValues

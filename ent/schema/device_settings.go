@@ -22,5 +22,6 @@ func (DeviceSettings) Fields() []ent.Field {
 		field.String("token").Default(""),
 		field.Int("refresh_interval").Default(60),
 		field.Time("last_seen_at").Optional().Nillable(),
+		field.Int("frames_served").Default(0),
 	}
 }

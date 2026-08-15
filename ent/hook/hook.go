@@ -8,6 +8,18 @@ import (
 	"ledit/ent"
 )
 
+// The AIDigestFunc type is an adapter to allow the use of ordinary
+// function as AIDigest mutator.
+type AIDigestFunc func(context.Context, *ent.AIDigestMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AIDigestFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AIDigestMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AIDigestMutation", m)
+}
+
 // The AISettingsFunc type is an adapter to allow the use of ordinary
 // function as AISettings mutator.
 type AISettingsFunc func(context.Context, *ent.AISettingsMutation) (ent.Value, error)
@@ -32,6 +44,18 @@ func (f AdminSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AdminSettingsMutation", m)
 }
 
+// The AlertSettingsFunc type is an adapter to allow the use of ordinary
+// function as AlertSettings mutator.
+type AlertSettingsFunc func(context.Context, *ent.AlertSettingsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AlertSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AlertSettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertSettingsMutation", m)
+}
+
 // The CalendarFunc type is an adapter to allow the use of ordinary
 // function as Calendar mutator.
 type CalendarFunc func(context.Context, *ent.CalendarMutation) (ent.Value, error)
@@ -42,6 +66,18 @@ func (f CalendarFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CalendarMutation", m)
+}
+
+// The CountdownFunc type is an adapter to allow the use of ordinary
+// function as Countdown mutator.
+type CountdownFunc func(context.Context, *ent.CountdownMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CountdownFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CountdownMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CountdownMutation", m)
 }
 
 // The CryptoFunc type is an adapter to allow the use of ordinary

@@ -55,6 +55,30 @@
                     {{end}}
                 </tbody>
             </table>
+
+            <h2 class="mt-4">Source Render Metrics</h2>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr><th>Source</th><th>Status</th><th>Renders</th><th>Failures</th><th>Last Duration</th><th>EWMA (ms)</th><th>Last Error</th></tr>
+                </thead>
+                <tbody>
+                    {{range .health}}
+                    <tr>
+                        <td><code>{{.Key}}</code></td>
+                        <td>
+                            <span class="badge {{if eq .Status "green"}}bg-success{{else if eq .Status "yellow"}}bg-warning text-dark{{else if eq .Status "red"}}bg-danger{{else}}bg-secondary{{end}}">{{.Status}}</span>
+                        </td>
+                        <td>{{.Renders}}</td>
+                        <td>{{.Failures}}</td>
+                        <td>{{.LastDuration}}</td>
+                        <td>{{printf "%.1f" .EWMADurationMs}}</td>
+                        <td class="small text-danger">{{.LastError}}</td>
+                    </tr>
+                    {{else}}
+                    <tr><td colspan="7" class="text-muted">No render metrics yet. Metrics appear after the feed or previews render sources.</td></tr>
+                    {{end}}
+                </tbody>
+            </table>
         </div>
     </div>
 </body><script type="module" src="/static/assets/app.js"></script>

@@ -68,6 +68,12 @@ const (
 	EdgeGenericApis = "generic_apis"
 	// EdgeMatrixLayouts holds the string denoting the matrix_layouts edge name in mutations.
 	EdgeMatrixLayouts = "matrix_layouts"
+	// EdgeCountdowns holds the string denoting the countdowns edge name in mutations.
+	EdgeCountdowns = "countdowns"
+	// EdgeAiDigests holds the string denoting the ai_digests edge name in mutations.
+	EdgeAiDigests = "ai_digests"
+	// EdgeAlertSettings holds the string denoting the alert_settings edge name in mutations.
+	EdgeAlertSettings = "alert_settings"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -224,6 +230,27 @@ const (
 	MatrixLayoutsInverseTable = "matrix_layouts"
 	// MatrixLayoutsColumn is the table column denoting the matrix_layouts relation/edge.
 	MatrixLayoutsColumn = "general_settings_matrix_layouts"
+	// CountdownsTable is the table that holds the countdowns relation/edge.
+	CountdownsTable = "countdowns"
+	// CountdownsInverseTable is the table name for the Countdown entity.
+	// It exists in this package in order to avoid circular dependency with the "countdown" package.
+	CountdownsInverseTable = "countdowns"
+	// CountdownsColumn is the table column denoting the countdowns relation/edge.
+	CountdownsColumn = "general_settings_countdowns"
+	// AiDigestsTable is the table that holds the ai_digests relation/edge.
+	AiDigestsTable = "ai_digests"
+	// AiDigestsInverseTable is the table name for the AIDigest entity.
+	// It exists in this package in order to avoid circular dependency with the "aidigest" package.
+	AiDigestsInverseTable = "ai_digests"
+	// AiDigestsColumn is the table column denoting the ai_digests relation/edge.
+	AiDigestsColumn = "general_settings_ai_digests"
+	// AlertSettingsTable is the table that holds the alert_settings relation/edge.
+	AlertSettingsTable = "alert_settings"
+	// AlertSettingsInverseTable is the table name for the AlertSettings entity.
+	// It exists in this package in order to avoid circular dependency with the "alertsettings" package.
+	AlertSettingsInverseTable = "alert_settings"
+	// AlertSettingsColumn is the table column denoting the alert_settings relation/edge.
+	AlertSettingsColumn = "general_settings_alert_settings"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -603,6 +630,48 @@ func ByMatrixLayouts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newMatrixLayoutsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByCountdownsCount orders the results by countdowns count.
+func ByCountdownsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCountdownsStep(), opts...)
+	}
+}
+
+// ByCountdowns orders the results by countdowns terms.
+func ByCountdowns(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCountdownsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByAiDigestsCount orders the results by ai_digests count.
+func ByAiDigestsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAiDigestsStep(), opts...)
+	}
+}
+
+// ByAiDigests orders the results by ai_digests terms.
+func ByAiDigests(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAiDigestsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByAlertSettingsCount orders the results by alert_settings count.
+func ByAlertSettingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAlertSettingsStep(), opts...)
+	}
+}
+
+// ByAlertSettings orders the results by alert_settings terms.
+func ByAlertSettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAlertSettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -755,5 +824,26 @@ func newMatrixLayoutsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MatrixLayoutsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, MatrixLayoutsTable, MatrixLayoutsColumn),
+	)
+}
+func newCountdownsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CountdownsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CountdownsTable, CountdownsColumn),
+	)
+}
+func newAiDigestsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AiDigestsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AiDigestsTable, AiDigestsColumn),
+	)
+}
+func newAlertSettingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AlertSettingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AlertSettingsTable, AlertSettingsColumn),
 	)
 }

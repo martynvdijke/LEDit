@@ -33,6 +33,8 @@ const (
 	FieldRefreshInterval = "refresh_interval"
 	// FieldLastSeenAt holds the string denoting the last_seen_at field in the database.
 	FieldLastSeenAt = "last_seen_at"
+	// FieldFramesServed holds the string denoting the frames_served field in the database.
+	FieldFramesServed = "frames_served"
 	// Table holds the table name of the devicesettings in the database.
 	Table = "device_settings"
 )
@@ -51,6 +53,7 @@ var Columns = []string{
 	FieldToken,
 	FieldRefreshInterval,
 	FieldLastSeenAt,
+	FieldFramesServed,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "device_settings"
@@ -95,6 +98,8 @@ var (
 	DefaultToken string
 	// DefaultRefreshInterval holds the default value on creation for the "refresh_interval" field.
 	DefaultRefreshInterval int
+	// DefaultFramesServed holds the default value on creation for the "frames_served" field.
+	DefaultFramesServed int
 )
 
 // OrderOption defines the ordering options for the DeviceSettings queries.
@@ -158,4 +163,9 @@ func ByRefreshInterval(opts ...sql.OrderTermOption) OrderOption {
 // ByLastSeenAt orders the results by the last_seen_at field.
 func ByLastSeenAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastSeenAt, opts...).ToFunc()
+}
+
+// ByFramesServed orders the results by the frames_served field.
+func ByFramesServed(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFramesServed, opts...).ToFunc()
 }

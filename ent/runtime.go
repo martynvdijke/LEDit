@@ -4,7 +4,10 @@ package ent
 
 import (
 	"ledit/ent/adminsettings"
+	"ledit/ent/aidigest"
+	"ledit/ent/alertsettings"
 	"ledit/ent/calendar"
+	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/emailsettings"
@@ -33,6 +36,24 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	aidigestFields := schema.AIDigest{}.Fields()
+	_ = aidigestFields
+	// aidigestDescPrompt is the schema descriptor for prompt field.
+	aidigestDescPrompt := aidigestFields[1].Descriptor()
+	// aidigest.DefaultPrompt holds the default value on creation for the prompt field.
+	aidigest.DefaultPrompt = aidigestDescPrompt.Default.(string)
+	// aidigestDescSources is the schema descriptor for sources field.
+	aidigestDescSources := aidigestFields[2].Descriptor()
+	// aidigest.DefaultSources holds the default value on creation for the sources field.
+	aidigest.DefaultSources = aidigestDescSources.Default.(string)
+	// aidigestDescTTLMinutes is the schema descriptor for ttl_minutes field.
+	aidigestDescTTLMinutes := aidigestFields[3].Descriptor()
+	// aidigest.DefaultTTLMinutes holds the default value on creation for the ttl_minutes field.
+	aidigest.DefaultTTLMinutes = aidigestDescTTLMinutes.Default.(int)
+	// aidigestDescEnabled is the schema descriptor for enabled field.
+	aidigestDescEnabled := aidigestFields[4].Descriptor()
+	// aidigest.DefaultEnabled holds the default value on creation for the enabled field.
+	aidigest.DefaultEnabled = aidigestDescEnabled.Default.(bool)
 	adminsettingsFields := schema.AdminSettings{}.Fields()
 	_ = adminsettingsFields
 	// adminsettingsDescUsername is the schema descriptor for username field.
@@ -43,12 +64,60 @@ func init() {
 	adminsettingsDescPasswordHash := adminsettingsFields[2].Descriptor()
 	// adminsettings.DefaultPasswordHash holds the default value on creation for the password_hash field.
 	adminsettings.DefaultPasswordHash = adminsettingsDescPasswordHash.Default.(string)
+	alertsettingsFields := schema.AlertSettings{}.Fields()
+	_ = alertsettingsFields
+	// alertsettingsDescGotifyEnabled is the schema descriptor for gotify_enabled field.
+	alertsettingsDescGotifyEnabled := alertsettingsFields[0].Descriptor()
+	// alertsettings.DefaultGotifyEnabled holds the default value on creation for the gotify_enabled field.
+	alertsettings.DefaultGotifyEnabled = alertsettingsDescGotifyEnabled.Default.(bool)
+	// alertsettingsDescGotifyURL is the schema descriptor for gotify_url field.
+	alertsettingsDescGotifyURL := alertsettingsFields[1].Descriptor()
+	// alertsettings.DefaultGotifyURL holds the default value on creation for the gotify_url field.
+	alertsettings.DefaultGotifyURL = alertsettingsDescGotifyURL.Default.(string)
+	// alertsettingsDescGotifyToken is the schema descriptor for gotify_token field.
+	alertsettingsDescGotifyToken := alertsettingsFields[2].Descriptor()
+	// alertsettings.DefaultGotifyToken holds the default value on creation for the gotify_token field.
+	alertsettings.DefaultGotifyToken = alertsettingsDescGotifyToken.Default.(string)
+	// alertsettingsDescEmailEnabled is the schema descriptor for email_enabled field.
+	alertsettingsDescEmailEnabled := alertsettingsFields[3].Descriptor()
+	// alertsettings.DefaultEmailEnabled holds the default value on creation for the email_enabled field.
+	alertsettings.DefaultEmailEnabled = alertsettingsDescEmailEnabled.Default.(bool)
+	// alertsettingsDescRecipientEmail is the schema descriptor for recipient_email field.
+	alertsettingsDescRecipientEmail := alertsettingsFields[4].Descriptor()
+	// alertsettings.DefaultRecipientEmail holds the default value on creation for the recipient_email field.
+	alertsettings.DefaultRecipientEmail = alertsettingsDescRecipientEmail.Default.(string)
+	// alertsettingsDescFailureThreshold is the schema descriptor for failure_threshold field.
+	alertsettingsDescFailureThreshold := alertsettingsFields[5].Descriptor()
+	// alertsettings.DefaultFailureThreshold holds the default value on creation for the failure_threshold field.
+	alertsettings.DefaultFailureThreshold = alertsettingsDescFailureThreshold.Default.(int)
+	// alertsettingsDescCooldownMinutes is the schema descriptor for cooldown_minutes field.
+	alertsettingsDescCooldownMinutes := alertsettingsFields[6].Descriptor()
+	// alertsettings.DefaultCooldownMinutes holds the default value on creation for the cooldown_minutes field.
+	alertsettings.DefaultCooldownMinutes = alertsettingsDescCooldownMinutes.Default.(int)
+	// alertsettingsDescStaleMultiplier is the schema descriptor for stale_multiplier field.
+	alertsettingsDescStaleMultiplier := alertsettingsFields[7].Descriptor()
+	// alertsettings.DefaultStaleMultiplier holds the default value on creation for the stale_multiplier field.
+	alertsettings.DefaultStaleMultiplier = alertsettingsDescStaleMultiplier.Default.(int)
+	// alertsettingsDescNotifyRecovery is the schema descriptor for notify_recovery field.
+	alertsettingsDescNotifyRecovery := alertsettingsFields[8].Descriptor()
+	// alertsettings.DefaultNotifyRecovery holds the default value on creation for the notify_recovery field.
+	alertsettings.DefaultNotifyRecovery = alertsettingsDescNotifyRecovery.Default.(bool)
 	calendarFields := schema.Calendar{}.Fields()
 	_ = calendarFields
 	// calendarDescName is the schema descriptor for name field.
 	calendarDescName := calendarFields[1].Descriptor()
 	// calendar.DefaultName holds the default value on creation for the name field.
 	calendar.DefaultName = calendarDescName.Default.(string)
+	countdownFields := schema.Countdown{}.Fields()
+	_ = countdownFields
+	// countdownDescLabel is the schema descriptor for label field.
+	countdownDescLabel := countdownFields[2].Descriptor()
+	// countdown.DefaultLabel holds the default value on creation for the label field.
+	countdown.DefaultLabel = countdownDescLabel.Default.(string)
+	// countdownDescEnabled is the schema descriptor for enabled field.
+	countdownDescEnabled := countdownFields[3].Descriptor()
+	// countdown.DefaultEnabled holds the default value on creation for the enabled field.
+	countdown.DefaultEnabled = countdownDescEnabled.Default.(bool)
 	cryptoFields := schema.Crypto{}.Fields()
 	_ = cryptoFields
 	// cryptoDescToken is the schema descriptor for token field.
@@ -101,6 +170,10 @@ func init() {
 	devicesettingsDescRefreshInterval := devicesettingsFields[9].Descriptor()
 	// devicesettings.DefaultRefreshInterval holds the default value on creation for the refresh_interval field.
 	devicesettings.DefaultRefreshInterval = devicesettingsDescRefreshInterval.Default.(int)
+	// devicesettingsDescFramesServed is the schema descriptor for frames_served field.
+	devicesettingsDescFramesServed := devicesettingsFields[11].Descriptor()
+	// devicesettings.DefaultFramesServed holds the default value on creation for the frames_served field.
+	devicesettings.DefaultFramesServed = devicesettingsDescFramesServed.Default.(int)
 	emailsettingsFields := schema.EmailSettings{}.Fields()
 	_ = emailsettingsFields
 	// emailsettingsDescUseTLS is the schema descriptor for use_tls field.

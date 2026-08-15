@@ -8,6 +8,30 @@ import (
 )
 
 var (
+	// AiDigestsColumns holds the columns for the "ai_digests" table.
+	AiDigestsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "prompt", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "sources", Type: field.TypeString, Default: "[]"},
+		{Name: "ttl_minutes", Type: field.TypeInt, Default: 30},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "general_settings_ai_digests", Type: field.TypeInt, Nullable: true},
+	}
+	// AiDigestsTable holds the schema information for the "ai_digests" table.
+	AiDigestsTable = &schema.Table{
+		Name:       "ai_digests",
+		Columns:    AiDigestsColumns,
+		PrimaryKey: []*schema.Column{AiDigestsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "ai_digests_general_settings_ai_digests",
+				Columns:    []*schema.Column{AiDigestsColumns[6]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// AiSettingsColumns holds the columns for the "ai_settings" table.
 	AiSettingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -43,6 +67,34 @@ var (
 		Columns:    AdminSettingsColumns,
 		PrimaryKey: []*schema.Column{AdminSettingsColumns[0]},
 	}
+	// AlertSettingsColumns holds the columns for the "alert_settings" table.
+	AlertSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "gotify_enabled", Type: field.TypeBool, Default: false},
+		{Name: "gotify_url", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "gotify_token", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "email_enabled", Type: field.TypeBool, Default: false},
+		{Name: "recipient_email", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "failure_threshold", Type: field.TypeInt, Default: 3},
+		{Name: "cooldown_minutes", Type: field.TypeInt, Default: 15},
+		{Name: "stale_multiplier", Type: field.TypeInt, Default: 3},
+		{Name: "notify_recovery", Type: field.TypeBool, Default: true},
+		{Name: "general_settings_alert_settings", Type: field.TypeInt, Nullable: true},
+	}
+	// AlertSettingsTable holds the schema information for the "alert_settings" table.
+	AlertSettingsTable = &schema.Table{
+		Name:       "alert_settings",
+		Columns:    AlertSettingsColumns,
+		PrimaryKey: []*schema.Column{AlertSettingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "alert_settings_general_settings_alert_settings",
+				Columns:    []*schema.Column{AlertSettingsColumns[10]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// CalendarsColumns holds the columns for the "calendars" table.
 	CalendarsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -59,6 +111,29 @@ var (
 			{
 				Symbol:     "calendars_general_settings_calendars",
 				Columns:    []*schema.Column{CalendarsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// CountdownsColumns holds the columns for the "countdowns" table.
+	CountdownsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "target_time", Type: field.TypeTime},
+		{Name: "label", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "general_settings_countdowns", Type: field.TypeInt, Nullable: true},
+	}
+	// CountdownsTable holds the schema information for the "countdowns" table.
+	CountdownsTable = &schema.Table{
+		Name:       "countdowns",
+		Columns:    CountdownsColumns,
+		PrimaryKey: []*schema.Column{CountdownsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "countdowns_general_settings_countdowns",
+				Columns:    []*schema.Column{CountdownsColumns[5]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -99,6 +174,7 @@ var (
 		{Name: "token", Type: field.TypeString, Default: ""},
 		{Name: "refresh_interval", Type: field.TypeInt, Default: 60},
 		{Name: "last_seen_at", Type: field.TypeTime, Nullable: true},
+		{Name: "frames_served", Type: field.TypeInt, Default: 0},
 		{Name: "general_settings_device_settings", Type: field.TypeInt, Nullable: true},
 	}
 	// DeviceSettingsTable holds the schema information for the "device_settings" table.
@@ -109,7 +185,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "device_settings_general_settings_device_settings",
-				Columns:    []*schema.Column{DeviceSettingsColumns[12]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[13]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -573,9 +649,12 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AiDigestsTable,
 		AiSettingsTable,
 		AdminSettingsTable,
+		AlertSettingsTable,
 		CalendarsTable,
+		CountdownsTable,
 		CryptosTable,
 		DeviceSettingsTable,
 		EmailSettingsTable,
@@ -604,8 +683,11 @@ var (
 )
 
 func init() {
+	AiDigestsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	AiSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	AlertSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	CalendarsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	CountdownsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	CryptosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	DeviceSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	EmailSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable

@@ -12,12 +12,18 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// AIDigest is the client for interacting with the AIDigest builders.
+	AIDigest *AIDigestClient
 	// AISettings is the client for interacting with the AISettings builders.
 	AISettings *AISettingsClient
 	// AdminSettings is the client for interacting with the AdminSettings builders.
 	AdminSettings *AdminSettingsClient
+	// AlertSettings is the client for interacting with the AlertSettings builders.
+	AlertSettings *AlertSettingsClient
 	// Calendar is the client for interacting with the Calendar builders.
 	Calendar *CalendarClient
+	// Countdown is the client for interacting with the Countdown builders.
+	Countdown *CountdownClient
 	// Crypto is the client for interacting with the Crypto builders.
 	Crypto *CryptoClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
@@ -197,9 +203,12 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.AIDigest = NewAIDigestClient(tx.config)
 	tx.AISettings = NewAISettingsClient(tx.config)
 	tx.AdminSettings = NewAdminSettingsClient(tx.config)
+	tx.AlertSettings = NewAlertSettingsClient(tx.config)
 	tx.Calendar = NewCalendarClient(tx.config)
+	tx.Countdown = NewCountdownClient(tx.config)
 	tx.Crypto = NewCryptoClient(tx.config)
 	tx.DeviceSettings = NewDeviceSettingsClient(tx.config)
 	tx.EmailSettings = NewEmailSettingsClient(tx.config)
@@ -233,7 +242,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: AISettings.QueryXXX(), the query will be executed
+// applies a query, for example: AIDigest.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

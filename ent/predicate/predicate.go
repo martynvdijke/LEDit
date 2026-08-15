@@ -6,14 +6,23 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AIDigest is the predicate function for aidigest builders.
+type AIDigest func(*sql.Selector)
+
 // AISettings is the predicate function for aisettings builders.
 type AISettings func(*sql.Selector)
 
 // AdminSettings is the predicate function for adminsettings builders.
 type AdminSettings func(*sql.Selector)
 
+// AlertSettings is the predicate function for alertsettings builders.
+type AlertSettings func(*sql.Selector)
+
 // Calendar is the predicate function for calendar builders.
 type Calendar func(*sql.Selector)
+
+// Countdown is the predicate function for countdown builders.
+type Countdown func(*sql.Selector)
 
 // Crypto is the predicate function for crypto builders.
 type Crypto func(*sql.Selector)

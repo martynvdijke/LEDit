@@ -221,3 +221,30 @@ func TestParseBindings(t *testing.T) {
 		t.Fatalf("BindingsJSON round-trip failed: %+v", roundTrip)
 	}
 }
+
+func TestPanelCacheHook(t *testing.T) {
+	src := &stubSource{name: "WEATHER"}
+	clearPanelCache()
+
+	var calls []bool
+	PanelCacheHook = func(hit bool) { calls = append(calls, hit) }
+	t.Cleanup(func() { PanelCacheHook = nil })
+
+	m := &MatrixDS{
+		Name: "grid", Rows: 2, Cols: 2, Gap: 2,
+		Bindings: []PanelBinding{{Row: 0, Col: 0, SourceType: "weather", SourceID: 1}},
+		Resolve:  stubResolver(src),
+	}
+	if _, err := m.GetPNG(64, 64); err != nil {
+		t.Fatal(err)
+	}
+	if len(calls) != 1 || calls[0] {
+		t.Fatalf("first render should be a cache miss, got %v", calls)
+	}
+	if _, err := m.GetPNG(64, 64); err != nil {
+		t.Fatal(err)
+	}
+	if len(calls) != 2 || !calls[1] {
+		t.Fatalf("second render within TTL should be a cache hit, got %v", calls)
+	}
+}

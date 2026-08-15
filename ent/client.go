@@ -12,8 +12,11 @@ import (
 	"ledit/ent/migrate"
 
 	"ledit/ent/adminsettings"
+	"ledit/ent/aidigest"
 	"ledit/ent/aisettings"
+	"ledit/ent/alertsettings"
 	"ledit/ent/calendar"
+	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/emailsettings"
@@ -50,12 +53,18 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AIDigest is the client for interacting with the AIDigest builders.
+	AIDigest *AIDigestClient
 	// AISettings is the client for interacting with the AISettings builders.
 	AISettings *AISettingsClient
 	// AdminSettings is the client for interacting with the AdminSettings builders.
 	AdminSettings *AdminSettingsClient
+	// AlertSettings is the client for interacting with the AlertSettings builders.
+	AlertSettings *AlertSettingsClient
 	// Calendar is the client for interacting with the Calendar builders.
 	Calendar *CalendarClient
+	// Countdown is the client for interacting with the Countdown builders.
+	Countdown *CountdownClient
 	// Crypto is the client for interacting with the Crypto builders.
 	Crypto *CryptoClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
@@ -115,9 +124,12 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AIDigest = NewAIDigestClient(c.config)
 	c.AISettings = NewAISettingsClient(c.config)
 	c.AdminSettings = NewAdminSettingsClient(c.config)
+	c.AlertSettings = NewAlertSettingsClient(c.config)
 	c.Calendar = NewCalendarClient(c.config)
+	c.Countdown = NewCountdownClient(c.config)
 	c.Crypto = NewCryptoClient(c.config)
 	c.DeviceSettings = NewDeviceSettingsClient(c.config)
 	c.EmailSettings = NewEmailSettingsClient(c.config)
@@ -234,9 +246,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		AIDigest:        NewAIDigestClient(cfg),
 		AISettings:      NewAISettingsClient(cfg),
 		AdminSettings:   NewAdminSettingsClient(cfg),
+		AlertSettings:   NewAlertSettingsClient(cfg),
 		Calendar:        NewCalendarClient(cfg),
+		Countdown:       NewCountdownClient(cfg),
 		Crypto:          NewCryptoClient(cfg),
 		DeviceSettings:  NewDeviceSettingsClient(cfg),
 		EmailSettings:   NewEmailSettingsClient(cfg),
@@ -280,9 +295,12 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		AIDigest:        NewAIDigestClient(cfg),
 		AISettings:      NewAISettingsClient(cfg),
 		AdminSettings:   NewAdminSettingsClient(cfg),
+		AlertSettings:   NewAlertSettingsClient(cfg),
 		Calendar:        NewCalendarClient(cfg),
+		Countdown:       NewCountdownClient(cfg),
 		Crypto:          NewCryptoClient(cfg),
 		DeviceSettings:  NewDeviceSettingsClient(cfg),
 		EmailSettings:   NewEmailSettingsClient(cfg),
@@ -313,7 +331,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		AISettings.
+//		AIDigest.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -336,11 +354,12 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.AISettings, c.AdminSettings, c.Calendar, c.Crypto, c.DeviceSettings,
-		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GoogleCalendar,
-		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MatrixLayout,
-		c.NewsFeed, c.Notification, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
-		c.TextSlide, c.UmamiSettings, c.Untappd, c.Video, c.Weather,
+		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.Calendar,
+		c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
+		c.GeneralSettings, c.GenericAPI, c.GoogleCalendar, c.HomeAssistant, c.Image,
+		c.LogEntry, c.LogSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
+		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
+		c.UmamiSettings, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Use(hooks...)
 	}
@@ -350,11 +369,12 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.AISettings, c.AdminSettings, c.Calendar, c.Crypto, c.DeviceSettings,
-		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GoogleCalendar,
-		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MatrixLayout,
-		c.NewsFeed, c.Notification, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
-		c.TextSlide, c.UmamiSettings, c.Untappd, c.Video, c.Weather,
+		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.Calendar,
+		c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
+		c.GeneralSettings, c.GenericAPI, c.GoogleCalendar, c.HomeAssistant, c.Image,
+		c.LogEntry, c.LogSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
+		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
+		c.UmamiSettings, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -363,12 +383,18 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AIDigestMutation:
+		return c.AIDigest.mutate(ctx, m)
 	case *AISettingsMutation:
 		return c.AISettings.mutate(ctx, m)
 	case *AdminSettingsMutation:
 		return c.AdminSettings.mutate(ctx, m)
+	case *AlertSettingsMutation:
+		return c.AlertSettings.mutate(ctx, m)
 	case *CalendarMutation:
 		return c.Calendar.mutate(ctx, m)
+	case *CountdownMutation:
+		return c.Countdown.mutate(ctx, m)
 	case *CryptoMutation:
 		return c.Crypto.mutate(ctx, m)
 	case *DeviceSettingsMutation:
@@ -419,6 +445,139 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Weather.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AIDigestClient is a client for the AIDigest schema.
+type AIDigestClient struct {
+	config
+}
+
+// NewAIDigestClient returns a client for the AIDigest from the given config.
+func NewAIDigestClient(c config) *AIDigestClient {
+	return &AIDigestClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `aidigest.Hooks(f(g(h())))`.
+func (c *AIDigestClient) Use(hooks ...Hook) {
+	c.hooks.AIDigest = append(c.hooks.AIDigest, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `aidigest.Intercept(f(g(h())))`.
+func (c *AIDigestClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AIDigest = append(c.inters.AIDigest, interceptors...)
+}
+
+// Create returns a builder for creating a AIDigest entity.
+func (c *AIDigestClient) Create() *AIDigestCreate {
+	mutation := newAIDigestMutation(c.config, OpCreate)
+	return &AIDigestCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AIDigest entities.
+func (c *AIDigestClient) CreateBulk(builders ...*AIDigestCreate) *AIDigestCreateBulk {
+	return &AIDigestCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AIDigestClient) MapCreateBulk(slice any, setFunc func(*AIDigestCreate, int)) *AIDigestCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AIDigestCreateBulk{err: fmt.Errorf("calling to AIDigestClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AIDigestCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AIDigestCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AIDigest.
+func (c *AIDigestClient) Update() *AIDigestUpdate {
+	mutation := newAIDigestMutation(c.config, OpUpdate)
+	return &AIDigestUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AIDigestClient) UpdateOne(_m *AIDigest) *AIDigestUpdateOne {
+	mutation := newAIDigestMutation(c.config, OpUpdateOne, withAIDigest(_m))
+	return &AIDigestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AIDigestClient) UpdateOneID(id int) *AIDigestUpdateOne {
+	mutation := newAIDigestMutation(c.config, OpUpdateOne, withAIDigestID(id))
+	return &AIDigestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AIDigest.
+func (c *AIDigestClient) Delete() *AIDigestDelete {
+	mutation := newAIDigestMutation(c.config, OpDelete)
+	return &AIDigestDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AIDigestClient) DeleteOne(_m *AIDigest) *AIDigestDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AIDigestClient) DeleteOneID(id int) *AIDigestDeleteOne {
+	builder := c.Delete().Where(aidigest.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AIDigestDeleteOne{builder}
+}
+
+// Query returns a query builder for AIDigest.
+func (c *AIDigestClient) Query() *AIDigestQuery {
+	return &AIDigestQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAIDigest},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AIDigest entity by its id.
+func (c *AIDigestClient) Get(ctx context.Context, id int) (*AIDigest, error) {
+	return c.Query().Where(aidigest.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AIDigestClient) GetX(ctx context.Context, id int) *AIDigest {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *AIDigestClient) Hooks() []Hook {
+	return c.hooks.AIDigest
+}
+
+// Interceptors returns the client interceptors.
+func (c *AIDigestClient) Interceptors() []Interceptor {
+	return c.inters.AIDigest
+}
+
+func (c *AIDigestClient) mutate(ctx context.Context, m *AIDigestMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AIDigestCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AIDigestUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AIDigestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AIDigestDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AIDigest mutation op: %q", m.Op())
 	}
 }
 
@@ -688,6 +847,139 @@ func (c *AdminSettingsClient) mutate(ctx context.Context, m *AdminSettingsMutati
 	}
 }
 
+// AlertSettingsClient is a client for the AlertSettings schema.
+type AlertSettingsClient struct {
+	config
+}
+
+// NewAlertSettingsClient returns a client for the AlertSettings from the given config.
+func NewAlertSettingsClient(c config) *AlertSettingsClient {
+	return &AlertSettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `alertsettings.Hooks(f(g(h())))`.
+func (c *AlertSettingsClient) Use(hooks ...Hook) {
+	c.hooks.AlertSettings = append(c.hooks.AlertSettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `alertsettings.Intercept(f(g(h())))`.
+func (c *AlertSettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AlertSettings = append(c.inters.AlertSettings, interceptors...)
+}
+
+// Create returns a builder for creating a AlertSettings entity.
+func (c *AlertSettingsClient) Create() *AlertSettingsCreate {
+	mutation := newAlertSettingsMutation(c.config, OpCreate)
+	return &AlertSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AlertSettings entities.
+func (c *AlertSettingsClient) CreateBulk(builders ...*AlertSettingsCreate) *AlertSettingsCreateBulk {
+	return &AlertSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AlertSettingsClient) MapCreateBulk(slice any, setFunc func(*AlertSettingsCreate, int)) *AlertSettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AlertSettingsCreateBulk{err: fmt.Errorf("calling to AlertSettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AlertSettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AlertSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AlertSettings.
+func (c *AlertSettingsClient) Update() *AlertSettingsUpdate {
+	mutation := newAlertSettingsMutation(c.config, OpUpdate)
+	return &AlertSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AlertSettingsClient) UpdateOne(_m *AlertSettings) *AlertSettingsUpdateOne {
+	mutation := newAlertSettingsMutation(c.config, OpUpdateOne, withAlertSettings(_m))
+	return &AlertSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AlertSettingsClient) UpdateOneID(id int) *AlertSettingsUpdateOne {
+	mutation := newAlertSettingsMutation(c.config, OpUpdateOne, withAlertSettingsID(id))
+	return &AlertSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AlertSettings.
+func (c *AlertSettingsClient) Delete() *AlertSettingsDelete {
+	mutation := newAlertSettingsMutation(c.config, OpDelete)
+	return &AlertSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AlertSettingsClient) DeleteOne(_m *AlertSettings) *AlertSettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AlertSettingsClient) DeleteOneID(id int) *AlertSettingsDeleteOne {
+	builder := c.Delete().Where(alertsettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AlertSettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for AlertSettings.
+func (c *AlertSettingsClient) Query() *AlertSettingsQuery {
+	return &AlertSettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAlertSettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AlertSettings entity by its id.
+func (c *AlertSettingsClient) Get(ctx context.Context, id int) (*AlertSettings, error) {
+	return c.Query().Where(alertsettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AlertSettingsClient) GetX(ctx context.Context, id int) *AlertSettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *AlertSettingsClient) Hooks() []Hook {
+	return c.hooks.AlertSettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *AlertSettingsClient) Interceptors() []Interceptor {
+	return c.inters.AlertSettings
+}
+
+func (c *AlertSettingsClient) mutate(ctx context.Context, m *AlertSettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AlertSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AlertSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AlertSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AlertSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AlertSettings mutation op: %q", m.Op())
+	}
+}
+
 // CalendarClient is a client for the Calendar schema.
 type CalendarClient struct {
 	config
@@ -818,6 +1110,139 @@ func (c *CalendarClient) mutate(ctx context.Context, m *CalendarMutation) (Value
 		return (&CalendarDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Calendar mutation op: %q", m.Op())
+	}
+}
+
+// CountdownClient is a client for the Countdown schema.
+type CountdownClient struct {
+	config
+}
+
+// NewCountdownClient returns a client for the Countdown from the given config.
+func NewCountdownClient(c config) *CountdownClient {
+	return &CountdownClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `countdown.Hooks(f(g(h())))`.
+func (c *CountdownClient) Use(hooks ...Hook) {
+	c.hooks.Countdown = append(c.hooks.Countdown, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `countdown.Intercept(f(g(h())))`.
+func (c *CountdownClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Countdown = append(c.inters.Countdown, interceptors...)
+}
+
+// Create returns a builder for creating a Countdown entity.
+func (c *CountdownClient) Create() *CountdownCreate {
+	mutation := newCountdownMutation(c.config, OpCreate)
+	return &CountdownCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Countdown entities.
+func (c *CountdownClient) CreateBulk(builders ...*CountdownCreate) *CountdownCreateBulk {
+	return &CountdownCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CountdownClient) MapCreateBulk(slice any, setFunc func(*CountdownCreate, int)) *CountdownCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CountdownCreateBulk{err: fmt.Errorf("calling to CountdownClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CountdownCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CountdownCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Countdown.
+func (c *CountdownClient) Update() *CountdownUpdate {
+	mutation := newCountdownMutation(c.config, OpUpdate)
+	return &CountdownUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CountdownClient) UpdateOne(_m *Countdown) *CountdownUpdateOne {
+	mutation := newCountdownMutation(c.config, OpUpdateOne, withCountdown(_m))
+	return &CountdownUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CountdownClient) UpdateOneID(id int) *CountdownUpdateOne {
+	mutation := newCountdownMutation(c.config, OpUpdateOne, withCountdownID(id))
+	return &CountdownUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Countdown.
+func (c *CountdownClient) Delete() *CountdownDelete {
+	mutation := newCountdownMutation(c.config, OpDelete)
+	return &CountdownDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CountdownClient) DeleteOne(_m *Countdown) *CountdownDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CountdownClient) DeleteOneID(id int) *CountdownDeleteOne {
+	builder := c.Delete().Where(countdown.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CountdownDeleteOne{builder}
+}
+
+// Query returns a query builder for Countdown.
+func (c *CountdownClient) Query() *CountdownQuery {
+	return &CountdownQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCountdown},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Countdown entity by its id.
+func (c *CountdownClient) Get(ctx context.Context, id int) (*Countdown, error) {
+	return c.Query().Where(countdown.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CountdownClient) GetX(ctx context.Context, id int) *Countdown {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *CountdownClient) Hooks() []Hook {
+	return c.hooks.Countdown
+}
+
+// Interceptors returns the client interceptors.
+func (c *CountdownClient) Interceptors() []Interceptor {
+	return c.inters.Countdown
+}
+
+func (c *CountdownClient) mutate(ctx context.Context, m *CountdownMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CountdownCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CountdownUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CountdownUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CountdownDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Countdown mutation op: %q", m.Op())
 	}
 }
 
@@ -1806,6 +2231,54 @@ func (c *GeneralSettingsClient) QueryMatrixLayouts(_m *GeneralSettings) *MatrixL
 			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
 			sqlgraph.To(matrixlayout.Table, matrixlayout.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.MatrixLayoutsTable, generalsettings.MatrixLayoutsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCountdowns queries the countdowns edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryCountdowns(_m *GeneralSettings) *CountdownQuery {
+	query := (&CountdownClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(countdown.Table, countdown.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.CountdownsTable, generalsettings.CountdownsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAiDigests queries the ai_digests edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryAiDigests(_m *GeneralSettings) *AIDigestQuery {
+	query := (&AIDigestClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(aidigest.Table, aidigest.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.AiDigestsTable, generalsettings.AiDigestsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAlertSettings queries the alert_settings edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryAlertSettings(_m *GeneralSettings) *AlertSettingsQuery {
+	query := (&AlertSettingsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(alertsettings.Table, alertsettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.AlertSettingsTable, generalsettings.AlertSettingsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -4368,16 +4841,17 @@ func (c *WeatherClient) mutate(ctx context.Context, m *WeatherMutation) (Value, 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AISettings, AdminSettings, Calendar, Crypto, DeviceSettings, EmailSettings, F1,
-		GeneralSettings, GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry,
-		LogSettings, MatrixLayout, NewsFeed, Notification, Radarr, RssFeed, Schedule,
-		Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video, Weather []ent.Hook
+		AIDigest, AISettings, AdminSettings, AlertSettings, Calendar, Countdown, Crypto,
+		DeviceSettings, EmailSettings, F1, GeneralSettings, GenericAPI, GoogleCalendar,
+		HomeAssistant, Image, LogEntry, LogSettings, MatrixLayout, NewsFeed,
+		Notification, Radarr, RssFeed, Schedule, Sonarr, Stock, TextSlide,
+		UmamiSettings, Untappd, Video, Weather []ent.Hook
 	}
 	inters struct {
-		AISettings, AdminSettings, Calendar, Crypto, DeviceSettings, EmailSettings, F1,
-		GeneralSettings, GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry,
-		LogSettings, MatrixLayout, NewsFeed, Notification, Radarr, RssFeed, Schedule,
-		Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
-		Weather []ent.Interceptor
+		AIDigest, AISettings, AdminSettings, AlertSettings, Calendar, Countdown, Crypto,
+		DeviceSettings, EmailSettings, F1, GeneralSettings, GenericAPI, GoogleCalendar,
+		HomeAssistant, Image, LogEntry, LogSettings, MatrixLayout, NewsFeed,
+		Notification, Radarr, RssFeed, Schedule, Sonarr, Stock, TextSlide,
+		UmamiSettings, Untappd, Video, Weather []ent.Interceptor
 	}
 )

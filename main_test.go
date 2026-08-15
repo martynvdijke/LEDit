@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"image"
 	"image/png"
 	"net/http"
@@ -866,6 +867,105 @@ func TestAPITrmnlStats(t *testing.T) {
 		if _, ok := analytics[field]; !ok {
 			t.Errorf("expected analytics.%s field", field)
 		}
+	}
+}
+
+func TestAPIHealth(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv, nil)
+
+	req := httptest.NewRequest("GET", "/api/health", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	var resp map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("invalid JSON response: %v", err)
+	}
+	for _, field := range []string{"sources", "devices"} {
+		if _, ok := resp[field]; !ok {
+			t.Errorf("expected top-level %s object", field)
+		}
+	}
+
+	// Read-only endpoint: POST must not be accepted.
+	req2 := httptest.NewRequest("POST", "/api/health", bytes.NewBufferString(`{}`))
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, req2)
+	if w2.Code == http.StatusOK {
+		t.Errorf("expected non-200 for POST, got %d", w2.Code)
+	}
+}
+
+func TestAdminAlertSettingsSaveAndTest(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv, nil)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	// Save alert settings (Gotify pointed at an unreachable port).
+	form := "gotify_enabled=on&gotify_url=http%3A%2F%2F127.0.0.1%3A9&gotify_token=sekret" +
+		"&email_enabled=off&recipient_email=x%40y.z" +
+		"&failure_threshold=5&cooldown_minutes=30&stale_multiplier=2&notify_recovery=on"
+	req := httptest.NewRequest("POST", "/admin/settings/alerts", bytes.NewBufferString(form))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302 after save, got %d", w.Code)
+	}
+
+	// Settings page renders the form.
+	req2 := httptest.NewRequest("GET", "/admin/settings/alerts", nil)
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, req2)
+	if w2.Code != http.StatusOK {
+		t.Fatalf("expected 200 for settings page, got %d", w2.Code)
+	}
+	if !strings.Contains(w2.Body.String(), `id="gotify_enabled"`) {
+		t.Error("expected gotify_enabled field on settings page")
+	}
+
+	// Persisted values round-trip.
+	as, err := srv.DB.AlertSettings.Query().Only(testCtx)
+	if err != nil {
+		t.Fatalf("alert settings not persisted: %v", err)
+	}
+	if !as.GotifyEnabled || as.GotifyURL != "http://127.0.0.1:9" || as.GotifyToken != "sekret" {
+		t.Errorf("gotify fields not persisted: %+v", as)
+	}
+	if as.FailureThreshold != 5 || as.CooldownMinutes != 30 || as.StaleMultiplier != 2 || !as.NotifyRecovery {
+		t.Errorf("rule fields not persisted: %+v", as)
+	}
+
+	// Test button reports per-channel result (Gotify unreachable → failed).
+	req3 := httptest.NewRequest("POST", "/admin/settings/alerts/test", nil)
+	w3 := httptest.NewRecorder()
+	srv.ServeHTTP(w3, req3)
+	if w3.Code != http.StatusOK {
+		t.Fatalf("expected 200 for test endpoint, got %d", w3.Code)
+	}
+	var resp map[string]any
+	if err := json.Unmarshal(w3.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("invalid JSON response: %v", err)
+	}
+	results, ok := resp["results"].(map[string]any)
+	if !ok {
+		t.Fatal("expected results object")
+	}
+	gotify, ok := results["gotify"].(string)
+	if !ok {
+		t.Fatal("expected gotify channel result")
+	}
+	if !strings.Contains(gotify, "failed") {
+		t.Errorf("expected gotify test to fail against unreachable port, got %q", gotify)
 	}
 }
 
@@ -2131,5 +2231,109 @@ func TestDeviceTokenBackfill(t *testing.T) {
 	}
 	if len(got.Token) != 32 {
 		t.Errorf("expected 32-char token, got %d chars", len(got.Token))
+	}
+}
+
+// makeTestPNG writes a tiny valid PNG to path and returns it.
+func makeTestPNG(t *testing.T, path string) {
+	t.Helper()
+	img := image.NewRGBA(image.Rect(0, 0, 8, 8))
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			img.Set(i, j, image.White)
+		}
+	}
+	f, err := os.Create(path)
+	if err != nil {
+		t.Fatalf("create png: %v", err)
+	}
+	defer f.Close()
+	if err := png.Encode(f, img); err != nil {
+		t.Fatalf("encode png: %v", err)
+	}
+}
+
+// TestPreviewStaleHeaders exercises AdminPreview with the LKG cache: a live
+// render has no stale headers; after the backing file is removed, the cached
+// frame is served with X-LEDit-Stale + X-LEDit-Stale-Age.
+func TestPreviewStaleHeaders(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv, nil)
+	settings := srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	pngPath := "testdata/lkg_preview.png"
+	makeTestPNG(t, pngPath)
+	defer os.Remove(pngPath)
+
+	imgEnt, err := srv.DB.Image.Create().SetPath(pngPath).Save(testCtx)
+	if err != nil {
+		t.Fatalf("create image entity: %v", err)
+	}
+	settings.Update().AddImages(imgEnt).SaveX(testCtx)
+
+	// Live render: 200, PNG body, no stale headers.
+	req := httptest.NewRequest("GET", "/admin/preview?type=images&id="+fmt.Sprint(imgEnt.ID)+"&w=64&h=64", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("live preview: expected 200, got %d", w.Code)
+	}
+	if v := w.Header().Get("X-LEDit-Stale"); v != "" {
+		t.Errorf("live preview: unexpected X-LEDit-Stale=%q", v)
+	}
+
+	// Remove the backing file, then re-request: cached stale frame + headers.
+	os.Remove(pngPath)
+	req2 := httptest.NewRequest("GET", "/admin/preview?type=images&id="+fmt.Sprint(imgEnt.ID)+"&w=64&h=64", nil)
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, req2)
+	if w2.Code != http.StatusOK {
+		t.Fatalf("stale preview: expected 200, got %d", w2.Code)
+	}
+	if v := w2.Header().Get("X-LEDit-Stale"); v != "1" {
+		t.Errorf("stale preview: expected X-LEDit-Stale=1, got %q", v)
+	}
+	if v := w2.Header().Get("X-LEDit-Stale-Age"); v == "" {
+		t.Error("stale preview: expected X-LEDit-Stale-Age header")
+	}
+}
+
+// TestPreviewMatrixAmbienceCells verifies a matrix layout bound to ambience
+// sources (analog-clock:0, matrix-rain:0, countdown:<id>) renders through the
+// shared AdminPreview matrix path.
+func TestPreviewMatrixAmbienceCells(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv, nil)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	cd := srv.DB.Countdown.Create().
+		SetName("Launch").SetLabel("Launch").SetTargetTime(time.Now().Add(2 * time.Hour)).SetEnabled(true).
+		SaveX(testCtx)
+
+	// 2x2 matrix: analog clock + matrix rain + countdown + empty cell.
+	bindings := `[{"row":0,"col":0,"source_type":"analog-clock","source_id":0},{"row":0,"col":1,"source_type":"matrix-rain","source_id":0},{"row":1,"col":0,"source_type":"countdown","source_id":` + fmt.Sprint(cd.ID) + `}]`
+	ml := srv.DB.MatrixLayout.Create().
+		SetName("Ambience Grid").SetRows(2).SetCols(2).SetEnabled(true).SetBindings(bindings).
+		SaveX(testCtx)
+
+	req := httptest.NewRequest("GET", "/admin/preview?type=matrix&id="+fmt.Sprint(ml.ID)+"&w=64&h=64", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("matrix preview: expected 200, got %d", w.Code)
+	}
+	if ct := w.Header().Get("Content-Type"); !strings.HasPrefix(ct, "image/png") {
+		t.Errorf("matrix preview: expected image/png, got %q", ct)
+	}
+	if w.Body.Len() == 0 {
+		t.Error("matrix preview: empty body")
 	}
 }

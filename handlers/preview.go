@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"ledit/datasource"
@@ -31,7 +32,7 @@ func (s *Server) loadSettingsWithAll(c *gin.Context) (*ent.GeneralSettings, erro
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
 		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
 		WithImages().WithVideos().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
-		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().Only(c.Request.Context())
+		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().Only(c.Request.Context())
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +52,8 @@ func (s *Server) AdminPreview(c *gin.Context) {
 	h := clampPreviewSize(mustAtoi(c.DefaultQuery("h", "64")))
 	isTemplate := c.Query("template") == "1"
 
-	if id <= 0 {
+	// Built-in ambience sources use id 0; every DB-backed source needs id > 0.
+	if id <= 0 && sourceType != "analog-clock" && sourceType != "matrix-rain" {
 		c.Status(http.StatusBadRequest)
 		return
 	}
@@ -63,6 +65,8 @@ func (s *Server) AdminPreview(c *gin.Context) {
 	}
 
 	var img *render.RenderedImage
+	var stale bool
+	cacheKey := lkgCacheKey(fmt.Sprintf("%s:%d", sourceType, id), w, h)
 	if sourceType == "matrix" {
 		ml, err := s.DB.MatrixLayout.Get(c.Request.Context(), id)
 		if err != nil {
@@ -70,26 +74,46 @@ func (s *Server) AdminPreview(c *gin.Context) {
 			return
 		}
 		if isTemplate {
-			img = renderMatrixTemplate(ml, buildSourceIndex(settings), w, h)
+			img = renderMatrixTemplate(ml, buildSourceIndex(settings, s.aiConfig(c.Request.Context())), w, h)
 		} else {
 			mds := s.WSHub.buildMatrixDS(settings, ml, 0)
 			if mds == nil {
 				c.Status(http.StatusUnprocessableEntity)
 				return
 			}
-			img, err = mds.GetPNG(w, h)
+			img, stale, err = defaultLKG.GetPNG(cacheKey, datasourceConfigSig(mds), func() (*render.RenderedImage, error) {
+				start := time.Now()
+				img, err := mds.GetPNG(w, h)
+				dur := time.Since(start)
+				if err != nil {
+					Health.RecordFailure(fmt.Sprintf("%s:%d", sourceType, id), err, dur)
+				} else {
+					Health.RecordSuccess(fmt.Sprintf("%s:%d", sourceType, id), dur)
+				}
+				return img, err
+			})
 		}
 	} else {
 		if isTemplate {
 			c.Status(http.StatusBadRequest)
 			return
 		}
-		src, _, err := buildSourceIndex(settings).Resolve(sourceType, id)
+		src, _, err := buildSourceIndex(settings, s.aiConfig(c.Request.Context())).Resolve(sourceType, id)
 		if err != nil {
 			c.Status(http.StatusNotFound)
 			return
 		}
-		img, err = src.GetPNG(w, h)
+		img, stale, err = defaultLKG.GetPNG(cacheKey, datasourceConfigSig(src), func() (*render.RenderedImage, error) {
+			start := time.Now()
+			img, err := src.GetPNG(w, h)
+			dur := time.Since(start)
+			if err != nil {
+				Health.RecordFailure(fmt.Sprintf("%s:%d", sourceType, id), err, dur)
+			} else {
+				Health.RecordSuccess(fmt.Sprintf("%s:%d", sourceType, id), dur)
+			}
+			return img, err
+		})
 	}
 
 	if err != nil || img == nil {
@@ -97,6 +121,10 @@ func (s *Server) AdminPreview(c *gin.Context) {
 		return
 	}
 	c.Header("Cache-Control", "no-store")
+	if stale {
+		c.Header("X-LEDit-Stale", "1")
+		c.Header("X-LEDit-Stale-Age", strconv.FormatInt(defaultLKG.StaleAge(cacheKey), 10))
+	}
 	c.Data(http.StatusOK, "image/png", img.Data)
 }
 
@@ -141,6 +169,36 @@ func (s *Server) AdminPreviewDatasource(c *gin.Context) {
 			Color:    c.PostForm("color"),
 			BgColor:  c.PostForm("bg_color"),
 			FontSize: mustAtoi(c.DefaultPostForm("font_size", "32")),
+		}
+	case "countdown":
+		target, err := time.ParseInLocation("2006-01-02T15:04", c.PostForm("target_time"), time.Local)
+		if err != nil {
+			c.Status(http.StatusBadRequest)
+			return
+		}
+		src = &datasource.CountdownDS{
+			Name:   c.PostForm("name"),
+			Label:  c.PostForm("label"),
+			Target: target,
+		}
+	case "aidigest":
+		ttl := mustAtoi(c.DefaultPostForm("ttl_minutes", "30"))
+		if ttl < 1 {
+			ttl = 1
+		}
+		settings, err := s.loadSettingsWithAll(c)
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		// Preview only: renders a config summary, never calls the LLM.
+		src = &datasource.AIDigestDS{
+			ID:       0,
+			Name:     c.PostForm("name"),
+			Prompt:   c.PostForm("prompt"),
+			FeedURLs: digestFeedURLs(settings, c.PostFormArray("sources")),
+			TTL:      time.Duration(ttl) * time.Minute,
+			Preview:  true,
 		}
 	default:
 		c.Status(http.StatusBadRequest)
@@ -189,7 +247,7 @@ func (s *Server) AdminPreviewMatrix(c *gin.Context) {
 
 	var img *render.RenderedImage
 	if isTemplate {
-		names := namesGrid(rows, cols, gap, background, bindings, buildSourceIndex(settings))
+		names := namesGrid(rows, cols, gap, background, bindings, buildSourceIndex(settings, s.aiConfig(c.Request.Context())))
 		img, err = render.TemplateGrid(rows, cols, gap, parseHexColorRGBA(background), names, w, h)
 	} else {
 		mds := &datasource.MatrixDS{
@@ -200,7 +258,7 @@ func (s *Server) AdminPreviewMatrix(c *gin.Context) {
 			Background: background,
 			Bindings:   datasource.ParseBindings(bindings),
 		}
-		idx := buildSourceIndex(settings)
+		idx := buildSourceIndex(settings, s.aiConfig(c.Request.Context()))
 		mds.Resolve = idx.Resolve
 		img, err = mds.GetPNG(w, h)
 	}

@@ -45,5 +45,8 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("news_feeds", NewsFeed.Type),
 		edge.To("generic_apis", GenericAPI.Type),
 		edge.To("matrix_layouts", MatrixLayout.Type),
+		edge.To("countdowns", Countdown.Type),
+		edge.To("ai_digests", AIDigest.Type),
+		edge.To("alert_settings", AlertSettings.Type),
 	}
 }

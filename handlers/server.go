@@ -146,7 +146,16 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) setupRoutes() {
-	tmpl := template.New("")
+	tmpl := template.New("").Funcs(template.FuncMap{
+		"isSelected": func(selected []string, name string) bool {
+			for _, s := range selected {
+				if s == name {
+					return true
+				}
+			}
+			return false
+		},
+	})
 	filepath.Walk("web/templates", func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -167,6 +176,11 @@ func (s *Server) setupRoutes() {
 	s.Router.GET("/", s.IndexHandler)
 	s.Router.GET("/ws/feed", s.WSHub.HandleWS)
 	s.Router.GET("/ws/device/:token", s.WSHub.HandleDeviceWS)
+	// Device-accurate preview: admin session (not the device token), never
+	// touches last_seen_at. AuthMiddleware redirects to /login on failure.
+	// NOTE: the param must stay named ":token" — gin rejects a different
+	// wildcard name at the same tree position as /ws/device/:token.
+	s.Router.GET("/ws/device/:token/preview", AuthMiddleware(), s.WSHub.HandleDevicePreviewWS)
 	s.Router.GET("/eink/toggle", s.AdminEInkToggleFeed)
 
 	api := s.Router.Group("/api")
@@ -179,6 +193,7 @@ func (s *Server) setupRoutes() {
 		api.POST("/webhook/notify", s.APIWebhookNotify)
 		api.GET("/notifications", s.APINotificationHistory)
 		api.GET("/trmnl/stats", s.APITrmnlStats)
+		api.GET("/health", s.APIHealth)
 	}
 
 	s.Router.GET("/login", s.LoginPage)
@@ -270,6 +285,7 @@ func (s *Server) setupRoutes() {
 		admin.POST("/devices/new", s.AdminDeviceSettingsCreate)
 		admin.GET("/devices/:id/edit", s.AdminDeviceSettingsEdit)
 		admin.POST("/devices/:id/edit", s.AdminDeviceSettingsUpdate)
+		admin.GET("/devices/:id/preview", s.AdminDevicePreview)
 		admin.POST("/devices/:id/delete", s.AdminDeviceSettingsDelete)
 
 		// Theme (Phase 8)
@@ -339,6 +355,24 @@ func (s *Server) setupRoutes() {
 		admin.POST("/textslides/:id/edit", s.AdminTextSlideUpdate)
 		admin.POST("/textslides/:id/delete", s.AdminTextSlideDelete)
 
+		// Countdowns (ambience modes)
+		admin.GET("/countdowns/new", s.AdminCountdownNew)
+		admin.POST("/countdowns/new", s.AdminCountdownCreate)
+		admin.GET("/countdowns/:id/edit", s.AdminCountdownEdit)
+		admin.POST("/countdowns/:id/edit", s.AdminCountdownUpdate)
+		admin.POST("/countdowns/:id/delete", s.AdminCountdownDelete)
+
+		// AI Digests (ai-features)
+		admin.GET("/aidigests/new", s.AdminAIDigestNew)
+		admin.POST("/aidigests/new", s.AdminAIDigestCreate)
+		admin.GET("/aidigests/:id/edit", s.AdminAIDigestEdit)
+		admin.POST("/aidigests/:id/edit", s.AdminAIDigestUpdate)
+		admin.POST("/aidigests/:id/delete", s.AdminAIDigestDelete)
+		admin.POST("/aidigests/:id/refresh", s.AdminAIDigestRefresh)
+
+		// AI slide generation (human-in-the-loop, nothing saved)
+		admin.POST("/textslides/generate", s.AdminTextSlideGenerate)
+
 		// Log Viewer (Phase 11)
 		admin.GET("/logs", s.AdminLogs)
 		admin.GET("/api/logs", s.AdminLogsAPI)
@@ -359,6 +393,11 @@ func (s *Server) setupRoutes() {
 		// Umami Analytics Settings
 		admin.GET("/settings/umami", s.AdminUmamiSettings)
 		admin.POST("/settings/umami", s.AdminUmamiSettingsSave)
+
+		// Alert Settings
+		admin.GET("/settings/alerts", s.AdminAlertSettings)
+		admin.POST("/settings/alerts", s.AdminAlertSettingsSave)
+		admin.POST("/settings/alerts/test", s.AdminAlertSettingsTest)
 
 		// Password Change
 		admin.GET("/password", s.AdminPasswordChange)

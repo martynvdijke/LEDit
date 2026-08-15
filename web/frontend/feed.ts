@@ -10,6 +10,10 @@ const clockEl = document.getElementById('clock-overlay');
 const marqueeEl = document.getElementById('marquee-text');
 const btnRefresh = document.getElementById('btn-refresh') as HTMLButtonElement | null;
 const feedPage = document.querySelector<HTMLElement>('[data-feed-page]');
+const devicePreview = document.querySelector<HTMLElement>('[data-device-preview]');
+const deviceSelect = document.querySelector<HTMLSelectElement>('[data-device-select]');
+const staleRow = document.getElementById('stale-row');
+const staleText = document.getElementById('stale-text');
 const isEink = document.body.classList.contains('eink-mode');
 let ws: WebSocket | null = null;
 let reconnectAttempts = 0;
@@ -17,6 +21,14 @@ let paused = false;
 let fullscreen = false;
 let clockInterval: number | undefined;
 let autoRefreshInterval: number | undefined;
+
+// Resolve the WebSocket endpoint: a device preview page always targets its
+// device; the feed page honors the device selector (0 = shared /ws/feed).
+function feedEndpoint(): string {
+  if (devicePreview?.dataset.deviceId) return `/ws/device/${devicePreview.dataset.deviceId}/preview`;
+  if (deviceSelect && deviceSelect.value !== '0') return `/ws/device/${deviceSelect.value}/preview`;
+  return '/ws/feed';
+}
 
 function setStatus(text: string): void {
   if (!statusEl) return;
@@ -56,13 +68,19 @@ function showImage(format: string, image: string): void {
 
 function connect(): void {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  ws = new WebSocket(`${protocol}//${window.location.host}/ws/feed`);
+  ws = new WebSocket(`${protocol}//${window.location.host}${feedEndpoint()}`);
   setStatus('Connecting');
   ws.onopen = () => { reconnectAttempts = 0; setStatus('Connected'); };
   ws.onmessage = (event) => {
-    const msg = JSON.parse(event.data) as { source?: string; next?: string; format?: string; image?: string };
+    const msg = JSON.parse(event.data) as { source?: string; next?: string; format?: string; image?: string; stale?: boolean; stale_age?: number };
     if (msg.source) { sourceEl && (sourceEl.textContent = msg.source); marqueeEl && (marqueeEl.textContent = ` ${msg.source}  /  LEDit LIVE FEED `); }
     if (msg.next) nextEl && (nextEl.textContent = `NEXT  ${msg.next}`);
+    if (msg.stale && staleRow && staleText) {
+      staleRow.hidden = false;
+      staleText.textContent = `STALE (${msg.stale_age ?? 0} s)`;
+    } else if (staleRow) {
+      staleRow.hidden = true;
+    }
     if (msg.format && msg.image) {
       if (msg.format === 'MP4' && videoEl && imgEl) {
         imgEl.style.display = 'none'; videoEl.style.display = 'block'; videoEl.src = `data:video/mp4;base64,${msg.image}`; void videoEl.play(); drawMatrix(videoEl.clientWidth || 400);
@@ -81,6 +99,19 @@ function connect(): void {
 }
 
 function send(action: 'pause' | 'resume' | 'next'): void { if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ action })); }
+
+// Device selector: switching reconnects to the chosen endpoint while reusing
+// the status/reconnect logic. The old socket's onclose is suppressed so only
+// one reconnect fires.
+deviceSelect?.addEventListener('change', () => {
+  if (ws) {
+    ws.onclose = null;
+    ws.close();
+    ws = null;
+  }
+  connect();
+});
+
 document.getElementById('btn-pause')?.addEventListener('click', () => { paused = !paused; document.getElementById('btn-pause')!.textContent = paused ? 'Resume' : 'Pause'; send(paused ? 'pause' : 'resume'); });
 document.getElementById('btn-skip')?.addEventListener('click', () => send('next'));
 btnRefresh?.addEventListener('click', () => send('next'));

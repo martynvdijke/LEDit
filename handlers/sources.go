@@ -5,12 +5,54 @@ import (
 	"fmt"
 	"log/slog"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"ledit/datasource"
 	"ledit/ent"
 	"ledit/ent/generalsettings"
 )
+
+// aiConfig loads the single-row AI settings as a datasource.AIConfig, or a
+// zero config (rendering digests as placeholders) when not configured.
+func (s *Server) aiConfig(ctx context.Context) datasource.AIConfig {
+	ai, err := s.DB.AISettings.Query().Only(ctx)
+	if err != nil {
+		return datasource.AIConfig{}
+	}
+	return datasource.AIConfig{Provider: ai.Provider, Endpoint: ai.Endpoint, APIKey: ai.APIKey, Model: ai.Model}
+}
+
+// aiConfig is the WSHub variant of Server.aiConfig.
+func (h *WSHub) aiConfig(ctx context.Context) datasource.AIConfig {
+	ai, err := h.Client.AISettings.Query().Only(ctx)
+	if err != nil {
+		return datasource.AIConfig{}
+	}
+	return datasource.AIConfig{Provider: ai.Provider, Endpoint: ai.Endpoint, APIKey: ai.APIKey, Model: ai.Model}
+}
+
+// digestFeedURLs resolves referenced feed names (the JSON array on an AIDigest
+// entity) to their configured URLs using the RSS and news feed edges. Names
+// that match no configured feed are dropped.
+func digestFeedURLs(settings *ent.GeneralSettings, names []string) []string {
+	byName := map[string]string{}
+	rss, _ := settings.Edges.RssFeedsOrErr()
+	for _, r := range rss {
+		byName[r.Name] = r.URL
+	}
+	news, _ := settings.Edges.NewsFeedsOrErr()
+	for _, n := range news {
+		byName[n.Name] = n.URL
+	}
+	var urls []string
+	for _, n := range names {
+		if u, ok := byName[n]; ok {
+			urls = append(urls, u)
+		}
+	}
+	return urls
+}
 
 // bindingOption is one selectable source in the matrix editor's per-cell
 // selectors.
@@ -26,13 +68,22 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
 		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
 		WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
-		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().Only(c.Request.Context())
+		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().Only(c.Request.Context())
 	if err != nil || settings == nil {
 		return opts
 	}
 	add := func(typ string, id int, label string) {
+		// Flag sources currently in a red health state so the operator can
+		// avoid wiring broken sources into matrix cells.
+		if sh, ok := Health.Snapshot()[fmt.Sprintf("%s:%d", typ, id)]; ok && StatusOf(sh) == "red" {
+			label += " ⚠"
+		}
 		opts[typ] = append(opts[typ], bindingOption{ID: id, Label: label})
 	}
+
+	// Built-in ambience modes are always bindable.
+	add("analog-clock", 0, "Analog Clock")
+	add("matrix-rain", 0, "Matrix Rain")
 
 	sonarr, _ := settings.Edges.SonarrOrErr()
 	for _, s := range sonarr {
@@ -98,6 +149,14 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	for _, ml := range layouts {
 		add("matrix", ml.ID, "Matrix: "+ml.Name)
 	}
+	countdowns, _ := settings.Edges.CountdownsOrErr()
+	for _, cd := range countdowns {
+		add("countdown", cd.ID, "Countdown: "+cd.Name)
+	}
+	digests, _ := settings.Edges.AiDigestsOrErr()
+	for _, d := range digests {
+		add("aidigest", d.ID, "AI: "+d.Name)
+	}
 	return opts
 }
 
@@ -123,10 +182,17 @@ type sourceIndex struct {
 }
 
 // buildSourceIndex indexes all datasource edges of GeneralSettings using the
-// same endpoint keys as dsRegistry / admin routes.
-func buildSourceIndex(settings *ent.GeneralSettings) *sourceIndex {
+// same endpoint keys as dsRegistry / admin routes. aiCfg supplies the LLM
+// config for AI digest sources (zero config renders them as placeholders).
+func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) *sourceIndex {
 	idx := &sourceIndex{byKey: map[string]datasource.Datasource{}, names: map[string]string{}}
 	key := func(typ string, id int) string { return fmt.Sprintf("%s:%d", typ, id) }
+
+	// Built-in ambience modes (always available, no config).
+	idx.byKey[key("analog-clock", 0)] = &datasource.AnalogClockDS{}
+	idx.names[key("analog-clock", 0)] = "Analog Clock"
+	idx.byKey[key("matrix-rain", 0)] = &datasource.MatrixRainDS{}
+	idx.names[key("matrix-rain", 0)] = "Matrix Rain"
 
 	sonarr, _ := settings.Edges.SonarrOrErr()
 	for _, s := range sonarr {
@@ -212,6 +278,26 @@ func buildSourceIndex(settings *ent.GeneralSettings) *sourceIndex {
 		idx.byKey[key("genericapi", ga.ID)] = &datasource.GenericAPIDS{Token: ga.Token, URL: ga.URL, Config: ga.Config}
 		idx.names[key("genericapi", ga.ID)] = "API: " + label
 	}
+	countdowns, _ := settings.Edges.CountdownsOrErr()
+	for _, cd := range countdowns {
+		idx.byKey[key("countdown", cd.ID)] = &datasource.CountdownDS{Name: cd.Name, Label: cd.Label, Target: cd.TargetTime}
+		idx.names[key("countdown", cd.ID)] = "Countdown: " + cd.Name
+	}
+	digests, _ := settings.Edges.AiDigestsOrErr()
+	for _, d := range digests {
+		if !d.Enabled {
+			continue
+		}
+		idx.byKey[key("aidigest", d.ID)] = &datasource.AIDigestDS{
+			ID:       d.ID,
+			Name:     d.Name,
+			Prompt:   d.Prompt,
+			FeedURLs: digestFeedURLs(settings, datasource.ParseDigestSources(d.Sources)),
+			TTL:      time.Duration(d.TTLMinutes) * time.Minute,
+			Config:   aiCfg,
+		}
+		idx.names[key("aidigest", d.ID)] = "AI: " + d.Name
+	}
 	return idx
 }
 
@@ -236,7 +322,7 @@ func (h *WSHub) buildMatrixDS(settings *ent.GeneralSettings, ml *ent.MatrixLayou
 		slog.Warn("matrix nesting too deep, skipping layout", "layout", ml.Name, "depth", depth)
 		return nil
 	}
-	idx := buildSourceIndex(settings)
+	idx := buildSourceIndex(settings, h.aiConfig(context.Background()))
 	mds := &datasource.MatrixDS{
 		Name:       ml.Name,
 		Rows:       ml.Rows,

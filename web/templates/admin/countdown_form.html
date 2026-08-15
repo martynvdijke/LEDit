@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Countdown</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Countdown</h1>
+            <form method="POST" action="/admin/countdowns{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4" data-live-preview-form data-preview-type="countdown">
+                <input type="hidden" name="w" value="64">
+                <input type="hidden" name="h" value="32">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" required value="{{if .obj}}{{.obj.Name}}{{end}}">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="target_time" class="form-label">Target Time</label>
+                        <input type="datetime-local" class="form-control" id="target_time" name="target_time" required value="{{if .obj}}{{.obj.TargetTime.Format "2006-01-02T15:04"}}{{end}}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="label" class="form-label">Label</label>
+                        <input type="text" class="form-control" id="label" name="label" value="{{if .obj}}{{.obj.Label}}{{end}}">
+                    </div>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if not .obj}}checked{{else if .obj.Enabled}}checked{{end}}>
+                    <label for="enabled" class="form-check-label">Enabled</label>
+                </div>
+                <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                <a href="/admin/" class="btn btn-secondary">Cancel</a>
+            </form>
+            {{if .edit}}
+            <form method="POST" action="/admin/countdowns/{{.obj.ID}}/delete" class="mt-3">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+            <div class="mt-4">
+            <div class="mt-4">
+                <h5>Live Preview</h5>
+                <div class="preview-container">
+                    <img id="live-preview-img" data-live-preview-img alt="Live preview" class="img-fluid border rounded" style="image-rendering: pixelated; max-width: 320px;">
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

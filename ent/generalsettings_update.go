@@ -6,8 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/aidigest"
 	"ledit/ent/aisettings"
+	"ledit/ent/alertsettings"
 	"ledit/ent/calendar"
+	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/emailsettings"
@@ -496,6 +499,51 @@ func (_u *GeneralSettingsUpdate) AddMatrixLayouts(v ...*MatrixLayout) *GeneralSe
 	return _u.AddMatrixLayoutIDs(ids...)
 }
 
+// AddCountdownIDs adds the "countdowns" edge to the Countdown entity by IDs.
+func (_u *GeneralSettingsUpdate) AddCountdownIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddCountdownIDs(ids...)
+	return _u
+}
+
+// AddCountdowns adds the "countdowns" edges to the Countdown entity.
+func (_u *GeneralSettingsUpdate) AddCountdowns(v ...*Countdown) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCountdownIDs(ids...)
+}
+
+// AddAiDigestIDs adds the "ai_digests" edge to the AIDigest entity by IDs.
+func (_u *GeneralSettingsUpdate) AddAiDigestIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddAiDigestIDs(ids...)
+	return _u
+}
+
+// AddAiDigests adds the "ai_digests" edges to the AIDigest entity.
+func (_u *GeneralSettingsUpdate) AddAiDigests(v ...*AIDigest) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAiDigestIDs(ids...)
+}
+
+// AddAlertSettingIDs adds the "alert_settings" edge to the AlertSettings entity by IDs.
+func (_u *GeneralSettingsUpdate) AddAlertSettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddAlertSettingIDs(ids...)
+	return _u
+}
+
+// AddAlertSettings adds the "alert_settings" edges to the AlertSettings entity.
+func (_u *GeneralSettingsUpdate) AddAlertSettings(v ...*AlertSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAlertSettingIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdate) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -961,6 +1009,69 @@ func (_u *GeneralSettingsUpdate) RemoveMatrixLayouts(v ...*MatrixLayout) *Genera
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMatrixLayoutIDs(ids...)
+}
+
+// ClearCountdowns clears all "countdowns" edges to the Countdown entity.
+func (_u *GeneralSettingsUpdate) ClearCountdowns() *GeneralSettingsUpdate {
+	_u.mutation.ClearCountdowns()
+	return _u
+}
+
+// RemoveCountdownIDs removes the "countdowns" edge to Countdown entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveCountdownIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveCountdownIDs(ids...)
+	return _u
+}
+
+// RemoveCountdowns removes "countdowns" edges to Countdown entities.
+func (_u *GeneralSettingsUpdate) RemoveCountdowns(v ...*Countdown) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCountdownIDs(ids...)
+}
+
+// ClearAiDigests clears all "ai_digests" edges to the AIDigest entity.
+func (_u *GeneralSettingsUpdate) ClearAiDigests() *GeneralSettingsUpdate {
+	_u.mutation.ClearAiDigests()
+	return _u
+}
+
+// RemoveAiDigestIDs removes the "ai_digests" edge to AIDigest entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveAiDigestIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveAiDigestIDs(ids...)
+	return _u
+}
+
+// RemoveAiDigests removes "ai_digests" edges to AIDigest entities.
+func (_u *GeneralSettingsUpdate) RemoveAiDigests(v ...*AIDigest) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAiDigestIDs(ids...)
+}
+
+// ClearAlertSettings clears all "alert_settings" edges to the AlertSettings entity.
+func (_u *GeneralSettingsUpdate) ClearAlertSettings() *GeneralSettingsUpdate {
+	_u.mutation.ClearAlertSettings()
+	return _u
+}
+
+// RemoveAlertSettingIDs removes the "alert_settings" edge to AlertSettings entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveAlertSettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveAlertSettingIDs(ids...)
+	return _u
+}
+
+// RemoveAlertSettings removes "alert_settings" edges to AlertSettings entities.
+func (_u *GeneralSettingsUpdate) RemoveAlertSettings(v ...*AlertSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAlertSettingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -2022,6 +2133,141 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.CountdownsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CountdownsTable,
+			Columns: []string{generalsettings.CountdownsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(countdown.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCountdownsIDs(); len(nodes) > 0 && !_u.mutation.CountdownsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CountdownsTable,
+			Columns: []string{generalsettings.CountdownsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(countdown.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CountdownsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CountdownsTable,
+			Columns: []string{generalsettings.CountdownsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(countdown.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AiDigestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AiDigestsTable,
+			Columns: []string{generalsettings.AiDigestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aidigest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAiDigestsIDs(); len(nodes) > 0 && !_u.mutation.AiDigestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AiDigestsTable,
+			Columns: []string{generalsettings.AiDigestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aidigest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AiDigestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AiDigestsTable,
+			Columns: []string{generalsettings.AiDigestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aidigest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AlertSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AlertSettingsTable,
+			Columns: []string{generalsettings.AlertSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertsettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAlertSettingsIDs(); len(nodes) > 0 && !_u.mutation.AlertSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AlertSettingsTable,
+			Columns: []string{generalsettings.AlertSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AlertSettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AlertSettingsTable,
+			Columns: []string{generalsettings.AlertSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -2489,6 +2735,51 @@ func (_u *GeneralSettingsUpdateOne) AddMatrixLayouts(v ...*MatrixLayout) *Genera
 	return _u.AddMatrixLayoutIDs(ids...)
 }
 
+// AddCountdownIDs adds the "countdowns" edge to the Countdown entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddCountdownIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddCountdownIDs(ids...)
+	return _u
+}
+
+// AddCountdowns adds the "countdowns" edges to the Countdown entity.
+func (_u *GeneralSettingsUpdateOne) AddCountdowns(v ...*Countdown) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCountdownIDs(ids...)
+}
+
+// AddAiDigestIDs adds the "ai_digests" edge to the AIDigest entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddAiDigestIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddAiDigestIDs(ids...)
+	return _u
+}
+
+// AddAiDigests adds the "ai_digests" edges to the AIDigest entity.
+func (_u *GeneralSettingsUpdateOne) AddAiDigests(v ...*AIDigest) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAiDigestIDs(ids...)
+}
+
+// AddAlertSettingIDs adds the "alert_settings" edge to the AlertSettings entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddAlertSettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddAlertSettingIDs(ids...)
+	return _u
+}
+
+// AddAlertSettings adds the "alert_settings" edges to the AlertSettings entity.
+func (_u *GeneralSettingsUpdateOne) AddAlertSettings(v ...*AlertSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAlertSettingIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdateOne) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -2954,6 +3245,69 @@ func (_u *GeneralSettingsUpdateOne) RemoveMatrixLayouts(v ...*MatrixLayout) *Gen
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMatrixLayoutIDs(ids...)
+}
+
+// ClearCountdowns clears all "countdowns" edges to the Countdown entity.
+func (_u *GeneralSettingsUpdateOne) ClearCountdowns() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearCountdowns()
+	return _u
+}
+
+// RemoveCountdownIDs removes the "countdowns" edge to Countdown entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveCountdownIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveCountdownIDs(ids...)
+	return _u
+}
+
+// RemoveCountdowns removes "countdowns" edges to Countdown entities.
+func (_u *GeneralSettingsUpdateOne) RemoveCountdowns(v ...*Countdown) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCountdownIDs(ids...)
+}
+
+// ClearAiDigests clears all "ai_digests" edges to the AIDigest entity.
+func (_u *GeneralSettingsUpdateOne) ClearAiDigests() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearAiDigests()
+	return _u
+}
+
+// RemoveAiDigestIDs removes the "ai_digests" edge to AIDigest entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveAiDigestIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveAiDigestIDs(ids...)
+	return _u
+}
+
+// RemoveAiDigests removes "ai_digests" edges to AIDigest entities.
+func (_u *GeneralSettingsUpdateOne) RemoveAiDigests(v ...*AIDigest) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAiDigestIDs(ids...)
+}
+
+// ClearAlertSettings clears all "alert_settings" edges to the AlertSettings entity.
+func (_u *GeneralSettingsUpdateOne) ClearAlertSettings() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearAlertSettings()
+	return _u
+}
+
+// RemoveAlertSettingIDs removes the "alert_settings" edge to AlertSettings entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveAlertSettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveAlertSettingIDs(ids...)
+	return _u
+}
+
+// RemoveAlertSettings removes "alert_settings" edges to AlertSettings entities.
+func (_u *GeneralSettingsUpdateOne) RemoveAlertSettings(v ...*AlertSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAlertSettingIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -4038,6 +4392,141 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(matrixlayout.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CountdownsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CountdownsTable,
+			Columns: []string{generalsettings.CountdownsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(countdown.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCountdownsIDs(); len(nodes) > 0 && !_u.mutation.CountdownsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CountdownsTable,
+			Columns: []string{generalsettings.CountdownsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(countdown.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CountdownsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CountdownsTable,
+			Columns: []string{generalsettings.CountdownsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(countdown.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AiDigestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AiDigestsTable,
+			Columns: []string{generalsettings.AiDigestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aidigest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAiDigestsIDs(); len(nodes) > 0 && !_u.mutation.AiDigestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AiDigestsTable,
+			Columns: []string{generalsettings.AiDigestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aidigest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AiDigestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AiDigestsTable,
+			Columns: []string{generalsettings.AiDigestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aidigest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AlertSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AlertSettingsTable,
+			Columns: []string{generalsettings.AlertSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertsettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAlertSettingsIDs(); len(nodes) > 0 && !_u.mutation.AlertSettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AlertSettingsTable,
+			Columns: []string{generalsettings.AlertSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AlertSettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AlertSettingsTable,
+			Columns: []string{generalsettings.AlertSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertsettings.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

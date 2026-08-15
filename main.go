@@ -26,6 +26,9 @@ func main() {
 
 	srv := handlers.New(drv, telemetry)
 
+	// Start the background alert engine (polls health registry + device liveness).
+	srv.StartAlertEngine(context.Background())
+
 	// Wire the OTel slog bridge for log-to-trace correlation.
 	if telemetry.IsEnabled() {
 		if otelHandler := telemetry.NewSlogHandler(); otelHandler != nil {

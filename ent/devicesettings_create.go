@@ -174,6 +174,20 @@ func (_c *DeviceSettingsCreate) SetNillableLastSeenAt(v *time.Time) *DeviceSetti
 	return _c
 }
 
+// SetFramesServed sets the "frames_served" field.
+func (_c *DeviceSettingsCreate) SetFramesServed(v int) *DeviceSettingsCreate {
+	_c.mutation.SetFramesServed(v)
+	return _c
+}
+
+// SetNillableFramesServed sets the "frames_served" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableFramesServed(v *int) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetFramesServed(*v)
+	}
+	return _c
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_c *DeviceSettingsCreate) Mutation() *DeviceSettingsMutation {
 	return _c.mutation
@@ -249,6 +263,10 @@ func (_c *DeviceSettingsCreate) defaults() {
 		v := devicesettings.DefaultRefreshInterval
 		_c.mutation.SetRefreshInterval(v)
 	}
+	if _, ok := _c.mutation.FramesServed(); !ok {
+		v := devicesettings.DefaultFramesServed
+		_c.mutation.SetFramesServed(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -282,6 +300,9 @@ func (_c *DeviceSettingsCreate) check() error {
 	}
 	if _, ok := _c.mutation.RefreshInterval(); !ok {
 		return &ValidationError{Name: "refresh_interval", err: errors.New(`ent: missing required field "DeviceSettings.refresh_interval"`)}
+	}
+	if _, ok := _c.mutation.FramesServed(); !ok {
+		return &ValidationError{Name: "frames_served", err: errors.New(`ent: missing required field "DeviceSettings.frames_served"`)}
 	}
 	return nil
 }
@@ -352,6 +373,10 @@ func (_c *DeviceSettingsCreate) createSpec() (*DeviceSettings, *sqlgraph.CreateS
 	if value, ok := _c.mutation.LastSeenAt(); ok {
 		_spec.SetField(devicesettings.FieldLastSeenAt, field.TypeTime, value)
 		_node.LastSeenAt = &value
+	}
+	if value, ok := _c.mutation.FramesServed(); ok {
+		_spec.SetField(devicesettings.FieldFramesServed, field.TypeInt, value)
+		_node.FramesServed = value
 	}
 	return _node, _spec
 }

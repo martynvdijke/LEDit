@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Alert Settings</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>Alert Settings</h1>
+            <p class="text-muted">LEDit watches source health and device liveness, and alerts you when something breaks — via Gotify push or email. Alerts fire on state transitions (failing, recovered, device offline, back online) with a per-source cooldown.</p>
+            <form method="POST" action="/admin/settings/alerts" class="mt-4" id="alertSettingsForm">
+                <h5>Gotify</h5>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="gotify_enabled" name="gotify_enabled" {{if and .settings .settings.GotifyEnabled}}checked{{end}}>
+                    <label for="gotify_enabled" class="form-check-label">Enable Gotify alerts</label>
+                </div>
+                <div class="mb-3">
+                    <label for="gotify_url" class="form-label">Gotify Server URL</label>
+                    <input type="text" class="form-control" id="gotify_url" name="gotify_url" value="{{if .settings}}{{.settings.GotifyURL}}{{end}}" placeholder="https://gotify.example.com">
+                </div>
+                <div class="mb-3">
+                    <label for="gotify_token" class="form-label">App Token</label>
+                    <input type="password" class="form-control" id="gotify_token" name="gotify_token" value="{{if .settings}}{{.settings.GotifyToken}}{{end}}">
+                </div>
+                <hr>
+                <h5>Email</h5>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="email_enabled" name="email_enabled" {{if and .settings .settings.EmailEnabled}}checked{{end}}>
+                    <label for="email_enabled" class="form-check-label">Enable email alerts</label>
+                </div>
+                <div class="mb-3">
+                    <label for="recipient_email" class="form-label">Recipient Email</label>
+                    <input type="email" class="form-control" id="recipient_email" name="recipient_email" value="{{if .settings}}{{.settings.RecipientEmail}}{{end}}" placeholder="you@example.com">
+                    <div class="form-text">Uses the SMTP server configured under <a href="/admin/settings/email">Email settings</a>.</div>
+                </div>
+                <hr>
+                <h5>Rules</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="failure_threshold" class="form-label">Failure threshold</label>
+                        <input type="number" class="form-control" id="failure_threshold" name="failure_threshold" value="{{if .settings}}{{.settings.FailureThreshold}}{{else}}3{{end}}" min="1" max="1000">
+                        <div class="form-text">Consecutive failures before a source alert fires.</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="cooldown_minutes" class="form-label">Cooldown (minutes)</label>
+                        <input type="number" class="form-control" id="cooldown_minutes" name="cooldown_minutes" value="{{if .settings}}{{.settings.CooldownMinutes}}{{else}}15{{end}}" min="1" max="10080">
+                        <div class="form-text">Minimum gap between alerts for the same subject.</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="stale_multiplier" class="form-label">Stale multiplier</label>
+                        <input type="number" class="form-control" id="stale_multiplier" name="stale_multiplier" value="{{if .settings}}{{.settings.StaleMultiplier}}{{else}}3{{end}}" min="1" max="100">
+                        <div class="form-text">Device is offline after N &times; its refresh interval.</div>
+                    </div>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="notify_recovery" name="notify_recovery" {{if not .settings}}checked{{else if .settings.NotifyRecovery}}checked{{end}}>
+                    <label for="notify_recovery" class="form-check-label">Notify when things recover</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+                <button type="button" class="btn btn-outline-secondary ms-2" id="testAlertsBtn">Send Test Alert</button>
+                <div id="testResult" class="mt-2"></div>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById('testAlertsBtn').addEventListener('click', function () {
+            const btn = this;
+            const resultDiv = document.getElementById('testResult');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            resultDiv.className = 'mt-2';
+            resultDiv.textContent = '';
+
+            const formData = new FormData(document.getElementById('alertSettingsForm'));
+
+            fetch('/admin/settings/alerts/test', {
+                method: 'POST',
+                body: formData,
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    resultDiv.className = 'mt-2';
+                    const rows = Object.entries(data.results || {})
+                        .map(function (kv) {
+                            const ok = kv[1] === 'ok';
+                            return '<div class="' + (ok ? 'text-success' : 'text-danger') + '">' + kv[0] + ': ' + kv[1] + '</div>';
+                        })
+                        .join('');
+                    resultDiv.innerHTML = rows || 'No channels enabled.';
+                })
+                .catch(function (err) {
+                    resultDiv.className = 'mt-2 text-danger';
+                    resultDiv.textContent = 'Request failed: ' + err.message;
+                })
+                .finally(function () {
+                    btn.disabled = false;
+                    btn.textContent = 'Send Test Alert';
+                });
+        });
+    </script>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

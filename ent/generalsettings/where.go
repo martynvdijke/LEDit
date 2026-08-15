@@ -815,6 +815,75 @@ func HasMatrixLayoutsWith(preds ...predicate.MatrixLayout) predicate.GeneralSett
 	})
 }
 
+// HasCountdowns applies the HasEdge predicate on the "countdowns" edge.
+func HasCountdowns() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CountdownsTable, CountdownsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCountdownsWith applies the HasEdge predicate on the "countdowns" edge with a given conditions (other predicates).
+func HasCountdownsWith(preds ...predicate.Countdown) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newCountdownsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAiDigests applies the HasEdge predicate on the "ai_digests" edge.
+func HasAiDigests() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AiDigestsTable, AiDigestsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAiDigestsWith applies the HasEdge predicate on the "ai_digests" edge with a given conditions (other predicates).
+func HasAiDigestsWith(preds ...predicate.AIDigest) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newAiDigestsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAlertSettings applies the HasEdge predicate on the "alert_settings" edge.
+func HasAlertSettings() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AlertSettingsTable, AlertSettingsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAlertSettingsWith applies the HasEdge predicate on the "alert_settings" edge with a given conditions (other predicates).
+func HasAlertSettingsWith(preds ...predicate.AlertSettings) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newAlertSettingsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.GeneralSettings) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.AndPredicates(predicates...))

@@ -7,8 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"ledit/ent/adminsettings"
+	"ledit/ent/aidigest"
 	"ledit/ent/aisettings"
+	"ledit/ent/alertsettings"
 	"ledit/ent/calendar"
+	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/emailsettings"
@@ -99,9 +102,12 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			aidigest.Table:        aidigest.ValidColumn,
 			aisettings.Table:      aisettings.ValidColumn,
 			adminsettings.Table:   adminsettings.ValidColumn,
+			alertsettings.Table:   alertsettings.ValidColumn,
 			calendar.Table:        calendar.ValidColumn,
+			countdown.Table:       countdown.ValidColumn,
 			crypto.Table:          crypto.ValidColumn,
 			devicesettings.Table:  devicesettings.ValidColumn,
 			emailsettings.Table:   emailsettings.ValidColumn,

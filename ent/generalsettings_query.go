@@ -6,8 +6,11 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"ledit/ent/aidigest"
 	"ledit/ent/aisettings"
+	"ledit/ent/alertsettings"
 	"ledit/ent/calendar"
+	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/emailsettings"
@@ -67,6 +70,9 @@ type GeneralSettingsQuery struct {
 	withNewsFeeds       *NewsFeedQuery
 	withGenericApis     *GenericAPIQuery
 	withMatrixLayouts   *MatrixLayoutQuery
+	withCountdowns      *CountdownQuery
+	withAiDigests       *AIDigestQuery
+	withAlertSettings   *AlertSettingsQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -587,6 +593,72 @@ func (_q *GeneralSettingsQuery) QueryMatrixLayouts() *MatrixLayoutQuery {
 	return query
 }
 
+// QueryCountdowns chains the current query on the "countdowns" edge.
+func (_q *GeneralSettingsQuery) QueryCountdowns() *CountdownQuery {
+	query := (&CountdownClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(countdown.Table, countdown.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.CountdownsTable, generalsettings.CountdownsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAiDigests chains the current query on the "ai_digests" edge.
+func (_q *GeneralSettingsQuery) QueryAiDigests() *AIDigestQuery {
+	query := (&AIDigestClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(aidigest.Table, aidigest.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.AiDigestsTable, generalsettings.AiDigestsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAlertSettings chains the current query on the "alert_settings" edge.
+func (_q *GeneralSettingsQuery) QueryAlertSettings() *AlertSettingsQuery {
+	query := (&AlertSettingsClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(alertsettings.Table, alertsettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.AlertSettingsTable, generalsettings.AlertSettingsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first GeneralSettings entity from the query.
 // Returns a *NotFoundError when no GeneralSettings was found.
 func (_q *GeneralSettingsQuery) First(ctx context.Context) (*GeneralSettings, error) {
@@ -801,6 +873,9 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		withNewsFeeds:       _q.withNewsFeeds.Clone(),
 		withGenericApis:     _q.withGenericApis.Clone(),
 		withMatrixLayouts:   _q.withMatrixLayouts.Clone(),
+		withCountdowns:      _q.withCountdowns.Clone(),
+		withAiDigests:       _q.withAiDigests.Clone(),
+		withAlertSettings:   _q.withAlertSettings.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -1049,6 +1124,39 @@ func (_q *GeneralSettingsQuery) WithMatrixLayouts(opts ...func(*MatrixLayoutQuer
 	return _q
 }
 
+// WithCountdowns tells the query-builder to eager-load the nodes that are connected to
+// the "countdowns" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithCountdowns(opts ...func(*CountdownQuery)) *GeneralSettingsQuery {
+	query := (&CountdownClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withCountdowns = query
+	return _q
+}
+
+// WithAiDigests tells the query-builder to eager-load the nodes that are connected to
+// the "ai_digests" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithAiDigests(opts ...func(*AIDigestQuery)) *GeneralSettingsQuery {
+	query := (&AIDigestClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAiDigests = query
+	return _q
+}
+
+// WithAlertSettings tells the query-builder to eager-load the nodes that are connected to
+// the "alert_settings" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithAlertSettings(opts ...func(*AlertSettingsQuery)) *GeneralSettingsQuery {
+	query := (&AlertSettingsClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAlertSettings = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -1127,7 +1235,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [22]bool{
+		loadedTypes = [25]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -1150,6 +1258,9 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withNewsFeeds != nil,
 			_q.withGenericApis != nil,
 			_q.withMatrixLayouts != nil,
+			_q.withCountdowns != nil,
+			_q.withAiDigests != nil,
+			_q.withAlertSettings != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -1325,6 +1436,27 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := _q.loadMatrixLayouts(ctx, query, nodes,
 			func(n *GeneralSettings) { n.Edges.MatrixLayouts = []*MatrixLayout{} },
 			func(n *GeneralSettings, e *MatrixLayout) { n.Edges.MatrixLayouts = append(n.Edges.MatrixLayouts, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withCountdowns; query != nil {
+		if err := _q.loadCountdowns(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Countdowns = []*Countdown{} },
+			func(n *GeneralSettings, e *Countdown) { n.Edges.Countdowns = append(n.Edges.Countdowns, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAiDigests; query != nil {
+		if err := _q.loadAiDigests(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.AiDigests = []*AIDigest{} },
+			func(n *GeneralSettings, e *AIDigest) { n.Edges.AiDigests = append(n.Edges.AiDigests, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAlertSettings; query != nil {
+		if err := _q.loadAlertSettings(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.AlertSettings = []*AlertSettings{} },
+			func(n *GeneralSettings, e *AlertSettings) { n.Edges.AlertSettings = append(n.Edges.AlertSettings, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -2008,6 +2140,99 @@ func (_q *GeneralSettingsQuery) loadMatrixLayouts(ctx context.Context, query *Ma
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_matrix_layouts" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadCountdowns(ctx context.Context, query *CountdownQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Countdown)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Countdown(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.CountdownsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_countdowns
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_countdowns" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_countdowns" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadAiDigests(ctx context.Context, query *AIDigestQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *AIDigest)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.AIDigest(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.AiDigestsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_ai_digests
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_ai_digests" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_ai_digests" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadAlertSettings(ctx context.Context, query *AlertSettingsQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *AlertSettings)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.AlertSettings(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.AlertSettingsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_alert_settings
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_alert_settings" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_alert_settings" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

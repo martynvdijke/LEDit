@@ -33,11 +33,22 @@
                         </div>
                     </div>
                     <aside class="feed-rail" aria-label="Feed controls and telemetry">
+                        {{if .devices}}
+                        <div class="panel feed-device-select">
+                            <div class="panel-kicker">Previewing</div>
+                            <label class="sr-only" for="device-select">Preview source</label>
+                            <select id="device-select" data-device-select>
+                                <option value="0">Shared preview (400×400)</option>
+                                {{range .devices}}<option value="{{.ID}}">{{.Name}} ({{.Width}}×{{.Height}})</option>{{end}}
+                            </select>
+                        </div>
+                        {{end}}
                         <div class="panel telemetry">
                             <div class="panel-kicker">Signal telemetry</div>
                             <div class="telemetry-item"><span class="panel-kicker">Current source</span><strong id="source-label" class="telemetry-value">WAITING…</strong></div>
                             <div class="telemetry-item"><span class="panel-kicker">Next in queue</span><strong id="next-label" class="telemetry-value">NEXT —</strong></div>
                             <div class="telemetry-item"><span class="panel-kicker">Connection</span><strong id="status-text" class="status-chip" data-state="idle">Connecting…</strong></div>
+                            <div class="telemetry-item" id="stale-row" hidden><span class="panel-kicker">Frame age</span><strong id="stale-text" class="status-chip" data-state="error">STALE</strong></div>
                         </div>
                         <div class="panel feed-actions">
                             <div class="panel-kicker">Playback controls</div>

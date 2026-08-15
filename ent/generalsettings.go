@@ -80,9 +80,15 @@ type GeneralSettingsEdges struct {
 	GenericApis []*GenericAPI `json:"generic_apis,omitempty"`
 	// MatrixLayouts holds the value of the matrix_layouts edge.
 	MatrixLayouts []*MatrixLayout `json:"matrix_layouts,omitempty"`
+	// Countdowns holds the value of the countdowns edge.
+	Countdowns []*Countdown `json:"countdowns,omitempty"`
+	// AiDigests holds the value of the ai_digests edge.
+	AiDigests []*AIDigest `json:"ai_digests,omitempty"`
+	// AlertSettings holds the value of the alert_settings edge.
+	AlertSettings []*AlertSettings `json:"alert_settings,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [22]bool
+	loadedTypes [25]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -283,6 +289,33 @@ func (e GeneralSettingsEdges) MatrixLayoutsOrErr() ([]*MatrixLayout, error) {
 	return nil, &NotLoadedError{edge: "matrix_layouts"}
 }
 
+// CountdownsOrErr returns the Countdowns value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) CountdownsOrErr() ([]*Countdown, error) {
+	if e.loadedTypes[22] {
+		return e.Countdowns, nil
+	}
+	return nil, &NotLoadedError{edge: "countdowns"}
+}
+
+// AiDigestsOrErr returns the AiDigests value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) AiDigestsOrErr() ([]*AIDigest, error) {
+	if e.loadedTypes[23] {
+		return e.AiDigests, nil
+	}
+	return nil, &NotLoadedError{edge: "ai_digests"}
+}
+
+// AlertSettingsOrErr returns the AlertSettings value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) AlertSettingsOrErr() ([]*AlertSettings, error) {
+	if e.loadedTypes[24] {
+		return e.AlertSettings, nil
+	}
+	return nil, &NotLoadedError{edge: "alert_settings"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -474,6 +507,21 @@ func (_m *GeneralSettings) QueryGenericApis() *GenericAPIQuery {
 // QueryMatrixLayouts queries the "matrix_layouts" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryMatrixLayouts() *MatrixLayoutQuery {
 	return NewGeneralSettingsClient(_m.config).QueryMatrixLayouts(_m)
+}
+
+// QueryCountdowns queries the "countdowns" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryCountdowns() *CountdownQuery {
+	return NewGeneralSettingsClient(_m.config).QueryCountdowns(_m)
+}
+
+// QueryAiDigests queries the "ai_digests" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryAiDigests() *AIDigestQuery {
+	return NewGeneralSettingsClient(_m.config).QueryAiDigests(_m)
+}
+
+// QueryAlertSettings queries the "alert_settings" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryAlertSettings() *AlertSettingsQuery {
+	return NewGeneralSettingsClient(_m.config).QueryAlertSettings(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

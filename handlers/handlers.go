@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"maps"
 	"net/http"
@@ -11,25 +12,29 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	"ledit/ent"
+	"ledit/ent/devicesettings"
 	"ledit/ent/generalsettings"
 )
 
 var pathToActive = map[string]string{
-	"/":                     "home",
-	"/admin/":               "dashboard",
-	"/admin/settings":       "settings",
-	"/admin/schedules":      "schedules",
-	"/admin/devices":        "devices",
-	"/admin/theme":          "theme",
-	"/admin/logs":           "logs",
-	"/admin/settings/logs":  "log-settings",
-	"/admin/settings/email": "email",
-	"/admin/settings/ai":    "ai",
-	"/admin/analytics":      "analytics",
-	"/admin/settings/umami": "umami",
-	"/admin/notifications":  "notifications",
-	"/admin/password":       "password",
-	"/admin/matrixlayouts":  "matrixlayouts",
+	"/":                      "home",
+	"/admin/":                "dashboard",
+	"/admin/settings":        "settings",
+	"/admin/schedules":       "schedules",
+	"/admin/devices":         "devices",
+	"/admin/theme":           "theme",
+	"/admin/logs":            "logs",
+	"/admin/settings/logs":   "log-settings",
+	"/admin/settings/email":  "email",
+	"/admin/settings/ai":     "ai",
+	"/admin/settings/alerts": "alerts",
+	"/admin/analytics":       "analytics",
+	"/admin/settings/umami":  "umami",
+	"/admin/notifications":   "notifications",
+	"/admin/password":        "password",
+	"/admin/matrixlayouts":   "matrixlayouts",
 }
 
 func activePage(c *gin.Context) string {
@@ -81,16 +86,19 @@ func (s *Server) IndexHandler(c *gin.Context) {
 		umamiWebsiteID = umamiSettings.WebsiteID
 	}
 	einkMode := getEInkMode(c)
+	// Device list for the feed-page selector (0 = shared preview).
+	devices, _ := s.DB.DeviceSettings.Query().Order(ent.Asc(devicesettings.FieldID)).All(s.Ctx)
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"umamiEnabled":   umamiEnabled,
 		"umamiEndpoint":  umamiEndpoint,
 		"umamiWebsiteID": umamiWebsiteID,
 		"eink_mode":      einkMode,
+		"devices":        devices,
 	})
 }
 
 func (s *Server) AdminDashboard(c *gin.Context) {
-	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithEmailSettings().WithAiSettings().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().Only(s.Ctx)
+	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithEmailSettings().WithAiSettings().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().Only(s.Ctx)
 
 	stats := gin.H{
 		"has_settings": err == nil,
@@ -113,6 +121,8 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		newsFeedItems, _ := settings.Edges.NewsFeedsOrErr()
 		genericAPIItems, _ := settings.Edges.GenericApisOrErr()
 		matrixLayoutItems, _ := settings.Edges.MatrixLayoutsOrErr()
+		countdownItems, _ := settings.Edges.CountdownsOrErr()
+		aiDigestItems, _ := settings.Edges.AiDigestsOrErr()
 
 		type sourceEntry struct {
 			ID       int
@@ -124,6 +134,7 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 			Path     string
 			Content  string
 			Color    string
+			Health   string
 		}
 		var sources []sourceEntry
 		for _, s := range sonarrItems {
@@ -177,29 +188,71 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		for _, ml := range matrixLayoutItems {
 			sources = append(sources, sourceEntry{ID: ml.ID, Type: "Matrix Layout", Endpoint: "matrixlayout", Name: ml.Name})
 		}
+		for _, cd := range countdownItems {
+			sources = append(sources, sourceEntry{ID: cd.ID, Type: "Countdown", Endpoint: "countdowns", Name: cd.Name})
+		}
+		for _, ad := range aiDigestItems {
+			sources = append(sources, sourceEntry{ID: ad.ID, Type: "AI Digest", Endpoint: "aidigests", Name: ad.Name})
+		}
+
+		// Attach live health status (from the in-memory registry) to each
+		// source and compute fleet-wide summary stats.
+		snap := Health.Snapshot()
+		for i := range sources {
+			if sh, ok := snap[endpointHealthKey(sources[i].Endpoint, sources[i].ID)]; ok {
+				sources[i].Health = StatusOf(sh)
+			} else {
+				sources[i].Health = "none"
+			}
+		}
+		healthGreen, healthYellow, healthRed := classifySummary(snap)
+		var ewmaTotal float64
+		var ewmaCount int
+		for _, sh := range snap {
+			if sh.Renders > 0 || sh.Failures > 0 {
+				ewmaTotal += sh.EWMADurationMs
+				ewmaCount++
+			}
+		}
+		var avgEWMA float64
+		if ewmaCount > 0 {
+			avgEWMA = ewmaTotal / float64(ewmaCount)
+		}
+		cacheHits, cacheMisses := Health.CacheCounters()
+		cacheRatio := 0
+		if cacheHits+cacheMisses > 0 {
+			cacheRatio = int(float64(cacheHits) / float64(cacheHits+cacheMisses) * 100)
+		}
 
 		stats = gin.H{
-			"has_settings":         true,
-			"settings":             settings,
-			"sources":              sources,
-			"sonarr_count":         len(sonarrItems),
-			"radarr_count":         len(radarrItems),
-			"f1_count":             len(f1Items),
-			"weather_count":        len(weatherItems),
-			"ha_count":             len(haItems),
-			"untappd_count":        len(untappdItems),
-			"image_count":          len(imageItems),
-			"video_count":          len(videoItems),
-			"crypto_count":         len(cryptoItems),
-			"rssfeed_count":        len(rssItems),
-			"calendar_count":       len(calendarItems),
-			"stock_count":          len(stockItems),
-			"textslide_count":      len(textSlideItems),
-			"googlecalendar_count": len(googleCalendarItems),
-			"newsfeed_count":       len(newsFeedItems),
-			"genericapi_count":     len(genericAPIItems),
-			"matrixlayout_count":   len(matrixLayoutItems),
-			"total_sources":        len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems),
+			"has_settings":            true,
+			"settings":                settings,
+			"sources":                 sources,
+			"sonarr_count":            len(sonarrItems),
+			"radarr_count":            len(radarrItems),
+			"f1_count":                len(f1Items),
+			"weather_count":           len(weatherItems),
+			"ha_count":                len(haItems),
+			"untappd_count":           len(untappdItems),
+			"image_count":             len(imageItems),
+			"video_count":             len(videoItems),
+			"crypto_count":            len(cryptoItems),
+			"rssfeed_count":           len(rssItems),
+			"calendar_count":          len(calendarItems),
+			"stock_count":             len(stockItems),
+			"textslide_count":         len(textSlideItems),
+			"googlecalendar_count":    len(googleCalendarItems),
+			"newsfeed_count":          len(newsFeedItems),
+			"genericapi_count":        len(genericAPIItems),
+			"matrixlayout_count":      len(matrixLayoutItems),
+			"countdown_count":         len(countdownItems),
+			"aidigest_count":          len(aiDigestItems),
+			"health_green":            healthGreen,
+			"health_yellow":           healthYellow,
+			"health_red":              healthRed,
+			"avg_ewma_ms":             avgEWMA,
+			"cache_hit_ratio_percent": cacheRatio,
+			"total_sources":           len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems) + len(countdownItems) + len(aiDigestItems),
 		}
 	}
 	s.renderPage(c, http.StatusOK, "dashboard.html", stats)
@@ -362,7 +415,45 @@ func (s *Server) AdminDeviceSettingsList(c *gin.Context) {
 		return
 	}
 	devices, _ := settings.Edges.DeviceSettingsOrErr()
-	s.renderPage(c, http.StatusOK, "devices.html", gin.H{"devices": devices, "host": c.Request.Host})
+
+	// Derive fleet liveness from last_seen_at vs 3x refresh interval, and
+	// surface any recorded device errors from the health registry.
+	liveness := map[int]string{}
+	lastErrors := map[int]string{}
+	snap := Health.Snapshot()
+	for _, d := range devices {
+		liveness[d.ID] = deviceLiveness(d.LastSeenAt, d.RefreshInterval)
+		if sh, ok := snap[fmt.Sprintf("device:%d", d.ID)]; ok && sh.LastError != "" {
+			lastErrors[d.ID] = sh.LastError
+		}
+	}
+	s.renderPage(c, http.StatusOK, "devices.html", gin.H{
+		"devices":    devices,
+		"host":       c.Request.Host,
+		"liveness":   liveness,
+		"lastErrors": lastErrors,
+	})
+}
+
+// AdminDevicePreview renders the device-accurate live preview page. The page
+// connects to /ws/device/:id/preview; it never touches device liveness.
+func (s *Server) AdminDevicePreview(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		SetFlash(c, "danger", "Invalid device id")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	device, err := s.DB.DeviceSettings.Get(s.Ctx, id)
+	if err != nil {
+		SetFlash(c, "danger", "Device not found")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	s.renderPage(c, http.StatusOK, "device_preview.html", gin.H{
+		"device": device,
+		"host":   c.Request.Host,
+	})
 }
 
 func (s *Server) AdminDeviceSettingsNew(c *gin.Context) {
@@ -518,7 +609,10 @@ func (s *Server) AdminThemeSave(c *gin.Context) {
 
 func (s *Server) AdminAnalytics(c *gin.Context) {
 	stats := GetAnalytics()
-	s.renderPage(c, http.StatusOK, "analytics.html", gin.H{"stats": stats})
+	s.renderPage(c, http.StatusOK, "analytics.html", gin.H{
+		"stats":  stats,
+		"health": sortedHealthRows(Health.Snapshot()),
+	})
 }
 
 // ---------------------------------------------------------------------------

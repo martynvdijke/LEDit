@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit · {{.device.Name}} Preview</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+    {{if .eink_mode}}<link rel="stylesheet" href="/static/eink.css">{{end}}
+</head>
+<body{{if .eink_mode}} class="eink-mode"{{end}}>
+    <div class="app-shell" data-app-shell>
+        {{template "sidebar" .}}
+        <main class="main" id="main-content" data-feed-page data-device-preview data-device-id="{{.device.ID}}">
+            <div class="main-inner">
+                <header class="topbar">
+                    <div>
+                        <div class="eyebrow">LED MATRIX / DEVICE PREVIEW</div>
+                        <h1>{{.device.Name}}</h1>
+                        <p class="lede">This is exactly what the device sees: <strong>{{.Width}}×{{.Height}}</strong> at a <strong>{{.RefreshInterval}}s</strong> refresh. Preview controls don't affect the device.</p>
+                    </div>
+                    <div class="topbar-actions">
+                        <a href="/admin/devices" class="btn btn-ghost">← Back to devices</a>
+                        <a href="/admin/devices/{{.device.ID}}/edit" class="btn btn-primary">Edit device</a>
+                    </div>
+                </header>
+                <section class="feed-layout" aria-label="Device live preview">
+                    <div class="feed-stage" aria-label="Current LEDit media">
+                        <div id="media-container">
+                            <canvas id="matrix-overlay" aria-hidden="true"></canvas>
+                            <div id="clock-overlay" aria-label="Current time"></div>
+                            <div class="waiting" id="feed-waiting">Awaiting signal…</div>
+                            <img id="media-display" src="" alt="Current LEDit feed" style="display:none">
+                            <video id="video-display" autoplay muted playsinline style="display:none"></video>
+                            <div id="marquee-container" aria-hidden="true"><span id="marquee-text"> LEDit LIVE FEED </span></div>
+                        </div>
+                    </div>
+                    <aside class="feed-rail" aria-label="Feed controls and telemetry">
+                        <div class="panel telemetry">
+                            <div class="panel-kicker">Signal telemetry</div>
+                            <div class="telemetry-item"><span class="panel-kicker">Device</span><strong id="device-name" class="telemetry-value">{{.device.Name}}</strong></div>
+                            <div class="telemetry-item"><span class="panel-kicker">Resolution</span><strong class="telemetry-value">{{.device.Width}}×{{.device.Height}}</strong></div>
+                            <div class="telemetry-item"><span class="panel-kicker">Refresh</span><strong class="telemetry-value">{{.device.RefreshInterval}}s</strong></div>
+                            <div class="telemetry-item"><span class="panel-kicker">Current source</span><strong id="source-label" class="telemetry-value">WAITING…</strong></div>
+                            <div class="telemetry-item"><span class="panel-kicker">Next in queue</span><strong id="next-label" class="telemetry-value">NEXT —</strong></div>
+                            <div class="telemetry-item"><span class="panel-kicker">Connection</span><strong id="status-text" class="status-chip" data-state="idle">Connecting…</strong></div>
+                            <div class="telemetry-item" id="stale-row" hidden><span class="panel-kicker">Frame age</span><strong id="stale-text" class="status-chip" data-state="error">STALE</strong></div>
+                        </div>
+                        <div class="panel feed-actions">
+                            <div class="panel-kicker">Playback controls</div>
+                            <button id="btn-pause" class="btn btn-warning" type="button">Pause</button>
+                            <button id="btn-skip" class="btn btn-primary" type="button">Skip to next</button>
+                            <button id="btn-fullscreen" class="btn btn-ghost" type="button" aria-pressed="false">Fullscreen</button>
+                            <button id="btn-refresh" class="btn btn-ghost" type="button" hidden>Refresh display</button>
+                            <p class="panel-hint">Preview controls only affect this tab — never the physical device.</p>
+                        </div>
+                    </aside>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script type="module" src="/static/assets/app.js"></script>
+    <script type="module" src="/static/assets/feed.js"></script>
+</body>
+</html>

@@ -14,7 +14,7 @@
             <a href="/admin/devices/new" class="btn btn-primary mb-3">New Device</a>
             <table class="table table-striped">
                 <thead>
-                    <tr><th>ID</th><th>Name</th><th>IP</th><th>Port</th><th>Matrix</th><th>Enabled</th><th>Status</th><th>Token</th><th>Connection URL</th><th>Actions</th></tr>
+                    <tr><th>ID</th><th>Name</th><th>IP</th><th>Port</th><th>Matrix</th><th>Enabled</th><th>Status</th><th>Frames</th><th>Token</th><th>Connection URL</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
                     {{range .devices}}
@@ -22,10 +22,17 @@
                         <td>{{.ID}}</td><td>{{.Name}}</td><td>{{.IP}}</td><td>{{.Port}}</td>
                         <td>{{.Width}}x{{.Height}}</td>
                         <td>{{if .Enabled}}Yes{{else}}No{{end}}</td>
-                        <td>{{if .LastSeenAt}}<span class="text-success">Online</span>{{else}}<span class="text-muted">Offline</span>{{end}}</td>
+                        <td>
+                            {{if eq (index $.liveness .ID) "alive"}}<span class="text-success">Alive</span>
+                            {{else if eq (index $.liveness .ID) "stale"}}<span class="text-warning">Stale</span>
+                            {{else}}<span class="text-muted">Never</span>{{end}}
+                            {{if index $.lastErrors .ID}}<div class="small text-danger" title="Last error">{{index $.lastErrors .ID}}</div>{{end}}
+                        </td>
+                        <td>{{.FramesServed}}</td>
                         <td><code>{{.Token}}</code></td>
                         <td><code>ws://{{$.host}}/ws/device/{{.Token}}</code></td>
                         <td>
+                            <a href="/admin/devices/{{.ID}}/preview" class="btn btn-sm btn-ghost">Preview</a>
                             <a href="/admin/devices/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
                             <form method="POST" action="/admin/devices/{{.ID}}/delete" style="display:inline">
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -33,11 +40,12 @@
                         </td>
                     </tr>
                     {{else}}
-                    <tr><td colspan="10" class="text-muted">No devices configured.</td></tr>
+                    <tr><td colspan="11" class="text-muted">No devices configured.</td></tr>
                     {{end}}
                 </tbody>
             </table>
         </div>
     </div>
+    <script>setInterval(function(){ location.reload(); }, 15000);</script>
 </body><script type="module" src="/static/assets/app.js"></script>
 </html>

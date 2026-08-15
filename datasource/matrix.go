@@ -113,9 +113,16 @@ func (m *MatrixDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 		var panel *render.RenderedImage
 		if m.Resolve != nil {
 			if src, _, err := m.Resolve(b.SourceType, b.SourceID); err == nil && src != nil {
-				panel = cachedPanelGet(b.SourceType, b.SourceID, cellW, cellH, func() (*render.RenderedImage, error) {
-					return src.GetPNG(cellW, cellH)
-				})
+				// Ambience sources are time-driven: always re-render so cells
+				// animate instead of freezing for the panel cache TTL.
+				switch src.(type) {
+				case *AnalogClockDS, *MatrixRainDS, *CountdownDS:
+					panel, _ = src.GetPNG(cellW, cellH)
+				default:
+					panel = cachedPanelGet(b.SourceType, b.SourceID, cellW, cellH, func() (*render.RenderedImage, error) {
+						return src.GetPNG(cellW, cellH)
+					})
+				}
 			}
 		}
 		if panel == nil {
@@ -183,6 +190,11 @@ type panelCacheEntry struct {
 	at  time.Time
 }
 
+// PanelCacheHook is invoked on every panel cache access (true=hit,
+// false=miss). It must be nil-safe; the handlers package wires it to health
+// counters via init(). This indirection avoids an import cycle.
+var PanelCacheHook func(hit bool)
+
 // cachedPanelGet returns a cached panel render within the TTL, otherwise
 // fetches (once) and stores it. Returns nil when fetch fails.
 func cachedPanelGet(sourceType string, sourceID, w, h int, fetch func() (*render.RenderedImage, error)) *render.RenderedImage {
@@ -190,9 +202,15 @@ func cachedPanelGet(sourceType string, sourceID, w, h int, fetch func() (*render
 	panelCache.Lock()
 	if e, ok := panelCache.m[key]; ok && time.Since(e.at) < panelCacheTTL {
 		panelCache.Unlock()
+		if PanelCacheHook != nil {
+			PanelCacheHook(true)
+		}
 		return e.img
 	}
 	panelCache.Unlock()
+	if PanelCacheHook != nil {
+		PanelCacheHook(false)
+	}
 
 	img, err := fetch()
 	if err != nil {

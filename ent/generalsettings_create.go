@@ -6,8 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/aidigest"
 	"ledit/ent/aisettings"
+	"ledit/ent/alertsettings"
 	"ledit/ent/calendar"
+	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
 	"ledit/ent/emailsettings"
@@ -437,6 +440,51 @@ func (_c *GeneralSettingsCreate) AddMatrixLayouts(v ...*MatrixLayout) *GeneralSe
 		ids[i] = v[i].ID
 	}
 	return _c.AddMatrixLayoutIDs(ids...)
+}
+
+// AddCountdownIDs adds the "countdowns" edge to the Countdown entity by IDs.
+func (_c *GeneralSettingsCreate) AddCountdownIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddCountdownIDs(ids...)
+	return _c
+}
+
+// AddCountdowns adds the "countdowns" edges to the Countdown entity.
+func (_c *GeneralSettingsCreate) AddCountdowns(v ...*Countdown) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCountdownIDs(ids...)
+}
+
+// AddAiDigestIDs adds the "ai_digests" edge to the AIDigest entity by IDs.
+func (_c *GeneralSettingsCreate) AddAiDigestIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddAiDigestIDs(ids...)
+	return _c
+}
+
+// AddAiDigests adds the "ai_digests" edges to the AIDigest entity.
+func (_c *GeneralSettingsCreate) AddAiDigests(v ...*AIDigest) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAiDigestIDs(ids...)
+}
+
+// AddAlertSettingIDs adds the "alert_settings" edge to the AlertSettings entity by IDs.
+func (_c *GeneralSettingsCreate) AddAlertSettingIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddAlertSettingIDs(ids...)
+	return _c
+}
+
+// AddAlertSettings adds the "alert_settings" edges to the AlertSettings entity.
+func (_c *GeneralSettingsCreate) AddAlertSettings(v ...*AlertSettings) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAlertSettingIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -901,6 +949,54 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(matrixlayout.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CountdownsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CountdownsTable,
+			Columns: []string{generalsettings.CountdownsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(countdown.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AiDigestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AiDigestsTable,
+			Columns: []string{generalsettings.AiDigestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aidigest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AlertSettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AlertSettingsTable,
+			Columns: []string{generalsettings.AlertSettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertsettings.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

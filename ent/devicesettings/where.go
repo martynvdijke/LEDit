@@ -109,6 +109,11 @@ func LastSeenAt(v time.Time) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldLastSeenAt, v))
 }
 
+// FramesServed applies equality check predicate on the "frames_served" field. It's identical to FramesServedEQ.
+func FramesServed(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldFramesServed, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldName, v))
@@ -652,6 +657,46 @@ func LastSeenAtIsNil() predicate.DeviceSettings {
 // LastSeenAtNotNil applies the NotNil predicate on the "last_seen_at" field.
 func LastSeenAtNotNil() predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldNotNull(FieldLastSeenAt))
+}
+
+// FramesServedEQ applies the EQ predicate on the "frames_served" field.
+func FramesServedEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldFramesServed, v))
+}
+
+// FramesServedNEQ applies the NEQ predicate on the "frames_served" field.
+func FramesServedNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldFramesServed, v))
+}
+
+// FramesServedIn applies the In predicate on the "frames_served" field.
+func FramesServedIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldFramesServed, vs...))
+}
+
+// FramesServedNotIn applies the NotIn predicate on the "frames_served" field.
+func FramesServedNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldFramesServed, vs...))
+}
+
+// FramesServedGT applies the GT predicate on the "frames_served" field.
+func FramesServedGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldFramesServed, v))
+}
+
+// FramesServedGTE applies the GTE predicate on the "frames_served" field.
+func FramesServedGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldFramesServed, v))
+}
+
+// FramesServedLT applies the LT predicate on the "frames_served" field.
+func FramesServedLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldFramesServed, v))
+}
+
+// FramesServedLTE applies the LTE predicate on the "frames_served" field.
+func FramesServedLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldFramesServed, v))
 }
 
 // And groups predicates with the AND operator between them.

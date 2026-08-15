@@ -38,7 +38,9 @@ type DeviceSettings struct {
 	// RefreshInterval holds the value of the "refresh_interval" field.
 	RefreshInterval int `json:"refresh_interval,omitempty"`
 	// LastSeenAt holds the value of the "last_seen_at" field.
-	LastSeenAt                       *time.Time `json:"last_seen_at,omitempty"`
+	LastSeenAt *time.Time `json:"last_seen_at,omitempty"`
+	// FramesServed holds the value of the "frames_served" field.
+	FramesServed                     int `json:"frames_served,omitempty"`
 	general_settings_device_settings *int
 	selectValues                     sql.SelectValues
 }
@@ -50,7 +52,7 @@ func (*DeviceSettings) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case devicesettings.FieldEnabled:
 			values[i] = new(sql.NullBool)
-		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldRefreshInterval:
+		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed:
 			values[i] = new(sql.NullInt64)
 		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken:
 			values[i] = new(sql.NullString)
@@ -146,6 +148,12 @@ func (_m *DeviceSettings) assignValues(columns []string, values []any) error {
 				_m.LastSeenAt = new(time.Time)
 				*_m.LastSeenAt = value.Time
 			}
+		case devicesettings.FieldFramesServed:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field frames_served", values[i])
+			} else if value.Valid {
+				_m.FramesServed = int(value.Int64)
+			}
 		case devicesettings.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field general_settings_device_settings", value)
@@ -223,6 +231,9 @@ func (_m *DeviceSettings) String() string {
 		builder.WriteString("last_seen_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("frames_served=")
+	builder.WriteString(fmt.Sprintf("%v", _m.FramesServed))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -11,6 +11,19 @@
         {{template "sidebar" .}}
         <div class="container-fluid p-4">
             <h1>{{if .edit}}Edit{{else}}New{{end}} Text Slide</h1>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Generate with AI</h2>
+                    <div class="mb-3">
+                        <label for="ai_prompt" class="form-label">Prompt</label>
+                        <textarea class="form-control" id="ai_prompt" name="ai_prompt" rows="2" placeholder="e.g. Today's weather in Amsterdam, short summary"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-ghost" id="btn-generate-ai">Generate with AI</button>
+                    <span id="ai-error" class="text-danger ms-2" hidden></span>
+                </div>
+            </div>
+
             <form method="POST" action="/admin/textslides{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4">
                 <div class="mb-3">
                     <label for="content" class="form-label">Text Content</label>
@@ -36,4 +49,35 @@
         </div>
     </div>
 </body><script type="module" src="/static/assets/app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btn-generate-ai');
+    const prompt = document.getElementById('ai_prompt');
+    const content = document.getElementById('content');
+    const err = document.getElementById('ai-error');
+    if (!btn || !prompt || !content) return;
+    btn.addEventListener('click', async () => {
+        err.hidden = true;
+        btn.disabled = true;
+        try {
+            const form = new FormData();
+            form.append('prompt', prompt.value);
+            const res = await fetch('/admin/textslides/generate', { method: 'POST', body: form });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.content) {
+                content.value = data.content;
+                content.dispatchEvent(new Event('input', { bubbles: true }));
+            } else {
+                err.textContent = data.error || 'Generation failed';
+                err.hidden = false;
+            }
+        } catch (e) {
+            err.textContent = 'Generation failed: ' + e.message;
+            err.hidden = false;
+        } finally {
+            btn.disabled = false;
+        }
+    });
+});
+</script>
 </html>

@@ -25,13 +25,14 @@
         <span class="nav-label">System</span>
         <a href="/admin/settings/logs" class="nav-link{{if eq $.active "log-settings"}} active{{end}}"><span class="nav-icon">·</span>Log settings</a>
         <a href="/admin/settings/email" class="nav-link{{if eq $.active "email"}} active{{end}}"><span class="nav-icon">·</span>Email settings</a>
+        <a href="/admin/settings/alerts" class="nav-link{{if eq $.active "alerts"}} active{{end}}"><span class="nav-icon">·</span>Alert settings</a>
         <a href="/admin/settings/ai" class="nav-link{{if eq $.active "ai"}} active{{end}}"><span class="nav-icon">·</span>AI settings</a>
         <a href="/admin/settings/umami" class="nav-link{{if eq $.active "umami"}} active{{end}}"><span class="nav-icon">·</span>Umami analytics</a>
         <a href="/admin/eink/toggle" class="nav-link{{if eq $.active "eink"}} active{{end}}" id="eink-toggle-link"><span class="nav-icon">{{if .eink_mode}}■{{else}}□{{end}}</span>E-Ink: {{if .eink_mode}}On{{else}}Off{{end}}</a>
         <details class="nav-datasources">
             <summary class="nav-link"><span class="nav-icon">＋</span>Add datasource</summary>
             <div class="nav-submenu">
-                <a href="/admin/datasources/sonarr/new">Sonarr</a><a href="/admin/datasources/radarr/new">Radarr</a><a href="/admin/datasources/f1/new">F1</a><a href="/admin/datasources/weather/new">Weather</a><a href="/admin/datasources/homeassistant/new">Home Assistant</a><a href="/admin/datasources/untappd/new">Untappd</a><a href="/admin/datasources/images/new">Image</a><a href="/admin/datasources/videos/new">Video</a><a href="/admin/datasources/crypto/new">Crypto</a><a href="/admin/datasources/stock/new">Stock</a><a href="/admin/datasources/rssfeed/new">RSS Feed</a>                <a href="/admin/datasources/calendar/new">Calendar</a><a href="/admin/datasources/googlecalendar/new">Google Cal</a><a href="/admin/datasources/newsfeed/new">News</a><a href="/admin/datasources/genericapi/new">Custom API</a><a href="/admin/textslides/new">Text Slide</a>
+                <a href="/admin/datasources/sonarr/new">Sonarr</a><a href="/admin/datasources/radarr/new">Radarr</a><a href="/admin/datasources/f1/new">F1</a><a href="/admin/datasources/weather/new">Weather</a><a href="/admin/datasources/homeassistant/new">Home Assistant</a><a href="/admin/datasources/untappd/new">Untappd</a><a href="/admin/datasources/images/new">Image</a><a href="/admin/datasources/videos/new">Video</a><a href="/admin/datasources/crypto/new">Crypto</a><a href="/admin/datasources/stock/new">Stock</a><a href="/admin/datasources/rssfeed/new">RSS Feed</a>                <a href="/admin/datasources/calendar/new">Calendar</a><a href="/admin/datasources/googlecalendar/new">Google Cal</a><a href="/admin/datasources/newsfeed/new">News</a><a href="/admin/datasources/genericapi/new">Custom API</a><a href="/admin/textslides/new">Text Slide</a><a href="/admin/countdowns/new">Countdown</a><a href="/admin/aidigests/new">AI Digest</a>
             </div>
         </details>
     </nav>
