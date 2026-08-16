@@ -52,7 +52,11 @@ func AuthMiddleware() gin.HandlerFunc {
 }
 
 func (s *Server) LoginPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "login.html", gin.H{})
+	data := gin.H{}
+	if c.Query("reset") == "1" {
+		data["info"] = "Password reset successfully. Please log in with your new password."
+	}
+	c.HTML(http.StatusOK, "login.html", data)
 }
 
 func (s *Server) LoginAction(c *gin.Context) {

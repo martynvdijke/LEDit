@@ -106,8 +106,15 @@ func (e *EmailSender) Enabled() bool {
 }
 
 func (e *EmailSender) Send(ctx context.Context, a Alert) error {
+	return e.SendMessage(e.Recipient, a.Title, a.Message)
+}
+
+// SendMessage delivers an arbitrary plain-text email to the given recipient
+// using the sender's SMTP configuration. Shared by the alert engine and the
+// password-reset flow.
+func (e *EmailSender) SendMessage(to, subject, body string) error {
 	addr := fmt.Sprintf("%s:%d", e.Host, e.Port)
-	msg := buildEmailMessage(e.From, e.Recipient, a.Title, a.Message)
+	msg := buildEmailMessage(e.From, to, subject, body)
 
 	if e.UseTLS {
 		// Implicit TLS (e.g. port 465): wrap the connection before SMTP.
@@ -125,11 +132,11 @@ func (e *EmailSender) Send(ctx context.Context, a Alert) error {
 			return err
 		}
 		defer c.Close()
-		return smtpSendClient(c, e.Username, e.Password, e.Host, e.From, e.Recipient, msg)
+		return smtpSendClient(c, e.Username, e.Password, e.Host, e.From, to, msg)
 	}
 
 	auth := smtp.PlainAuth("", e.Username, e.Password, e.Host)
-	return smtp.SendMail(addr, auth, e.From, []string{e.Recipient}, msg)
+	return smtp.SendMail(addr, auth, e.From, []string{to}, msg)
 }
 
 func smtpSendClient(c *smtp.Client, username, password, host, from, recipient string, msg []byte) error {

@@ -145,6 +145,27 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.Router.ServeHTTP(w, r)
 }
 
+// templatesDir locates the web/templates directory regardless of the current
+// working directory (tests run from the package dir, the binary from the repo
+// root). It walks upward from cwd until web/templates is found.
+func templatesDir() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "web/templates"
+	}
+	for {
+		candidate := filepath.Join(dir, "web", "templates")
+		if fi, err := os.Stat(candidate); err == nil && fi.IsDir() {
+			return candidate
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "web/templates"
+		}
+		dir = parent
+	}
+}
+
 func (s *Server) setupRoutes() {
 	tmpl := template.New("").Funcs(template.FuncMap{
 		"isSelected": func(selected []string, name string) bool {
@@ -156,7 +177,7 @@ func (s *Server) setupRoutes() {
 			return false
 		},
 	})
-	filepath.Walk("web/templates", func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(templatesDir(), func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -199,6 +220,12 @@ func (s *Server) setupRoutes() {
 	s.Router.GET("/login", s.LoginPage)
 	s.Router.POST("/login", s.LoginAction)
 	s.Router.GET("/logout", s.LogoutAction)
+
+	// Password recovery (public: no auth required)
+	s.Router.GET("/forgot-password", s.ForgotPasswordPage)
+	s.Router.POST("/forgot-password", s.ForgotPasswordAction)
+	s.Router.GET("/reset-password", s.ResetPasswordPage)
+	s.Router.POST("/reset-password", s.ResetPasswordAction)
 
 	admin := s.Router.Group("/admin")
 	admin.Use(AuthMiddleware(), FlashMiddleware())
