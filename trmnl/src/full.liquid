@@ -1,29 +1,29 @@
-<div class="layout layout--col gap">
+<div class="layout layout--col layout--stretch gap">
   <div class="grid grid--cols-2">
     <div class="col col--start gap">
       <div class="item">
         <div class="meta"></div>
         <div class="content">
           <span class="label">System</span>
-          <span class="value value--large">{{ IDX_0.system.cpu_cores }} cores</span>
+          <span class="value value--large">{{ system.cpu_cores }} cores</span>
         </div>
       </div>
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--small">Memory - {{ IDX_0.system.memory }}</span>
+          <span class="value value--small">Memory - {{ system.memory }}</span>
         </div>
       </div>
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--small">Load - {{ IDX_0.system.load }}</span>
+          <span class="value value--small">Load - {{ system.load }}</span>
         </div>
       </div>
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="label">{{ IDX_0.system.go_version }} / {{ IDX_0.system.os }}</span>
+          <span class="label">{{ system.go_version }} / {{ system.os }}</span>
         </div>
       </div>
     </div>
@@ -33,16 +33,16 @@
         <div class="meta"></div>
         <div class="content">
           <span class="label">Analytics</span>
-          <span class="value value--large">{{ IDX_0.analytics.total_displays }}</span>
+          <span class="value value--large">{{ analytics.total_displays }}</span>
         </div>
       </div>
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--small">Uptime - {{ IDX_0.analytics.uptime }}</span>
+          <span class="value value--small">Uptime - {{ analytics.uptime }}</span>
         </div>
       </div>
-      {% for stat in IDX_0.analytics.by_source %}
+      {% for stat in analytics.by_source %}
         <div class="item">
           <div class="meta"></div>
           <div class="content">
