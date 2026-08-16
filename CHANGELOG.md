@@ -1,3 +1,15 @@
+# [1.18.0](https://github.com/martynvdijke/LEDit/compare/v1.17.1...v1.18.0) (2026-08-16)
+
+
+### Bug Fixes
+
+* **trmnl:** fix stats data binding and layout width ([e441cf5](https://github.com/martynvdijke/LEDit/commit/e441cf58f2ba9ae188215fd625aa9a873358ebe6))
+
+
+### Features
+
+* add forgot/reset password flow with emailed reset links ([97ce3ed](https://github.com/martynvdijke/LEDit/commit/97ce3edb8e7d58e932e7f963ffa8b0c8816f5a4e))
+
 ## [1.17.1](https://github.com/martynvdijke/LEDit/compare/v1.17.0...v1.17.1) (2026-08-15)
 
 
