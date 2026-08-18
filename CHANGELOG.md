@@ -1,3 +1,5 @@
+## [1.18.2](https://github.com/martynvdijke/LEDit/compare/v1.18.1...v1.18.2) (2026-08-18)
+
 ## [1.18.1](https://github.com/martynvdijke/LEDit/compare/v1.18.0...v1.18.1) (2026-08-18)
 
 
