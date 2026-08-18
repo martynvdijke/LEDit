@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 180" role="img" aria-labelledby="title desc">
+  <title id="title">LEDit</title>
+  <desc id="desc">LEDit retro LED matrix wordmark with the tagline Live data, bright ideas.</desc>
+  <image href="ledit-mark.svg" x="0" y="0" width="180" height="180"/>
+  <g font-family="Courier New, Lucida Console, monospace">
+    <text x="207" y="104" font-size="94" font-weight="700" letter-spacing="-7" fill="#08130d">LED<tspan fill="#4d8617">it</tspan></text>
+    <rect x="211" y="122" width="430" height="6" rx="3" fill="#d7e2d5"/>
+    <rect x="211" y="122" width="192" height="6" rx="3" fill="#6da51d"/>
+    <circle cx="628" cy="125" r="5" fill="#c47d00"/>
+    <text x="212" y="153" font-size="16" font-weight="700" letter-spacing="4" fill="#49614f">LIVE DATA / BRIGHT IDEAS</text>
+  </g>
+</svg>

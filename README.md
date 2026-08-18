@@ -10,6 +10,12 @@
 
 A self-hosted LED matrix display server that cycles through content from multiple datasources and streams them to LED matrix devices via WebSocket. Supports a wide variety of datasources including media servers, weather, crypto, calendars, RSS feeds, and more.
 
+<p align="center">
+  <img src="web/static/brand/ledit-lockup-light.svg" alt="LEDit" width="420">
+</p>
+
+The project identity lives in [`brandkit/README.md`](brandkit/README.md), with reusable SVG logo variants and shared brand tokens in [`web/static/brand`](web/static/brand/).
+
 ## Features
 
 ### Data Sources

@@ -1,0 +1,100 @@
+:root {
+    --ledit-ink: #050806;
+    --ledit-panel: #08130d;
+    --ledit-panel-raised: #102018;
+    --ledit-phosphor: #b7ff35;
+    --ledit-phosphor-dim: #6da51d;
+    --ledit-cyan: #4de8ff;
+    --ledit-amber: #ffb000;
+    --ledit-paper: #f4f7e8;
+    --ledit-mist: #84a28a;
+}
+
+h1,
+h2 {
+    font-family: "Space Mono", "Courier New", monospace;
+    letter-spacing: -.045em;
+}
+
+.ledit-sidebar {
+    background-color: var(--ledit-ink) !important;
+    border-right: 1px solid #1b3523;
+    box-shadow: 8px 0 24px rgba(5, 8, 6, .12);
+}
+
+.ledit-sidebar hr {
+    border-color: #24432c;
+    opacity: 1;
+}
+
+.ledit-sidebar .nav-link {
+    border-left: 2px solid transparent;
+    transition: color .15s ease, background-color .15s ease, border-color .15s ease;
+}
+
+.ledit-sidebar .nav-link:hover,
+.ledit-sidebar .nav-link:focus {
+    color: var(--ledit-phosphor) !important;
+    background-color: rgba(183, 255, 53, .08);
+    border-left-color: var(--ledit-phosphor);
+}
+
+.ledit-brand {
+    gap: .65rem;
+    letter-spacing: -.04em;
+    white-space: nowrap;
+}
+
+.ledit-brand-mark {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+}
+
+.brand .ledit-brand-mark {
+    width: 34px;
+    height: 34px;
+}
+
+.brand .ledit-wordmark strong {
+    color: var(--ledit-paper);
+    font-family: "Space Mono", "Courier New", monospace;
+    font-size: 1.65rem;
+    letter-spacing: .05em;
+}
+
+.brand .ledit-wordmark small {
+    color: var(--ledit-mist);
+    font-family: "Space Mono", "Courier New", monospace;
+    font-size: 10px;
+    letter-spacing: .16em;
+}
+
+.ledit-wordmark {
+    color: var(--ledit-paper);
+    font-family: "Space Mono", "Courier New", monospace;
+    font-weight: 700;
+}
+
+.ledit-wordmark .ledit-accent {
+    color: var(--ledit-phosphor);
+}
+
+.ledit-login-brand {
+    width: min(100%, 260px);
+    margin: 0 auto 1.25rem;
+}
+
+.ledit-signal-line {
+    height: 3px;
+    border: 0;
+    background: linear-gradient(90deg, var(--ledit-phosphor) 0 42%, var(--ledit-cyan) 42% 72%, var(--ledit-amber) 72%);
+    opacity: .8;
+}
+
+@media (max-width: 576px) {
+    .ledit-brand-mark {
+        width: 2rem;
+        height: 2rem;
+    }
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" aria-hidden="true">
+  <defs>
+    <pattern id="led-dots" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="16" cy="16" r="3" fill="#b7ff35" opacity=".24"/>
+    </pattern>
+  </defs>
+  <rect width="160" height="160" fill="#08130d"/>
+  <rect width="160" height="160" fill="url(#led-dots)"/>
+  <path d="M0 80h160M80 0v160" stroke="#4de8ff" stroke-width="1" opacity=".08"/>
+</svg>

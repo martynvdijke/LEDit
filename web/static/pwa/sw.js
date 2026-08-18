@@ -1,9 +1,13 @@
-const CACHE_NAME = 'ledit-v1';
+const CACHE_NAME = 'ledit-v2';
 const ASSETS = [
   '/',
   '/login',
   '/static/pwa/manifest.json',
-  '/static/pwa/icon.svg'
+  '/static/pwa/icon.svg',
+  '/static/brand/ledit-mark.svg',
+  '/static/brand/ledit-lockup-dark.svg',
+  '/static/brand/ledit-lockup-light.svg',
+  '/static/brand/brand.css'
 ];
 
 // Install: cache app shell
