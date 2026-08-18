@@ -1,3 +1,15 @@
+# [1.19.0](https://github.com/martynvdijke/LEDit/compare/v1.18.2...v1.19.0) (2026-08-18)
+
+
+### Bug Fixes
+
+* bundle branded frontend assets ([8600184](https://github.com/martynvdijke/LEDit/commit/86001848cef6b41000797f1193c14e218375106a))
+
+
+### Features
+
+* add retro LED brand kit ([e4bf0ea](https://github.com/martynvdijke/LEDit/commit/e4bf0ea5355eca988e085413e5d3a0b2866e0361))
+
 ## [1.18.2](https://github.com/martynvdijke/LEDit/compare/v1.18.1...v1.18.2) (2026-08-18)
 
 ## [1.18.1](https://github.com/martynvdijke/LEDit/compare/v1.18.0...v1.18.1) (2026-08-18)
