@@ -1,3 +1,11 @@
+## [1.18.1](https://github.com/martynvdijke/LEDit/compare/v1.18.0...v1.18.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([5149af7](https://github.com/martynvdijke/LEDit/commit/5149af7aa10d68b645bf9b29109b6da2552113d1))
+* **otel:** use attribute package types for log record fields ([9c33cce](https://github.com/martynvdijke/LEDit/commit/9c33cce02e5f56180649472eac1c0a47497266c7))
+
 # [1.18.0](https://github.com/martynvdijke/LEDit/compare/v1.17.1...v1.18.0) (2026-08-16)
 
 
