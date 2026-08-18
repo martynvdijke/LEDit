@@ -412,14 +412,14 @@ func (e *OTelExporter) Export(ctx context.Context, level slog.Level, source, mes
 	rec.SetTimestamp(time.Now())
 	rec.SetSeverity(LevelToOTELSeverity(level))
 	rec.SetSeverityText(LevelName(level))
-	rec.SetBody(otellog.StringValue(message))
+	rec.SetBody(attribute.StringValue(message))
 
-	var attrs []otellog.KeyValue
+	var attrs []attribute.KeyValue
 	if source != "" {
-		attrs = append(attrs, otellog.String("source", source))
+		attrs = append(attrs, attribute.String("source", source))
 	}
 	if metadata != "" {
-		attrs = append(attrs, otellog.String("metadata", metadata))
+		attrs = append(attrs, attribute.String("metadata", metadata))
 	}
 	if len(attrs) > 0 {
 		rec.AddAttributes(attrs...)

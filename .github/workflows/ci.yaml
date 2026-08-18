@@ -24,7 +24,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v7
         with:
-          go-version: '1.26.5'
+          go-version: '1.26.6'
 
       - name: Download dependencies
         run: go mod download
@@ -76,7 +76,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '4.0'
+          ruby-version: '4.0.6'
 
       - name: Install trmnlp
         run: gem install trmnl_preview
