@@ -56,6 +56,18 @@ func (f AlertSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertSettingsMutation", m)
 }
 
+// The ApiTokenFunc type is an adapter to allow the use of ordinary
+// function as ApiToken mutator.
+type ApiTokenFunc func(context.Context, *ent.ApiTokenMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ApiTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ApiTokenMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ApiTokenMutation", m)
+}
+
 // The CalendarFunc type is an adapter to allow the use of ordinary
 // function as Calendar mutator.
 type CalendarFunc func(context.Context, *ent.CalendarMutation) (ent.Value, error)

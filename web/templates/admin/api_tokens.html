@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - API Tokens</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>API Tokens</h1>
+            <p class="text-muted">
+                Bearer tokens authorize API mutations (feed control, webhook notify).
+                The secret is shown only once at creation and stored as a hash.
+            </p>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Create token</h5>
+                    <form method="POST" action="/admin/api-tokens" class="d-flex gap-2">
+                        <input type="text" name="name" class="form-control" placeholder="Token name (e.g. trmnl-feed)" required>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </form>
+                </div>
+            </div>
+
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Prefix</th>
+                        <th>Created</th>
+                        <th>Last used</th>
+                        <th>Expires</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .tokens}}
+                    <tr>
+                        <td>{{.ID}}</td>
+                        <td>{{.Name}}</td>
+                        <td><code>{{.Prefix}}…</code></td>
+                        <td>{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
+                        <td>{{if .LastUsedAt}}{{.LastUsedAt.Format "2006-01-02 15:04"}}{{else}}never{{end}}</td>
+                        <td>{{if .ExpiresAt}}{{.ExpiresAt.Format "2006-01-02 15:04"}}{{else}}never{{end}}</td>
+                        <td>
+                            {{if .RevokedAt}}<span class="badge bg-danger">revoked</span>
+                            {{else}}<span class="badge bg-success">active</span>{{end}}
+                        </td>
+                        <td>
+                            {{if not .RevokedAt}}
+                            <form method="POST" action="/admin/api-tokens/{{.ID}}/rotate" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-warning">Rotate</button>
+                            </form>
+                            <form method="POST" action="/admin/api-tokens/{{.ID}}/revoke" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Revoke</button>
+                            </form>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="8" class="text-muted">No API tokens yet. Create one above.</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

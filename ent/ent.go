@@ -10,6 +10,7 @@ import (
 	"ledit/ent/aidigest"
 	"ledit/ent/aisettings"
 	"ledit/ent/alertsettings"
+	"ledit/ent/apitoken"
 	"ledit/ent/calendar"
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
@@ -106,6 +107,7 @@ func checkColumn(t, c string) error {
 			aisettings.Table:      aisettings.ValidColumn,
 			adminsettings.Table:   adminsettings.ValidColumn,
 			alertsettings.Table:   alertsettings.ValidColumn,
+			apitoken.Table:        apitoken.ValidColumn,
 			calendar.Table:        calendar.ValidColumn,
 			countdown.Table:       countdown.ValidColumn,
 			crypto.Table:          crypto.ValidColumn,

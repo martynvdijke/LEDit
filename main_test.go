@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"image"
@@ -46,6 +48,41 @@ func openTestDB(t *testing.T) *sql.Driver {
 		t.Fatalf("Failed to open test database: %v", err)
 	}
 	return drv
+}
+
+// hashTokenForTest mirrors handlers.hashAPIToken (SHA-256 hex digest).
+func hashTokenForTest(secret string) string {
+	h := sha256.Sum256([]byte(secret))
+	return hex.EncodeToString(h[:])
+}
+
+// createAPITokenForTest inserts a bearer token bound to the first admin user
+// and returns its raw secret for use in Authorization headers.
+func createAPITokenForTest(t *testing.T, srv *handlers.Server) string {
+	t.Helper()
+	owner, err := srv.DB.AdminSettings.Query().First(testCtx)
+	if err != nil {
+		// Auth is disabled in tests, so no admin row exists yet — create one.
+		owner, err = srv.DB.AdminSettings.Create().
+			SetUsername("admin").
+			SetPasswordHash("unused").
+			Save(testCtx)
+		if err != nil {
+			t.Fatalf("failed to create admin user: %v", err)
+		}
+	}
+	secret := "test-secret-" + time.Now().Format("20060102150405.000000000")
+	_, err = srv.DB.ApiToken.Create().
+		SetName("test").
+		SetTokenHash(hashTokenForTest(secret)).
+		SetTokenPrefix(secret[:8]).
+		SetOwnerID(owner.ID).
+		SetCreatedAt(time.Now()).
+		Save(testCtx)
+	if err != nil {
+		t.Fatalf("failed to create token: %v", err)
+	}
+	return secret
 }
 
 func TestDBSchemaCreation(t *testing.T) {
@@ -645,12 +682,14 @@ func TestAPIFeedPauseResume(t *testing.T) {
 	defer drv.Close()
 
 	srv := handlers.New(drv, nil)
+	secret := createAPITokenForTest(t, srv)
 
 	body := bytes.NewBufferString(`{}`)
 	body2 := bytes.NewBufferString(`{}`)
 
 	req := httptest.NewRequest("POST", "/api/feed/pause", body)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+secret)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -668,6 +707,7 @@ func TestAPIFeedPauseResume(t *testing.T) {
 
 	req3 := httptest.NewRequest("POST", "/api/feed/resume", body2)
 	req3.Header.Set("Content-Type", "application/json")
+	req3.Header.Set("Authorization", "Bearer "+secret)
 	w3 := httptest.NewRecorder()
 	srv.ServeHTTP(w3, req3)
 	if w3.Code != http.StatusOK {
@@ -680,9 +720,11 @@ func TestAPIWebhookNotify(t *testing.T) {
 	defer drv.Close()
 
 	srv := handlers.New(drv, nil)
+	secret := createAPITokenForTest(t, srv)
 	body := bytes.NewBufferString(`{"title":"Test","message":"Hello"}`)
 	req := httptest.NewRequest("POST", "/api/webhook/notify", body)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+secret)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -824,9 +866,11 @@ func TestAPIFeedNext(t *testing.T) {
 	defer drv.Close()
 
 	srv := handlers.New(drv, nil)
+	secret := createAPITokenForTest(t, srv)
 	body := bytes.NewBufferString(`{}`)
 	req := httptest.NewRequest("POST", "/api/feed/next", body)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+secret)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {

@@ -20,6 +20,8 @@ type Tx struct {
 	AdminSettings *AdminSettingsClient
 	// AlertSettings is the client for interacting with the AlertSettings builders.
 	AlertSettings *AlertSettingsClient
+	// ApiToken is the client for interacting with the ApiToken builders.
+	ApiToken *ApiTokenClient
 	// Calendar is the client for interacting with the Calendar builders.
 	Calendar *CalendarClient
 	// Countdown is the client for interacting with the Countdown builders.
@@ -207,6 +209,7 @@ func (tx *Tx) init() {
 	tx.AISettings = NewAISettingsClient(tx.config)
 	tx.AdminSettings = NewAdminSettingsClient(tx.config)
 	tx.AlertSettings = NewAlertSettingsClient(tx.config)
+	tx.ApiToken = NewApiTokenClient(tx.config)
 	tx.Calendar = NewCalendarClient(tx.config)
 	tx.Countdown = NewCountdownClient(tx.config)
 	tx.Crypto = NewCryptoClient(tx.config)

@@ -18,6 +18,9 @@ type AdminSettings func(*sql.Selector)
 // AlertSettings is the predicate function for alertsettings builders.
 type AlertSettings func(*sql.Selector)
 
+// ApiToken is the predicate function for apitoken builders.
+type ApiToken func(*sql.Selector)
+
 // Calendar is the predicate function for calendar builders.
 type Calendar func(*sql.Selector)
 

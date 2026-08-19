@@ -15,6 +15,7 @@ import (
 	"ledit/ent/aidigest"
 	"ledit/ent/aisettings"
 	"ledit/ent/alertsettings"
+	"ledit/ent/apitoken"
 	"ledit/ent/calendar"
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
@@ -61,6 +62,8 @@ type Client struct {
 	AdminSettings *AdminSettingsClient
 	// AlertSettings is the client for interacting with the AlertSettings builders.
 	AlertSettings *AlertSettingsClient
+	// ApiToken is the client for interacting with the ApiToken builders.
+	ApiToken *ApiTokenClient
 	// Calendar is the client for interacting with the Calendar builders.
 	Calendar *CalendarClient
 	// Countdown is the client for interacting with the Countdown builders.
@@ -128,6 +131,7 @@ func (c *Client) init() {
 	c.AISettings = NewAISettingsClient(c.config)
 	c.AdminSettings = NewAdminSettingsClient(c.config)
 	c.AlertSettings = NewAlertSettingsClient(c.config)
+	c.ApiToken = NewApiTokenClient(c.config)
 	c.Calendar = NewCalendarClient(c.config)
 	c.Countdown = NewCountdownClient(c.config)
 	c.Crypto = NewCryptoClient(c.config)
@@ -250,6 +254,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AISettings:      NewAISettingsClient(cfg),
 		AdminSettings:   NewAdminSettingsClient(cfg),
 		AlertSettings:   NewAlertSettingsClient(cfg),
+		ApiToken:        NewApiTokenClient(cfg),
 		Calendar:        NewCalendarClient(cfg),
 		Countdown:       NewCountdownClient(cfg),
 		Crypto:          NewCryptoClient(cfg),
@@ -299,6 +304,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AISettings:      NewAISettingsClient(cfg),
 		AdminSettings:   NewAdminSettingsClient(cfg),
 		AlertSettings:   NewAlertSettingsClient(cfg),
+		ApiToken:        NewApiTokenClient(cfg),
 		Calendar:        NewCalendarClient(cfg),
 		Countdown:       NewCountdownClient(cfg),
 		Crypto:          NewCryptoClient(cfg),
@@ -354,8 +360,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.Calendar,
-		c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
+		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
+		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GoogleCalendar, c.HomeAssistant, c.Image,
 		c.LogEntry, c.LogSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
 		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
@@ -369,8 +375,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.Calendar,
-		c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
+		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
+		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GoogleCalendar, c.HomeAssistant, c.Image,
 		c.LogEntry, c.LogSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
 		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
@@ -391,6 +397,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AdminSettings.mutate(ctx, m)
 	case *AlertSettingsMutation:
 		return c.AlertSettings.mutate(ctx, m)
+	case *ApiTokenMutation:
+		return c.ApiToken.mutate(ctx, m)
 	case *CalendarMutation:
 		return c.Calendar.mutate(ctx, m)
 	case *CountdownMutation:
@@ -977,6 +985,139 @@ func (c *AlertSettingsClient) mutate(ctx context.Context, m *AlertSettingsMutati
 		return (&AlertSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AlertSettings mutation op: %q", m.Op())
+	}
+}
+
+// ApiTokenClient is a client for the ApiToken schema.
+type ApiTokenClient struct {
+	config
+}
+
+// NewApiTokenClient returns a client for the ApiToken from the given config.
+func NewApiTokenClient(c config) *ApiTokenClient {
+	return &ApiTokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `apitoken.Hooks(f(g(h())))`.
+func (c *ApiTokenClient) Use(hooks ...Hook) {
+	c.hooks.ApiToken = append(c.hooks.ApiToken, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `apitoken.Intercept(f(g(h())))`.
+func (c *ApiTokenClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ApiToken = append(c.inters.ApiToken, interceptors...)
+}
+
+// Create returns a builder for creating a ApiToken entity.
+func (c *ApiTokenClient) Create() *ApiTokenCreate {
+	mutation := newApiTokenMutation(c.config, OpCreate)
+	return &ApiTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ApiToken entities.
+func (c *ApiTokenClient) CreateBulk(builders ...*ApiTokenCreate) *ApiTokenCreateBulk {
+	return &ApiTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ApiTokenClient) MapCreateBulk(slice any, setFunc func(*ApiTokenCreate, int)) *ApiTokenCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ApiTokenCreateBulk{err: fmt.Errorf("calling to ApiTokenClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ApiTokenCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ApiTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ApiToken.
+func (c *ApiTokenClient) Update() *ApiTokenUpdate {
+	mutation := newApiTokenMutation(c.config, OpUpdate)
+	return &ApiTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ApiTokenClient) UpdateOne(_m *ApiToken) *ApiTokenUpdateOne {
+	mutation := newApiTokenMutation(c.config, OpUpdateOne, withApiToken(_m))
+	return &ApiTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ApiTokenClient) UpdateOneID(id int) *ApiTokenUpdateOne {
+	mutation := newApiTokenMutation(c.config, OpUpdateOne, withApiTokenID(id))
+	return &ApiTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ApiToken.
+func (c *ApiTokenClient) Delete() *ApiTokenDelete {
+	mutation := newApiTokenMutation(c.config, OpDelete)
+	return &ApiTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ApiTokenClient) DeleteOne(_m *ApiToken) *ApiTokenDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ApiTokenClient) DeleteOneID(id int) *ApiTokenDeleteOne {
+	builder := c.Delete().Where(apitoken.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ApiTokenDeleteOne{builder}
+}
+
+// Query returns a query builder for ApiToken.
+func (c *ApiTokenClient) Query() *ApiTokenQuery {
+	return &ApiTokenQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeApiToken},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ApiToken entity by its id.
+func (c *ApiTokenClient) Get(ctx context.Context, id int) (*ApiToken, error) {
+	return c.Query().Where(apitoken.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ApiTokenClient) GetX(ctx context.Context, id int) *ApiToken {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ApiTokenClient) Hooks() []Hook {
+	return c.hooks.ApiToken
+}
+
+// Interceptors returns the client interceptors.
+func (c *ApiTokenClient) Interceptors() []Interceptor {
+	return c.inters.ApiToken
+}
+
+func (c *ApiTokenClient) mutate(ctx context.Context, m *ApiTokenMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ApiTokenCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ApiTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ApiTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ApiTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ApiToken mutation op: %q", m.Op())
 	}
 }
 
@@ -4841,17 +4982,17 @@ func (c *WeatherClient) mutate(ctx context.Context, m *WeatherMutation) (Value, 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AIDigest, AISettings, AdminSettings, AlertSettings, Calendar, Countdown, Crypto,
-		DeviceSettings, EmailSettings, F1, GeneralSettings, GenericAPI, GoogleCalendar,
-		HomeAssistant, Image, LogEntry, LogSettings, MatrixLayout, NewsFeed,
-		Notification, Radarr, RssFeed, Schedule, Sonarr, Stock, TextSlide,
-		UmamiSettings, Untappd, Video, Weather []ent.Hook
+		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
+		Countdown, Crypto, DeviceSettings, EmailSettings, F1, GeneralSettings,
+		GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry, LogSettings,
+		MatrixLayout, NewsFeed, Notification, Radarr, RssFeed, Schedule, Sonarr, Stock,
+		TextSlide, UmamiSettings, Untappd, Video, Weather []ent.Hook
 	}
 	inters struct {
-		AIDigest, AISettings, AdminSettings, AlertSettings, Calendar, Countdown, Crypto,
-		DeviceSettings, EmailSettings, F1, GeneralSettings, GenericAPI, GoogleCalendar,
-		HomeAssistant, Image, LogEntry, LogSettings, MatrixLayout, NewsFeed,
-		Notification, Radarr, RssFeed, Schedule, Sonarr, Stock, TextSlide,
-		UmamiSettings, Untappd, Video, Weather []ent.Interceptor
+		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
+		Countdown, Crypto, DeviceSettings, EmailSettings, F1, GeneralSettings,
+		GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry, LogSettings,
+		MatrixLayout, NewsFeed, Notification, Radarr, RssFeed, Schedule, Sonarr, Stock,
+		TextSlide, UmamiSettings, Untappd, Video, Weather []ent.Interceptor
 	}
 )

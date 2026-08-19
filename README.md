@@ -157,17 +157,35 @@ LEDit/
 
 ## API Endpoints
 
+### Authentication
+
+Public reads (feed status, notifications, TRMNL stats, health) require no
+credentials. **All mutation endpoints require a bearer API token** issued by an
+authenticated admin.
+
+1. Log in to the admin UI and open **API tokens** (`/admin/api-tokens`).
+2. Create a token — the secret is shown **exactly once** and is stored only as
+   a hash. Copy it immediately.
+3. Send it on every write request:
+
+```
+Authorization: Bearer <secret>
+```
+
+Tokens can be revoked or rotated from the same page. Revoked or expired tokens
+are rejected with `401 Unauthorized`.
+
 ### Feed Control
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/feed/current` | Current feed status (current source, next source, paused state) |
-| `POST` | `/api/feed/next` | Skip to next source |
-| `POST` | `/api/feed/pause` | Pause feed cycling |
-| `POST` | `/api/feed/resume` | Resume feed cycling |
-| `POST` | `/api/feed/priority` | Send a priority message |
-| `POST` | `/api/webhook/notify` | Webhook endpoint for external notifications |
-| `GET` | `/api/notifications` | Notification history |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/api/feed/current` | Current feed status (current source, next source, paused state) | public |
+| `POST` | `/api/feed/next` | Skip to next source | bearer token |
+| `POST` | `/api/feed/pause` | Pause feed cycling | bearer token |
+| `POST` | `/api/feed/resume` | Resume feed cycling | bearer token |
+| `POST` | `/api/feed/priority` | Send a priority message | bearer token |
+| `POST` | `/api/webhook/notify` | Webhook endpoint for external notifications | bearer token |
+| `GET` | `/api/notifications` | Notification history | public |
 
 ### WebSocket
 
@@ -177,7 +195,7 @@ LEDit/
 
 ### Admin Endpoints
 
-All admin endpoints are under `/admin/` and require authentication. Full CRUD for every datasource type (Sonarr, Radarr, F1, Weather, HomeAssistant, Untappd, Crypto, Stock, RSS Feeds, Calendars, Images, Videos, Text Slides), plus schedules, devices, theme, settings, logs, and analytics.
+All admin endpoints are under `/admin/` and require authentication. Full CRUD for every datasource type (Sonarr, Radarr, F1, Weather, HomeAssistant, Untappd, Crypto, Stock, RSS Feeds, Calendars, Images, Videos, Text Slides), plus schedules, devices, theme, settings, logs, analytics, and API token management.
 
 ## License
 

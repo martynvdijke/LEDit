@@ -6,6 +6,7 @@ import (
 	"ledit/ent/adminsettings"
 	"ledit/ent/aidigest"
 	"ledit/ent/alertsettings"
+	"ledit/ent/apitoken"
 	"ledit/ent/calendar"
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
@@ -102,6 +103,20 @@ func init() {
 	alertsettingsDescNotifyRecovery := alertsettingsFields[8].Descriptor()
 	// alertsettings.DefaultNotifyRecovery holds the default value on creation for the notify_recovery field.
 	alertsettings.DefaultNotifyRecovery = alertsettingsDescNotifyRecovery.Default.(bool)
+	apitokenFields := schema.ApiToken{}.Fields()
+	_ = apitokenFields
+	// apitokenDescName is the schema descriptor for name field.
+	apitokenDescName := apitokenFields[1].Descriptor()
+	// apitoken.DefaultName holds the default value on creation for the name field.
+	apitoken.DefaultName = apitokenDescName.Default.(string)
+	// apitokenDescTokenPrefix is the schema descriptor for token_prefix field.
+	apitokenDescTokenPrefix := apitokenFields[3].Descriptor()
+	// apitoken.DefaultTokenPrefix holds the default value on creation for the token_prefix field.
+	apitoken.DefaultTokenPrefix = apitokenDescTokenPrefix.Default.(string)
+	// apitokenDescOwnerID is the schema descriptor for owner_id field.
+	apitokenDescOwnerID := apitokenFields[4].Descriptor()
+	// apitoken.DefaultOwnerID holds the default value on creation for the owner_id field.
+	apitoken.DefaultOwnerID = apitokenDescOwnerID.Default.(int)
 	calendarFields := schema.Calendar{}.Fields()
 	_ = calendarFields
 	// calendarDescName is the schema descriptor for name field.

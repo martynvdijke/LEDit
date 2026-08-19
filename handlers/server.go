@@ -206,15 +206,22 @@ func (s *Server) setupRoutes() {
 
 	api := s.Router.Group("/api")
 	{
+		// Public reads: display polling and health stay unauthenticated.
 		api.GET("/feed/current", s.APIFeedStatus)
-		api.POST("/feed/next", s.APIFeedNext)
-		api.POST("/feed/pause", s.APIFeedPause)
-		api.POST("/feed/resume", s.APIFeedResume)
-		api.POST("/feed/priority", s.APIFeedPriority)
-		api.POST("/webhook/notify", s.APIWebhookNotify)
 		api.GET("/notifications", s.APINotificationHistory)
 		api.GET("/trmnl/stats", s.APITrmnlStats)
 		api.GET("/health", s.APIHealth)
+
+		// Mutations: every write requires a valid bearer API token.
+		apiMut := api.Group("")
+		apiMut.Use(s.APITokenMiddleware())
+		{
+			apiMut.POST("/feed/next", s.APIFeedNext)
+			apiMut.POST("/feed/pause", s.APIFeedPause)
+			apiMut.POST("/feed/resume", s.APIFeedResume)
+			apiMut.POST("/feed/priority", s.APIFeedPriority)
+			apiMut.POST("/webhook/notify", s.APIWebhookNotify)
+		}
 	}
 
 	s.Router.GET("/login", s.LoginPage)
@@ -436,5 +443,11 @@ func (s *Server) setupRoutes() {
 
 		// Analytics (Phase 10)
 		admin.GET("/analytics", s.AdminAnalytics)
+
+		// API tokens (secure-api-mutations): owner-only lifecycle management.
+		admin.GET("/api-tokens", s.AdminAPITokens)
+		admin.POST("/api-tokens", s.AdminAPITokenCreate)
+		admin.POST("/api-tokens/:id/revoke", s.AdminAPITokenRevoke)
+		admin.POST("/api-tokens/:id/rotate", s.AdminAPITokenRotate)
 	}
 }
