@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/martynvdijke/LEDit/compare/v1.19.0...v1.20.0) (2026-08-20)
+
+
+### Features
+
+* secure API mutations with bearer token auth ([68dca5d](https://github.com/martynvdijke/LEDit/commit/68dca5dc74fc36f3050ac5a05ad1a08aa9f55f0f))
+
 # [1.19.0](https://github.com/martynvdijke/LEDit/compare/v1.18.2...v1.19.0) (2026-08-18)
 
 
