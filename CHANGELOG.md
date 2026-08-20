@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/martynvdijke/LEDit/compare/v1.20.0...v1.21.0) (2026-08-20)
+
+
+### Features
+
+* add first-time setup flow ([884fa34](https://github.com/martynvdijke/LEDit/commit/884fa346325a43d22d1de57fe87db705ecc386b1))
+
 # [1.20.0](https://github.com/martynvdijke/LEDit/compare/v1.19.0...v1.20.0) (2026-08-20)
 
 
