@@ -4,11 +4,13 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"ledit/ent/apitoken"
 )
 
 var (
@@ -88,6 +90,48 @@ func (s *Server) LoginAction(c *gin.Context) {
 func (s *Server) LogoutAction(c *gin.Context) {
 	c.SetCookie("session", "", -1, "/", "", false, true)
 	c.Redirect(http.StatusFound, "/login")
+}
+
+// IsAuthenticated reports whether the request carries a valid session cookie
+// or a valid bearer API token. When auth is disabled it always returns true.
+func (s *Server) IsAuthenticated(c *gin.Context) bool {
+	if !authEnabled {
+		return true
+	}
+	if token, err := c.Cookie("session"); err == nil {
+		authMu.Lock()
+		_, valid := sessions[token]
+		authMu.Unlock()
+		if valid {
+			return true
+		}
+	}
+	auth := c.GetHeader("Authorization")
+	if strings.HasPrefix(auth, "Bearer ") {
+		secret := strings.TrimSpace(strings.TrimPrefix(auth, "Bearer "))
+		if secret != "" {
+			tok, err := s.DB.ApiToken.Query().Where(apitoken.TokenHashEQ(hashAPIToken(secret))).Only(c.Request.Context())
+			if err == nil && tok.RevokedAt == nil && (tok.ExpiresAt == nil || tok.ExpiresAt.After(time.Now())) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// RequireAuthMiddleware rejects unauthenticated requests with 401 JSON.
+// It accepts either a valid session cookie or a valid bearer token.
+func (s *Server) RequireAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if s.IsAuthenticated(c) {
+			c.Next()
+			return
+		}
+		c.Header("WWW-Authenticate", `Bearer realm="LEDit"`)
+		c.Header("Cache-Control", "no-store")
+		c.Header("Vary", "Cookie, Authorization")
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	}
 }
 
 // AdminPasswordChange page

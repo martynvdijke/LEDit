@@ -84,8 +84,6 @@ func TestAPIPublicReadsUnauthenticated(t *testing.T) {
 		method string
 		path   string
 	}{
-		{http.MethodGet, "/api/feed/current"},
-		{http.MethodGet, "/api/notifications"},
 		{http.MethodGet, "/api/trmnl/stats"},
 		{http.MethodGet, "/api/health"},
 	}
@@ -94,6 +92,60 @@ func TestAPIPublicReadsUnauthenticated(t *testing.T) {
 		if w.Code != http.StatusOK {
 			t.Errorf("%s %s: expected 200, got %d", tc.method, tc.path, w.Code)
 		}
+	}
+}
+
+func TestAPIFeedCurrentRequiresAuth(t *testing.T) {
+	srv := newAPITokenTestServer(t)
+	// Anonymous → 401
+	w := doRequest(t, srv, http.MethodGet, "/api/feed/current", "")
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("anonymous feed/current: expected 401, got %d", w.Code)
+	}
+	if w.Header().Get("WWW-Authenticate") == "" {
+		t.Error("anonymous feed/current should set WWW-Authenticate")
+	}
+	// Session → 200
+	session := loginAsAdmin(t, srv)
+	req := httptest.NewRequest(http.MethodGet, "/api/feed/current", nil)
+	req.AddCookie(session)
+	rec := httptest.NewRecorder()
+	srv.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("session feed/current: expected 200, got %d", rec.Code)
+	}
+	// Bearer → 200
+	owner := srv.DB.AdminSettings.Query().FirstX(srv.Ctx)
+	secret := createTestToken(t, srv, owner.ID, nil, nil)
+	w2 := bearerRequest(srv, http.MethodGet, "/api/feed/current", secret)
+	if w2.Code != http.StatusOK {
+		t.Fatalf("bearer feed/current: expected 200, got %d", w2.Code)
+	}
+	// No-store on success
+	if rec.Header().Get("Cache-Control") != "no-store" {
+		t.Error("feed/current should set Cache-Control: no-store")
+	}
+}
+
+func TestAPINotificationsRequiresAuth(t *testing.T) {
+	srv := newAPITokenTestServer(t)
+	w := doRequest(t, srv, http.MethodGet, "/api/notifications", "")
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("anonymous notifications: expected 401, got %d", w.Code)
+	}
+	session := loginAsAdmin(t, srv)
+	req := httptest.NewRequest(http.MethodGet, "/api/notifications", nil)
+	req.AddCookie(session)
+	rec := httptest.NewRecorder()
+	srv.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("session notifications: expected 200, got %d", rec.Code)
+	}
+	owner := srv.DB.AdminSettings.Query().FirstX(srv.Ctx)
+	secret := createTestToken(t, srv, owner.ID, nil, nil)
+	w2 := bearerRequest(srv, http.MethodGet, "/api/notifications", secret)
+	if w2.Code != http.StatusOK {
+		t.Fatalf("bearer notifications: expected 200, got %d", w2.Code)
 	}
 }
 
@@ -303,5 +355,70 @@ func TestTokenRevokeAndRotateNeverDiscloseSecret(t *testing.T) {
 	}
 	if rotated.Secret == secret {
 		t.Fatal("rotate must issue a new secret, not reuse the old one")
+	}
+}
+
+// ---------------------------------------------------------------------------
+// 3.3 Public landing gating (GET /)
+// ---------------------------------------------------------------------------
+
+func completeSetupForTest(t *testing.T, srv *Server) {
+	t.Helper()
+	if _, err := srv.DB.GeneralSettings.Query().First(srv.Ctx); err != nil {
+		srv.DB.GeneralSettings.Create().SetTimeout(5).SetRandom(false).SetWidth(64).SetHeight(64).SaveX(srv.Ctx)
+	}
+	admin, err := srv.DB.AdminSettings.Query().First(srv.Ctx)
+	if err == nil {
+		srv.DB.AdminSettings.UpdateOne(admin).SetPasswordHash("not-default-hash-for-test").SaveX(srv.Ctx)
+	}
+}
+
+func TestIndexPublicLanding(t *testing.T) {
+	srv := newAPITokenTestServer(t)
+	completeSetupForTest(t, srv)
+	w := doRequest(t, srv, http.MethodGet, "/", "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("anonymous GET /: expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "Public information") {
+		t.Error("anonymous landing should contain Public information block")
+	}
+	if !strings.Contains(body, "Login to view feed") {
+		t.Error("anonymous landing should contain login CTA")
+	}
+	if strings.Contains(body, `id="source-label"`) {
+		t.Error("anonymous landing must not expose source-label telemetry")
+	}
+	if strings.Contains(body, `id="media-display"`) {
+		t.Error("anonymous landing must not expose media-display")
+	}
+	if w.Header().Get("Cache-Control") != "no-store" {
+		t.Error("anonymous landing should set Cache-Control: no-store")
+	}
+	if !strings.Contains(w.Header().Get("Vary"), "Cookie") {
+		t.Error("anonymous landing should set Vary: Cookie, Authorization")
+	}
+}
+
+func TestIndexAuthenticatedShowsFeed(t *testing.T) {
+	srv := newAPITokenTestServer(t)
+	session := loginAsAdmin(t, srv)
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.AddCookie(session)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("authenticated GET /: expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, `id="source-label"`) {
+		t.Error("authenticated landing should contain source-label telemetry")
+	}
+	if !strings.Contains(body, `id="media-display"`) {
+		t.Error("authenticated landing should contain media-display")
+	}
+	if strings.Contains(body, "Public information") {
+		t.Error("authenticated landing should not show public-only block")
 	}
 }

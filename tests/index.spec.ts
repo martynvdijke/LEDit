@@ -69,4 +69,20 @@ test.describe('Index / Live Feed', () => {
     await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', '/static/pwa/manifest.json');
     await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/static/pwa/favicon.png');
   });
+
+  test('should hide feed controls on public landing when unauthenticated', async ({ page }) => {
+    await page.goto('/');
+    const publicVisible = await page.locator('.public-landing').isVisible().catch(() => false);
+    if (publicVisible) {
+      await expect(page.locator('#source-label')).toBeHidden();
+      await expect(page.locator('#next-label')).toBeHidden();
+      await expect(page.locator('#media-display')).toBeHidden();
+      await expect(page.locator('#btn-pause')).toBeHidden();
+      await expect(page.getByText('Login to view feed')).toBeVisible();
+      await expect(page.getByText(/Detailed feed state/)).toBeVisible();
+    } else {
+      // Auth disabled (webServer uses LEDIT_AUTH_DISABLE=true) — feed should be visible
+      await expect(page.locator('#source-label')).toBeVisible();
+    }
+  });
 });

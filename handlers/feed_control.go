@@ -73,6 +73,8 @@ func (fc *FeedController) Status() map[string]any {
 // API handlers
 
 func (s *Server) APIFeedStatus(c *gin.Context) {
+	c.Header("Cache-Control", "no-store")
+	c.Header("Vary", "Cookie, Authorization")
 	c.JSON(http.StatusOK, GlobalFeed.Status())
 }
 
@@ -112,6 +114,8 @@ func (s *Server) APIWebhookNotify(c *gin.Context) {
 }
 
 func (s *Server) APINotificationHistory(c *gin.Context) {
+	c.Header("Cache-Control", "no-store")
+	c.Header("Vary", "Cookie, Authorization")
 	c.JSON(http.StatusOK, s.GetNotificationHistory())
 }
 

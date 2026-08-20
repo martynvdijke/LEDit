@@ -207,11 +207,17 @@ func (s *Server) setupRoutes() {
 
 	api := s.Router.Group("/api")
 	{
-		// Public reads: display polling and health stay unauthenticated.
-		api.GET("/feed/current", s.APIFeedStatus)
-		api.GET("/notifications", s.APINotificationHistory)
+		// Public only: health and TRMNL polling stay unauthenticated.
 		api.GET("/trmnl/stats", s.APITrmnlStats)
 		api.GET("/health", s.APIHealth)
+
+		// Authenticated reads: feed and notifications require session or bearer token.
+		authReads := api.Group("")
+		authReads.Use(s.RequireAuthMiddleware())
+		{
+			authReads.GET("/feed/current", s.APIFeedStatus)
+			authReads.GET("/notifications", s.APINotificationHistory)
+		}
 
 		// Mutations: every write requires a valid bearer API token.
 		apiMut := api.Group("")

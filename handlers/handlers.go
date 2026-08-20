@@ -7,6 +7,7 @@ import (
 	"maps"
 	"net/http"
 	"path/filepath"
+	"runtime/debug"
 	"strconv"
 	"strings"
 
@@ -75,6 +76,13 @@ func (s *Server) renderPage(c *gin.Context, httpCode int, name string, obj gin.H
 	c.HTML(httpCode, name, obj)
 }
 
+func appVersion() string {
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
+		return info.Main.Version
+	}
+	return "1.20.0"
+}
+
 func (s *Server) IndexHandler(c *gin.Context) {
 	umamiSettings, _ := s.DB.UmamiSettings.Query().Only(s.Ctx)
 	umamiEnabled := false
@@ -86,14 +94,31 @@ func (s *Server) IndexHandler(c *gin.Context) {
 		umamiWebsiteID = umamiSettings.WebsiteID
 	}
 	einkMode := getEInkMode(c)
+	isAuth := s.IsAuthenticated(c)
+	if !isAuth {
+		c.Header("Cache-Control", "no-store")
+		c.Header("Vary", "Cookie, Authorization")
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"isAuthenticated": false,
+			"appVersion":      appVersion(),
+			"umamiEnabled":    false,
+			"eink_mode":       einkMode,
+			"devices":         []any{},
+		})
+		return
+	}
+	c.Header("Cache-Control", "no-store")
+	c.Header("Vary", "Cookie, Authorization")
 	// Device list for the feed-page selector (0 = shared preview).
 	devices, _ := s.DB.DeviceSettings.Query().Order(ent.Asc(devicesettings.FieldID)).All(s.Ctx)
 	c.HTML(http.StatusOK, "index.html", gin.H{
-		"umamiEnabled":   umamiEnabled,
-		"umamiEndpoint":  umamiEndpoint,
-		"umamiWebsiteID": umamiWebsiteID,
-		"eink_mode":      einkMode,
-		"devices":        devices,
+		"isAuthenticated": true,
+		"appVersion":      appVersion(),
+		"umamiEnabled":    umamiEnabled,
+		"umamiEndpoint":   umamiEndpoint,
+		"umamiWebsiteID":  umamiWebsiteID,
+		"eink_mode":       einkMode,
+		"devices":         devices,
 	})
 }
 

@@ -159,9 +159,8 @@ LEDit/
 
 ### Authentication
 
-Public reads (feed status, notifications, TRMNL stats, health) require no
-credentials. **All mutation endpoints require a bearer API token** issued by an
-authenticated admin.
+Public reads (`/api/trmnl/stats`, `/api/health`) require no credentials.
+**Feed status and notification reads require authentication** (valid session cookie or bearer token). **All mutation endpoints require a bearer API token** issued by an authenticated admin. Details require login — unauthenticated visitors to `/` see only basic public info (version, health, login CTA).
 
 1. Log in to the admin UI and open **API tokens** (`/admin/api-tokens`).
 2. Create a token — the secret is shown **exactly once** and is stored only as
@@ -179,13 +178,13 @@ are rejected with `401 Unauthorized`.
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/api/feed/current` | Current feed status (current source, next source, paused state) | public |
+| `GET` | `/api/feed/current` | Current feed status (current source, next source, paused state) | session or bearer token |
 | `POST` | `/api/feed/next` | Skip to next source | bearer token |
 | `POST` | `/api/feed/pause` | Pause feed cycling | bearer token |
 | `POST` | `/api/feed/resume` | Resume feed cycling | bearer token |
 | `POST` | `/api/feed/priority` | Send a priority message | bearer token |
 | `POST` | `/api/webhook/notify` | Webhook endpoint for external notifications | bearer token |
-| `GET` | `/api/notifications` | Notification history | public |
+| `GET` | `/api/notifications` | Notification history | session or bearer token |
 
 ### WebSocket
 

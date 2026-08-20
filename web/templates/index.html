@@ -15,12 +15,13 @@
 <body{{if .eink_mode}} class="eink-mode"{{end}}>
     <div class="app-shell" data-app-shell>
         {{template "sidebar" .}}
-        <main class="main" id="main-content" data-feed-page>
+        <main class="main" id="main-content" {{if .isAuthenticated}}data-feed-page{{end}}>
             <div class="main-inner">
                 <header class="topbar">
                     <div><div class="eyebrow">LED MATRIX / LIVE TELEMETRY</div><h1>Live feed</h1><p class="lede">Your display, in real time. Keep an eye on the signal, then take control when needed.</p></div>
-                    <div class="topbar-actions"><span class="badge mono">NODE 01 · LOCAL</span></div>
+                    <div class="topbar-actions"><span class="badge mono">NODE 01 · LOCAL{{if .appVersion}} · v{{.appVersion}}{{end}}</span></div>
                 </header>
+                {{if .isAuthenticated}}
                 <section class="feed-layout" aria-label="Live feed control room">
                     <div class="feed-stage" aria-label="Current LEDit media">
                         <div id="media-container">
@@ -60,6 +61,18 @@
                         </div>
                     </aside>
                 </section>
+                {{else}}
+                <section class="panel public-landing" aria-label="Public information">
+                    <div class="panel-kicker">Public information</div>
+                    <h2 class="h4">LEDit {{if .appVersion}}v{{.appVersion}}{{end}} · Running</h2>
+                    <p class="lede">Service is running. Sign in to view the live feed, source queue, and device controls.</p>
+                    <div class="d-flex gap-2 mt-3">
+                        <a href="/login" class="btn btn-primary">Login to view feed</a>
+                        <a href="/api/health" class="btn btn-ghost">Health: /api/health</a>
+                    </div>
+                    <p class="small text-muted mt-3 mb-0">Detailed feed state, notification history, and device roster require authentication.</p>
+                </section>
+                {{end}}
             </div>
         </main>
     </div>
