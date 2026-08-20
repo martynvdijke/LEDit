@@ -190,6 +190,7 @@ func (s *Server) setupRoutes() {
 	s.Router.SetHTMLTemplate(tmpl)
 
 	s.Router.Use(s.EInkMiddleware())
+	s.Router.Use(s.SetupMiddleware())
 
 	s.Router.Static("/static", "./web/static")
 	s.Router.Static("/media", "./web/media")
@@ -223,6 +224,9 @@ func (s *Server) setupRoutes() {
 			apiMut.POST("/webhook/notify", s.APIWebhookNotify)
 		}
 	}
+
+	s.Router.GET("/setup", s.SetupPage)
+	s.Router.POST("/setup", s.SetupAction)
 
 	s.Router.GET("/login", s.LoginPage)
 	s.Router.POST("/login", s.LoginAction)

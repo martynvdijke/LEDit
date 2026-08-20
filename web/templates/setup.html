@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit — First-time setup</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body class="bg-dark">
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh; padding: 2rem 1rem;">
+        <div class="card" style="width: 560px; max-width: 100%;">
+            <div class="card-body p-4">
+                <img src="/static/brand/ledit-lockup-light.svg" class="ledit-login-brand d-block mx-auto" alt="LEDit" style="max-width: 220px;">
+                <h1 class="card-title text-center mt-3 mb-1">Welcome to LEDit</h1>
+                <p class="text-center text-muted small mb-4">First-time setup — create your admin account and configure the display.</p>
+
+                {{if .error}}<div class="alert alert-danger">{{.error}}</div>{{end}}
+
+                <div class="d-flex align-items-center justify-content-center gap-2 mb-4 small text-muted">
+                    <span class="badge bg-primary">1</span> Admin account
+                    <span>—</span>
+                    <span class="badge bg-secondary">2</span> Display
+                    <span>—</span>
+                    <span class="badge bg-secondary">3</span> Done
+                </div>
+
+                <form method="POST" action="/setup">
+                    <h5 class="mb-3">Admin account</h5>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{.username}}" required autocomplete="username" autofocus>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required autocomplete="new-password" minlength="4" placeholder="At least 4 characters">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="confirm_password" class="form-label">Confirm password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required autocomplete="new-password" minlength="4">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h5 class="mb-3">Display</h5>
+                    <p class="small text-muted">You can change these later in <strong>Settings</strong>. Defaults work for a 64×64 panel.</p>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="width" class="form-label">Width (px)</label>
+                            <input type="number" class="form-control" id="width" name="width" value="{{.width}}" min="1" max="512" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="height" class="form-label">Height (px)</label>
+                            <input type="number" class="form-control" id="height" name="height" value="{{.height}}" min="1" max="512" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="timeout" class="form-label">Timeout (s)</label>
+                            <input type="number" step="0.1" class="form-control" id="timeout" name="timeout" value="{{.timeout}}" min="0.1" max="3600" required>
+                        </div>
+                    </div>
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" class="form-check-input" id="random" name="random" {{if .random}}checked{{end}}>
+                        <label for="random" class="form-check-label">Shuffle sources (random order)</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 btn-lg">Complete setup &amp; continue to login</button>
+                    <p class="text-center small text-muted mt-3 mb-0">You will be asked to log in with the credentials you just created.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+<script type="module" src="/static/assets/app.js"></script>
+</body>
+</html>

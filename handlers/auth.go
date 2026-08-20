@@ -56,6 +56,9 @@ func (s *Server) LoginPage(c *gin.Context) {
 	if c.Query("reset") == "1" {
 		data["info"] = "Password reset successfully. Please log in with your new password."
 	}
+	if c.Query("setup") == "1" {
+		data["info"] = "Setup complete. Please log in with your new credentials."
+	}
 	c.HTML(http.StatusOK, "login.html", data)
 }
 
