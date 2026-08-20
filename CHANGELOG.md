@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/martynvdijke/LEDit/compare/v1.21.0...v1.22.0) (2026-08-20)
+
+
+### Features
+
+* gate feed details behind auth ([babddd9](https://github.com/martynvdijke/LEDit/commit/babddd91e1f7cdea9480790139458310169f4350))
+
 # [1.21.0](https://github.com/martynvdijke/LEDit/compare/v1.20.0...v1.21.0) (2026-08-20)
 
 
