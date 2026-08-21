@@ -79,6 +79,16 @@ test.describe('Sidebar Navigation', () => {
     await page.getByRole('link', { name: 'Dashboard', exact: true }).click();
     await expect(page).toHaveURL('/admin/');
   });
+
+  test('hamburger toggle opens the sidebar on mobile admin pages', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/admin/');
+    const toggle = page.getByRole('button', { name: /Open navigation/ });
+    await expect(toggle).toBeVisible();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect.poll(async () => (await page.locator('.sidebar').boundingBox())?.x ?? -999).toBe(0);
+  });
 });
 
 test.describe('Datasource Forms', () => {

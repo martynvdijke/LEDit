@@ -1,6 +1,8 @@
 import './styles.css';
 
-const shell = document.querySelector<HTMLElement>('[data-app-shell]');
+// Fall back to <body> when the page has no app shell (standalone admin
+// layouts) so the nav-open class still lands on an ancestor of the sidebar.
+const shell = document.querySelector<HTMLElement>('[data-app-shell]') ?? document.body;
 const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
 const nav = document.querySelector<HTMLElement>('[data-nav]');
 
