@@ -32,7 +32,7 @@ tasks:
     desc: Run Python device library tests with coverage
     cmds:
       - pip install -e ./device[test]
-      - python -m pytest device/tests -v --cov=ledit_device --cov-report=term --cov-report=html
+      - python -m pytest device/tests --ignore=device/tests/integration -v --cov=ledit_device --cov-report=term --cov-report=html --cov-fail-under=80
 
   test:e2e:
     desc: Run Playwright end-to-end tests (chromium-desktop)

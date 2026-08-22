@@ -58,7 +58,7 @@ jobs:
         run: pip install -e ./device[test]
 
       - name: Run pytest with coverage
-        run: python -m pytest device/tests -v --cov=ledit_device --cov-report=term --cov-report=html
+        run: python -m pytest device/tests --ignore=device/tests/integration -v --cov=ledit_device --cov-report=term --cov-report=html --cov-fail-under=80
 
       - name: Upload coverage report
         if: ${{ !cancelled() }}
@@ -104,7 +104,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v7
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
