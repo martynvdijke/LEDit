@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/martynvdijke/LEDit/compare/v1.22.1...v1.23.0) (2026-08-22)
+
+
+### Features
+
+* pixel art datasource schema, codegen and renderer foundation ([8decbe3](https://github.com/martynvdijke/LEDit/commit/8decbe3246ed45680afc5c16b368e34875e7cf6b))
+
 ## [1.22.1](https://github.com/martynvdijke/LEDit/compare/v1.22.0...v1.22.1) (2026-08-22)
 
 
