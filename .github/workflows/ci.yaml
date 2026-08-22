@@ -65,7 +65,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-html
-          path: device/htmlcov/
+          path: htmlcov/
           retention-days: 7
 
       - name: Upload FileDisplay PNGs on failure
