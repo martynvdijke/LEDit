@@ -43,7 +43,7 @@ func TestMain(m *testing.M) {
 }
 
 func openTestDB(t *testing.T) *sql.Driver {
-	drv, err := sql.Open(dialect.SQLite, "file:test.db?cache=shared&_fk=1&mode=memory")
+	drv, err := sql.Open(dialect.SQLite, "file:test.db?cache=shared&_fk=1&_busy_timeout=5000&mode=memory")
 	if err != nil {
 		t.Fatalf("Failed to open test database: %v", err)
 	}

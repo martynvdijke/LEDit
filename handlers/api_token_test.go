@@ -17,7 +17,7 @@ import (
 // newAPITokenTestServer builds a full Server against an in-memory SQLite DB.
 func newAPITokenTestServer(t *testing.T) *Server {
 	t.Helper()
-	drv, err := sql.Open(dialect.SQLite, "file:apitoken_test.db?cache=shared&_fk=1&mode=memory")
+	drv, err := sql.Open(dialect.SQLite, "file:apitoken_test.db?cache=shared&_fk=1&_busy_timeout=5000&mode=memory")
 	if err != nil {
 		t.Fatalf("failed to open test db: %v", err)
 	}

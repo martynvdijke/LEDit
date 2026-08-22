@@ -24,11 +24,16 @@ import (
 // gets its own uniquely-named in-memory database.
 func previewTestServer(t *testing.T) (*httptest.Server, *ent.Client) {
 	t.Helper()
-	dsn := fmt.Sprintf("file:%s?cache=shared&_fk=1&mode=memory", strings.ReplaceAll(t.Name(), "/", "_"))
+	dsn := fmt.Sprintf("file:%s?cache=shared&_fk=1&_busy_timeout=5000&mode=memory", strings.ReplaceAll(t.Name(), "/", "_"))
 	drv, err := sql.Open(dialect.SQLite, dsn)
 	if err != nil {
 		t.Fatalf("open test db: %v", err)
 	}
+	// Serialize all access through one connection: shared-cache in-memory
+	// SQLite reports "database table is locked" (SQLITE_LOCKED) when pooled
+	// connections race — e.g. the device feed goroutine writing last_seen_at
+	// while the test reads — and _busy_timeout does not retry SQLITE_LOCKED.
+	drv.DB().SetMaxOpenConns(1)
 	client := enttest.NewClient(t, enttest.WithOptions(ent.Driver(drv)))
 	t.Cleanup(func() { client.Close() })
 

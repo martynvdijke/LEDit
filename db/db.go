@@ -12,5 +12,5 @@ func DSN() string {
 	}
 	dbPath := filepath.Join(dbDir, "ledit.db")
 	os.MkdirAll(dbDir, 0755)
-	return dbPath + "?cache=shared&_fk=1"
+	return dbPath + "?cache=shared&_fk=1&_busy_timeout=5000"
 }

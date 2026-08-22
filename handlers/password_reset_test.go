@@ -20,7 +20,7 @@ import (
 // initAdminSettings creates the admin account (admin/ledit) and enables auth.
 func newResetTestServer(t *testing.T) *Server {
 	t.Helper()
-	drv, err := sql.Open(dialect.SQLite, "file:test.db?cache=shared&_fk=1&mode=memory")
+	drv, err := sql.Open(dialect.SQLite, "file:test.db?cache=shared&_fk=1&_busy_timeout=5000&mode=memory")
 	if err != nil {
 		t.Fatalf("failed to open test database: %v", err)
 	}
