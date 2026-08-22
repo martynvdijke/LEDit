@@ -1,3 +1,11 @@
+## [1.22.1](https://github.com/martynvdijke/LEDit/compare/v1.22.0...v1.22.1) (2026-08-22)
+
+
+### Bug Fixes
+
+* hamburger menu on admin pages after login ([67c5237](https://github.com/martynvdijke/LEDit/commit/67c5237d5af9acacd8b653f685ae4d75cfbee082))
+* serialize test SQLite connections to stop database-is-locked flakes ([055a54f](https://github.com/martynvdijke/LEDit/commit/055a54f96df3db2163f0dc803ae2a7945bd15914))
+
 # [1.22.0](https://github.com/martynvdijke/LEDit/compare/v1.21.0...v1.22.0) (2026-08-20)
 
 
