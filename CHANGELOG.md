@@ -1,3 +1,16 @@
+# [1.24.0](https://github.com/martynvdijke/LEDit/compare/v1.23.0...v1.24.0) (2026-08-22)
+
+
+### Bug Fixes
+
+* ci cache version, pytest isolation, harness portability ([10316ce](https://github.com/martynvdijke/LEDit/commit/10316cea9931498e61b8d4e562a2b647c950dfef))
+* ci playwright/integration failures ([20074c0](https://github.com/martynvdijke/LEDit/commit/20074c031557ef5ac0ef8430a21a53532aa250e5))
+
+
+### Features
+
+* playwright/python integration test harness with ephemeral server and CI sharding ([cee8b9f](https://github.com/martynvdijke/LEDit/commit/cee8b9f900b3fda9db1ad2bec2f33371c95bf8ca))
+
 # [1.23.0](https://github.com/martynvdijke/LEDit/compare/v1.22.1...v1.23.0) (2026-08-22)
 
 
