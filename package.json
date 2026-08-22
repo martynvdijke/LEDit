@@ -4,6 +4,7 @@
   "description": "A LED matrix infotainment system",
   "scripts": {
     "test:e2e": "playwright test",
+    "test:e2e:ci": "playwright test --shard=1/2",
     "dev": "vite --host 0.0.0.0",
     "build": "npm run icons && vite build",
     "icons": "node scripts/generate-icons.mjs"

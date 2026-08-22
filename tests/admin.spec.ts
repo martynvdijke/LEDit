@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Admin Dashboard', () => {
   test('should load the admin dashboard', async ({ page }) => {
@@ -37,6 +37,50 @@ test.describe('Admin Settings', () => {
     await page.getByRole('button', { name: 'Save' }).click();
     await page.waitForURL('/admin/');
     await expect(page.locator('h1')).toContainText('Admin Dashboard');
+  });
+});
+
+test.describe('GeneralSettings persistence', () => {
+  test('settings persistence round-trip', async ({ page }) => {
+    await page.goto('/admin/settings');
+    await page.locator('#timeout').fill('7');
+    await page.locator('#width').fill('128');
+    await page.locator('#height').fill('32');
+    // ensure random unchecked
+    await page.locator('#random').uncheck().catch(() => {});
+    await page.getByRole('button', { name: 'Save' }).click();
+    await page.waitForURL('/admin/');
+    await expect(page.getByText('No settings configured')).toBeHidden();
+    await page.goto('/admin/settings');
+    await expect(page.locator('#timeout')).toHaveValue('7');
+    await expect(page.locator('#width')).toHaveValue('128');
+    await expect(page.locator('#height')).toHaveValue('32');
+  });
+
+  test('auth disabled access', async ({ page }) => {
+    const res = await page.request.get('/admin/');
+    expect(res.status()).toBe(200);
+    await page.goto('/admin/');
+    await expect(page.locator('h1')).toContainText('Admin Dashboard');
+  });
+
+  test('validation rejects invalid width', async ({ page }) => {
+    await page.goto('/admin/settings');
+    await page.locator('#timeout').fill('5');
+    await page.locator('#width').fill('0');
+    await page.locator('#height').fill('64');
+    await page.getByRole('button', { name: 'Save' }).click();
+    // Should stay on settings or show flash danger
+    await expect(page).toHaveURL(/\/admin\/settings/);
+  });
+
+  test('validation rejects invalid timeout', async ({ page }) => {
+    await page.goto('/admin/settings');
+    await page.locator('#timeout').fill('0');
+    await page.locator('#width').fill('64');
+    await page.locator('#height').fill('64');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page).toHaveURL(/\/admin\/settings/);
   });
 });
 

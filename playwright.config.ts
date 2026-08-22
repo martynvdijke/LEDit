@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://127.0.0.1:8080',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:8080',
     trace: 'on-first-retry',
   },
   projects: [
@@ -20,10 +20,19 @@ export default defineConfig({
       name: 'firefox-desktop',
       use: { ...devices['Desktop Firefox'] },
     },
+    ...(process.env.PLAYWRIGHT_INTEGRATION
+      ? [
+          {
+            name: 'integration',
+            use: { baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:8080' },
+            testDir: './tests',
+          } as const,
+        ]
+      : []),
   ],
   webServer: {
     command: 'rm -rf data && LEDIT_AUTH_DISABLE=true ./ledit',
-    url: 'http://127.0.0.1:8080',
+    url: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:8080',
     reuseExistingServer: !process.env.CI,
   },
 });

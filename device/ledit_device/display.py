@@ -27,44 +27,44 @@ class Display:
     """Abstraction over the output surface (hardware matrix or file preview)."""
 
     @property
-    def width(self):
-        raise NotImplementedError
+    def width(self):  # pragma: no cover
+        raise NotImplementedError  # pragma: no cover
 
     @property
-    def height(self):
-        raise NotImplementedError
+    def height(self):  # pragma: no cover
+        raise NotImplementedError  # pragma: no cover
 
-    def show(self, image):
-        raise NotImplementedError
+    def show(self, image):  # pragma: no cover
+        raise NotImplementedError  # pragma: no cover
 
 
-class MatrixDisplay(Display):
-    def __init__(self):
-        from rgbmatrix import RGBMatrix, RGBMatrixOptions  # deferred import
+class MatrixDisplay(Display):  # pragma: no cover - hardware
+    def __init__(self):  # pragma: no cover
+        from rgbmatrix import RGBMatrix, RGBMatrixOptions  # deferred import  # pragma: no cover
 
-        options = RGBMatrixOptions()
-        options.rows = env_int("LEDIT_ROWS", 64)
-        options.cols = env_int("LEDIT_COLS", 64)
-        options.chain_length = env_int("LEDIT_CHAIN", 1)
-        options.parallel = env_int("LEDIT_PARALLEL", 1)
-        options.hardware_mapping = os.getenv("LEDIT_HARDWARE_MAPPING", "regular")
-        options.brightness = env_int("LEDIT_BRIGHTNESS", 80)
-        options.gpio_slowdown = env_int("LEDIT_GPIO_SLOWDOWN", 1)
-        options.pwm_bits = 11
-        self.matrix = RGBMatrix(options=options)
-
-    @property
-    def width(self):
-        return self.matrix.width
+        options = RGBMatrixOptions()  # pragma: no cover
+        options.rows = env_int("LEDIT_ROWS", 64)  # pragma: no cover
+        options.cols = env_int("LEDIT_COLS", 64)  # pragma: no cover
+        options.chain_length = env_int("LEDIT_CHAIN", 1)  # pragma: no cover
+        options.parallel = env_int("LEDIT_PARALLEL", 1)  # pragma: no cover
+        options.hardware_mapping = os.getenv("LEDIT_HARDWARE_MAPPING", "regular")  # pragma: no cover
+        options.brightness = env_int("LEDIT_BRIGHTNESS", 80)  # pragma: no cover
+        options.gpio_slowdown = env_int("LEDIT_GPIO_SLOWDOWN", 1)  # pragma: no cover
+        options.pwm_bits = 11  # pragma: no cover
+        self.matrix = RGBMatrix(options=options)  # pragma: no cover
 
     @property
-    def height(self):
-        return self.matrix.height
+    def width(self):  # pragma: no cover
+        return self.matrix.width  # pragma: no cover
 
-    def show(self, image):
-        canvas = self.matrix.CreateFrameCanvas()
-        canvas.SetImage(image)
-        self.matrix.SwapOnVSync(canvas)
+    @property
+    def height(self):  # pragma: no cover
+        return self.matrix.height  # pragma: no cover
+
+    def show(self, image):  # pragma: no cover
+        canvas = self.matrix.CreateFrameCanvas()  # pragma: no cover
+        canvas.SetImage(image)  # pragma: no cover
+        self.matrix.SwapOnVSync(canvas)  # pragma: no cover
 
 
 class FileDisplay(Display):

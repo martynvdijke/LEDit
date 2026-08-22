@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -488,7 +489,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 
 			msg := map[string]any{
 				"format": img.Format,
-				"image":  string(img.Data),
+				"image":  base64.StdEncoding.EncodeToString(img.Data),
 				"source": sw.Name,
 				"next":   nextName,
 			}

@@ -19,8 +19,23 @@ dependencies = [
     "opentelemetry-instrumentation-logging>=0.45b0",
 ]
 
+[project.optional-dependencies]
+test = ["pytest>=8","pytest-cov>=5","pytest-asyncio","websockets>=12"]
+
 [project.scripts]
 ledit-device = "ledit_device.__main__:main"
 
 [tool.setuptools]
 packages = ["ledit_device"]
+
+[tool.coverage.run]
+omit = ["device/tests/*"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]

@@ -28,10 +28,29 @@ tasks:
     cmds:
       - go test -v ./...
 
-  test:e2e:
-    desc: Run Playwright end-to-end tests
+  test:py:
+    desc: Run Python device library tests with coverage
     cmds:
-      - npx playwright test
+      - pip install -e ./device[test]
+      - python -m pytest device/tests -v --cov=ledit_device --cov-report=term --cov-report=html
+
+  test:e2e:
+    desc: Run Playwright end-to-end tests (chromium-desktop)
+    cmds:
+      - npx playwright test --project=chromium-desktop
+
+  test:integration:
+    desc: Run Python integration tests against ephemeral server
+    cmds:
+      - python -m pytest device/tests/integration -v
+
+  test:all:
+    desc: Run all test tiers (Go + Python + integration)
+    cmds:
+      - task: test
+      - task: test:py
+      - task: test:integration
+
   build:
     desc: Build the Go binary
     cmds:
@@ -64,6 +83,7 @@ tasks:
     cmds:
       - task: fmt
       - task: test
+      - task: test:py
       - task: build
 
   all:

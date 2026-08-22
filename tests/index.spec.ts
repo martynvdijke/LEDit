@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Index / Live Feed', () => {
   test('should load the index page', async ({ page }) => {
@@ -84,5 +84,13 @@ test.describe('Index / Live Feed', () => {
       // Auth disabled (webServer uses LEDIT_AUTH_DISABLE=true) — feed should be visible
       await expect(page.locator('#source-label')).toBeVisible();
     }
+  });
+
+  test('wsFeed helper receives PNG frame', async ({ page, wsFeed }) => {
+    await page.goto('/');
+    const feed = await wsFeed('/ws/feed');
+    const frame = await feed.nextFrame(8000);
+    expect(frame.format).toBe('PNG');
+    expect(typeof frame.image).toBe('string');
   });
 });
