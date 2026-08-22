@@ -459,6 +459,33 @@ var (
 		Columns:    NotificationsColumns,
 		PrimaryKey: []*schema.Column{NotificationsColumns[0]},
 	}
+	// PixelArtsColumns holds the columns for the "pixel_arts" table.
+	PixelArtsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "grid_width", Type: field.TypeInt, Default: 32},
+		{Name: "grid_height", Type: field.TypeInt, Default: 32},
+		{Name: "frames", Type: field.TypeString, Size: 2147483647, Default: "{}"},
+		{Name: "bindings", Type: field.TypeString, Size: 2147483647, Default: "{}"},
+		{Name: "api_url", Type: field.TypeString, Default: ""},
+		{Name: "api_token", Type: field.TypeString, Default: ""},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "general_settings_pixel_arts", Type: field.TypeInt, Nullable: true},
+	}
+	// PixelArtsTable holds the schema information for the "pixel_arts" table.
+	PixelArtsTable = &schema.Table{
+		Name:       "pixel_arts",
+		Columns:    PixelArtsColumns,
+		PrimaryKey: []*schema.Column{PixelArtsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "pixel_arts_general_settings_pixel_arts",
+				Columns:    []*schema.Column{PixelArtsColumns[9]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// RadarrsColumns holds the columns for the "radarrs" table.
 	RadarrsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -695,6 +722,7 @@ var (
 		MatrixLayoutsTable,
 		NewsFeedsTable,
 		NotificationsTable,
+		PixelArtsTable,
 		RadarrsTable,
 		RssFeedsTable,
 		SchedulesTable,
@@ -724,6 +752,7 @@ func init() {
 	ImagesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	MatrixLayoutsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	NewsFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	PixelArtsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RadarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RssFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SchedulesTable.ForeignKeys[0].RefTable = GeneralSettingsTable

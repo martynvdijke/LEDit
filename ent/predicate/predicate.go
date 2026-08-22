@@ -69,6 +69,9 @@ type NewsFeed func(*sql.Selector)
 // Notification is the predicate function for notification builders.
 type Notification func(*sql.Selector)
 
+// PixelArt is the predicate function for pixelart builders.
+type PixelArt func(*sql.Selector)
+
 // Radarr is the predicate function for radarr builders.
 type Radarr func(*sql.Selector)
 

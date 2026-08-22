@@ -32,6 +32,7 @@ import (
 	"ledit/ent/matrixlayout"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/pixelart"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -96,6 +97,8 @@ type Client struct {
 	NewsFeed *NewsFeedClient
 	// Notification is the client for interacting with the Notification builders.
 	Notification *NotificationClient
+	// PixelArt is the client for interacting with the PixelArt builders.
+	PixelArt *PixelArtClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
 	// RssFeed is the client for interacting with the RssFeed builders.
@@ -148,6 +151,7 @@ func (c *Client) init() {
 	c.MatrixLayout = NewMatrixLayoutClient(c.config)
 	c.NewsFeed = NewNewsFeedClient(c.config)
 	c.Notification = NewNotificationClient(c.config)
+	c.PixelArt = NewPixelArtClient(c.config)
 	c.Radarr = NewRadarrClient(c.config)
 	c.RssFeed = NewRssFeedClient(c.config)
 	c.Schedule = NewScheduleClient(c.config)
@@ -271,6 +275,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MatrixLayout:    NewMatrixLayoutClient(cfg),
 		NewsFeed:        NewNewsFeedClient(cfg),
 		Notification:    NewNotificationClient(cfg),
+		PixelArt:        NewPixelArtClient(cfg),
 		Radarr:          NewRadarrClient(cfg),
 		RssFeed:         NewRssFeedClient(cfg),
 		Schedule:        NewScheduleClient(cfg),
@@ -321,6 +326,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MatrixLayout:    NewMatrixLayoutClient(cfg),
 		NewsFeed:        NewNewsFeedClient(cfg),
 		Notification:    NewNotificationClient(cfg),
+		PixelArt:        NewPixelArtClient(cfg),
 		Radarr:          NewRadarrClient(cfg),
 		RssFeed:         NewRssFeedClient(cfg),
 		Schedule:        NewScheduleClient(cfg),
@@ -364,7 +370,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GoogleCalendar, c.HomeAssistant, c.Image,
 		c.LogEntry, c.LogSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
-		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
+		c.PixelArt, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
 		c.UmamiSettings, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Use(hooks...)
@@ -379,7 +385,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GoogleCalendar, c.HomeAssistant, c.Image,
 		c.LogEntry, c.LogSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
-		c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
+		c.PixelArt, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
 		c.UmamiSettings, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Intercept(interceptors...)
@@ -431,6 +437,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.NewsFeed.mutate(ctx, m)
 	case *NotificationMutation:
 		return c.Notification.mutate(ctx, m)
+	case *PixelArtMutation:
+		return c.PixelArt.mutate(ctx, m)
 	case *RadarrMutation:
 		return c.Radarr.mutate(ctx, m)
 	case *RssFeedMutation:
@@ -2427,6 +2435,22 @@ func (c *GeneralSettingsClient) QueryAlertSettings(_m *GeneralSettings) *AlertSe
 	return query
 }
 
+// QueryPixelArts queries the pixel_arts edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryPixelArts(_m *GeneralSettings) *PixelArtQuery {
+	query := (&PixelArtClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(pixelart.Table, pixelart.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.PixelArtsTable, generalsettings.PixelArtsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GeneralSettingsClient) Hooks() []Hook {
 	return c.hooks.GeneralSettings
@@ -3646,6 +3670,139 @@ func (c *NotificationClient) mutate(ctx context.Context, m *NotificationMutation
 		return (&NotificationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Notification mutation op: %q", m.Op())
+	}
+}
+
+// PixelArtClient is a client for the PixelArt schema.
+type PixelArtClient struct {
+	config
+}
+
+// NewPixelArtClient returns a client for the PixelArt from the given config.
+func NewPixelArtClient(c config) *PixelArtClient {
+	return &PixelArtClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `pixelart.Hooks(f(g(h())))`.
+func (c *PixelArtClient) Use(hooks ...Hook) {
+	c.hooks.PixelArt = append(c.hooks.PixelArt, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `pixelart.Intercept(f(g(h())))`.
+func (c *PixelArtClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PixelArt = append(c.inters.PixelArt, interceptors...)
+}
+
+// Create returns a builder for creating a PixelArt entity.
+func (c *PixelArtClient) Create() *PixelArtCreate {
+	mutation := newPixelArtMutation(c.config, OpCreate)
+	return &PixelArtCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PixelArt entities.
+func (c *PixelArtClient) CreateBulk(builders ...*PixelArtCreate) *PixelArtCreateBulk {
+	return &PixelArtCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PixelArtClient) MapCreateBulk(slice any, setFunc func(*PixelArtCreate, int)) *PixelArtCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PixelArtCreateBulk{err: fmt.Errorf("calling to PixelArtClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PixelArtCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PixelArtCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PixelArt.
+func (c *PixelArtClient) Update() *PixelArtUpdate {
+	mutation := newPixelArtMutation(c.config, OpUpdate)
+	return &PixelArtUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PixelArtClient) UpdateOne(_m *PixelArt) *PixelArtUpdateOne {
+	mutation := newPixelArtMutation(c.config, OpUpdateOne, withPixelArt(_m))
+	return &PixelArtUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PixelArtClient) UpdateOneID(id int) *PixelArtUpdateOne {
+	mutation := newPixelArtMutation(c.config, OpUpdateOne, withPixelArtID(id))
+	return &PixelArtUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PixelArt.
+func (c *PixelArtClient) Delete() *PixelArtDelete {
+	mutation := newPixelArtMutation(c.config, OpDelete)
+	return &PixelArtDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PixelArtClient) DeleteOne(_m *PixelArt) *PixelArtDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PixelArtClient) DeleteOneID(id int) *PixelArtDeleteOne {
+	builder := c.Delete().Where(pixelart.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PixelArtDeleteOne{builder}
+}
+
+// Query returns a query builder for PixelArt.
+func (c *PixelArtClient) Query() *PixelArtQuery {
+	return &PixelArtQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePixelArt},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PixelArt entity by its id.
+func (c *PixelArtClient) Get(ctx context.Context, id int) (*PixelArt, error) {
+	return c.Query().Where(pixelart.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PixelArtClient) GetX(ctx context.Context, id int) *PixelArt {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *PixelArtClient) Hooks() []Hook {
+	return c.hooks.PixelArt
+}
+
+// Interceptors returns the client interceptors.
+func (c *PixelArtClient) Interceptors() []Interceptor {
+	return c.inters.PixelArt
+}
+
+func (c *PixelArtClient) mutate(ctx context.Context, m *PixelArtMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PixelArtCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PixelArtUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PixelArtUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PixelArtDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PixelArt mutation op: %q", m.Op())
 	}
 }
 
@@ -4985,14 +5142,15 @@ type (
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		Countdown, Crypto, DeviceSettings, EmailSettings, F1, GeneralSettings,
 		GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry, LogSettings,
-		MatrixLayout, NewsFeed, Notification, Radarr, RssFeed, Schedule, Sonarr, Stock,
-		TextSlide, UmamiSettings, Untappd, Video, Weather []ent.Hook
+		MatrixLayout, NewsFeed, Notification, PixelArt, Radarr, RssFeed, Schedule,
+		Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video, Weather []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		Countdown, Crypto, DeviceSettings, EmailSettings, F1, GeneralSettings,
 		GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry, LogSettings,
-		MatrixLayout, NewsFeed, Notification, Radarr, RssFeed, Schedule, Sonarr, Stock,
-		TextSlide, UmamiSettings, Untappd, Video, Weather []ent.Interceptor
+		MatrixLayout, NewsFeed, Notification, PixelArt, Radarr, RssFeed, Schedule,
+		Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
+		Weather []ent.Interceptor
 	}
 )

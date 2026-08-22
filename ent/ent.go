@@ -27,6 +27,7 @@ import (
 	"ledit/ent/matrixlayout"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/pixelart"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -124,6 +125,7 @@ func checkColumn(t, c string) error {
 			matrixlayout.Table:    matrixlayout.ValidColumn,
 			newsfeed.Table:        newsfeed.ValidColumn,
 			notification.Table:    notification.ValidColumn,
+			pixelart.Table:        pixelart.ValidColumn,
 			radarr.Table:          radarr.ValidColumn,
 			rssfeed.Table:         rssfeed.ValidColumn,
 			schedule.Table:        schedule.ValidColumn,

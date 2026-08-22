@@ -884,6 +884,29 @@ func HasAlertSettingsWith(preds ...predicate.AlertSettings) predicate.GeneralSet
 	})
 }
 
+// HasPixelArts applies the HasEdge predicate on the "pixel_arts" edge.
+func HasPixelArts() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PixelArtsTable, PixelArtsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPixelArtsWith applies the HasEdge predicate on the "pixel_arts" edge with a given conditions (other predicates).
+func HasPixelArtsWith(preds ...predicate.PixelArt) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newPixelArtsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.GeneralSettings) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.AndPredicates(predicates...))

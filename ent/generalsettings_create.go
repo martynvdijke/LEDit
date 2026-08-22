@@ -22,6 +22,7 @@ import (
 	"ledit/ent/image"
 	"ledit/ent/matrixlayout"
 	"ledit/ent/newsfeed"
+	"ledit/ent/pixelart"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -485,6 +486,21 @@ func (_c *GeneralSettingsCreate) AddAlertSettings(v ...*AlertSettings) *GeneralS
 		ids[i] = v[i].ID
 	}
 	return _c.AddAlertSettingIDs(ids...)
+}
+
+// AddPixelArtIDs adds the "pixel_arts" edge to the PixelArt entity by IDs.
+func (_c *GeneralSettingsCreate) AddPixelArtIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddPixelArtIDs(ids...)
+	return _c
+}
+
+// AddPixelArts adds the "pixel_arts" edges to the PixelArt entity.
+func (_c *GeneralSettingsCreate) AddPixelArts(v ...*PixelArt) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddPixelArtIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -997,6 +1013,22 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(alertsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.PixelArtsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PixelArtsTable,
+			Columns: []string{generalsettings.PixelArtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pixelart.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

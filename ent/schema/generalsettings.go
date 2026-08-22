@@ -48,5 +48,6 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("countdowns", Countdown.Type),
 		edge.To("ai_digests", AIDigest.Type),
 		edge.To("alert_settings", AlertSettings.Type),
+		edge.To("pixel_arts", PixelArt.Type),
 	}
 }

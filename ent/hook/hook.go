@@ -260,6 +260,18 @@ func (f NotificationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NotificationMutation", m)
 }
 
+// The PixelArtFunc type is an adapter to allow the use of ordinary
+// function as PixelArt mutator.
+type PixelArtFunc func(context.Context, *ent.PixelArtMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PixelArtFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PixelArtMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PixelArtMutation", m)
+}
+
 // The RadarrFunc type is an adapter to allow the use of ordinary
 // function as Radarr mutator.
 type RadarrFunc func(context.Context, *ent.RadarrMutation) (ent.Value, error)

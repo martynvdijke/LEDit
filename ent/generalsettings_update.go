@@ -22,6 +22,7 @@ import (
 	"ledit/ent/image"
 	"ledit/ent/matrixlayout"
 	"ledit/ent/newsfeed"
+	"ledit/ent/pixelart"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -542,6 +543,21 @@ func (_u *GeneralSettingsUpdate) AddAlertSettings(v ...*AlertSettings) *GeneralS
 		ids[i] = v[i].ID
 	}
 	return _u.AddAlertSettingIDs(ids...)
+}
+
+// AddPixelArtIDs adds the "pixel_arts" edge to the PixelArt entity by IDs.
+func (_u *GeneralSettingsUpdate) AddPixelArtIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddPixelArtIDs(ids...)
+	return _u
+}
+
+// AddPixelArts adds the "pixel_arts" edges to the PixelArt entity.
+func (_u *GeneralSettingsUpdate) AddPixelArts(v ...*PixelArt) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPixelArtIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -1072,6 +1088,27 @@ func (_u *GeneralSettingsUpdate) RemoveAlertSettings(v ...*AlertSettings) *Gener
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAlertSettingIDs(ids...)
+}
+
+// ClearPixelArts clears all "pixel_arts" edges to the PixelArt entity.
+func (_u *GeneralSettingsUpdate) ClearPixelArts() *GeneralSettingsUpdate {
+	_u.mutation.ClearPixelArts()
+	return _u
+}
+
+// RemovePixelArtIDs removes the "pixel_arts" edge to PixelArt entities by IDs.
+func (_u *GeneralSettingsUpdate) RemovePixelArtIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemovePixelArtIDs(ids...)
+	return _u
+}
+
+// RemovePixelArts removes "pixel_arts" edges to PixelArt entities.
+func (_u *GeneralSettingsUpdate) RemovePixelArts(v ...*PixelArt) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePixelArtIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -2268,6 +2305,51 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.PixelArtsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PixelArtsTable,
+			Columns: []string{generalsettings.PixelArtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pixelart.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPixelArtsIDs(); len(nodes) > 0 && !_u.mutation.PixelArtsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PixelArtsTable,
+			Columns: []string{generalsettings.PixelArtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pixelart.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PixelArtsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PixelArtsTable,
+			Columns: []string{generalsettings.PixelArtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pixelart.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -2778,6 +2860,21 @@ func (_u *GeneralSettingsUpdateOne) AddAlertSettings(v ...*AlertSettings) *Gener
 		ids[i] = v[i].ID
 	}
 	return _u.AddAlertSettingIDs(ids...)
+}
+
+// AddPixelArtIDs adds the "pixel_arts" edge to the PixelArt entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddPixelArtIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddPixelArtIDs(ids...)
+	return _u
+}
+
+// AddPixelArts adds the "pixel_arts" edges to the PixelArt entity.
+func (_u *GeneralSettingsUpdateOne) AddPixelArts(v ...*PixelArt) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPixelArtIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -3308,6 +3405,27 @@ func (_u *GeneralSettingsUpdateOne) RemoveAlertSettings(v ...*AlertSettings) *Ge
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAlertSettingIDs(ids...)
+}
+
+// ClearPixelArts clears all "pixel_arts" edges to the PixelArt entity.
+func (_u *GeneralSettingsUpdateOne) ClearPixelArts() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearPixelArts()
+	return _u
+}
+
+// RemovePixelArtIDs removes the "pixel_arts" edge to PixelArt entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemovePixelArtIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemovePixelArtIDs(ids...)
+	return _u
+}
+
+// RemovePixelArts removes "pixel_arts" edges to PixelArt entities.
+func (_u *GeneralSettingsUpdateOne) RemovePixelArts(v ...*PixelArt) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePixelArtIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -4527,6 +4645,51 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(alertsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PixelArtsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PixelArtsTable,
+			Columns: []string{generalsettings.PixelArtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pixelart.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPixelArtsIDs(); len(nodes) > 0 && !_u.mutation.PixelArtsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PixelArtsTable,
+			Columns: []string{generalsettings.PixelArtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pixelart.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PixelArtsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PixelArtsTable,
+			Columns: []string{generalsettings.PixelArtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pixelart.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

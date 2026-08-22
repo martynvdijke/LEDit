@@ -21,6 +21,7 @@ import (
 	"ledit/ent/matrixlayout"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/pixelart"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -305,6 +306,36 @@ func init() {
 	notificationDescMessage := notificationFields[2].Descriptor()
 	// notification.DefaultMessage holds the default value on creation for the message field.
 	notification.DefaultMessage = notificationDescMessage.Default.(string)
+	pixelartFields := schema.PixelArt{}.Fields()
+	_ = pixelartFields
+	// pixelartDescGridWidth is the schema descriptor for grid_width field.
+	pixelartDescGridWidth := pixelartFields[1].Descriptor()
+	// pixelart.DefaultGridWidth holds the default value on creation for the grid_width field.
+	pixelart.DefaultGridWidth = pixelartDescGridWidth.Default.(int)
+	// pixelartDescGridHeight is the schema descriptor for grid_height field.
+	pixelartDescGridHeight := pixelartFields[2].Descriptor()
+	// pixelart.DefaultGridHeight holds the default value on creation for the grid_height field.
+	pixelart.DefaultGridHeight = pixelartDescGridHeight.Default.(int)
+	// pixelartDescFrames is the schema descriptor for frames field.
+	pixelartDescFrames := pixelartFields[3].Descriptor()
+	// pixelart.DefaultFrames holds the default value on creation for the frames field.
+	pixelart.DefaultFrames = pixelartDescFrames.Default.(string)
+	// pixelartDescBindings is the schema descriptor for bindings field.
+	pixelartDescBindings := pixelartFields[4].Descriptor()
+	// pixelart.DefaultBindings holds the default value on creation for the bindings field.
+	pixelart.DefaultBindings = pixelartDescBindings.Default.(string)
+	// pixelartDescAPIURL is the schema descriptor for api_url field.
+	pixelartDescAPIURL := pixelartFields[5].Descriptor()
+	// pixelart.DefaultAPIURL holds the default value on creation for the api_url field.
+	pixelart.DefaultAPIURL = pixelartDescAPIURL.Default.(string)
+	// pixelartDescAPIToken is the schema descriptor for api_token field.
+	pixelartDescAPIToken := pixelartFields[6].Descriptor()
+	// pixelart.DefaultAPIToken holds the default value on creation for the api_token field.
+	pixelart.DefaultAPIToken = pixelartDescAPIToken.Default.(string)
+	// pixelartDescEnabled is the schema descriptor for enabled field.
+	pixelartDescEnabled := pixelartFields[7].Descriptor()
+	// pixelart.DefaultEnabled holds the default value on creation for the enabled field.
+	pixelart.DefaultEnabled = pixelartDescEnabled.Default.(bool)
 	radarrFields := schema.Radarr{}.Fields()
 	_ = radarrFields
 	// radarrDescToken is the schema descriptor for token field.

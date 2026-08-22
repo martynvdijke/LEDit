@@ -27,6 +27,7 @@ import (
 	"ledit/ent/matrixlayout"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/pixelart"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -75,6 +76,7 @@ const (
 	TypeMatrixLayout    = "MatrixLayout"
 	TypeNewsFeed        = "NewsFeed"
 	TypeNotification    = "Notification"
+	TypePixelArt        = "PixelArt"
 	TypeRadarr          = "Radarr"
 	TypeRssFeed         = "RssFeed"
 	TypeSchedule        = "Schedule"
@@ -6804,6 +6806,9 @@ type GeneralSettingsMutation struct {
 	alert_settings          map[int]struct{}
 	removedalert_settings   map[int]struct{}
 	clearedalert_settings   bool
+	pixel_arts              map[int]struct{}
+	removedpixel_arts       map[int]struct{}
+	clearedpixel_arts       bool
 	done                    bool
 	oldValue                func(context.Context) (*GeneralSettings, error)
 	predicates              []predicate.GeneralSettings
@@ -8559,6 +8564,60 @@ func (m *GeneralSettingsMutation) ResetAlertSettings() {
 	m.removedalert_settings = nil
 }
 
+// AddPixelArtIDs adds the "pixel_arts" edge to the PixelArt entity by ids.
+func (m *GeneralSettingsMutation) AddPixelArtIDs(ids ...int) {
+	if m.pixel_arts == nil {
+		m.pixel_arts = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.pixel_arts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPixelArts clears the "pixel_arts" edge to the PixelArt entity.
+func (m *GeneralSettingsMutation) ClearPixelArts() {
+	m.clearedpixel_arts = true
+}
+
+// PixelArtsCleared reports if the "pixel_arts" edge to the PixelArt entity was cleared.
+func (m *GeneralSettingsMutation) PixelArtsCleared() bool {
+	return m.clearedpixel_arts
+}
+
+// RemovePixelArtIDs removes the "pixel_arts" edge to the PixelArt entity by IDs.
+func (m *GeneralSettingsMutation) RemovePixelArtIDs(ids ...int) {
+	if m.removedpixel_arts == nil {
+		m.removedpixel_arts = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.pixel_arts, ids[i])
+		m.removedpixel_arts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPixelArts returns the removed IDs of the "pixel_arts" edge to the PixelArt entity.
+func (m *GeneralSettingsMutation) RemovedPixelArtsIDs() (ids []int) {
+	for id := range m.removedpixel_arts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PixelArtsIDs returns the "pixel_arts" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) PixelArtsIDs() (ids []int) {
+	for id := range m.pixel_arts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPixelArts resets all changes to the "pixel_arts" edge.
+func (m *GeneralSettingsMutation) ResetPixelArts() {
+	m.pixel_arts = nil
+	m.clearedpixel_arts = false
+	m.removedpixel_arts = nil
+}
+
 // Where appends a list predicates to the GeneralSettingsMutation builder.
 func (m *GeneralSettingsMutation) Where(ps ...predicate.GeneralSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -8831,7 +8890,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 25)
+	edges := make([]string, 0, 26)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -8906,6 +8965,9 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.alert_settings != nil {
 		edges = append(edges, generalsettings.EdgeAlertSettings)
+	}
+	if m.pixel_arts != nil {
+		edges = append(edges, generalsettings.EdgePixelArts)
 	}
 	return edges
 }
@@ -9064,13 +9126,19 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgePixelArts:
+		ids := make([]ent.Value, 0, len(m.pixel_arts))
+		for id := range m.pixel_arts {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 25)
+	edges := make([]string, 0, 26)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -9145,6 +9213,9 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removedalert_settings != nil {
 		edges = append(edges, generalsettings.EdgeAlertSettings)
+	}
+	if m.removedpixel_arts != nil {
+		edges = append(edges, generalsettings.EdgePixelArts)
 	}
 	return edges
 }
@@ -9303,13 +9374,19 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgePixelArts:
+		ids := make([]ent.Value, 0, len(m.removedpixel_arts))
+		for id := range m.removedpixel_arts {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 25)
+	edges := make([]string, 0, 26)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -9385,6 +9462,9 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	if m.clearedalert_settings {
 		edges = append(edges, generalsettings.EdgeAlertSettings)
 	}
+	if m.clearedpixel_arts {
+		edges = append(edges, generalsettings.EdgePixelArts)
+	}
 	return edges
 }
 
@@ -9442,6 +9522,8 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedai_digests
 	case generalsettings.EdgeAlertSettings:
 		return m.clearedalert_settings
+	case generalsettings.EdgePixelArts:
+		return m.clearedpixel_arts
 	}
 	return false
 }
@@ -9532,6 +9614,9 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 		return nil
 	case generalsettings.EdgeAlertSettings:
 		m.ResetAlertSettings()
+		return nil
+	case generalsettings.EdgePixelArts:
+		m.ResetPixelArts()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings edge %s", name)
@@ -13822,6 +13907,779 @@ func (m *NotificationMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *NotificationMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Notification edge %s", name)
+}
+
+// PixelArtMutation represents an operation that mutates the PixelArt nodes in the graph.
+type PixelArtMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	name           *string
+	grid_width     *int
+	addgrid_width  *int
+	grid_height    *int
+	addgrid_height *int
+	frames         *string
+	bindings       *string
+	api_url        *string
+	api_token      *string
+	enabled        *bool
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*PixelArt, error)
+	predicates     []predicate.PixelArt
+}
+
+var _ ent.Mutation = (*PixelArtMutation)(nil)
+
+// pixelartOption allows management of the mutation configuration using functional options.
+type pixelartOption func(*PixelArtMutation)
+
+// newPixelArtMutation creates new mutation for the PixelArt entity.
+func newPixelArtMutation(c config, op Op, opts ...pixelartOption) *PixelArtMutation {
+	m := &PixelArtMutation{
+		config:        c,
+		op:            op,
+		typ:           TypePixelArt,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withPixelArtID sets the ID field of the mutation.
+func withPixelArtID(id int) pixelartOption {
+	return func(m *PixelArtMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *PixelArt
+		)
+		m.oldValue = func(ctx context.Context) (*PixelArt, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().PixelArt.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withPixelArt sets the old PixelArt of the mutation.
+func withPixelArt(node *PixelArt) pixelartOption {
+	return func(m *PixelArtMutation) {
+		m.oldValue = func(context.Context) (*PixelArt, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m PixelArtMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m PixelArtMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *PixelArtMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *PixelArtMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().PixelArt.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *PixelArtMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *PixelArtMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the PixelArt entity.
+// If the PixelArt object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PixelArtMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *PixelArtMutation) ResetName() {
+	m.name = nil
+}
+
+// SetGridWidth sets the "grid_width" field.
+func (m *PixelArtMutation) SetGridWidth(i int) {
+	m.grid_width = &i
+	m.addgrid_width = nil
+}
+
+// GridWidth returns the value of the "grid_width" field in the mutation.
+func (m *PixelArtMutation) GridWidth() (r int, exists bool) {
+	v := m.grid_width
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGridWidth returns the old "grid_width" field's value of the PixelArt entity.
+// If the PixelArt object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PixelArtMutation) OldGridWidth(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGridWidth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGridWidth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGridWidth: %w", err)
+	}
+	return oldValue.GridWidth, nil
+}
+
+// AddGridWidth adds i to the "grid_width" field.
+func (m *PixelArtMutation) AddGridWidth(i int) {
+	if m.addgrid_width != nil {
+		*m.addgrid_width += i
+	} else {
+		m.addgrid_width = &i
+	}
+}
+
+// AddedGridWidth returns the value that was added to the "grid_width" field in this mutation.
+func (m *PixelArtMutation) AddedGridWidth() (r int, exists bool) {
+	v := m.addgrid_width
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetGridWidth resets all changes to the "grid_width" field.
+func (m *PixelArtMutation) ResetGridWidth() {
+	m.grid_width = nil
+	m.addgrid_width = nil
+}
+
+// SetGridHeight sets the "grid_height" field.
+func (m *PixelArtMutation) SetGridHeight(i int) {
+	m.grid_height = &i
+	m.addgrid_height = nil
+}
+
+// GridHeight returns the value of the "grid_height" field in the mutation.
+func (m *PixelArtMutation) GridHeight() (r int, exists bool) {
+	v := m.grid_height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGridHeight returns the old "grid_height" field's value of the PixelArt entity.
+// If the PixelArt object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PixelArtMutation) OldGridHeight(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGridHeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGridHeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGridHeight: %w", err)
+	}
+	return oldValue.GridHeight, nil
+}
+
+// AddGridHeight adds i to the "grid_height" field.
+func (m *PixelArtMutation) AddGridHeight(i int) {
+	if m.addgrid_height != nil {
+		*m.addgrid_height += i
+	} else {
+		m.addgrid_height = &i
+	}
+}
+
+// AddedGridHeight returns the value that was added to the "grid_height" field in this mutation.
+func (m *PixelArtMutation) AddedGridHeight() (r int, exists bool) {
+	v := m.addgrid_height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetGridHeight resets all changes to the "grid_height" field.
+func (m *PixelArtMutation) ResetGridHeight() {
+	m.grid_height = nil
+	m.addgrid_height = nil
+}
+
+// SetFrames sets the "frames" field.
+func (m *PixelArtMutation) SetFrames(s string) {
+	m.frames = &s
+}
+
+// Frames returns the value of the "frames" field in the mutation.
+func (m *PixelArtMutation) Frames() (r string, exists bool) {
+	v := m.frames
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFrames returns the old "frames" field's value of the PixelArt entity.
+// If the PixelArt object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PixelArtMutation) OldFrames(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFrames is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFrames requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFrames: %w", err)
+	}
+	return oldValue.Frames, nil
+}
+
+// ResetFrames resets all changes to the "frames" field.
+func (m *PixelArtMutation) ResetFrames() {
+	m.frames = nil
+}
+
+// SetBindings sets the "bindings" field.
+func (m *PixelArtMutation) SetBindings(s string) {
+	m.bindings = &s
+}
+
+// Bindings returns the value of the "bindings" field in the mutation.
+func (m *PixelArtMutation) Bindings() (r string, exists bool) {
+	v := m.bindings
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBindings returns the old "bindings" field's value of the PixelArt entity.
+// If the PixelArt object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PixelArtMutation) OldBindings(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBindings is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBindings requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBindings: %w", err)
+	}
+	return oldValue.Bindings, nil
+}
+
+// ResetBindings resets all changes to the "bindings" field.
+func (m *PixelArtMutation) ResetBindings() {
+	m.bindings = nil
+}
+
+// SetAPIURL sets the "api_url" field.
+func (m *PixelArtMutation) SetAPIURL(s string) {
+	m.api_url = &s
+}
+
+// APIURL returns the value of the "api_url" field in the mutation.
+func (m *PixelArtMutation) APIURL() (r string, exists bool) {
+	v := m.api_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAPIURL returns the old "api_url" field's value of the PixelArt entity.
+// If the PixelArt object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PixelArtMutation) OldAPIURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAPIURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAPIURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAPIURL: %w", err)
+	}
+	return oldValue.APIURL, nil
+}
+
+// ResetAPIURL resets all changes to the "api_url" field.
+func (m *PixelArtMutation) ResetAPIURL() {
+	m.api_url = nil
+}
+
+// SetAPIToken sets the "api_token" field.
+func (m *PixelArtMutation) SetAPIToken(s string) {
+	m.api_token = &s
+}
+
+// APIToken returns the value of the "api_token" field in the mutation.
+func (m *PixelArtMutation) APIToken() (r string, exists bool) {
+	v := m.api_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAPIToken returns the old "api_token" field's value of the PixelArt entity.
+// If the PixelArt object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PixelArtMutation) OldAPIToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAPIToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAPIToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAPIToken: %w", err)
+	}
+	return oldValue.APIToken, nil
+}
+
+// ResetAPIToken resets all changes to the "api_token" field.
+func (m *PixelArtMutation) ResetAPIToken() {
+	m.api_token = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *PixelArtMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *PixelArtMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the PixelArt entity.
+// If the PixelArt object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PixelArtMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *PixelArtMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// Where appends a list predicates to the PixelArtMutation builder.
+func (m *PixelArtMutation) Where(ps ...predicate.PixelArt) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the PixelArtMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *PixelArtMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.PixelArt, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *PixelArtMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *PixelArtMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (PixelArt).
+func (m *PixelArtMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *PixelArtMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.name != nil {
+		fields = append(fields, pixelart.FieldName)
+	}
+	if m.grid_width != nil {
+		fields = append(fields, pixelart.FieldGridWidth)
+	}
+	if m.grid_height != nil {
+		fields = append(fields, pixelart.FieldGridHeight)
+	}
+	if m.frames != nil {
+		fields = append(fields, pixelart.FieldFrames)
+	}
+	if m.bindings != nil {
+		fields = append(fields, pixelart.FieldBindings)
+	}
+	if m.api_url != nil {
+		fields = append(fields, pixelart.FieldAPIURL)
+	}
+	if m.api_token != nil {
+		fields = append(fields, pixelart.FieldAPIToken)
+	}
+	if m.enabled != nil {
+		fields = append(fields, pixelart.FieldEnabled)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *PixelArtMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case pixelart.FieldName:
+		return m.Name()
+	case pixelart.FieldGridWidth:
+		return m.GridWidth()
+	case pixelart.FieldGridHeight:
+		return m.GridHeight()
+	case pixelart.FieldFrames:
+		return m.Frames()
+	case pixelart.FieldBindings:
+		return m.Bindings()
+	case pixelart.FieldAPIURL:
+		return m.APIURL()
+	case pixelart.FieldAPIToken:
+		return m.APIToken()
+	case pixelart.FieldEnabled:
+		return m.Enabled()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *PixelArtMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case pixelart.FieldName:
+		return m.OldName(ctx)
+	case pixelart.FieldGridWidth:
+		return m.OldGridWidth(ctx)
+	case pixelart.FieldGridHeight:
+		return m.OldGridHeight(ctx)
+	case pixelart.FieldFrames:
+		return m.OldFrames(ctx)
+	case pixelart.FieldBindings:
+		return m.OldBindings(ctx)
+	case pixelart.FieldAPIURL:
+		return m.OldAPIURL(ctx)
+	case pixelart.FieldAPIToken:
+		return m.OldAPIToken(ctx)
+	case pixelart.FieldEnabled:
+		return m.OldEnabled(ctx)
+	}
+	return nil, fmt.Errorf("unknown PixelArt field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PixelArtMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case pixelart.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case pixelart.FieldGridWidth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGridWidth(v)
+		return nil
+	case pixelart.FieldGridHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGridHeight(v)
+		return nil
+	case pixelart.FieldFrames:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFrames(v)
+		return nil
+	case pixelart.FieldBindings:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBindings(v)
+		return nil
+	case pixelart.FieldAPIURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAPIURL(v)
+		return nil
+	case pixelart.FieldAPIToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAPIToken(v)
+		return nil
+	case pixelart.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	}
+	return fmt.Errorf("unknown PixelArt field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *PixelArtMutation) AddedFields() []string {
+	var fields []string
+	if m.addgrid_width != nil {
+		fields = append(fields, pixelart.FieldGridWidth)
+	}
+	if m.addgrid_height != nil {
+		fields = append(fields, pixelart.FieldGridHeight)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *PixelArtMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case pixelart.FieldGridWidth:
+		return m.AddedGridWidth()
+	case pixelart.FieldGridHeight:
+		return m.AddedGridHeight()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PixelArtMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case pixelart.FieldGridWidth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddGridWidth(v)
+		return nil
+	case pixelart.FieldGridHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddGridHeight(v)
+		return nil
+	}
+	return fmt.Errorf("unknown PixelArt numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *PixelArtMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *PixelArtMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *PixelArtMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown PixelArt nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *PixelArtMutation) ResetField(name string) error {
+	switch name {
+	case pixelart.FieldName:
+		m.ResetName()
+		return nil
+	case pixelart.FieldGridWidth:
+		m.ResetGridWidth()
+		return nil
+	case pixelart.FieldGridHeight:
+		m.ResetGridHeight()
+		return nil
+	case pixelart.FieldFrames:
+		m.ResetFrames()
+		return nil
+	case pixelart.FieldBindings:
+		m.ResetBindings()
+		return nil
+	case pixelart.FieldAPIURL:
+		m.ResetAPIURL()
+		return nil
+	case pixelart.FieldAPIToken:
+		m.ResetAPIToken()
+		return nil
+	case pixelart.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	}
+	return fmt.Errorf("unknown PixelArt field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *PixelArtMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *PixelArtMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *PixelArtMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *PixelArtMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *PixelArtMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *PixelArtMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *PixelArtMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown PixelArt unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *PixelArtMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown PixelArt edge %s", name)
 }
 
 // RadarrMutation represents an operation that mutates the Radarr nodes in the graph.

@@ -74,6 +74,8 @@ const (
 	EdgeAiDigests = "ai_digests"
 	// EdgeAlertSettings holds the string denoting the alert_settings edge name in mutations.
 	EdgeAlertSettings = "alert_settings"
+	// EdgePixelArts holds the string denoting the pixel_arts edge name in mutations.
+	EdgePixelArts = "pixel_arts"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -251,6 +253,13 @@ const (
 	AlertSettingsInverseTable = "alert_settings"
 	// AlertSettingsColumn is the table column denoting the alert_settings relation/edge.
 	AlertSettingsColumn = "general_settings_alert_settings"
+	// PixelArtsTable is the table that holds the pixel_arts relation/edge.
+	PixelArtsTable = "pixel_arts"
+	// PixelArtsInverseTable is the table name for the PixelArt entity.
+	// It exists in this package in order to avoid circular dependency with the "pixelart" package.
+	PixelArtsInverseTable = "pixel_arts"
+	// PixelArtsColumn is the table column denoting the pixel_arts relation/edge.
+	PixelArtsColumn = "general_settings_pixel_arts"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -672,6 +681,20 @@ func ByAlertSettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAlertSettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByPixelArtsCount orders the results by pixel_arts count.
+func ByPixelArtsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPixelArtsStep(), opts...)
+	}
+}
+
+// ByPixelArts orders the results by pixel_arts terms.
+func ByPixelArts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPixelArtsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -845,5 +868,12 @@ func newAlertSettingsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AlertSettingsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, AlertSettingsTable, AlertSettingsColumn),
+	)
+}
+func newPixelArtsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PixelArtsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, PixelArtsTable, PixelArtsColumn),
 	)
 }

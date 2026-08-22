@@ -86,9 +86,11 @@ type GeneralSettingsEdges struct {
 	AiDigests []*AIDigest `json:"ai_digests,omitempty"`
 	// AlertSettings holds the value of the alert_settings edge.
 	AlertSettings []*AlertSettings `json:"alert_settings,omitempty"`
+	// PixelArts holds the value of the pixel_arts edge.
+	PixelArts []*PixelArt `json:"pixel_arts,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [25]bool
+	loadedTypes [26]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -316,6 +318,15 @@ func (e GeneralSettingsEdges) AlertSettingsOrErr() ([]*AlertSettings, error) {
 	return nil, &NotLoadedError{edge: "alert_settings"}
 }
 
+// PixelArtsOrErr returns the PixelArts value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) PixelArtsOrErr() ([]*PixelArt, error) {
+	if e.loadedTypes[25] {
+		return e.PixelArts, nil
+	}
+	return nil, &NotLoadedError{edge: "pixel_arts"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -522,6 +533,11 @@ func (_m *GeneralSettings) QueryAiDigests() *AIDigestQuery {
 // QueryAlertSettings queries the "alert_settings" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryAlertSettings() *AlertSettingsQuery {
 	return NewGeneralSettingsClient(_m.config).QueryAlertSettings(_m)
+}
+
+// QueryPixelArts queries the "pixel_arts" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryPixelArts() *PixelArtQuery {
+	return NewGeneralSettingsClient(_m.config).QueryPixelArts(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.
