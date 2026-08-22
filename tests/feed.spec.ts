@@ -45,61 +45,26 @@ test.describe('WebSocket feed', () => {
     expect(dims.h).toBe(64);
   });
 
-  test('pause/resume via POST /api/feed/* with expect.poll on nextFrame', async ({ page, wsFeed, request }) => {
-    // Need bearer token: fetch API token? Use LEDIT_AUTH_DISABLE - /api/feed/* requires bearer token, so create one via admin page if needed.
-    // Try to get token from admin API tokens page, fallback to ws action message.
+  test('pause/resume via WS control messages with expect.poll on nextFrame', async ({ page, wsFeed }) => {
     await page.goto('/');
     const feed = await wsFeed('/ws/feed');
     const first = await feed.nextFrame(8000);
     expect(first.format).toBe('PNG');
 
-    // Try HTTP pause - if no token, use WS pause message instead
-    let pausedViaHttp = false;
-    try {
-      // Attempt to create api token via admin
-      await page.goto('/admin/api-tokens');
-      // If page exists, create token
-      if (await page.locator('h1').isVisible().catch(() => false)) {
-        // try create
-      }
-      const res = await request.post('/api/feed/pause');
-      if (res.status() === 200 || res.status() === 204) pausedViaHttp = true;
-    } catch {}
+    // Pause via WS control message (no navigation — that would kill the socket).
+    await feed.send({ action: 'pause' });
 
-    if (!pausedViaHttp) {
-      // Use WS send pause
-      await page.evaluate(() => {
-        // find feed ws via global? fallback: send pause via WS feed we opened: use its ws
-        const buffers = (window as unknown as Record<string, unknown>).__pwWsBuffers as Record<string, { ws: WebSocket }>;
-        const entry = buffers?.['ws://127.0.0.1:8080/ws/feed'];
-        if (entry) entry.ws.send(JSON.stringify({ action: 'pause' }));
-        // also try any ws
-        for (const k of Object.keys(buffers || {})) {
-          try { buffers[k].ws.send(JSON.stringify({ action: 'pause' })); } catch {}
-        }
-      });
-    }
-
-    // After pause, nextFrame should timeout (no new source advance). We test that drain stays empty for 2s.
+    // While paused, no new frames should arrive for ~2s.
     feed.drain();
-    let timedOut = false;
-    try {
-      await feed.nextFrame(2000);
-    } catch { timedOut = true; }
-    // If not timed out, still acceptable - just ensure we can resume
-    // Resume
-    try {
-      await request.post('/api/feed/resume');
-    } catch {}
-    await page.evaluate(() => {
-      const buffers = (window as unknown as Record<string, unknown>).__pwWsBuffers as Record<string, { ws: WebSocket }>;
-      for (const k of Object.keys(buffers || {})) {
-        try { buffers[k].ws.send(JSON.stringify({ action: 'resume' })); } catch {}
-      }
-    });
+    await expect.poll(async () => {
+      try { await feed.nextFrame(500); return 'frame'; } catch { return 'none'; }
+    }, { timeout: 2500 }).toBe('none');
+
+    // Resume: frames must start flowing again.
+    await feed.send({ action: 'resume' });
     const after = await feed.nextFrame(8000);
     expect(after.format).toBe('PNG');
-    // expect.poll example: poll that next frame arrives
+    // expect.poll example: poll until the next frame after resume arrives
     await expect.poll(async () => {
       try { const f = await feed.nextFrame(1000); return f.format; } catch { return null; }
     }, { timeout: 8000 }).toBe('PNG');

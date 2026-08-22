@@ -99,6 +99,18 @@ export class WsFeed {
     });
   }
 
+  /** Send a control message (e.g. {action:'pause'}) over the feed WebSocket. */
+  async send(payload: Record<string, unknown>): Promise<void> {
+    await this.page.evaluate(({ wsUrl, data }) => {
+      const buffers = (window as unknown as Record<string, unknown>).__pwWsBuffers as
+        | Record<string, { ws: WebSocket }>
+        | undefined;
+      const entry = buffers?.[wsUrl];
+      if (!entry) throw new Error(`no open ws for ${wsUrl}`);
+      entry.ws.send(JSON.stringify(data));
+    }, { wsUrl: this.absUrl(), data: payload });
+  }
+
   drain(): FeedFrame[] {
     const out = [...this.buffer];
     this.buffer.length = 0;

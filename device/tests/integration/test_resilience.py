@@ -131,7 +131,7 @@ def test_server_restart_resumes(tmp_path):
 
         # restart on same port (copy data dir to keep device)
         # start new server with same port and data dir
-        from .harness import _find_binary, _find_free_port
+        from .harness import _find_binary, _find_free_port, repo_root
         import subprocess, urllib.request, socket
         binary = _find_binary()
         if not binary:
@@ -141,7 +141,7 @@ def test_server_restart_resumes(tmp_path):
         env["LEDIT_DB_DIR"] = srv["data_dir"]
         env["LEDIT_DATA_DIR"] = srv["data_dir"]
         env["LEDIT_PORT"] = str(port)
-        proc2 = subprocess.Popen([binary], env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="/root/projects/LEDit")
+        proc2 = subprocess.Popen([binary], env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=str(repo_root()))
         srv2 = {"proc": proc2, "url": url, "ws_url": ws_url, "port": port, "data_dir": srv["data_dir"]}
         # wait healthy
         deadline = time.time() + 10

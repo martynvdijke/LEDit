@@ -24,20 +24,30 @@ def _find_free_port() -> int:
         return s.getsockname()[1]
 
 
+def repo_root() -> Path:
+    """Resolve repo root: GITHUB_WORKSPACE, then file-relative, fallback to legacy path."""
+    env = os.getenv("GITHUB_WORKSPACE")
+    if env:
+        p = Path(env)
+        if p.exists():
+            return p
+    try:
+        p = Path(__file__).resolve().parents[3]
+        if p.exists():
+            return p
+    except Exception:
+        pass
+    return Path("/root/projects/LEDit")
+
+
 def _find_binary() -> str | None:
     # Prefer workspace-local binary (CI artifact) before absolute paths.
     # Handle PermissionError when running in restricted containers.
     candidates = [
         Path("./ledit"),
+        repo_root() / "ledit",
         Path("/tmp/ledit-test"),
-        Path("/root/projects/LEDit/ledit"),
     ]
-    # Also try repo root relative to this file (for CI where cwd may differ)
-    try:
-        repo_root = Path(__file__).resolve().parents[3]
-        candidates.insert(1, repo_root / "ledit")
-    except Exception:
-        pass
     for c in candidates:
         try:
             if c.exists() and c.is_file():
@@ -49,20 +59,12 @@ def _find_binary() -> str | None:
 
 def _build_binary(dest: str = "/tmp/ledit-test") -> str | None:
     """Build ./ledit if missing."""
-    # Resolve repo root: prefer GITHUB_WORKSPACE, then file-relative, fallback to legacy path.
-    repo_root = Path(os.getenv("GITHUB_WORKSPACE", "")) if os.getenv("GITHUB_WORKSPACE") else None
-    if not repo_root or not repo_root.exists():
-        try:
-            repo_root = Path(__file__).resolve().parents[3]
-        except Exception:
-            repo_root = Path("/root/projects/LEDit")
-    if not repo_root.exists():
-        repo_root = Path("/root/projects/LEDit")
+    root = repo_root()
     try:
-        log.info("building ledit binary -> %s (cwd=%s)", dest, repo_root)
+        log.info("building ledit binary -> %s (cwd=%s)", dest, root)
         result = subprocess.run(
             ["go", "build", "-o", dest, "."],
-            cwd=str(repo_root),
+            cwd=str(root),
             capture_output=True,
             text=True,
             timeout=120,
@@ -123,21 +125,12 @@ def start_server(tmp_path, timeout: float = 10):
     env["LEDIT_PORT"] = str(port)
 
     log.info("starting %s on port %s data_dir=%s", binary, port, data_dir)
-    # cwd: prefer repo root similar to _build_binary
-    cwd = Path(os.getenv("GITHUB_WORKSPACE", "")) if os.getenv("GITHUB_WORKSPACE") else None
-    if not cwd or not cwd.exists():
-        try:
-            cwd = Path(__file__).resolve().parents[3]
-        except Exception:
-            cwd = Path("/root/projects/LEDit")
-    if not cwd.exists():
-        cwd = Path("/root/projects/LEDit")
     proc = subprocess.Popen(
         [binary],
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        cwd=str(cwd),
+        cwd=str(repo_root()),
     )
 
     url = f"http://127.0.0.1:{port}"

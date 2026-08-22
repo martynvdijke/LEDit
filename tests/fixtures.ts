@@ -12,9 +12,16 @@ type Fixtures = {
   wsFeed: (url: string) => Promise<WsFeed>;
 };
 
-export const test = base.extend<Fixtures & { seedCleanState: void }>({
-  seedCleanState: [async ({ request }, use) => {
-    await seedGeneralSettings(request);
+export const test = base.extend<Fixtures & { seedCleanState: void; autoSeed: boolean }>({
+  // Option fixture: tests that need the *unconfigured* dashboard state can
+  // opt out with test.use({ autoSeed: false }). Only meaningful when run
+  // first on a fresh DB (admin.spec.ts runs before any seeding spec).
+  autoSeed: true,
+
+  seedCleanState: [async ({ request, autoSeed }, use) => {
+    if (autoSeed) {
+      await seedGeneralSettings(request);
+    }
     await cleanupTestDevices(request, 'PW-');
     await use();
     // teardown
