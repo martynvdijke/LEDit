@@ -1,3 +1,10 @@
+# [1.26.0](https://github.com/martynvdijke/LEDit/compare/v1.25.0...v1.26.0) (2026-08-23)
+
+
+### Features
+
+* slide transitions between feed sources ([05acac7](https://github.com/martynvdijke/LEDit/commit/05acac7289a2488cdfe3e2b04b969fabd66f063e))
+
 # [1.25.0](https://github.com/martynvdijke/LEDit/compare/v1.24.0...v1.25.0) (2026-08-23)
 
 
