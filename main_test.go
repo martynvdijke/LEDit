@@ -48,6 +48,13 @@ func openTestDB(t *testing.T) *sql.Driver {
 	if err != nil {
 		t.Fatalf("Failed to open test database: %v", err)
 	}
+	// Serialize connections: shared-cache in-memory SQLite reports
+	// SQLITE_LOCKED ("database table is locked") when the feed/evaluator
+	// goroutines race test assertions on separate conns; busy_timeout does
+	// not cover shared-cache table locks. One conn = no table locks.
+	if db := drv.DB(); db != nil {
+		db.SetMaxOpenConns(1)
+	}
 	return drv
 }
 

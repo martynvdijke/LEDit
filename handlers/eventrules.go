@@ -393,12 +393,31 @@ func (s *Server) AdminEventRuleList(c *gin.Context) {
 	s.renderPage(c, http.StatusOK, "eventrules.html", gin.H{"eventrules": rows})
 }
 
+// eventRuleFormVars supplies flat prepopulation strings for
+// eventrule_form.html so ent rows and error-replay maps render identically
+// (templates never branch on the obj type).
+func eventRuleFormVars(name, srcType, srcID, condition, interval, cooldown string, enabled bool) gin.H {
+	e := ""
+	if enabled {
+		e = "on"
+	}
+	return gin.H{
+		"fName":      name,
+		"fEnabled":   e,
+		"fSrcType":   srcType,
+		"fSrcID":     srcID,
+		"fCondition": condition,
+		"fInterval":  interval,
+		"fCooldown":  cooldown,
+	}
+}
+
 func (s *Server) AdminEventRuleNew(c *gin.Context) {
 	opts := s.bindingOptions(c)
-	s.renderPage(c, http.StatusOK, "eventrule_form.html", gin.H{
-		"options":      opts,
-		"options_json": bindingOptionsJSON(opts),
-	})
+	vars := eventRuleFormVars("", "", "", "{}", "30", "0", true)
+	vars["options"] = opts
+	vars["options_json"] = bindingOptionsJSON(opts)
+	s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
 }
 
 func validateEventRule(s *Server, c *gin.Context, name, sourceType string, sourceID int, condition string, checkInterval, cooldown int) string {
@@ -449,23 +468,22 @@ func (s *Server) AdminEventRuleCreate(c *gin.Context) {
 	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, checkInterval, cooldown); msg != "" {
 		SetFlash(c, "danger", msg)
 		opts := s.bindingOptions(c)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", gin.H{
-			"obj":          map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)},
-			"error":        msg,
-			"options":      opts,
-			"options_json": bindingOptionsJSON(opts),
-		})
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
+		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
+		vars["error"] = msg
+		vars["options"] = opts
+		vars["options_json"] = bindingOptionsJSON(opts)
+		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
 		return
 	}
 	obj, err := s.DB.DisplayRule.Create().SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).Save(s.Ctx)
 	if err != nil {
 		SetFlash(c, "danger", "Failed to create: "+err.Error())
 		opts := s.bindingOptions(c)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", gin.H{
-			"obj":          map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition},
-			"options":      opts,
-			"options_json": bindingOptionsJSON(opts),
-		})
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
+		vars["options"] = opts
+		vars["options_json"] = bindingOptionsJSON(opts)
+		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
 		return
 	}
 	if gs, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil && gs != nil {
@@ -484,12 +502,13 @@ func (s *Server) AdminEventRuleEdit(c *gin.Context) {
 		return
 	}
 	opts := s.bindingOptions(c)
-	s.renderPage(c, http.StatusOK, "eventrule_form.html", gin.H{
-		"obj":          obj,
-		"edit":         true,
-		"options":      opts,
-		"options_json": bindingOptionsJSON(opts),
-	})
+	vars := eventRuleFormVars(obj.Name, obj.SourceType, strconv.Itoa(obj.SourceID), obj.Condition, strconv.Itoa(obj.CheckIntervalSeconds), strconv.Itoa(obj.CooldownSeconds), obj.Enabled)
+	vars["obj"] = obj
+	vars["edit"] = true
+	vars["id"] = id
+	vars["options"] = opts
+	vars["options_json"] = bindingOptionsJSON(opts)
+	s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
 }
 
 func (s *Server) AdminEventRuleUpdate(c *gin.Context) {
@@ -511,25 +530,25 @@ func (s *Server) AdminEventRuleUpdate(c *gin.Context) {
 	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, checkInterval, cooldown); msg != "" {
 		SetFlash(c, "danger", msg)
 		opts := s.bindingOptions(c)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", gin.H{
-			"obj":          map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)},
-			"edit":         true,
-			"id":           id,
-			"error":        msg,
-			"options":      opts,
-			"options_json": bindingOptionsJSON(opts),
-		})
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
+		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
+		vars["edit"] = true
+		vars["id"] = id
+		vars["error"] = msg
+		vars["options"] = opts
+		vars["options_json"] = bindingOptionsJSON(opts)
+		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
 		return
 	}
 	if err := s.DB.DisplayRule.UpdateOneID(id).SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).Exec(s.Ctx); err != nil {
 		SetFlash(c, "danger", "Failed to update: "+err.Error())
 		opts := s.bindingOptions(c)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", gin.H{
-			"obj":          map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition},
-			"edit":         true,
-			"options":      opts,
-			"options_json": bindingOptionsJSON(opts),
-		})
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
+		vars["edit"] = true
+		vars["id"] = id
+		vars["options"] = opts
+		vars["options_json"] = bindingOptionsJSON(opts)
+		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
 		return
 	}
 	SetFlash(c, "success", "Event rule updated")

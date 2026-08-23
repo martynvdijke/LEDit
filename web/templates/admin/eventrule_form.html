@@ -12,22 +12,22 @@
         <div class="container-fluid p-4">
             <h1>{{if .edit}}Edit{{else}}New{{end}} Event Rule</h1>
             {{if .error}}<div class="alert alert-danger">{{.error}}</div>{{end}}
-            <form method="POST" action="/admin/eventrules{{if .edit}}/{{if .id}}{{.id}}{{else if .obj.ID}}{{.obj.ID}}{{end}}/edit{{else}}/new{{end}}" class="mt-4" id="eventrule-form">
+            <form method="POST" action="/admin/eventrules{{if .edit}}/{{.id}}/edit{{else}}/new{{end}}" class="mt-4" id="eventrule-form">
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required value="{{if .obj}}{{if .obj.Name}}{{.obj.Name}}{{else}}{{index .obj "name"}}{{end}}{{end}}">
+                        <input type="text" class="form-control" id="name" name="name" required value="{{.fName}}">
                     </div>
                     <div class="col-md-3 mb-3 form-check" style="padding-top:28px">
-                        <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if not .edit}}checked{{else if .obj.Enabled}}checked{{else if eq (index .obj "enabled") "on"}}checked{{end}}>
+                        <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if .fEnabled}}checked{{end}}>
                         <label for="enabled" class="form-check-label">Enabled</label>
                     </div>
                 </div>
 
                 <!-- Target picker: reuses playlist_form.html two-select pattern driven by window.BINDING_OPTS -->
-                <input type="hidden" name="source_type" id="source_type" value="{{if .obj}}{{if .obj.SourceType}}{{.obj.SourceType}}{{else}}{{index .obj "source_type"}}{{end}}{{end}}">
-                <input type="hidden" name="source_id" id="source_id" value="{{if .obj}}{{if .obj.SourceID}}{{.obj.SourceID}}{{else}}{{index .obj "source_id"}}{{end}}{{end}}">
-                <input type="hidden" name="condition" id="condition" value="{{if .obj}}{{if .obj.Condition}}{{.obj.Condition}}{{else}}{{index .obj "condition"}}{{end}}{{end}}">
+                <input type="hidden" name="source_type" id="source_type" value="{{.fSrcType}}">
+                <input type="hidden" name="source_id" id="source_id" value="{{.fSrcID}}">
+                <input type="hidden" name="condition" id="condition" value="{{.fCondition}}">
 
                 <div class="mb-3">
                     <label class="form-label">Target</label>
@@ -64,11 +64,11 @@
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <label for="check_interval_seconds" class="form-label">Check interval (seconds)</label>
-                        <input type="number" class="form-control" id="check_interval_seconds" name="check_interval_seconds" min="5" value="{{if .obj}}{{if .obj.CheckIntervalSeconds}}{{.obj.CheckIntervalSeconds}}{{else}}{{index .obj "check_interval_seconds"}}{{end}}{{else}}30{{end}}">
+                        <input type="number" class="form-control" id="check_interval_seconds" name="check_interval_seconds" min="5" value="{{.fInterval}}">
                     </div>
                     <div class="col-md-3 mb-3">
                         <label for="cooldown_seconds" class="form-label">Cooldown (seconds)</label>
-                        <input type="number" class="form-control" id="cooldown_seconds" name="cooldown_seconds" min="0" value="{{if .obj}}{{if .obj.CooldownSeconds}}{{.obj.CooldownSeconds}}{{else}}{{index .obj "cooldown_seconds"}}{{end}}{{else}}0{{end}}">
+                        <input type="number" class="form-control" id="cooldown_seconds" name="cooldown_seconds" min="0" value="{{.fCooldown}}">
                     </div>
                 </div>
 
