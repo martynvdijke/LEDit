@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/martynvdijke/LEDit/compare/v1.29.1...v1.30.0) (2026-08-23)
+
+
+### Features
+
+* render upgrades — marquee scroll, clock source, per-cell themes, weather ambience ([4f2d4ea](https://github.com/martynvdijke/LEDit/commit/4f2d4eadbadfb745e599c6330ccc2e81c3ec2811))
+
 ## [1.29.1](https://github.com/martynvdijke/LEDit/compare/v1.29.0...v1.29.1) (2026-08-23)
 
 
