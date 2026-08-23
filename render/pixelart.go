@@ -9,6 +9,7 @@ import (
 	"image/draw"
 	"image/png"
 	"log/slog"
+	"strings"
 )
 
 // PixelFrameDoc is the JSON document stored on a PixelArt entity: a shared
@@ -68,6 +69,14 @@ func ValidatePixelDoc(doc PixelFrameDoc, gridW, gridH int) error {
 		return fmt.Errorf("too many frames (max %d)", MaxPixelFrames)
 	}
 	for i, c := range doc.Palette {
+		if strings.HasPrefix(c, "@") {
+			// Slot marker (e.g. "@gauge"): color resolved at render time from
+			// API bindings; only the name must be non-empty.
+			if len(c) < 2 {
+				return fmt.Errorf("palette[%d] %q has an empty slot name", i, c)
+			}
+			continue
+		}
 		if len(c) < 6 {
 			return fmt.Errorf("palette[%d] %q is not a hex color", i, c)
 		}

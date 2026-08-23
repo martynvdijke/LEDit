@@ -31,7 +31,7 @@ tasks:
   test:py:
     desc: Run Python device library tests with coverage
     cmds:
-      - pip install -e ./device[test]
+      - pip install -e ./device[test] --break-system-packages
       - python -m pytest device/tests --ignore=device/tests/integration -v --cov=ledit_device --cov-report=term --cov-report=html --cov-fail-under=80
 
   test:e2e:

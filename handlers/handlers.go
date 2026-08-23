@@ -123,7 +123,7 @@ func (s *Server) IndexHandler(c *gin.Context) {
 }
 
 func (s *Server) AdminDashboard(c *gin.Context) {
-	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithEmailSettings().WithAiSettings().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().Only(s.Ctx)
+	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithEmailSettings().WithAiSettings().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithPixelArts().Only(s.Ctx)
 
 	stats := gin.H{
 		"has_settings": err == nil,
@@ -148,6 +148,7 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		matrixLayoutItems, _ := settings.Edges.MatrixLayoutsOrErr()
 		countdownItems, _ := settings.Edges.CountdownsOrErr()
 		aiDigestItems, _ := settings.Edges.AiDigestsOrErr()
+		pixelArtItems, _ := settings.Edges.PixelArtsOrErr()
 
 		type sourceEntry struct {
 			ID       int
@@ -219,6 +220,12 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		for _, ad := range aiDigestItems {
 			sources = append(sources, sourceEntry{ID: ad.ID, Type: "AI Digest", Endpoint: "aidigests", Name: ad.Name})
 		}
+		for _, pa := range pixelArtItems {
+			if !pa.Enabled {
+				continue
+			}
+			sources = append(sources, sourceEntry{ID: pa.ID, Type: "Pixel Art", Endpoint: "pixelart", Name: pa.Name})
+		}
 
 		// Attach live health status (from the in-memory registry) to each
 		// source and compute fleet-wide summary stats.
@@ -272,12 +279,13 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 			"matrixlayout_count":      len(matrixLayoutItems),
 			"countdown_count":         len(countdownItems),
 			"aidigest_count":          len(aiDigestItems),
+			"pixelart_count":          len(pixelArtItems),
 			"health_green":            healthGreen,
 			"health_yellow":           healthYellow,
 			"health_red":              healthRed,
 			"avg_ewma_ms":             avgEWMA,
 			"cache_hit_ratio_percent": cacheRatio,
-			"total_sources":           len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems) + len(countdownItems) + len(aiDigestItems),
+			"total_sources":           len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems) + len(countdownItems) + len(aiDigestItems) + len(pixelArtItems),
 		}
 	}
 	s.renderPage(c, http.StatusOK, "dashboard.html", stats)

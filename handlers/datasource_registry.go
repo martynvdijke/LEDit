@@ -199,6 +199,48 @@ func init() {
 				return db.GenericAPI.UpdateOneID(id).SetToken(f["token"]).SetURL(f["url"]).SetConfig(f["config"]).Exec(ctx)
 			},
 		},
+		"pixelart": {
+			TypeName: "Pixel Art",
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) {
+				return db.PixelArt.Get(ctx, id)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error {
+				return db.PixelArt.DeleteOneID(id).Exec(ctx)
+			},
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddPixelArts(obj.(*ent.PixelArt))
+			},
+			CreateFields: func(db *ent.Client, ctx context.Context, f map[string]string) (any, error) {
+				gw, _ := strconv.Atoi(f["grid_width"])
+				gh, _ := strconv.Atoi(f["grid_height"])
+				enabled := f["enabled"] == "on" || f["enabled"] == "true" || f["enabled"] == "1"
+				return db.PixelArt.Create().
+					SetName(f["name"]).
+					SetGridWidth(gw).
+					SetGridHeight(gh).
+					SetFrames(f["frames"]).
+					SetBindings(f["bindings"]).
+					SetAPIURL(f["api_url"]).
+					SetAPIToken(f["api_token"]).
+					SetEnabled(enabled).
+					Save(ctx)
+			},
+			UpdateFields: func(db *ent.Client, ctx context.Context, id int, f map[string]string) error {
+				gw, _ := strconv.Atoi(f["grid_width"])
+				gh, _ := strconv.Atoi(f["grid_height"])
+				enabled := f["enabled"] == "on" || f["enabled"] == "true" || f["enabled"] == "1"
+				return db.PixelArt.UpdateOneID(id).
+					SetName(f["name"]).
+					SetGridWidth(gw).
+					SetGridHeight(gh).
+					SetFrames(f["frames"]).
+					SetBindings(f["bindings"]).
+					SetAPIURL(f["api_url"]).
+					SetAPIToken(f["api_token"]).
+					SetEnabled(enabled).
+					Exec(ctx)
+			},
+		},
 	}
 }
 

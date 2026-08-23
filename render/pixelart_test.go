@@ -186,3 +186,20 @@ func TestRenderPixelFramesGridErrors(t *testing.T) {
 		t.Error("zero grid width: expected error")
 	}
 }
+
+func TestValidatePixelDocSlotMarkers(t *testing.T) {
+	doc := PixelFrameDoc{
+		Palette: []string{"#000000", "@gauge", "#ffffff"},
+		Frames:  []PixelFrame{{Duration: 100, Pixels: []int{0, 1, -1}}},
+	}
+	if err := ValidatePixelDoc(doc, 0, 0); err != nil {
+		t.Fatalf("slot marker palette should validate: %v", err)
+	}
+	bad := PixelFrameDoc{
+		Palette: []string{"@"},
+		Frames:  []PixelFrame{{Duration: 100, Pixels: []int{0}}},
+	}
+	if err := ValidatePixelDoc(bad, 0, 0); err == nil {
+		t.Fatal("empty slot name should be rejected")
+	}
+}

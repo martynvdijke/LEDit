@@ -513,13 +513,74 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			}
 			TrackDisplay(sw.Name, timeout.Seconds())
 
-			// Wait for timeout or skip signal
-			deadline := time.Now().Add(timeout)
-			for time.Now().Before(deadline) {
-				if feed.ShouldSkip() {
-					break
+			// 4.1/4.2: animated sources re-render within the slot.
+			if anim, ok := any(sw.Source).(datasource.Animator); ok && anim.FrameCount() > 1 {
+				deadline := time.Now().Add(timeout)
+				lastIdx := anim.NextFrame(time.Now())
+				for time.Now().Before(deadline) {
+					if feed.ShouldSkip() {
+						break
+					}
+					// While paused, do not advance/send; resume continues.
+					if feed.IsPaused() {
+						time.Sleep(100 * time.Millisecond)
+						continue
+					}
+					now := time.Now()
+					curIdx := anim.NextFrame(now)
+					if curIdx != lastIdx {
+						// Bypass LKG for animated re-renders (4.2).
+						rendered, rerr := sw.Source.GetPNG(width, height)
+						if rerr != nil {
+							slog.Warn("animated re-render failed, keeping last good frame", "source_name", sw.Name, "error", rerr)
+							// keep lastIdx unchanged so next tick retries; continue ticking
+						} else {
+							// Record health similarly to the first-frame path but without LKG.
+							Health.RecordSuccess(sw.cacheKey, 0)
+							if fc.deviceID > 0 {
+								Health.RecordSuccess(fmt.Sprintf("device:%d", fc.deviceID), 0)
+							}
+							msg2 := map[string]any{
+								"format": rendered.Format,
+								"image":  base64.StdEncoding.EncodeToString(rendered.Data),
+								"source": sw.Name,
+								"next":   nextName,
+							}
+							data2, _ := json.Marshal(msg2)
+							if err := conn.WriteMessage(websocket.TextMessage, data2); err != nil {
+								if fc.deviceID > 0 {
+									Health.RecordFailure(fmt.Sprintf("device:%d", fc.deviceID), err, 0)
+								}
+								return
+							}
+							if fc.deviceID > 0 && fc.frames != nil {
+								fc.frames()
+							}
+							lastIdx = curIdx
+						}
+					}
+					remaining := time.Until(deadline)
+					if remaining <= 0 {
+						break
+					}
+					// Poll every ~50ms (satisfies ~100ms spec, keeps skip responsive) capped by remaining.
+					sleep := 50 * time.Millisecond
+					if sleep > remaining {
+						sleep = remaining
+					}
+					// Also cap by time until next frame would change — best-effort poll, not a long sleep.
+					// Since NextFrame is time-based, we just poll at 50ms granularity which is <=100ms.
+					time.Sleep(sleep)
 				}
-				time.Sleep(50 * time.Millisecond)
+			} else {
+				// Non-animated: wait for timeout or skip signal.
+				deadline := time.Now().Add(timeout)
+				for time.Now().Before(deadline) {
+					if feed.ShouldSkip() {
+						break
+					}
+					time.Sleep(50 * time.Millisecond)
+				}
 			}
 		}
 	}

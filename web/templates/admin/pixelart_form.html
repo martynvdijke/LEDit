@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Pixel Art</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+    <style>
+      #editor-canvas{image-rendering:pixelated;image-rendering:crisp-edges;cursor:crosshair;border:1px solid var(--line);background:#0b1712;border-radius:8px}
+      #playback-canvas{image-rendering:pixelated;image-rendering:crisp-edges;border:1px solid var(--line);background:#0b1712;border-radius:6px}
+      .tool-btn.active{border-color:var(--green);background:#1d392c;color:var(--green)}
+      .swatch{width:34px;height:34px;border-radius:6px;border:2px solid transparent;cursor:pointer;position:relative;flex:none}
+      .swatch.active{border-color:var(--green);box-shadow:0 0 0 2px rgba(166,255,112,.35)}
+      .swatch.slot{background:repeating-conic-gradient(#2a4a3a 0% 25%, #1a2e24 0% 50%) 0 0 / 8px 8px}
+      .swatch.transparent{background:repeating-conic-gradient(#999 0% 25%, #fff 0% 50%) 0 0 / 8px 8px}
+      .timeline-thumb{border:1px solid var(--line);border-radius:6px;background:#0b1712;image-rendering:pixelated;cursor:pointer}
+      .timeline-item.active .timeline-thumb{border-color:var(--green);box-shadow:0 0 0 2px rgba(166,255,112,.25)}
+      .palette-hex{width:90px;min-height:28px;padding:4px 6px;font:12px var(--mono)}
+      details.bindings{border:1px solid var(--line);border-radius:8px;padding:12px;background:rgba(16,28,24,.6)}
+      details.bindings summary{cursor:pointer;font-weight:700}
+      .band-row,.rule-row,.overlay-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+      .band-row input,.rule-row input,.overlay-row input,.overlay-row select{flex:1;min-width:0}
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Pixel Art</h1>
+            <p class="text-muted">Draw frames, manage palette slots, configure API bindings. Saving validates the document server-side.</p>
+
+            <form method="POST" action="/admin/pixelarts{{if .edit}}/{{if .id}}{{.id}}{{else if .obj.ID}}{{.obj.ID}}{{end}}/edit{{else}}/new{{end}}" id="pixelart-form" class="mt-4">
+                <!-- top fields -->
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required value="{{if .obj}}{{if .obj.Name}}{{.obj.Name}}{{else}}{{index .obj "name"}}{{end}}{{end}}">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="grid_width" class="form-label">Grid Width (1-128)</label>
+                        <input type="number" class="form-control" id="grid_width" name="grid_width" min="1" max="128" required value="{{if .obj}}{{if .obj.GridWidth}}{{.obj.GridWidth}}{{else if index .obj "grid_width"}}{{index .obj "grid_width"}}{{else}}32{{end}}{{else}}32{{end}}">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="grid_height" class="form-label">Grid Height (1-128)</label>
+                        <input type="number" class="form-control" id="grid_height" name="grid_height" min="1" max="128" required value="{{if .obj}}{{if .obj.GridHeight}}{{.obj.GridHeight}}{{else if index .obj "grid_height"}}{{index .obj "grid_height"}}{{else}}32{{end}}{{else}}32{{end}}">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="background" class="form-label">Background</label>
+                        <input type="color" class="form-control form-control-color" id="background" value="#000000">
+                    </div>
+                    <div class="col-md-2 mb-3 form-check" style="padding-top:28px">
+                        <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if not .edit}}checked{{else if .obj.Enabled}}checked{{else if eq (index .obj "enabled") "on"}}checked{{end}}>
+                        <label for="enabled" class="form-check-label">Enabled</label>
+                    </div>
+                </div>
+
+                <!-- hidden serialized state -->
+                <input type="hidden" name="frames" id="frames-input" value="{{if .obj}}{{if .obj.Frames}}{{.obj.Frames}}{{else}}{{index .obj "frames"}}{{end}}{{end}}">
+                <input type="hidden" name="bindings" id="bindings-input" value="{{if .obj}}{{if .obj.Bindings}}{{.obj.Bindings}}{{else}}{{index .obj "bindings"}}{{end}}{{end}}">
+
+                <div class="row mt-3">
+                    <!-- left: canvas + tools -->
+                    <div class="col-md-7">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex gap-2 mb-3 align-items-center flex-wrap">
+                                    <button type="button" class="btn btn-sm tool-btn active" data-tool="pencil" title="Pencil (drag to paint)">✏ Pencil</button>
+                                    <button type="button" class="btn btn-sm tool-btn" data-tool="eraser" title="Eraser (or right-click)">⌫ Eraser</button>
+                                    <button type="button" class="btn btn-sm tool-btn" data-tool="fill" title="Flood fill">🪣 Fill</button>
+                                    <button type="button" class="btn btn-sm tool-btn" data-tool="eyedropper" title="Eyedropper">👁 Pick</button>
+                                    <span class="text-muted small ms-2">Tip: drag to paint, right-click erases.</span>
+                                </div>
+                                <div style="overflow:auto;max-height:560px;max-width:100%;text-align:center;background:var(--panel-2);padding:12px;border-radius:8px">
+                                    <canvas id="editor-canvas" width="512" height="512"></canvas>
+                                </div>
+                                <div class="mt-3">
+                                    <label class="form-label">Palette</label>
+                                    <div id="palette-list" class="d-flex flex-wrap gap-2 align-items-center mb-2"></div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <input type="color" id="new-color" value="#ff3366" class="form-control form-control-color" style="width:56px">
+                                        <button type="button" id="add-color" class="btn btn-sm btn-secondary">Add color</button>
+                                        <button type="button" id="add-slot" class="btn btn-sm btn-secondary">Add slot (@name)</button>
+                                        <small class="text-muted">Click swatch to select. Slots show as hatched.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="mb-0">Frames</h5>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" id="add-frame" class="btn btn-sm btn-primary">Add</button>
+                                        <button type="button" id="duplicate-frame" class="btn btn-sm btn-secondary">Duplicate</button>
+                                    </div>
+                                </div>
+                                <div id="timeline" class="d-flex gap-3 overflow-auto mb-3" style="padding:6px 0"></div>
+                                <small class="text-muted">Click thumbnail to edit. Durations in ms. Use ◀/▶ to reorder, ✕ to delete (min 1 frame).</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- right: playback, bindings, preview, import/export -->
+                    <div class="col-md-5">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5>Playback preview</h5>
+                                <div class="d-flex gap-3 align-items-center">
+                                    <canvas id="playback-canvas" width="128" height="128"></canvas>
+                                    <button type="button" id="playback-toggle" class="btn btn-sm btn-primary">Play</button>
+                                    <span id="playback-label" class="small text-muted"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <details class="bindings mb-3" open>
+                            <summary>Bindings &amp; API</summary>
+                            <div class="mt-3">
+                                <div class="mb-3">
+                                    <label for="api_url" class="form-label">API URL</label>
+                                    <input type="text" class="form-control" id="api_url" name="api_url" placeholder="https://api.example.com/data" value="{{if .obj}}{{if .obj.ApiURL}}{{.obj.ApiURL}}{{else}}{{index .obj "api_url"}}{{end}}{{end}}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="api_token" class="form-label">API Token (Bearer)</label>
+                                    <input type="text" class="form-control" id="api_token" name="api_token" placeholder="optional" value="{{if .obj}}{{if .obj.ApiToken}}{{.obj.ApiToken}}{{else}}{{index .obj "api_token"}}{{end}}{{end}}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label mb-0">Color Slots</label>
+                                        <button type="button" id="add-colorslot" class="btn btn-sm btn-secondary">Add slot rule</button>
+                                    </div>
+                                    <div id="colorslots-list" class="mt-2"></div>
+                                    <small class="text-muted">Slot names come from @ palette entries. Bands: ordered by max, last without max is catch-all.</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label mb-0">Frame Rules</label>
+                                        <button type="button" id="add-framerule" class="btn btn-sm btn-secondary">Add rule</button>
+                                    </div>
+                                    <div id="framerules-list" class="mt-2"></div>
+                                    <small class="text-muted">When path numeric value in [min,max] matches, only frameIndices play.</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label mb-0">Overlays</label>
+                                        <button type="button" id="add-overlay" class="btn btn-sm btn-secondary">Add overlay</button>
+                                    </div>
+                                    <div id="overlays-list" class="mt-2"></div>
+                                    <small class="text-muted">Text drawn after scaling. Format like %.1f°C for numeric values.</small>
+                                </div>
+                            </div>
+                        </details>
+
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5>Test render</h5>
+                                <div class="row mb-2">
+                                    <div class="col-md-6 mb-2">
+                                        <label for="preview-w" class="form-label">Device width</label>
+                                        <select id="preview-w" class="form-select">
+                                            <option value="64" selected>64</option>
+                                            <option value="128">128</option>
+                                            <option value="32">32</option>
+                                            <option value="256">256</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label for="preview-h" class="form-label">Device height</label>
+                                        <select id="preview-h" class="form-select">
+                                            <option value="64" selected>64</option>
+                                            <option value="32">32</option>
+                                            <option value="128">128</option>
+                                            <option value="64">64</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2 mb-2">
+                                    <button type="button" id="test-render" class="btn btn-sm btn-primary">Test render</button>
+                                    <span id="test-error" class="small text-danger"></span>
+                                </div>
+                                <img id="test-preview-img" alt="Test preview" width="256" height="256" class="border bg-dark" style="image-rendering:pixelated;max-width:100%">
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-body d-flex gap-2 flex-wrap">
+                                <button type="button" id="export-btn" class="btn btn-sm btn-secondary">Export JSON</button>
+                                <label for="import-file" class="btn btn-sm btn-secondary" style="cursor:pointer">Import JSON</label>
+                                <input type="file" id="import-file" accept=".json,application/json" style="display:none">
+                                <small class="text-muted">Exports {frames,bindings,grid}. Import validates before replacing.</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Save Pixel Art</button>
+                            <a href="/admin/pixelarts" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+<script type="module" src="/static/assets/pixelart_editor.js"></script>
+</html>

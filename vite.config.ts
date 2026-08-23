@@ -9,6 +9,7 @@ export default defineConfig({
       input: {
         app: resolve(__dirname, 'web/frontend/app.ts'),
         feed: resolve(__dirname, 'web/frontend/feed.ts'),
+        pixelart_editor: resolve(__dirname, 'web/frontend/pixelart_editor.ts'),
       },
       output: {
         entryFileNames: '[name].js',

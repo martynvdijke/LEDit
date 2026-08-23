@@ -379,6 +379,15 @@ func (s *Server) setupRoutes() {
 		admin.POST("/datasources/genericapi/:id/delete", s.AdminGenericAPIDelete)
 		admin.POST("/datasources/genericapi/test", s.AdminGenericAPITest)
 
+		// Pixel Art
+		admin.GET("/pixelarts", s.PixelArtList)
+		admin.GET("/pixelarts/new", s.PixelArtNew)
+		admin.POST("/pixelarts/new", s.PixelArtCreate)
+		admin.GET("/pixelarts/:id/edit", s.PixelArtEdit)
+		admin.POST("/pixelarts/:id/edit", s.PixelArtUpdate)
+		admin.POST("/pixelarts/:id/delete", s.PixelArtDelete)
+		admin.POST("/pixelarts/preview", s.PixelArtPreview)
+
 		// Matrix layouts
 		admin.GET("/matrixlayouts", s.AdminMatrixLayoutList)
 		admin.GET("/matrixlayouts/new", s.AdminMatrixLayoutNew)
