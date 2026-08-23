@@ -45,8 +45,7 @@ test.describe('Device lifecycle', () => {
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/admin\/devices$/);
     await expect(page.getByText(name)).toBeVisible();
-    await expect(page.getByText('128')).toBeVisible();
-    await expect(page.getByText('32')).toBeVisible();
+    await expect(page.getByRole('cell', { name: '128x32' })).toBeVisible();
   });
 
   test('per-device resolution preview streams at declared dims', async ({ page, wsFeed }) => {

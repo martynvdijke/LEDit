@@ -50,6 +50,8 @@ type Tx struct {
 	LogEntry *LogEntryClient
 	// LogSettings is the client for interacting with the LogSettings builders.
 	LogSettings *LogSettingsClient
+	// MQTTSettings is the client for interacting with the MQTTSettings builders.
+	MQTTSettings *MQTTSettingsClient
 	// MatrixLayout is the client for interacting with the MatrixLayout builders.
 	MatrixLayout *MatrixLayoutClient
 	// NewsFeed is the client for interacting with the NewsFeed builders.
@@ -70,6 +72,8 @@ type Tx struct {
 	Sonarr *SonarrClient
 	// Stock is the client for interacting with the Stock builders.
 	Stock *StockClient
+	// TelegramSettings is the client for interacting with the TelegramSettings builders.
+	TelegramSettings *TelegramSettingsClient
 	// TextSlide is the client for interacting with the TextSlide builders.
 	TextSlide *TextSlideClient
 	// UmamiSettings is the client for interacting with the UmamiSettings builders.
@@ -80,6 +84,8 @@ type Tx struct {
 	Video *VideoClient
 	// Weather is the client for interacting with the Weather builders.
 	Weather *WeatherClient
+	// WebhookSettings is the client for interacting with the WebhookSettings builders.
+	WebhookSettings *WebhookSettingsClient
 
 	// lazily loaded.
 	client     *Client
@@ -230,6 +236,7 @@ func (tx *Tx) init() {
 	tx.Image = NewImageClient(tx.config)
 	tx.LogEntry = NewLogEntryClient(tx.config)
 	tx.LogSettings = NewLogSettingsClient(tx.config)
+	tx.MQTTSettings = NewMQTTSettingsClient(tx.config)
 	tx.MatrixLayout = NewMatrixLayoutClient(tx.config)
 	tx.NewsFeed = NewNewsFeedClient(tx.config)
 	tx.Notification = NewNotificationClient(tx.config)
@@ -240,11 +247,13 @@ func (tx *Tx) init() {
 	tx.Schedule = NewScheduleClient(tx.config)
 	tx.Sonarr = NewSonarrClient(tx.config)
 	tx.Stock = NewStockClient(tx.config)
+	tx.TelegramSettings = NewTelegramSettingsClient(tx.config)
 	tx.TextSlide = NewTextSlideClient(tx.config)
 	tx.UmamiSettings = NewUmamiSettingsClient(tx.config)
 	tx.Untappd = NewUntappdClient(tx.config)
 	tx.Video = NewVideoClient(tx.config)
 	tx.Weather = NewWeatherClient(tx.config)
+	tx.WebhookSettings = NewWebhookSettingsClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

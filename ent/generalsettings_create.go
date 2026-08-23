@@ -22,6 +22,7 @@ import (
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
@@ -30,11 +31,13 @@ import (
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
+	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
+	"ledit/ent/webhooksettings"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -561,6 +564,51 @@ func (_c *GeneralSettingsCreate) AddDisplayrules(v ...*DisplayRule) *GeneralSett
 		ids[i] = v[i].ID
 	}
 	return _c.AddDisplayruleIDs(ids...)
+}
+
+// AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by IDs.
+func (_c *GeneralSettingsCreate) AddWebhooksettingIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddWebhooksettingIDs(ids...)
+	return _c
+}
+
+// AddWebhooksettings adds the "webhooksettings" edges to the WebhookSettings entity.
+func (_c *GeneralSettingsCreate) AddWebhooksettings(v ...*WebhookSettings) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddWebhooksettingIDs(ids...)
+}
+
+// AddMqttsettingIDs adds the "mqttsettings" edge to the MQTTSettings entity by IDs.
+func (_c *GeneralSettingsCreate) AddMqttsettingIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddMqttsettingIDs(ids...)
+	return _c
+}
+
+// AddMqttsettings adds the "mqttsettings" edges to the MQTTSettings entity.
+func (_c *GeneralSettingsCreate) AddMqttsettings(v ...*MQTTSettings) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddMqttsettingIDs(ids...)
+}
+
+// AddTelegramsettingIDs adds the "telegramsettings" edge to the TelegramSettings entity by IDs.
+func (_c *GeneralSettingsCreate) AddTelegramsettingIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddTelegramsettingIDs(ids...)
+	return _c
+}
+
+// AddTelegramsettings adds the "telegramsettings" edges to the TelegramSettings entity.
+func (_c *GeneralSettingsCreate) AddTelegramsettings(v ...*TelegramSettings) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddTelegramsettingIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -1153,6 +1201,54 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(displayrule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.WebhooksettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WebhooksettingsTable,
+			Columns: []string{generalsettings.WebhooksettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(webhooksettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.MqttsettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MqttsettingsTable,
+			Columns: []string{generalsettings.MqttsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mqttsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TelegramsettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TelegramsettingsTable,
+			Columns: []string{generalsettings.TelegramsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(telegramsettings.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -156,8 +156,6 @@ func TestAPIAnonymousWriteRejected(t *testing.T) {
 		"/api/feed/next",
 		"/api/feed/pause",
 		"/api/feed/resume",
-		"/api/feed/priority",
-		"/api/webhook/notify",
 	}
 	for _, path := range writes {
 		w := doRequest(t, srv, http.MethodPost, path, "")

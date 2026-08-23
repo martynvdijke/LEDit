@@ -236,6 +236,18 @@ func (f LogSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LogSettingsMutation", m)
 }
 
+// The MQTTSettingsFunc type is an adapter to allow the use of ordinary
+// function as MQTTSettings mutator.
+type MQTTSettingsFunc func(context.Context, *ent.MQTTSettingsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MQTTSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.MQTTSettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MQTTSettingsMutation", m)
+}
+
 // The MatrixLayoutFunc type is an adapter to allow the use of ordinary
 // function as MatrixLayout mutator.
 type MatrixLayoutFunc func(context.Context, *ent.MatrixLayoutMutation) (ent.Value, error)
@@ -356,6 +368,18 @@ func (f StockFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StockMutation", m)
 }
 
+// The TelegramSettingsFunc type is an adapter to allow the use of ordinary
+// function as TelegramSettings mutator.
+type TelegramSettingsFunc func(context.Context, *ent.TelegramSettingsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TelegramSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TelegramSettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TelegramSettingsMutation", m)
+}
+
 // The TextSlideFunc type is an adapter to allow the use of ordinary
 // function as TextSlide mutator.
 type TextSlideFunc func(context.Context, *ent.TextSlideMutation) (ent.Value, error)
@@ -414,6 +438,18 @@ func (f WeatherFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WeatherMutation", m)
+}
+
+// The WebhookSettingsFunc type is an adapter to allow the use of ordinary
+// function as WebhookSettings mutator.
+type WebhookSettingsFunc func(context.Context, *ent.WebhookSettingsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WebhookSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WebhookSettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WebhookSettingsMutation", m)
 }
 
 // Condition is a hook condition function.

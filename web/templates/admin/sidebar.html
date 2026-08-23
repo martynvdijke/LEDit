@@ -31,6 +31,9 @@
         <a href="/admin/settings/alerts" class="nav-link{{if eq $.active "alerts"}} active{{end}}"><span class="nav-icon">·</span>Alert settings</a>
         <a href="/admin/settings/ai" class="nav-link{{if eq $.active "ai"}} active{{end}}"><span class="nav-icon">·</span>AI settings</a>
         <a href="/admin/settings/umami" class="nav-link{{if eq $.active "umami"}} active{{end}}"><span class="nav-icon">·</span>Umami analytics</a>
+        <a href="/admin/webhook" class="nav-link{{if eq $.active "webhook"}} active{{end}}"><span class="nav-icon">·</span>Webhook</a>
+        <a href="/admin/mqtt" class="nav-link{{if eq $.active "mqtt"}} active{{end}}"><span class="nav-icon">·</span>MQTT</a>
+        <a href="/admin/telegram" class="nav-link{{if eq $.active "telegram"}} active{{end}}"><span class="nav-icon">·</span>Telegram</a>
         <a href="/admin/eink/toggle" class="nav-link{{if eq $.active "eink"}} active{{end}}" id="eink-toggle-link"><span class="nav-icon">{{if .eink_mode}}■{{else}}□{{end}}</span>E-Ink: {{if .eink_mode}}On{{else}}Off{{end}}</a>
         <details class="nav-datasources">
             <summary class="nav-link"><span class="nav-icon">＋</span>Add datasource</summary>

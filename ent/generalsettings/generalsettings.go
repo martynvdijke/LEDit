@@ -84,6 +84,12 @@ const (
 	EdgePlaylists = "playlists"
 	// EdgeDisplayrules holds the string denoting the displayrules edge name in mutations.
 	EdgeDisplayrules = "displayrules"
+	// EdgeWebhooksettings holds the string denoting the webhooksettings edge name in mutations.
+	EdgeWebhooksettings = "webhooksettings"
+	// EdgeMqttsettings holds the string denoting the mqttsettings edge name in mutations.
+	EdgeMqttsettings = "mqttsettings"
+	// EdgeTelegramsettings holds the string denoting the telegramsettings edge name in mutations.
+	EdgeTelegramsettings = "telegramsettings"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -282,6 +288,27 @@ const (
 	DisplayrulesInverseTable = "display_rules"
 	// DisplayrulesColumn is the table column denoting the displayrules relation/edge.
 	DisplayrulesColumn = "general_settings_displayrules"
+	// WebhooksettingsTable is the table that holds the webhooksettings relation/edge.
+	WebhooksettingsTable = "webhook_settings"
+	// WebhooksettingsInverseTable is the table name for the WebhookSettings entity.
+	// It exists in this package in order to avoid circular dependency with the "webhooksettings" package.
+	WebhooksettingsInverseTable = "webhook_settings"
+	// WebhooksettingsColumn is the table column denoting the webhooksettings relation/edge.
+	WebhooksettingsColumn = "general_settings_webhooksettings"
+	// MqttsettingsTable is the table that holds the mqttsettings relation/edge.
+	MqttsettingsTable = "mqtt_settings"
+	// MqttsettingsInverseTable is the table name for the MQTTSettings entity.
+	// It exists in this package in order to avoid circular dependency with the "mqttsettings" package.
+	MqttsettingsInverseTable = "mqtt_settings"
+	// MqttsettingsColumn is the table column denoting the mqttsettings relation/edge.
+	MqttsettingsColumn = "general_settings_mqttsettings"
+	// TelegramsettingsTable is the table that holds the telegramsettings relation/edge.
+	TelegramsettingsTable = "telegram_settings"
+	// TelegramsettingsInverseTable is the table name for the TelegramSettings entity.
+	// It exists in this package in order to avoid circular dependency with the "telegramsettings" package.
+	TelegramsettingsInverseTable = "telegram_settings"
+	// TelegramsettingsColumn is the table column denoting the telegramsettings relation/edge.
+	TelegramsettingsColumn = "general_settings_telegramsettings"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -765,6 +792,48 @@ func ByDisplayrules(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newDisplayrulesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByWebhooksettingsCount orders the results by webhooksettings count.
+func ByWebhooksettingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newWebhooksettingsStep(), opts...)
+	}
+}
+
+// ByWebhooksettings orders the results by webhooksettings terms.
+func ByWebhooksettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newWebhooksettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByMqttsettingsCount orders the results by mqttsettings count.
+func ByMqttsettingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMqttsettingsStep(), opts...)
+	}
+}
+
+// ByMqttsettings orders the results by mqttsettings terms.
+func ByMqttsettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMqttsettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByTelegramsettingsCount orders the results by telegramsettings count.
+func ByTelegramsettingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTelegramsettingsStep(), opts...)
+	}
+}
+
+// ByTelegramsettings orders the results by telegramsettings terms.
+func ByTelegramsettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTelegramsettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -959,5 +1028,26 @@ func newDisplayrulesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DisplayrulesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, DisplayrulesTable, DisplayrulesColumn),
+	)
+}
+func newWebhooksettingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(WebhooksettingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, WebhooksettingsTable, WebhooksettingsColumn),
+	)
+}
+func newMqttsettingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MqttsettingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MqttsettingsTable, MqttsettingsColumn),
+	)
+}
+func newTelegramsettingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TelegramsettingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TelegramsettingsTable, TelegramsettingsColumn),
 	)
 }

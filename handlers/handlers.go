@@ -37,6 +37,9 @@ var pathToActive = map[string]string{
 	"/admin/notifications":   "notifications",
 	"/admin/password":        "password",
 	"/admin/matrixlayouts":   "matrixlayouts",
+	"/admin/webhook":         "webhook",
+	"/admin/mqtt":            "mqtt",
+	"/admin/telegram":        "telegram",
 }
 
 func activePage(c *gin.Context) string {

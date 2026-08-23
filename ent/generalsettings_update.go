@@ -22,6 +22,7 @@ import (
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
@@ -31,11 +32,13 @@ import (
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
+	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
+	"ledit/ent/webhooksettings"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -625,6 +628,51 @@ func (_u *GeneralSettingsUpdate) AddDisplayrules(v ...*DisplayRule) *GeneralSett
 		ids[i] = v[i].ID
 	}
 	return _u.AddDisplayruleIDs(ids...)
+}
+
+// AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by IDs.
+func (_u *GeneralSettingsUpdate) AddWebhooksettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddWebhooksettingIDs(ids...)
+	return _u
+}
+
+// AddWebhooksettings adds the "webhooksettings" edges to the WebhookSettings entity.
+func (_u *GeneralSettingsUpdate) AddWebhooksettings(v ...*WebhookSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddWebhooksettingIDs(ids...)
+}
+
+// AddMqttsettingIDs adds the "mqttsettings" edge to the MQTTSettings entity by IDs.
+func (_u *GeneralSettingsUpdate) AddMqttsettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddMqttsettingIDs(ids...)
+	return _u
+}
+
+// AddMqttsettings adds the "mqttsettings" edges to the MQTTSettings entity.
+func (_u *GeneralSettingsUpdate) AddMqttsettings(v ...*MQTTSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddMqttsettingIDs(ids...)
+}
+
+// AddTelegramsettingIDs adds the "telegramsettings" edge to the TelegramSettings entity by IDs.
+func (_u *GeneralSettingsUpdate) AddTelegramsettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddTelegramsettingIDs(ids...)
+	return _u
+}
+
+// AddTelegramsettings adds the "telegramsettings" edges to the TelegramSettings entity.
+func (_u *GeneralSettingsUpdate) AddTelegramsettings(v ...*TelegramSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTelegramsettingIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -1218,6 +1266,69 @@ func (_u *GeneralSettingsUpdate) RemoveDisplayrules(v ...*DisplayRule) *GeneralS
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveDisplayruleIDs(ids...)
+}
+
+// ClearWebhooksettings clears all "webhooksettings" edges to the WebhookSettings entity.
+func (_u *GeneralSettingsUpdate) ClearWebhooksettings() *GeneralSettingsUpdate {
+	_u.mutation.ClearWebhooksettings()
+	return _u
+}
+
+// RemoveWebhooksettingIDs removes the "webhooksettings" edge to WebhookSettings entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveWebhooksettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveWebhooksettingIDs(ids...)
+	return _u
+}
+
+// RemoveWebhooksettings removes "webhooksettings" edges to WebhookSettings entities.
+func (_u *GeneralSettingsUpdate) RemoveWebhooksettings(v ...*WebhookSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveWebhooksettingIDs(ids...)
+}
+
+// ClearMqttsettings clears all "mqttsettings" edges to the MQTTSettings entity.
+func (_u *GeneralSettingsUpdate) ClearMqttsettings() *GeneralSettingsUpdate {
+	_u.mutation.ClearMqttsettings()
+	return _u
+}
+
+// RemoveMqttsettingIDs removes the "mqttsettings" edge to MQTTSettings entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveMqttsettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveMqttsettingIDs(ids...)
+	return _u
+}
+
+// RemoveMqttsettings removes "mqttsettings" edges to MQTTSettings entities.
+func (_u *GeneralSettingsUpdate) RemoveMqttsettings(v ...*MQTTSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveMqttsettingIDs(ids...)
+}
+
+// ClearTelegramsettings clears all "telegramsettings" edges to the TelegramSettings entity.
+func (_u *GeneralSettingsUpdate) ClearTelegramsettings() *GeneralSettingsUpdate {
+	_u.mutation.ClearTelegramsettings()
+	return _u
+}
+
+// RemoveTelegramsettingIDs removes the "telegramsettings" edge to TelegramSettings entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveTelegramsettingIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveTelegramsettingIDs(ids...)
+	return _u
+}
+
+// RemoveTelegramsettings removes "telegramsettings" edges to TelegramSettings entities.
+func (_u *GeneralSettingsUpdate) RemoveTelegramsettings(v ...*TelegramSettings) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTelegramsettingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -2576,6 +2687,141 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.WebhooksettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WebhooksettingsTable,
+			Columns: []string{generalsettings.WebhooksettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(webhooksettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedWebhooksettingsIDs(); len(nodes) > 0 && !_u.mutation.WebhooksettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WebhooksettingsTable,
+			Columns: []string{generalsettings.WebhooksettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(webhooksettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.WebhooksettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WebhooksettingsTable,
+			Columns: []string{generalsettings.WebhooksettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(webhooksettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.MqttsettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MqttsettingsTable,
+			Columns: []string{generalsettings.MqttsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mqttsettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedMqttsettingsIDs(); len(nodes) > 0 && !_u.mutation.MqttsettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MqttsettingsTable,
+			Columns: []string{generalsettings.MqttsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mqttsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MqttsettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MqttsettingsTable,
+			Columns: []string{generalsettings.MqttsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mqttsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TelegramsettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TelegramsettingsTable,
+			Columns: []string{generalsettings.TelegramsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(telegramsettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTelegramsettingsIDs(); len(nodes) > 0 && !_u.mutation.TelegramsettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TelegramsettingsTable,
+			Columns: []string{generalsettings.TelegramsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(telegramsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TelegramsettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TelegramsettingsTable,
+			Columns: []string{generalsettings.TelegramsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(telegramsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -3166,6 +3412,51 @@ func (_u *GeneralSettingsUpdateOne) AddDisplayrules(v ...*DisplayRule) *GeneralS
 		ids[i] = v[i].ID
 	}
 	return _u.AddDisplayruleIDs(ids...)
+}
+
+// AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddWebhooksettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddWebhooksettingIDs(ids...)
+	return _u
+}
+
+// AddWebhooksettings adds the "webhooksettings" edges to the WebhookSettings entity.
+func (_u *GeneralSettingsUpdateOne) AddWebhooksettings(v ...*WebhookSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddWebhooksettingIDs(ids...)
+}
+
+// AddMqttsettingIDs adds the "mqttsettings" edge to the MQTTSettings entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddMqttsettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddMqttsettingIDs(ids...)
+	return _u
+}
+
+// AddMqttsettings adds the "mqttsettings" edges to the MQTTSettings entity.
+func (_u *GeneralSettingsUpdateOne) AddMqttsettings(v ...*MQTTSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddMqttsettingIDs(ids...)
+}
+
+// AddTelegramsettingIDs adds the "telegramsettings" edge to the TelegramSettings entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddTelegramsettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddTelegramsettingIDs(ids...)
+	return _u
+}
+
+// AddTelegramsettings adds the "telegramsettings" edges to the TelegramSettings entity.
+func (_u *GeneralSettingsUpdateOne) AddTelegramsettings(v ...*TelegramSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTelegramsettingIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -3759,6 +4050,69 @@ func (_u *GeneralSettingsUpdateOne) RemoveDisplayrules(v ...*DisplayRule) *Gener
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveDisplayruleIDs(ids...)
+}
+
+// ClearWebhooksettings clears all "webhooksettings" edges to the WebhookSettings entity.
+func (_u *GeneralSettingsUpdateOne) ClearWebhooksettings() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearWebhooksettings()
+	return _u
+}
+
+// RemoveWebhooksettingIDs removes the "webhooksettings" edge to WebhookSettings entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveWebhooksettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveWebhooksettingIDs(ids...)
+	return _u
+}
+
+// RemoveWebhooksettings removes "webhooksettings" edges to WebhookSettings entities.
+func (_u *GeneralSettingsUpdateOne) RemoveWebhooksettings(v ...*WebhookSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveWebhooksettingIDs(ids...)
+}
+
+// ClearMqttsettings clears all "mqttsettings" edges to the MQTTSettings entity.
+func (_u *GeneralSettingsUpdateOne) ClearMqttsettings() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearMqttsettings()
+	return _u
+}
+
+// RemoveMqttsettingIDs removes the "mqttsettings" edge to MQTTSettings entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveMqttsettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveMqttsettingIDs(ids...)
+	return _u
+}
+
+// RemoveMqttsettings removes "mqttsettings" edges to MQTTSettings entities.
+func (_u *GeneralSettingsUpdateOne) RemoveMqttsettings(v ...*MQTTSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveMqttsettingIDs(ids...)
+}
+
+// ClearTelegramsettings clears all "telegramsettings" edges to the TelegramSettings entity.
+func (_u *GeneralSettingsUpdateOne) ClearTelegramsettings() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearTelegramsettings()
+	return _u
+}
+
+// RemoveTelegramsettingIDs removes the "telegramsettings" edge to TelegramSettings entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveTelegramsettingIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveTelegramsettingIDs(ids...)
+	return _u
+}
+
+// RemoveTelegramsettings removes "telegramsettings" edges to TelegramSettings entities.
+func (_u *GeneralSettingsUpdateOne) RemoveTelegramsettings(v ...*TelegramSettings) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTelegramsettingIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -5140,6 +5494,141 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(displayrule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.WebhooksettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WebhooksettingsTable,
+			Columns: []string{generalsettings.WebhooksettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(webhooksettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedWebhooksettingsIDs(); len(nodes) > 0 && !_u.mutation.WebhooksettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WebhooksettingsTable,
+			Columns: []string{generalsettings.WebhooksettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(webhooksettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.WebhooksettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WebhooksettingsTable,
+			Columns: []string{generalsettings.WebhooksettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(webhooksettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.MqttsettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MqttsettingsTable,
+			Columns: []string{generalsettings.MqttsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mqttsettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedMqttsettingsIDs(); len(nodes) > 0 && !_u.mutation.MqttsettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MqttsettingsTable,
+			Columns: []string{generalsettings.MqttsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mqttsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MqttsettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MqttsettingsTable,
+			Columns: []string{generalsettings.MqttsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mqttsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TelegramsettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TelegramsettingsTable,
+			Columns: []string{generalsettings.TelegramsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(telegramsettings.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTelegramsettingsIDs(); len(nodes) > 0 && !_u.mutation.TelegramsettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TelegramsettingsTable,
+			Columns: []string{generalsettings.TelegramsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(telegramsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TelegramsettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TelegramsettingsTable,
+			Columns: []string{generalsettings.TelegramsettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(telegramsettings.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

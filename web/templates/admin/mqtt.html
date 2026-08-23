@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - MQTT Settings</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>MQTT Settings</h1>
+            {{if .error}}<div class="alert alert-danger">{{.error}}</div>{{end}}
+            <form method="POST" action="/admin/mqtt" class="mt-4">
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if and .settings .settings.Enabled}}checked{{end}}>
+                    <label for="enabled" class="form-check-label">Enabled</label>
+                </div>
+                <div class="mb-3">
+                    <label for="broker" class="form-label">Broker</label>
+                    <input type="text" class="form-control" id="broker" name="broker" value="{{if .settings}}{{.settings.Broker}}{{end}}" placeholder="tcp://localhost:1883">
+                </div>
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" value="{{if .settings}}{{.settings.Username}}{{end}}">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" value="{{if .settings}}{{.settings.Password}}{{end}}">
+                </div>
+                <div class="mb-3">
+                    <label for="control_topic" class="form-label">Control Topic</label>
+                    <input type="text" class="form-control" id="control_topic" name="control_topic" value="{{if .settings}}{{.settings.ControlTopic}}{{else}}ledit/control{{end}}">
+                </div>
+                <div class="mb-3">
+                    <label for="display_topic" class="form-label">Display Topic</label>
+                    <input type="text" class="form-control" id="display_topic" name="display_topic" value="{{if .settings}}{{.settings.DisplayTopic}}{{else}}ledit/display{{end}}">
+                </div>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </form>
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

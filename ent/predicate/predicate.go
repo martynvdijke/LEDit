@@ -63,6 +63,9 @@ type LogEntry func(*sql.Selector)
 // LogSettings is the predicate function for logsettings builders.
 type LogSettings func(*sql.Selector)
 
+// MQTTSettings is the predicate function for mqttsettings builders.
+type MQTTSettings func(*sql.Selector)
+
 // MatrixLayout is the predicate function for matrixlayout builders.
 type MatrixLayout func(*sql.Selector)
 
@@ -93,6 +96,9 @@ type Sonarr func(*sql.Selector)
 // Stock is the predicate function for stock builders.
 type Stock func(*sql.Selector)
 
+// TelegramSettings is the predicate function for telegramsettings builders.
+type TelegramSettings func(*sql.Selector)
+
 // TextSlide is the predicate function for textslide builders.
 type TextSlide func(*sql.Selector)
 
@@ -107,3 +113,6 @@ type Video func(*sql.Selector)
 
 // Weather is the predicate function for weather builders.
 type Weather func(*sql.Selector)
+
+// WebhookSettings is the predicate function for webhooksettings builders.
+type WebhookSettings func(*sql.Selector)

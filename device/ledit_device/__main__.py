@@ -13,6 +13,7 @@ from .telemetry import init_telemetry
 
 def main():
     telemetry = init_telemetry()
+    buttons = None
     try:
         token_value = token()
         url = "%s/ws/device/%s" % (server_url(), token_value)
@@ -28,9 +29,27 @@ def main():
             on_close=client.on_close,
             on_reconnect=client.on_reconnect,
         )
+        try:  # pragma: no cover - hardware wiring, tested via mock
+            from .buttons import ButtonHandler  # pragma: no cover
+
+            def _sender(msg):  # pragma: no cover
+                try:  # pragma: no cover
+                    ws.send(msg)  # pragma: no cover
+                except Exception:  # pragma: no cover
+                    pass  # pragma: no cover
+
+            buttons = ButtonHandler(sender=_sender)  # pragma: no cover
+            buttons.start()  # pragma: no cover
+        except Exception:  # pragma: no cover
+            pass  # pragma: no cover
         # run_forever with reconnect=True keeps the device online across drops.
         ws.run_forever(ping_interval=30, ping_timeout=10, reconnect=5)
     finally:
+        if buttons is not None:  # pragma: no cover
+            try:  # pragma: no cover
+                buttons.close()  # pragma: no cover
+            except Exception:  # pragma: no cover
+                pass  # pragma: no cover
         telemetry.shutdown()
 
 

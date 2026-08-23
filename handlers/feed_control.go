@@ -169,23 +169,67 @@ var (
 )
 
 type notifEntry struct {
-	ID      int    `json:"id"`
-	Title   string `json:"title"`
-	Message string `json:"message"`
-	Time    string `json:"time"`
+	ID        int       `json:"id"`
+	Title     string    `json:"title"`
+	Message   string    `json:"message"`
+	Time      string    `json:"time"`
+	ExpiresAt time.Time `json:"expires_at,omitempty"`
+	// Color is an in-memory hint reserved for future theme support; DB persistence stays Title/Message-only.
+	Color string `json:"color,omitempty"`
+}
+
+// NotifOption configures AddNotification.
+type notifConfig struct {
+	ttl       time.Duration
+	color     string
+	expiresAt time.Time
+}
+
+// NotifOption is an exported functional option for AddNotification.
+type NotifOption func(*notifConfig)
+
+// WithTTL sets the notification TTL. Zero or negative means no expiry.
+func WithTTL(d time.Duration) NotifOption {
+	return func(c *notifConfig) { c.ttl = d }
+}
+
+// withColor is an internal option to store a color hint.
+func withColor(color string) NotifOption {
+	return func(c *notifConfig) { c.color = color }
+}
+
+// withExpiresAt is an internal option for testing expiry.
+func withExpiresAt(t time.Time) NotifOption {
+	return func(c *notifConfig) { c.expiresAt = t }
 }
 
 // addToMemoryQueue stores a notification in the in-memory queue (for live feed display).
 func addToMemoryQueue(title, message string) {
+	addToMemoryQueueWithOptions(title, message)
+}
+
+func addToMemoryQueueWithOptions(title, message string, opts ...NotifOption) {
+	cfg := &notifConfig{}
+	for _, o := range opts {
+		o(cfg)
+	}
+	var exp time.Time
+	if !cfg.expiresAt.IsZero() {
+		exp = cfg.expiresAt
+	} else if cfg.ttl > 0 {
+		exp = time.Now().Add(cfg.ttl)
+	}
 	priorityMu.Lock()
 	defer priorityMu.Unlock()
 	notifID++
 	t := time.Now().Format("15:04:05")
 	notifHistory = append(notifHistory, notifEntry{
-		ID:      notifID,
-		Title:   title,
-		Message: message,
-		Time:    t,
+		ID:        notifID,
+		Title:     title,
+		Message:   message,
+		Time:      t,
+		ExpiresAt: exp,
+		Color:     cfg.color,
 	})
 	// Keep last 50
 	if len(notifHistory) > 50 {
@@ -211,11 +255,22 @@ func CurrentNotifSeq() int {
 
 // NotificationsAfter returns in-memory notifications with an ID greater than
 // cursor, in ascending order. Used to broadcast each notification to every
-// connection exactly once.
+// connection exactly once. Expired entries are pruned on read.
 func NotificationsAfter(cursor int) []notifEntry {
-	all := getMemoryQueue()
+	priorityMu.Lock()
+	defer priorityMu.Unlock()
+	now := time.Now()
+	// Prune expired entries.
+	kept := notifHistory[:0]
+	for _, n := range notifHistory {
+		if !n.ExpiresAt.IsZero() && n.ExpiresAt.Before(now) {
+			continue
+		}
+		kept = append(kept, n)
+	}
+	notifHistory = kept
 	var out []notifEntry
-	for _, n := range all {
+	for _, n := range notifHistory {
 		if n.ID > cursor {
 			out = append(out, n)
 		}
@@ -224,11 +279,12 @@ func NotificationsAfter(cursor int) []notifEntry {
 }
 
 // AddNotification persists a notification to DB and adds to the in-memory queue.
-func (s *Server) AddNotification(title, message string) {
+// Variadic opts keep existing call sites compiling unchanged. TTL via WithTTL.
+func (s *Server) AddNotification(title, message string, opts ...NotifOption) {
 	if s.DB != nil {
 		s.DB.Notification.Create().SetTitle(title).SetMessage(message).SetCreatedAt(time.Now()).SaveX(s.Ctx)
 	}
-	addToMemoryQueue(title, message)
+	addToMemoryQueueWithOptions(title, message, opts...)
 }
 
 // GetNotificationHistory returns merged DB + in-memory notification history (up to 50).

@@ -429,6 +429,31 @@ var (
 		Columns:    LogSettingsColumns,
 		PrimaryKey: []*schema.Column{LogSettingsColumns[0]},
 	}
+	// MqttSettingsColumns holds the columns for the "mqtt_settings" table.
+	MqttSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "enabled", Type: field.TypeBool, Default: false},
+		{Name: "broker", Type: field.TypeString, Default: ""},
+		{Name: "username", Type: field.TypeString, Default: ""},
+		{Name: "password", Type: field.TypeString, Default: ""},
+		{Name: "control_topic", Type: field.TypeString, Default: "ledit/control"},
+		{Name: "display_topic", Type: field.TypeString, Default: "ledit/display"},
+		{Name: "general_settings_mqttsettings", Type: field.TypeInt, Nullable: true},
+	}
+	// MqttSettingsTable holds the schema information for the "mqtt_settings" table.
+	MqttSettingsTable = &schema.Table{
+		Name:       "mqtt_settings",
+		Columns:    MqttSettingsColumns,
+		PrimaryKey: []*schema.Column{MqttSettingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "mqtt_settings_general_settings_mqttsettings",
+				Columns:    []*schema.Column{MqttSettingsColumns[7]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// MatrixLayoutsColumns holds the columns for the "matrix_layouts" table.
 	MatrixLayoutsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -644,6 +669,28 @@ var (
 			},
 		},
 	}
+	// TelegramSettingsColumns holds the columns for the "telegram_settings" table.
+	TelegramSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "enabled", Type: field.TypeBool, Default: false},
+		{Name: "bot_token", Type: field.TypeString, Default: ""},
+		{Name: "allowed_chat_id", Type: field.TypeInt64, Default: 0},
+		{Name: "general_settings_telegramsettings", Type: field.TypeInt, Nullable: true},
+	}
+	// TelegramSettingsTable holds the schema information for the "telegram_settings" table.
+	TelegramSettingsTable = &schema.Table{
+		Name:       "telegram_settings",
+		Columns:    TelegramSettingsColumns,
+		PrimaryKey: []*schema.Column{TelegramSettingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "telegram_settings_general_settings_telegramsettings",
+				Columns:    []*schema.Column{TelegramSettingsColumns[4]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// TextSlidesColumns holds the columns for the "text_slides" table.
 	TextSlidesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -751,6 +798,27 @@ var (
 			},
 		},
 	}
+	// WebhookSettingsColumns holds the columns for the "webhook_settings" table.
+	WebhookSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "api_key", Type: field.TypeString, Default: ""},
+		{Name: "default_ttl", Type: field.TypeInt, Default: 30},
+		{Name: "general_settings_webhooksettings", Type: field.TypeInt, Nullable: true},
+	}
+	// WebhookSettingsTable holds the schema information for the "webhook_settings" table.
+	WebhookSettingsTable = &schema.Table{
+		Name:       "webhook_settings",
+		Columns:    WebhookSettingsColumns,
+		PrimaryKey: []*schema.Column{WebhookSettingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "webhook_settings_general_settings_webhooksettings",
+				Columns:    []*schema.Column{WebhookSettingsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AiDigestsTable,
@@ -772,6 +840,7 @@ var (
 		ImagesTable,
 		LogEntriesTable,
 		LogSettingsTable,
+		MqttSettingsTable,
 		MatrixLayoutsTable,
 		NewsFeedsTable,
 		NotificationsTable,
@@ -782,11 +851,13 @@ var (
 		SchedulesTable,
 		SonarrsTable,
 		StocksTable,
+		TelegramSettingsTable,
 		TextSlidesTable,
 		UmamiSettingsTable,
 		UntappdsTable,
 		VideosTable,
 		WeathersTable,
+		WebhookSettingsTable,
 	}
 )
 
@@ -805,6 +876,7 @@ func init() {
 	GoogleCalendarsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	HomeAssistantsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	ImagesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	MqttSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	MatrixLayoutsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	NewsFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PixelArtsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
@@ -814,9 +886,11 @@ func init() {
 	SchedulesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SonarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	StocksTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	TelegramSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	TextSlidesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UmamiSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UntappdsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	VideosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	WeathersTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	WebhookSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 }

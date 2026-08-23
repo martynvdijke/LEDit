@@ -31,6 +31,7 @@ import (
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/pixelart"
@@ -40,11 +41,13 @@ import (
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
+	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
+	"ledit/ent/webhooksettings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -95,6 +98,8 @@ type Client struct {
 	LogEntry *LogEntryClient
 	// LogSettings is the client for interacting with the LogSettings builders.
 	LogSettings *LogSettingsClient
+	// MQTTSettings is the client for interacting with the MQTTSettings builders.
+	MQTTSettings *MQTTSettingsClient
 	// MatrixLayout is the client for interacting with the MatrixLayout builders.
 	MatrixLayout *MatrixLayoutClient
 	// NewsFeed is the client for interacting with the NewsFeed builders.
@@ -115,6 +120,8 @@ type Client struct {
 	Sonarr *SonarrClient
 	// Stock is the client for interacting with the Stock builders.
 	Stock *StockClient
+	// TelegramSettings is the client for interacting with the TelegramSettings builders.
+	TelegramSettings *TelegramSettingsClient
 	// TextSlide is the client for interacting with the TextSlide builders.
 	TextSlide *TextSlideClient
 	// UmamiSettings is the client for interacting with the UmamiSettings builders.
@@ -125,6 +132,8 @@ type Client struct {
 	Video *VideoClient
 	// Weather is the client for interacting with the Weather builders.
 	Weather *WeatherClient
+	// WebhookSettings is the client for interacting with the WebhookSettings builders.
+	WebhookSettings *WebhookSettingsClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -155,6 +164,7 @@ func (c *Client) init() {
 	c.Image = NewImageClient(c.config)
 	c.LogEntry = NewLogEntryClient(c.config)
 	c.LogSettings = NewLogSettingsClient(c.config)
+	c.MQTTSettings = NewMQTTSettingsClient(c.config)
 	c.MatrixLayout = NewMatrixLayoutClient(c.config)
 	c.NewsFeed = NewNewsFeedClient(c.config)
 	c.Notification = NewNotificationClient(c.config)
@@ -165,11 +175,13 @@ func (c *Client) init() {
 	c.Schedule = NewScheduleClient(c.config)
 	c.Sonarr = NewSonarrClient(c.config)
 	c.Stock = NewStockClient(c.config)
+	c.TelegramSettings = NewTelegramSettingsClient(c.config)
 	c.TextSlide = NewTextSlideClient(c.config)
 	c.UmamiSettings = NewUmamiSettingsClient(c.config)
 	c.Untappd = NewUntappdClient(c.config)
 	c.Video = NewVideoClient(c.config)
 	c.Weather = NewWeatherClient(c.config)
+	c.WebhookSettings = NewWebhookSettingsClient(c.config)
 }
 
 type (
@@ -260,42 +272,45 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:             ctx,
-		config:          cfg,
-		AIDigest:        NewAIDigestClient(cfg),
-		AISettings:      NewAISettingsClient(cfg),
-		AdminSettings:   NewAdminSettingsClient(cfg),
-		AlertSettings:   NewAlertSettingsClient(cfg),
-		ApiToken:        NewApiTokenClient(cfg),
-		Calendar:        NewCalendarClient(cfg),
-		Countdown:       NewCountdownClient(cfg),
-		Crypto:          NewCryptoClient(cfg),
-		DeviceSettings:  NewDeviceSettingsClient(cfg),
-		DisplayRule:     NewDisplayRuleClient(cfg),
-		EmailSettings:   NewEmailSettingsClient(cfg),
-		F1:              NewF1Client(cfg),
-		GeneralSettings: NewGeneralSettingsClient(cfg),
-		GenericAPI:      NewGenericAPIClient(cfg),
-		GoogleCalendar:  NewGoogleCalendarClient(cfg),
-		HomeAssistant:   NewHomeAssistantClient(cfg),
-		Image:           NewImageClient(cfg),
-		LogEntry:        NewLogEntryClient(cfg),
-		LogSettings:     NewLogSettingsClient(cfg),
-		MatrixLayout:    NewMatrixLayoutClient(cfg),
-		NewsFeed:        NewNewsFeedClient(cfg),
-		Notification:    NewNotificationClient(cfg),
-		PixelArt:        NewPixelArtClient(cfg),
-		Playlist:        NewPlaylistClient(cfg),
-		Radarr:          NewRadarrClient(cfg),
-		RssFeed:         NewRssFeedClient(cfg),
-		Schedule:        NewScheduleClient(cfg),
-		Sonarr:          NewSonarrClient(cfg),
-		Stock:           NewStockClient(cfg),
-		TextSlide:       NewTextSlideClient(cfg),
-		UmamiSettings:   NewUmamiSettingsClient(cfg),
-		Untappd:         NewUntappdClient(cfg),
-		Video:           NewVideoClient(cfg),
-		Weather:         NewWeatherClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		AIDigest:         NewAIDigestClient(cfg),
+		AISettings:       NewAISettingsClient(cfg),
+		AdminSettings:    NewAdminSettingsClient(cfg),
+		AlertSettings:    NewAlertSettingsClient(cfg),
+		ApiToken:         NewApiTokenClient(cfg),
+		Calendar:         NewCalendarClient(cfg),
+		Countdown:        NewCountdownClient(cfg),
+		Crypto:           NewCryptoClient(cfg),
+		DeviceSettings:   NewDeviceSettingsClient(cfg),
+		DisplayRule:      NewDisplayRuleClient(cfg),
+		EmailSettings:    NewEmailSettingsClient(cfg),
+		F1:               NewF1Client(cfg),
+		GeneralSettings:  NewGeneralSettingsClient(cfg),
+		GenericAPI:       NewGenericAPIClient(cfg),
+		GoogleCalendar:   NewGoogleCalendarClient(cfg),
+		HomeAssistant:    NewHomeAssistantClient(cfg),
+		Image:            NewImageClient(cfg),
+		LogEntry:         NewLogEntryClient(cfg),
+		LogSettings:      NewLogSettingsClient(cfg),
+		MQTTSettings:     NewMQTTSettingsClient(cfg),
+		MatrixLayout:     NewMatrixLayoutClient(cfg),
+		NewsFeed:         NewNewsFeedClient(cfg),
+		Notification:     NewNotificationClient(cfg),
+		PixelArt:         NewPixelArtClient(cfg),
+		Playlist:         NewPlaylistClient(cfg),
+		Radarr:           NewRadarrClient(cfg),
+		RssFeed:          NewRssFeedClient(cfg),
+		Schedule:         NewScheduleClient(cfg),
+		Sonarr:           NewSonarrClient(cfg),
+		Stock:            NewStockClient(cfg),
+		TelegramSettings: NewTelegramSettingsClient(cfg),
+		TextSlide:        NewTextSlideClient(cfg),
+		UmamiSettings:    NewUmamiSettingsClient(cfg),
+		Untappd:          NewUntappdClient(cfg),
+		Video:            NewVideoClient(cfg),
+		Weather:          NewWeatherClient(cfg),
+		WebhookSettings:  NewWebhookSettingsClient(cfg),
 	}, nil
 }
 
@@ -313,42 +328,45 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:             ctx,
-		config:          cfg,
-		AIDigest:        NewAIDigestClient(cfg),
-		AISettings:      NewAISettingsClient(cfg),
-		AdminSettings:   NewAdminSettingsClient(cfg),
-		AlertSettings:   NewAlertSettingsClient(cfg),
-		ApiToken:        NewApiTokenClient(cfg),
-		Calendar:        NewCalendarClient(cfg),
-		Countdown:       NewCountdownClient(cfg),
-		Crypto:          NewCryptoClient(cfg),
-		DeviceSettings:  NewDeviceSettingsClient(cfg),
-		DisplayRule:     NewDisplayRuleClient(cfg),
-		EmailSettings:   NewEmailSettingsClient(cfg),
-		F1:              NewF1Client(cfg),
-		GeneralSettings: NewGeneralSettingsClient(cfg),
-		GenericAPI:      NewGenericAPIClient(cfg),
-		GoogleCalendar:  NewGoogleCalendarClient(cfg),
-		HomeAssistant:   NewHomeAssistantClient(cfg),
-		Image:           NewImageClient(cfg),
-		LogEntry:        NewLogEntryClient(cfg),
-		LogSettings:     NewLogSettingsClient(cfg),
-		MatrixLayout:    NewMatrixLayoutClient(cfg),
-		NewsFeed:        NewNewsFeedClient(cfg),
-		Notification:    NewNotificationClient(cfg),
-		PixelArt:        NewPixelArtClient(cfg),
-		Playlist:        NewPlaylistClient(cfg),
-		Radarr:          NewRadarrClient(cfg),
-		RssFeed:         NewRssFeedClient(cfg),
-		Schedule:        NewScheduleClient(cfg),
-		Sonarr:          NewSonarrClient(cfg),
-		Stock:           NewStockClient(cfg),
-		TextSlide:       NewTextSlideClient(cfg),
-		UmamiSettings:   NewUmamiSettingsClient(cfg),
-		Untappd:         NewUntappdClient(cfg),
-		Video:           NewVideoClient(cfg),
-		Weather:         NewWeatherClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		AIDigest:         NewAIDigestClient(cfg),
+		AISettings:       NewAISettingsClient(cfg),
+		AdminSettings:    NewAdminSettingsClient(cfg),
+		AlertSettings:    NewAlertSettingsClient(cfg),
+		ApiToken:         NewApiTokenClient(cfg),
+		Calendar:         NewCalendarClient(cfg),
+		Countdown:        NewCountdownClient(cfg),
+		Crypto:           NewCryptoClient(cfg),
+		DeviceSettings:   NewDeviceSettingsClient(cfg),
+		DisplayRule:      NewDisplayRuleClient(cfg),
+		EmailSettings:    NewEmailSettingsClient(cfg),
+		F1:               NewF1Client(cfg),
+		GeneralSettings:  NewGeneralSettingsClient(cfg),
+		GenericAPI:       NewGenericAPIClient(cfg),
+		GoogleCalendar:   NewGoogleCalendarClient(cfg),
+		HomeAssistant:    NewHomeAssistantClient(cfg),
+		Image:            NewImageClient(cfg),
+		LogEntry:         NewLogEntryClient(cfg),
+		LogSettings:      NewLogSettingsClient(cfg),
+		MQTTSettings:     NewMQTTSettingsClient(cfg),
+		MatrixLayout:     NewMatrixLayoutClient(cfg),
+		NewsFeed:         NewNewsFeedClient(cfg),
+		Notification:     NewNotificationClient(cfg),
+		PixelArt:         NewPixelArtClient(cfg),
+		Playlist:         NewPlaylistClient(cfg),
+		Radarr:           NewRadarrClient(cfg),
+		RssFeed:          NewRssFeedClient(cfg),
+		Schedule:         NewScheduleClient(cfg),
+		Sonarr:           NewSonarrClient(cfg),
+		Stock:            NewStockClient(cfg),
+		TelegramSettings: NewTelegramSettingsClient(cfg),
+		TextSlide:        NewTextSlideClient(cfg),
+		UmamiSettings:    NewUmamiSettingsClient(cfg),
+		Untappd:          NewUntappdClient(cfg),
+		Video:            NewVideoClient(cfg),
+		Weather:          NewWeatherClient(cfg),
+		WebhookSettings:  NewWebhookSettingsClient(cfg),
 	}, nil
 }
 
@@ -381,10 +399,10 @@ func (c *Client) Use(hooks ...Hook) {
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
 		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.DisplayRule,
 		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GoogleCalendar,
-		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MatrixLayout,
-		c.NewsFeed, c.Notification, c.PixelArt, c.Playlist, c.Radarr, c.RssFeed,
-		c.Schedule, c.Sonarr, c.Stock, c.TextSlide, c.UmamiSettings, c.Untappd,
-		c.Video, c.Weather,
+		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MQTTSettings,
+		c.MatrixLayout, c.NewsFeed, c.Notification, c.PixelArt, c.Playlist, c.Radarr,
+		c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TelegramSettings, c.TextSlide,
+		c.UmamiSettings, c.Untappd, c.Video, c.Weather, c.WebhookSettings,
 	} {
 		n.Use(hooks...)
 	}
@@ -397,10 +415,10 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
 		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.DisplayRule,
 		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GoogleCalendar,
-		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MatrixLayout,
-		c.NewsFeed, c.Notification, c.PixelArt, c.Playlist, c.Radarr, c.RssFeed,
-		c.Schedule, c.Sonarr, c.Stock, c.TextSlide, c.UmamiSettings, c.Untappd,
-		c.Video, c.Weather,
+		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MQTTSettings,
+		c.MatrixLayout, c.NewsFeed, c.Notification, c.PixelArt, c.Playlist, c.Radarr,
+		c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TelegramSettings, c.TextSlide,
+		c.UmamiSettings, c.Untappd, c.Video, c.Weather, c.WebhookSettings,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -447,6 +465,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.LogEntry.mutate(ctx, m)
 	case *LogSettingsMutation:
 		return c.LogSettings.mutate(ctx, m)
+	case *MQTTSettingsMutation:
+		return c.MQTTSettings.mutate(ctx, m)
 	case *MatrixLayoutMutation:
 		return c.MatrixLayout.mutate(ctx, m)
 	case *NewsFeedMutation:
@@ -467,6 +487,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Sonarr.mutate(ctx, m)
 	case *StockMutation:
 		return c.Stock.mutate(ctx, m)
+	case *TelegramSettingsMutation:
+		return c.TelegramSettings.mutate(ctx, m)
 	case *TextSlideMutation:
 		return c.TextSlide.mutate(ctx, m)
 	case *UmamiSettingsMutation:
@@ -477,6 +499,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Video.mutate(ctx, m)
 	case *WeatherMutation:
 		return c.Weather.mutate(ctx, m)
+	case *WebhookSettingsMutation:
+		return c.WebhookSettings.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -2634,6 +2658,54 @@ func (c *GeneralSettingsClient) QueryDisplayrules(_m *GeneralSettings) *DisplayR
 	return query
 }
 
+// QueryWebhooksettings queries the webhooksettings edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryWebhooksettings(_m *GeneralSettings) *WebhookSettingsQuery {
+	query := (&WebhookSettingsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(webhooksettings.Table, webhooksettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.WebhooksettingsTable, generalsettings.WebhooksettingsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMqttsettings queries the mqttsettings edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryMqttsettings(_m *GeneralSettings) *MQTTSettingsQuery {
+	query := (&MQTTSettingsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(mqttsettings.Table, mqttsettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.MqttsettingsTable, generalsettings.MqttsettingsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTelegramsettings queries the telegramsettings edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryTelegramsettings(_m *GeneralSettings) *TelegramSettingsQuery {
+	query := (&TelegramSettingsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(telegramsettings.Table, telegramsettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.TelegramsettingsTable, generalsettings.TelegramsettingsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GeneralSettingsClient) Hooks() []Hook {
 	return c.hooks.GeneralSettings
@@ -3454,6 +3526,139 @@ func (c *LogSettingsClient) mutate(ctx context.Context, m *LogSettingsMutation) 
 		return (&LogSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown LogSettings mutation op: %q", m.Op())
+	}
+}
+
+// MQTTSettingsClient is a client for the MQTTSettings schema.
+type MQTTSettingsClient struct {
+	config
+}
+
+// NewMQTTSettingsClient returns a client for the MQTTSettings from the given config.
+func NewMQTTSettingsClient(c config) *MQTTSettingsClient {
+	return &MQTTSettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `mqttsettings.Hooks(f(g(h())))`.
+func (c *MQTTSettingsClient) Use(hooks ...Hook) {
+	c.hooks.MQTTSettings = append(c.hooks.MQTTSettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `mqttsettings.Intercept(f(g(h())))`.
+func (c *MQTTSettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.MQTTSettings = append(c.inters.MQTTSettings, interceptors...)
+}
+
+// Create returns a builder for creating a MQTTSettings entity.
+func (c *MQTTSettingsClient) Create() *MQTTSettingsCreate {
+	mutation := newMQTTSettingsMutation(c.config, OpCreate)
+	return &MQTTSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of MQTTSettings entities.
+func (c *MQTTSettingsClient) CreateBulk(builders ...*MQTTSettingsCreate) *MQTTSettingsCreateBulk {
+	return &MQTTSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MQTTSettingsClient) MapCreateBulk(slice any, setFunc func(*MQTTSettingsCreate, int)) *MQTTSettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MQTTSettingsCreateBulk{err: fmt.Errorf("calling to MQTTSettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MQTTSettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MQTTSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for MQTTSettings.
+func (c *MQTTSettingsClient) Update() *MQTTSettingsUpdate {
+	mutation := newMQTTSettingsMutation(c.config, OpUpdate)
+	return &MQTTSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MQTTSettingsClient) UpdateOne(_m *MQTTSettings) *MQTTSettingsUpdateOne {
+	mutation := newMQTTSettingsMutation(c.config, OpUpdateOne, withMQTTSettings(_m))
+	return &MQTTSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MQTTSettingsClient) UpdateOneID(id int) *MQTTSettingsUpdateOne {
+	mutation := newMQTTSettingsMutation(c.config, OpUpdateOne, withMQTTSettingsID(id))
+	return &MQTTSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for MQTTSettings.
+func (c *MQTTSettingsClient) Delete() *MQTTSettingsDelete {
+	mutation := newMQTTSettingsMutation(c.config, OpDelete)
+	return &MQTTSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MQTTSettingsClient) DeleteOne(_m *MQTTSettings) *MQTTSettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MQTTSettingsClient) DeleteOneID(id int) *MQTTSettingsDeleteOne {
+	builder := c.Delete().Where(mqttsettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MQTTSettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for MQTTSettings.
+func (c *MQTTSettingsClient) Query() *MQTTSettingsQuery {
+	return &MQTTSettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMQTTSettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a MQTTSettings entity by its id.
+func (c *MQTTSettingsClient) Get(ctx context.Context, id int) (*MQTTSettings, error) {
+	return c.Query().Where(mqttsettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MQTTSettingsClient) GetX(ctx context.Context, id int) *MQTTSettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *MQTTSettingsClient) Hooks() []Hook {
+	return c.hooks.MQTTSettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *MQTTSettingsClient) Interceptors() []Interceptor {
+	return c.inters.MQTTSettings
+}
+
+func (c *MQTTSettingsClient) mutate(ctx context.Context, m *MQTTSettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MQTTSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MQTTSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MQTTSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MQTTSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown MQTTSettings mutation op: %q", m.Op())
 	}
 }
 
@@ -4787,6 +4992,139 @@ func (c *StockClient) mutate(ctx context.Context, m *StockMutation) (Value, erro
 	}
 }
 
+// TelegramSettingsClient is a client for the TelegramSettings schema.
+type TelegramSettingsClient struct {
+	config
+}
+
+// NewTelegramSettingsClient returns a client for the TelegramSettings from the given config.
+func NewTelegramSettingsClient(c config) *TelegramSettingsClient {
+	return &TelegramSettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `telegramsettings.Hooks(f(g(h())))`.
+func (c *TelegramSettingsClient) Use(hooks ...Hook) {
+	c.hooks.TelegramSettings = append(c.hooks.TelegramSettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `telegramsettings.Intercept(f(g(h())))`.
+func (c *TelegramSettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TelegramSettings = append(c.inters.TelegramSettings, interceptors...)
+}
+
+// Create returns a builder for creating a TelegramSettings entity.
+func (c *TelegramSettingsClient) Create() *TelegramSettingsCreate {
+	mutation := newTelegramSettingsMutation(c.config, OpCreate)
+	return &TelegramSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TelegramSettings entities.
+func (c *TelegramSettingsClient) CreateBulk(builders ...*TelegramSettingsCreate) *TelegramSettingsCreateBulk {
+	return &TelegramSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TelegramSettingsClient) MapCreateBulk(slice any, setFunc func(*TelegramSettingsCreate, int)) *TelegramSettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TelegramSettingsCreateBulk{err: fmt.Errorf("calling to TelegramSettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TelegramSettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TelegramSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TelegramSettings.
+func (c *TelegramSettingsClient) Update() *TelegramSettingsUpdate {
+	mutation := newTelegramSettingsMutation(c.config, OpUpdate)
+	return &TelegramSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TelegramSettingsClient) UpdateOne(_m *TelegramSettings) *TelegramSettingsUpdateOne {
+	mutation := newTelegramSettingsMutation(c.config, OpUpdateOne, withTelegramSettings(_m))
+	return &TelegramSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TelegramSettingsClient) UpdateOneID(id int) *TelegramSettingsUpdateOne {
+	mutation := newTelegramSettingsMutation(c.config, OpUpdateOne, withTelegramSettingsID(id))
+	return &TelegramSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TelegramSettings.
+func (c *TelegramSettingsClient) Delete() *TelegramSettingsDelete {
+	mutation := newTelegramSettingsMutation(c.config, OpDelete)
+	return &TelegramSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TelegramSettingsClient) DeleteOne(_m *TelegramSettings) *TelegramSettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TelegramSettingsClient) DeleteOneID(id int) *TelegramSettingsDeleteOne {
+	builder := c.Delete().Where(telegramsettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TelegramSettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for TelegramSettings.
+func (c *TelegramSettingsClient) Query() *TelegramSettingsQuery {
+	return &TelegramSettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTelegramSettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TelegramSettings entity by its id.
+func (c *TelegramSettingsClient) Get(ctx context.Context, id int) (*TelegramSettings, error) {
+	return c.Query().Where(telegramsettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TelegramSettingsClient) GetX(ctx context.Context, id int) *TelegramSettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TelegramSettingsClient) Hooks() []Hook {
+	return c.hooks.TelegramSettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *TelegramSettingsClient) Interceptors() []Interceptor {
+	return c.inters.TelegramSettings
+}
+
+func (c *TelegramSettingsClient) mutate(ctx context.Context, m *TelegramSettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TelegramSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TelegramSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TelegramSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TelegramSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TelegramSettings mutation op: %q", m.Op())
+	}
+}
+
 // TextSlideClient is a client for the TextSlide schema.
 type TextSlideClient struct {
 	config
@@ -5452,22 +5790,156 @@ func (c *WeatherClient) mutate(ctx context.Context, m *WeatherMutation) (Value, 
 	}
 }
 
+// WebhookSettingsClient is a client for the WebhookSettings schema.
+type WebhookSettingsClient struct {
+	config
+}
+
+// NewWebhookSettingsClient returns a client for the WebhookSettings from the given config.
+func NewWebhookSettingsClient(c config) *WebhookSettingsClient {
+	return &WebhookSettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `webhooksettings.Hooks(f(g(h())))`.
+func (c *WebhookSettingsClient) Use(hooks ...Hook) {
+	c.hooks.WebhookSettings = append(c.hooks.WebhookSettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `webhooksettings.Intercept(f(g(h())))`.
+func (c *WebhookSettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WebhookSettings = append(c.inters.WebhookSettings, interceptors...)
+}
+
+// Create returns a builder for creating a WebhookSettings entity.
+func (c *WebhookSettingsClient) Create() *WebhookSettingsCreate {
+	mutation := newWebhookSettingsMutation(c.config, OpCreate)
+	return &WebhookSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WebhookSettings entities.
+func (c *WebhookSettingsClient) CreateBulk(builders ...*WebhookSettingsCreate) *WebhookSettingsCreateBulk {
+	return &WebhookSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WebhookSettingsClient) MapCreateBulk(slice any, setFunc func(*WebhookSettingsCreate, int)) *WebhookSettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WebhookSettingsCreateBulk{err: fmt.Errorf("calling to WebhookSettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WebhookSettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WebhookSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WebhookSettings.
+func (c *WebhookSettingsClient) Update() *WebhookSettingsUpdate {
+	mutation := newWebhookSettingsMutation(c.config, OpUpdate)
+	return &WebhookSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WebhookSettingsClient) UpdateOne(_m *WebhookSettings) *WebhookSettingsUpdateOne {
+	mutation := newWebhookSettingsMutation(c.config, OpUpdateOne, withWebhookSettings(_m))
+	return &WebhookSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WebhookSettingsClient) UpdateOneID(id int) *WebhookSettingsUpdateOne {
+	mutation := newWebhookSettingsMutation(c.config, OpUpdateOne, withWebhookSettingsID(id))
+	return &WebhookSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WebhookSettings.
+func (c *WebhookSettingsClient) Delete() *WebhookSettingsDelete {
+	mutation := newWebhookSettingsMutation(c.config, OpDelete)
+	return &WebhookSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WebhookSettingsClient) DeleteOne(_m *WebhookSettings) *WebhookSettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WebhookSettingsClient) DeleteOneID(id int) *WebhookSettingsDeleteOne {
+	builder := c.Delete().Where(webhooksettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WebhookSettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for WebhookSettings.
+func (c *WebhookSettingsClient) Query() *WebhookSettingsQuery {
+	return &WebhookSettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWebhookSettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WebhookSettings entity by its id.
+func (c *WebhookSettingsClient) Get(ctx context.Context, id int) (*WebhookSettings, error) {
+	return c.Query().Where(webhooksettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WebhookSettingsClient) GetX(ctx context.Context, id int) *WebhookSettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *WebhookSettingsClient) Hooks() []Hook {
+	return c.hooks.WebhookSettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *WebhookSettingsClient) Interceptors() []Interceptor {
+	return c.inters.WebhookSettings
+}
+
+func (c *WebhookSettingsClient) mutate(ctx context.Context, m *WebhookSettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WebhookSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WebhookSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WebhookSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WebhookSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WebhookSettings mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		Countdown, Crypto, DeviceSettings, DisplayRule, EmailSettings, F1,
 		GeneralSettings, GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry,
-		LogSettings, MatrixLayout, NewsFeed, Notification, PixelArt, Playlist, Radarr,
-		RssFeed, Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
-		Weather []ent.Hook
+		LogSettings, MQTTSettings, MatrixLayout, NewsFeed, Notification, PixelArt,
+		Playlist, Radarr, RssFeed, Schedule, Sonarr, Stock, TelegramSettings,
+		TextSlide, UmamiSettings, Untappd, Video, Weather, WebhookSettings []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		Countdown, Crypto, DeviceSettings, DisplayRule, EmailSettings, F1,
 		GeneralSettings, GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry,
-		LogSettings, MatrixLayout, NewsFeed, Notification, PixelArt, Playlist, Radarr,
-		RssFeed, Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
-		Weather []ent.Interceptor
+		LogSettings, MQTTSettings, MatrixLayout, NewsFeed, Notification, PixelArt,
+		Playlist, Radarr, RssFeed, Schedule, Sonarr, Stock, TelegramSettings,
+		TextSlide, UmamiSettings, Untappd, Video, Weather,
+		WebhookSettings []ent.Interceptor
 	}
 )

@@ -26,6 +26,7 @@ import (
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/pixelart"
@@ -35,11 +36,13 @@ import (
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
+	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
+	"ledit/ent/webhooksettings"
 	"reflect"
 	"sync"
 
@@ -106,40 +109,43 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			aidigest.Table:        aidigest.ValidColumn,
-			aisettings.Table:      aisettings.ValidColumn,
-			adminsettings.Table:   adminsettings.ValidColumn,
-			alertsettings.Table:   alertsettings.ValidColumn,
-			apitoken.Table:        apitoken.ValidColumn,
-			calendar.Table:        calendar.ValidColumn,
-			countdown.Table:       countdown.ValidColumn,
-			crypto.Table:          crypto.ValidColumn,
-			devicesettings.Table:  devicesettings.ValidColumn,
-			displayrule.Table:     displayrule.ValidColumn,
-			emailsettings.Table:   emailsettings.ValidColumn,
-			f1.Table:              f1.ValidColumn,
-			generalsettings.Table: generalsettings.ValidColumn,
-			genericapi.Table:      genericapi.ValidColumn,
-			googlecalendar.Table:  googlecalendar.ValidColumn,
-			homeassistant.Table:   homeassistant.ValidColumn,
-			image.Table:           image.ValidColumn,
-			logentry.Table:        logentry.ValidColumn,
-			logsettings.Table:     logsettings.ValidColumn,
-			matrixlayout.Table:    matrixlayout.ValidColumn,
-			newsfeed.Table:        newsfeed.ValidColumn,
-			notification.Table:    notification.ValidColumn,
-			pixelart.Table:        pixelart.ValidColumn,
-			playlist.Table:        playlist.ValidColumn,
-			radarr.Table:          radarr.ValidColumn,
-			rssfeed.Table:         rssfeed.ValidColumn,
-			schedule.Table:        schedule.ValidColumn,
-			sonarr.Table:          sonarr.ValidColumn,
-			stock.Table:           stock.ValidColumn,
-			textslide.Table:       textslide.ValidColumn,
-			umamisettings.Table:   umamisettings.ValidColumn,
-			untappd.Table:         untappd.ValidColumn,
-			video.Table:           video.ValidColumn,
-			weather.Table:         weather.ValidColumn,
+			aidigest.Table:         aidigest.ValidColumn,
+			aisettings.Table:       aisettings.ValidColumn,
+			adminsettings.Table:    adminsettings.ValidColumn,
+			alertsettings.Table:    alertsettings.ValidColumn,
+			apitoken.Table:         apitoken.ValidColumn,
+			calendar.Table:         calendar.ValidColumn,
+			countdown.Table:        countdown.ValidColumn,
+			crypto.Table:           crypto.ValidColumn,
+			devicesettings.Table:   devicesettings.ValidColumn,
+			displayrule.Table:      displayrule.ValidColumn,
+			emailsettings.Table:    emailsettings.ValidColumn,
+			f1.Table:               f1.ValidColumn,
+			generalsettings.Table:  generalsettings.ValidColumn,
+			genericapi.Table:       genericapi.ValidColumn,
+			googlecalendar.Table:   googlecalendar.ValidColumn,
+			homeassistant.Table:    homeassistant.ValidColumn,
+			image.Table:            image.ValidColumn,
+			logentry.Table:         logentry.ValidColumn,
+			logsettings.Table:      logsettings.ValidColumn,
+			mqttsettings.Table:     mqttsettings.ValidColumn,
+			matrixlayout.Table:     matrixlayout.ValidColumn,
+			newsfeed.Table:         newsfeed.ValidColumn,
+			notification.Table:     notification.ValidColumn,
+			pixelart.Table:         pixelart.ValidColumn,
+			playlist.Table:         playlist.ValidColumn,
+			radarr.Table:           radarr.ValidColumn,
+			rssfeed.Table:          rssfeed.ValidColumn,
+			schedule.Table:         schedule.ValidColumn,
+			sonarr.Table:           sonarr.ValidColumn,
+			stock.Table:            stock.ValidColumn,
+			telegramsettings.Table: telegramsettings.ValidColumn,
+			textslide.Table:        textslide.ValidColumn,
+			umamisettings.Table:    umamisettings.ValidColumn,
+			untappd.Table:          untappd.ValidColumn,
+			video.Table:            video.ValidColumn,
+			weather.Table:          weather.ValidColumn,
+			webhooksettings.Table:  webhooksettings.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

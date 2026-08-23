@@ -26,6 +26,7 @@ import (
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/pixelart"
@@ -36,11 +37,13 @@ import (
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
+	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
+	"ledit/ent/webhooksettings"
 	"sync"
 	"time"
 
@@ -57,40 +60,43 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAIDigest        = "AIDigest"
-	TypeAISettings      = "AISettings"
-	TypeAdminSettings   = "AdminSettings"
-	TypeAlertSettings   = "AlertSettings"
-	TypeApiToken        = "ApiToken"
-	TypeCalendar        = "Calendar"
-	TypeCountdown       = "Countdown"
-	TypeCrypto          = "Crypto"
-	TypeDeviceSettings  = "DeviceSettings"
-	TypeDisplayRule     = "DisplayRule"
-	TypeEmailSettings   = "EmailSettings"
-	TypeF1              = "F1"
-	TypeGeneralSettings = "GeneralSettings"
-	TypeGenericAPI      = "GenericAPI"
-	TypeGoogleCalendar  = "GoogleCalendar"
-	TypeHomeAssistant   = "HomeAssistant"
-	TypeImage           = "Image"
-	TypeLogEntry        = "LogEntry"
-	TypeLogSettings     = "LogSettings"
-	TypeMatrixLayout    = "MatrixLayout"
-	TypeNewsFeed        = "NewsFeed"
-	TypeNotification    = "Notification"
-	TypePixelArt        = "PixelArt"
-	TypePlaylist        = "Playlist"
-	TypeRadarr          = "Radarr"
-	TypeRssFeed         = "RssFeed"
-	TypeSchedule        = "Schedule"
-	TypeSonarr          = "Sonarr"
-	TypeStock           = "Stock"
-	TypeTextSlide       = "TextSlide"
-	TypeUmamiSettings   = "UmamiSettings"
-	TypeUntappd         = "Untappd"
-	TypeVideo           = "Video"
-	TypeWeather         = "Weather"
+	TypeAIDigest         = "AIDigest"
+	TypeAISettings       = "AISettings"
+	TypeAdminSettings    = "AdminSettings"
+	TypeAlertSettings    = "AlertSettings"
+	TypeApiToken         = "ApiToken"
+	TypeCalendar         = "Calendar"
+	TypeCountdown        = "Countdown"
+	TypeCrypto           = "Crypto"
+	TypeDeviceSettings   = "DeviceSettings"
+	TypeDisplayRule      = "DisplayRule"
+	TypeEmailSettings    = "EmailSettings"
+	TypeF1               = "F1"
+	TypeGeneralSettings  = "GeneralSettings"
+	TypeGenericAPI       = "GenericAPI"
+	TypeGoogleCalendar   = "GoogleCalendar"
+	TypeHomeAssistant    = "HomeAssistant"
+	TypeImage            = "Image"
+	TypeLogEntry         = "LogEntry"
+	TypeLogSettings      = "LogSettings"
+	TypeMQTTSettings     = "MQTTSettings"
+	TypeMatrixLayout     = "MatrixLayout"
+	TypeNewsFeed         = "NewsFeed"
+	TypeNotification     = "Notification"
+	TypePixelArt         = "PixelArt"
+	TypePlaylist         = "Playlist"
+	TypeRadarr           = "Radarr"
+	TypeRssFeed          = "RssFeed"
+	TypeSchedule         = "Schedule"
+	TypeSonarr           = "Sonarr"
+	TypeStock            = "Stock"
+	TypeTelegramSettings = "TelegramSettings"
+	TypeTextSlide        = "TextSlide"
+	TypeUmamiSettings    = "UmamiSettings"
+	TypeUntappd          = "Untappd"
+	TypeVideo            = "Video"
+	TypeWeather          = "Weather"
+	TypeWebhookSettings  = "WebhookSettings"
 )
 
 // AIDigestMutation represents an operation that mutates the AIDigest nodes in the graph.
@@ -7735,6 +7741,15 @@ type GeneralSettingsMutation struct {
 	displayrules            map[int]struct{}
 	removeddisplayrules     map[int]struct{}
 	cleareddisplayrules     bool
+	webhooksettings         map[int]struct{}
+	removedwebhooksettings  map[int]struct{}
+	clearedwebhooksettings  bool
+	mqttsettings            map[int]struct{}
+	removedmqttsettings     map[int]struct{}
+	clearedmqttsettings     bool
+	telegramsettings        map[int]struct{}
+	removedtelegramsettings map[int]struct{}
+	clearedtelegramsettings bool
 	done                    bool
 	oldValue                func(context.Context) (*GeneralSettings, error)
 	predicates              []predicate.GeneralSettings
@@ -9744,6 +9759,168 @@ func (m *GeneralSettingsMutation) ResetDisplayrules() {
 	m.removeddisplayrules = nil
 }
 
+// AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by ids.
+func (m *GeneralSettingsMutation) AddWebhooksettingIDs(ids ...int) {
+	if m.webhooksettings == nil {
+		m.webhooksettings = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.webhooksettings[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWebhooksettings clears the "webhooksettings" edge to the WebhookSettings entity.
+func (m *GeneralSettingsMutation) ClearWebhooksettings() {
+	m.clearedwebhooksettings = true
+}
+
+// WebhooksettingsCleared reports if the "webhooksettings" edge to the WebhookSettings entity was cleared.
+func (m *GeneralSettingsMutation) WebhooksettingsCleared() bool {
+	return m.clearedwebhooksettings
+}
+
+// RemoveWebhooksettingIDs removes the "webhooksettings" edge to the WebhookSettings entity by IDs.
+func (m *GeneralSettingsMutation) RemoveWebhooksettingIDs(ids ...int) {
+	if m.removedwebhooksettings == nil {
+		m.removedwebhooksettings = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.webhooksettings, ids[i])
+		m.removedwebhooksettings[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWebhooksettings returns the removed IDs of the "webhooksettings" edge to the WebhookSettings entity.
+func (m *GeneralSettingsMutation) RemovedWebhooksettingsIDs() (ids []int) {
+	for id := range m.removedwebhooksettings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WebhooksettingsIDs returns the "webhooksettings" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) WebhooksettingsIDs() (ids []int) {
+	for id := range m.webhooksettings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWebhooksettings resets all changes to the "webhooksettings" edge.
+func (m *GeneralSettingsMutation) ResetWebhooksettings() {
+	m.webhooksettings = nil
+	m.clearedwebhooksettings = false
+	m.removedwebhooksettings = nil
+}
+
+// AddMqttsettingIDs adds the "mqttsettings" edge to the MQTTSettings entity by ids.
+func (m *GeneralSettingsMutation) AddMqttsettingIDs(ids ...int) {
+	if m.mqttsettings == nil {
+		m.mqttsettings = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.mqttsettings[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMqttsettings clears the "mqttsettings" edge to the MQTTSettings entity.
+func (m *GeneralSettingsMutation) ClearMqttsettings() {
+	m.clearedmqttsettings = true
+}
+
+// MqttsettingsCleared reports if the "mqttsettings" edge to the MQTTSettings entity was cleared.
+func (m *GeneralSettingsMutation) MqttsettingsCleared() bool {
+	return m.clearedmqttsettings
+}
+
+// RemoveMqttsettingIDs removes the "mqttsettings" edge to the MQTTSettings entity by IDs.
+func (m *GeneralSettingsMutation) RemoveMqttsettingIDs(ids ...int) {
+	if m.removedmqttsettings == nil {
+		m.removedmqttsettings = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.mqttsettings, ids[i])
+		m.removedmqttsettings[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMqttsettings returns the removed IDs of the "mqttsettings" edge to the MQTTSettings entity.
+func (m *GeneralSettingsMutation) RemovedMqttsettingsIDs() (ids []int) {
+	for id := range m.removedmqttsettings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MqttsettingsIDs returns the "mqttsettings" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) MqttsettingsIDs() (ids []int) {
+	for id := range m.mqttsettings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMqttsettings resets all changes to the "mqttsettings" edge.
+func (m *GeneralSettingsMutation) ResetMqttsettings() {
+	m.mqttsettings = nil
+	m.clearedmqttsettings = false
+	m.removedmqttsettings = nil
+}
+
+// AddTelegramsettingIDs adds the "telegramsettings" edge to the TelegramSettings entity by ids.
+func (m *GeneralSettingsMutation) AddTelegramsettingIDs(ids ...int) {
+	if m.telegramsettings == nil {
+		m.telegramsettings = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.telegramsettings[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTelegramsettings clears the "telegramsettings" edge to the TelegramSettings entity.
+func (m *GeneralSettingsMutation) ClearTelegramsettings() {
+	m.clearedtelegramsettings = true
+}
+
+// TelegramsettingsCleared reports if the "telegramsettings" edge to the TelegramSettings entity was cleared.
+func (m *GeneralSettingsMutation) TelegramsettingsCleared() bool {
+	return m.clearedtelegramsettings
+}
+
+// RemoveTelegramsettingIDs removes the "telegramsettings" edge to the TelegramSettings entity by IDs.
+func (m *GeneralSettingsMutation) RemoveTelegramsettingIDs(ids ...int) {
+	if m.removedtelegramsettings == nil {
+		m.removedtelegramsettings = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.telegramsettings, ids[i])
+		m.removedtelegramsettings[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTelegramsettings returns the removed IDs of the "telegramsettings" edge to the TelegramSettings entity.
+func (m *GeneralSettingsMutation) RemovedTelegramsettingsIDs() (ids []int) {
+	for id := range m.removedtelegramsettings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TelegramsettingsIDs returns the "telegramsettings" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) TelegramsettingsIDs() (ids []int) {
+	for id := range m.telegramsettings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTelegramsettings resets all changes to the "telegramsettings" edge.
+func (m *GeneralSettingsMutation) ResetTelegramsettings() {
+	m.telegramsettings = nil
+	m.clearedtelegramsettings = false
+	m.removedtelegramsettings = nil
+}
+
 // Where appends a list predicates to the GeneralSettingsMutation builder.
 func (m *GeneralSettingsMutation) Where(ps ...predicate.GeneralSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -10062,7 +10239,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 28)
+	edges := make([]string, 0, 31)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -10146,6 +10323,15 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.displayrules != nil {
 		edges = append(edges, generalsettings.EdgeDisplayrules)
+	}
+	if m.webhooksettings != nil {
+		edges = append(edges, generalsettings.EdgeWebhooksettings)
+	}
+	if m.mqttsettings != nil {
+		edges = append(edges, generalsettings.EdgeMqttsettings)
+	}
+	if m.telegramsettings != nil {
+		edges = append(edges, generalsettings.EdgeTelegramsettings)
 	}
 	return edges
 }
@@ -10322,13 +10508,31 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeWebhooksettings:
+		ids := make([]ent.Value, 0, len(m.webhooksettings))
+		for id := range m.webhooksettings {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeMqttsettings:
+		ids := make([]ent.Value, 0, len(m.mqttsettings))
+		for id := range m.mqttsettings {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeTelegramsettings:
+		ids := make([]ent.Value, 0, len(m.telegramsettings))
+		for id := range m.telegramsettings {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 28)
+	edges := make([]string, 0, 31)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -10412,6 +10616,15 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removeddisplayrules != nil {
 		edges = append(edges, generalsettings.EdgeDisplayrules)
+	}
+	if m.removedwebhooksettings != nil {
+		edges = append(edges, generalsettings.EdgeWebhooksettings)
+	}
+	if m.removedmqttsettings != nil {
+		edges = append(edges, generalsettings.EdgeMqttsettings)
+	}
+	if m.removedtelegramsettings != nil {
+		edges = append(edges, generalsettings.EdgeTelegramsettings)
 	}
 	return edges
 }
@@ -10588,13 +10801,31 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeWebhooksettings:
+		ids := make([]ent.Value, 0, len(m.removedwebhooksettings))
+		for id := range m.removedwebhooksettings {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeMqttsettings:
+		ids := make([]ent.Value, 0, len(m.removedmqttsettings))
+		for id := range m.removedmqttsettings {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeTelegramsettings:
+		ids := make([]ent.Value, 0, len(m.removedtelegramsettings))
+		for id := range m.removedtelegramsettings {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 28)
+	edges := make([]string, 0, 31)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -10679,6 +10910,15 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	if m.cleareddisplayrules {
 		edges = append(edges, generalsettings.EdgeDisplayrules)
 	}
+	if m.clearedwebhooksettings {
+		edges = append(edges, generalsettings.EdgeWebhooksettings)
+	}
+	if m.clearedmqttsettings {
+		edges = append(edges, generalsettings.EdgeMqttsettings)
+	}
+	if m.clearedtelegramsettings {
+		edges = append(edges, generalsettings.EdgeTelegramsettings)
+	}
 	return edges
 }
 
@@ -10742,6 +10982,12 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedplaylists
 	case generalsettings.EdgeDisplayrules:
 		return m.cleareddisplayrules
+	case generalsettings.EdgeWebhooksettings:
+		return m.clearedwebhooksettings
+	case generalsettings.EdgeMqttsettings:
+		return m.clearedmqttsettings
+	case generalsettings.EdgeTelegramsettings:
+		return m.clearedtelegramsettings
 	}
 	return false
 }
@@ -10841,6 +11087,15 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 		return nil
 	case generalsettings.EdgeDisplayrules:
 		m.ResetDisplayrules()
+		return nil
+	case generalsettings.EdgeWebhooksettings:
+		m.ResetWebhooksettings()
+		return nil
+	case generalsettings.EdgeMqttsettings:
+		m.ResetMqttsettings()
+		return nil
+	case generalsettings.EdgeTelegramsettings:
+		m.ResetTelegramsettings()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings edge %s", name)
@@ -13559,6 +13814,602 @@ func (m *LogSettingsMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *LogSettingsMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown LogSettings edge %s", name)
+}
+
+// MQTTSettingsMutation represents an operation that mutates the MQTTSettings nodes in the graph.
+type MQTTSettingsMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	enabled       *bool
+	broker        *string
+	username      *string
+	password      *string
+	control_topic *string
+	display_topic *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*MQTTSettings, error)
+	predicates    []predicate.MQTTSettings
+}
+
+var _ ent.Mutation = (*MQTTSettingsMutation)(nil)
+
+// mqttsettingsOption allows management of the mutation configuration using functional options.
+type mqttsettingsOption func(*MQTTSettingsMutation)
+
+// newMQTTSettingsMutation creates new mutation for the MQTTSettings entity.
+func newMQTTSettingsMutation(c config, op Op, opts ...mqttsettingsOption) *MQTTSettingsMutation {
+	m := &MQTTSettingsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeMQTTSettings,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withMQTTSettingsID sets the ID field of the mutation.
+func withMQTTSettingsID(id int) mqttsettingsOption {
+	return func(m *MQTTSettingsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *MQTTSettings
+		)
+		m.oldValue = func(ctx context.Context) (*MQTTSettings, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().MQTTSettings.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withMQTTSettings sets the old MQTTSettings of the mutation.
+func withMQTTSettings(node *MQTTSettings) mqttsettingsOption {
+	return func(m *MQTTSettingsMutation) {
+		m.oldValue = func(context.Context) (*MQTTSettings, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m MQTTSettingsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m MQTTSettingsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *MQTTSettingsMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *MQTTSettingsMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().MQTTSettings.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *MQTTSettingsMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *MQTTSettingsMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the MQTTSettings entity.
+// If the MQTTSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MQTTSettingsMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *MQTTSettingsMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetBroker sets the "broker" field.
+func (m *MQTTSettingsMutation) SetBroker(s string) {
+	m.broker = &s
+}
+
+// Broker returns the value of the "broker" field in the mutation.
+func (m *MQTTSettingsMutation) Broker() (r string, exists bool) {
+	v := m.broker
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBroker returns the old "broker" field's value of the MQTTSettings entity.
+// If the MQTTSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MQTTSettingsMutation) OldBroker(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBroker is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBroker requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBroker: %w", err)
+	}
+	return oldValue.Broker, nil
+}
+
+// ResetBroker resets all changes to the "broker" field.
+func (m *MQTTSettingsMutation) ResetBroker() {
+	m.broker = nil
+}
+
+// SetUsername sets the "username" field.
+func (m *MQTTSettingsMutation) SetUsername(s string) {
+	m.username = &s
+}
+
+// Username returns the value of the "username" field in the mutation.
+func (m *MQTTSettingsMutation) Username() (r string, exists bool) {
+	v := m.username
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsername returns the old "username" field's value of the MQTTSettings entity.
+// If the MQTTSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MQTTSettingsMutation) OldUsername(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsername is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsername requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsername: %w", err)
+	}
+	return oldValue.Username, nil
+}
+
+// ResetUsername resets all changes to the "username" field.
+func (m *MQTTSettingsMutation) ResetUsername() {
+	m.username = nil
+}
+
+// SetPassword sets the "password" field.
+func (m *MQTTSettingsMutation) SetPassword(s string) {
+	m.password = &s
+}
+
+// Password returns the value of the "password" field in the mutation.
+func (m *MQTTSettingsMutation) Password() (r string, exists bool) {
+	v := m.password
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPassword returns the old "password" field's value of the MQTTSettings entity.
+// If the MQTTSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MQTTSettingsMutation) OldPassword(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPassword is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPassword requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPassword: %w", err)
+	}
+	return oldValue.Password, nil
+}
+
+// ResetPassword resets all changes to the "password" field.
+func (m *MQTTSettingsMutation) ResetPassword() {
+	m.password = nil
+}
+
+// SetControlTopic sets the "control_topic" field.
+func (m *MQTTSettingsMutation) SetControlTopic(s string) {
+	m.control_topic = &s
+}
+
+// ControlTopic returns the value of the "control_topic" field in the mutation.
+func (m *MQTTSettingsMutation) ControlTopic() (r string, exists bool) {
+	v := m.control_topic
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldControlTopic returns the old "control_topic" field's value of the MQTTSettings entity.
+// If the MQTTSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MQTTSettingsMutation) OldControlTopic(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldControlTopic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldControlTopic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldControlTopic: %w", err)
+	}
+	return oldValue.ControlTopic, nil
+}
+
+// ResetControlTopic resets all changes to the "control_topic" field.
+func (m *MQTTSettingsMutation) ResetControlTopic() {
+	m.control_topic = nil
+}
+
+// SetDisplayTopic sets the "display_topic" field.
+func (m *MQTTSettingsMutation) SetDisplayTopic(s string) {
+	m.display_topic = &s
+}
+
+// DisplayTopic returns the value of the "display_topic" field in the mutation.
+func (m *MQTTSettingsMutation) DisplayTopic() (r string, exists bool) {
+	v := m.display_topic
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDisplayTopic returns the old "display_topic" field's value of the MQTTSettings entity.
+// If the MQTTSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MQTTSettingsMutation) OldDisplayTopic(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDisplayTopic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDisplayTopic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDisplayTopic: %w", err)
+	}
+	return oldValue.DisplayTopic, nil
+}
+
+// ResetDisplayTopic resets all changes to the "display_topic" field.
+func (m *MQTTSettingsMutation) ResetDisplayTopic() {
+	m.display_topic = nil
+}
+
+// Where appends a list predicates to the MQTTSettingsMutation builder.
+func (m *MQTTSettingsMutation) Where(ps ...predicate.MQTTSettings) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the MQTTSettingsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *MQTTSettingsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.MQTTSettings, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *MQTTSettingsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *MQTTSettingsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (MQTTSettings).
+func (m *MQTTSettingsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *MQTTSettingsMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.enabled != nil {
+		fields = append(fields, mqttsettings.FieldEnabled)
+	}
+	if m.broker != nil {
+		fields = append(fields, mqttsettings.FieldBroker)
+	}
+	if m.username != nil {
+		fields = append(fields, mqttsettings.FieldUsername)
+	}
+	if m.password != nil {
+		fields = append(fields, mqttsettings.FieldPassword)
+	}
+	if m.control_topic != nil {
+		fields = append(fields, mqttsettings.FieldControlTopic)
+	}
+	if m.display_topic != nil {
+		fields = append(fields, mqttsettings.FieldDisplayTopic)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *MQTTSettingsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case mqttsettings.FieldEnabled:
+		return m.Enabled()
+	case mqttsettings.FieldBroker:
+		return m.Broker()
+	case mqttsettings.FieldUsername:
+		return m.Username()
+	case mqttsettings.FieldPassword:
+		return m.Password()
+	case mqttsettings.FieldControlTopic:
+		return m.ControlTopic()
+	case mqttsettings.FieldDisplayTopic:
+		return m.DisplayTopic()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *MQTTSettingsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case mqttsettings.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case mqttsettings.FieldBroker:
+		return m.OldBroker(ctx)
+	case mqttsettings.FieldUsername:
+		return m.OldUsername(ctx)
+	case mqttsettings.FieldPassword:
+		return m.OldPassword(ctx)
+	case mqttsettings.FieldControlTopic:
+		return m.OldControlTopic(ctx)
+	case mqttsettings.FieldDisplayTopic:
+		return m.OldDisplayTopic(ctx)
+	}
+	return nil, fmt.Errorf("unknown MQTTSettings field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MQTTSettingsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case mqttsettings.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case mqttsettings.FieldBroker:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBroker(v)
+		return nil
+	case mqttsettings.FieldUsername:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsername(v)
+		return nil
+	case mqttsettings.FieldPassword:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPassword(v)
+		return nil
+	case mqttsettings.FieldControlTopic:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetControlTopic(v)
+		return nil
+	case mqttsettings.FieldDisplayTopic:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDisplayTopic(v)
+		return nil
+	}
+	return fmt.Errorf("unknown MQTTSettings field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *MQTTSettingsMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *MQTTSettingsMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MQTTSettingsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown MQTTSettings numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *MQTTSettingsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *MQTTSettingsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *MQTTSettingsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown MQTTSettings nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *MQTTSettingsMutation) ResetField(name string) error {
+	switch name {
+	case mqttsettings.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case mqttsettings.FieldBroker:
+		m.ResetBroker()
+		return nil
+	case mqttsettings.FieldUsername:
+		m.ResetUsername()
+		return nil
+	case mqttsettings.FieldPassword:
+		m.ResetPassword()
+		return nil
+	case mqttsettings.FieldControlTopic:
+		m.ResetControlTopic()
+		return nil
+	case mqttsettings.FieldDisplayTopic:
+		m.ResetDisplayTopic()
+		return nil
+	}
+	return fmt.Errorf("unknown MQTTSettings field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *MQTTSettingsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *MQTTSettingsMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *MQTTSettingsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *MQTTSettingsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *MQTTSettingsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *MQTTSettingsMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *MQTTSettingsMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown MQTTSettings unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *MQTTSettingsMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown MQTTSettings edge %s", name)
 }
 
 // MatrixLayoutMutation represents an operation that mutates the MatrixLayout nodes in the graph.
@@ -18294,6 +19145,476 @@ func (m *StockMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Stock edge %s", name)
 }
 
+// TelegramSettingsMutation represents an operation that mutates the TelegramSettings nodes in the graph.
+type TelegramSettingsMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *int
+	enabled            *bool
+	bot_token          *string
+	allowed_chat_id    *int64
+	addallowed_chat_id *int64
+	clearedFields      map[string]struct{}
+	done               bool
+	oldValue           func(context.Context) (*TelegramSettings, error)
+	predicates         []predicate.TelegramSettings
+}
+
+var _ ent.Mutation = (*TelegramSettingsMutation)(nil)
+
+// telegramsettingsOption allows management of the mutation configuration using functional options.
+type telegramsettingsOption func(*TelegramSettingsMutation)
+
+// newTelegramSettingsMutation creates new mutation for the TelegramSettings entity.
+func newTelegramSettingsMutation(c config, op Op, opts ...telegramsettingsOption) *TelegramSettingsMutation {
+	m := &TelegramSettingsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTelegramSettings,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTelegramSettingsID sets the ID field of the mutation.
+func withTelegramSettingsID(id int) telegramsettingsOption {
+	return func(m *TelegramSettingsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TelegramSettings
+		)
+		m.oldValue = func(ctx context.Context) (*TelegramSettings, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TelegramSettings.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTelegramSettings sets the old TelegramSettings of the mutation.
+func withTelegramSettings(node *TelegramSettings) telegramsettingsOption {
+	return func(m *TelegramSettingsMutation) {
+		m.oldValue = func(context.Context) (*TelegramSettings, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TelegramSettingsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TelegramSettingsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TelegramSettingsMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TelegramSettingsMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TelegramSettings.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *TelegramSettingsMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *TelegramSettingsMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the TelegramSettings entity.
+// If the TelegramSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramSettingsMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *TelegramSettingsMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetBotToken sets the "bot_token" field.
+func (m *TelegramSettingsMutation) SetBotToken(s string) {
+	m.bot_token = &s
+}
+
+// BotToken returns the value of the "bot_token" field in the mutation.
+func (m *TelegramSettingsMutation) BotToken() (r string, exists bool) {
+	v := m.bot_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBotToken returns the old "bot_token" field's value of the TelegramSettings entity.
+// If the TelegramSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramSettingsMutation) OldBotToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBotToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBotToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBotToken: %w", err)
+	}
+	return oldValue.BotToken, nil
+}
+
+// ResetBotToken resets all changes to the "bot_token" field.
+func (m *TelegramSettingsMutation) ResetBotToken() {
+	m.bot_token = nil
+}
+
+// SetAllowedChatID sets the "allowed_chat_id" field.
+func (m *TelegramSettingsMutation) SetAllowedChatID(i int64) {
+	m.allowed_chat_id = &i
+	m.addallowed_chat_id = nil
+}
+
+// AllowedChatID returns the value of the "allowed_chat_id" field in the mutation.
+func (m *TelegramSettingsMutation) AllowedChatID() (r int64, exists bool) {
+	v := m.allowed_chat_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAllowedChatID returns the old "allowed_chat_id" field's value of the TelegramSettings entity.
+// If the TelegramSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramSettingsMutation) OldAllowedChatID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAllowedChatID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAllowedChatID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAllowedChatID: %w", err)
+	}
+	return oldValue.AllowedChatID, nil
+}
+
+// AddAllowedChatID adds i to the "allowed_chat_id" field.
+func (m *TelegramSettingsMutation) AddAllowedChatID(i int64) {
+	if m.addallowed_chat_id != nil {
+		*m.addallowed_chat_id += i
+	} else {
+		m.addallowed_chat_id = &i
+	}
+}
+
+// AddedAllowedChatID returns the value that was added to the "allowed_chat_id" field in this mutation.
+func (m *TelegramSettingsMutation) AddedAllowedChatID() (r int64, exists bool) {
+	v := m.addallowed_chat_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAllowedChatID resets all changes to the "allowed_chat_id" field.
+func (m *TelegramSettingsMutation) ResetAllowedChatID() {
+	m.allowed_chat_id = nil
+	m.addallowed_chat_id = nil
+}
+
+// Where appends a list predicates to the TelegramSettingsMutation builder.
+func (m *TelegramSettingsMutation) Where(ps ...predicate.TelegramSettings) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TelegramSettingsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TelegramSettingsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TelegramSettings, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TelegramSettingsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TelegramSettingsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TelegramSettings).
+func (m *TelegramSettingsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TelegramSettingsMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.enabled != nil {
+		fields = append(fields, telegramsettings.FieldEnabled)
+	}
+	if m.bot_token != nil {
+		fields = append(fields, telegramsettings.FieldBotToken)
+	}
+	if m.allowed_chat_id != nil {
+		fields = append(fields, telegramsettings.FieldAllowedChatID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TelegramSettingsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case telegramsettings.FieldEnabled:
+		return m.Enabled()
+	case telegramsettings.FieldBotToken:
+		return m.BotToken()
+	case telegramsettings.FieldAllowedChatID:
+		return m.AllowedChatID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TelegramSettingsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case telegramsettings.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case telegramsettings.FieldBotToken:
+		return m.OldBotToken(ctx)
+	case telegramsettings.FieldAllowedChatID:
+		return m.OldAllowedChatID(ctx)
+	}
+	return nil, fmt.Errorf("unknown TelegramSettings field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TelegramSettingsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case telegramsettings.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case telegramsettings.FieldBotToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBotToken(v)
+		return nil
+	case telegramsettings.FieldAllowedChatID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAllowedChatID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TelegramSettings field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TelegramSettingsMutation) AddedFields() []string {
+	var fields []string
+	if m.addallowed_chat_id != nil {
+		fields = append(fields, telegramsettings.FieldAllowedChatID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TelegramSettingsMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case telegramsettings.FieldAllowedChatID:
+		return m.AddedAllowedChatID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TelegramSettingsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case telegramsettings.FieldAllowedChatID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAllowedChatID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TelegramSettings numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TelegramSettingsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TelegramSettingsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TelegramSettingsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown TelegramSettings nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TelegramSettingsMutation) ResetField(name string) error {
+	switch name {
+	case telegramsettings.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case telegramsettings.FieldBotToken:
+		m.ResetBotToken()
+		return nil
+	case telegramsettings.FieldAllowedChatID:
+		m.ResetAllowedChatID()
+		return nil
+	}
+	return fmt.Errorf("unknown TelegramSettings field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TelegramSettingsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TelegramSettingsMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TelegramSettingsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TelegramSettingsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TelegramSettingsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TelegramSettingsMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TelegramSettingsMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown TelegramSettings unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TelegramSettingsMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown TelegramSettings edge %s", name)
+}
+
 // TextSlideMutation represents an operation that mutates the TextSlide nodes in the graph.
 type TextSlideMutation struct {
 	config
@@ -20342,4 +21663,420 @@ func (m *WeatherMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *WeatherMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Weather edge %s", name)
+}
+
+// WebhookSettingsMutation represents an operation that mutates the WebhookSettings nodes in the graph.
+type WebhookSettingsMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	api_key        *string
+	default_ttl    *int
+	adddefault_ttl *int
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*WebhookSettings, error)
+	predicates     []predicate.WebhookSettings
+}
+
+var _ ent.Mutation = (*WebhookSettingsMutation)(nil)
+
+// webhooksettingsOption allows management of the mutation configuration using functional options.
+type webhooksettingsOption func(*WebhookSettingsMutation)
+
+// newWebhookSettingsMutation creates new mutation for the WebhookSettings entity.
+func newWebhookSettingsMutation(c config, op Op, opts ...webhooksettingsOption) *WebhookSettingsMutation {
+	m := &WebhookSettingsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeWebhookSettings,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withWebhookSettingsID sets the ID field of the mutation.
+func withWebhookSettingsID(id int) webhooksettingsOption {
+	return func(m *WebhookSettingsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *WebhookSettings
+		)
+		m.oldValue = func(ctx context.Context) (*WebhookSettings, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().WebhookSettings.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withWebhookSettings sets the old WebhookSettings of the mutation.
+func withWebhookSettings(node *WebhookSettings) webhooksettingsOption {
+	return func(m *WebhookSettingsMutation) {
+		m.oldValue = func(context.Context) (*WebhookSettings, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m WebhookSettingsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m WebhookSettingsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *WebhookSettingsMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *WebhookSettingsMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().WebhookSettings.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetAPIKey sets the "api_key" field.
+func (m *WebhookSettingsMutation) SetAPIKey(s string) {
+	m.api_key = &s
+}
+
+// APIKey returns the value of the "api_key" field in the mutation.
+func (m *WebhookSettingsMutation) APIKey() (r string, exists bool) {
+	v := m.api_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAPIKey returns the old "api_key" field's value of the WebhookSettings entity.
+// If the WebhookSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WebhookSettingsMutation) OldAPIKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAPIKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAPIKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAPIKey: %w", err)
+	}
+	return oldValue.APIKey, nil
+}
+
+// ResetAPIKey resets all changes to the "api_key" field.
+func (m *WebhookSettingsMutation) ResetAPIKey() {
+	m.api_key = nil
+}
+
+// SetDefaultTTL sets the "default_ttl" field.
+func (m *WebhookSettingsMutation) SetDefaultTTL(i int) {
+	m.default_ttl = &i
+	m.adddefault_ttl = nil
+}
+
+// DefaultTTL returns the value of the "default_ttl" field in the mutation.
+func (m *WebhookSettingsMutation) DefaultTTL() (r int, exists bool) {
+	v := m.default_ttl
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDefaultTTL returns the old "default_ttl" field's value of the WebhookSettings entity.
+// If the WebhookSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WebhookSettingsMutation) OldDefaultTTL(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDefaultTTL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDefaultTTL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDefaultTTL: %w", err)
+	}
+	return oldValue.DefaultTTL, nil
+}
+
+// AddDefaultTTL adds i to the "default_ttl" field.
+func (m *WebhookSettingsMutation) AddDefaultTTL(i int) {
+	if m.adddefault_ttl != nil {
+		*m.adddefault_ttl += i
+	} else {
+		m.adddefault_ttl = &i
+	}
+}
+
+// AddedDefaultTTL returns the value that was added to the "default_ttl" field in this mutation.
+func (m *WebhookSettingsMutation) AddedDefaultTTL() (r int, exists bool) {
+	v := m.adddefault_ttl
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDefaultTTL resets all changes to the "default_ttl" field.
+func (m *WebhookSettingsMutation) ResetDefaultTTL() {
+	m.default_ttl = nil
+	m.adddefault_ttl = nil
+}
+
+// Where appends a list predicates to the WebhookSettingsMutation builder.
+func (m *WebhookSettingsMutation) Where(ps ...predicate.WebhookSettings) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the WebhookSettingsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *WebhookSettingsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.WebhookSettings, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *WebhookSettingsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *WebhookSettingsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (WebhookSettings).
+func (m *WebhookSettingsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *WebhookSettingsMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.api_key != nil {
+		fields = append(fields, webhooksettings.FieldAPIKey)
+	}
+	if m.default_ttl != nil {
+		fields = append(fields, webhooksettings.FieldDefaultTTL)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *WebhookSettingsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case webhooksettings.FieldAPIKey:
+		return m.APIKey()
+	case webhooksettings.FieldDefaultTTL:
+		return m.DefaultTTL()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *WebhookSettingsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case webhooksettings.FieldAPIKey:
+		return m.OldAPIKey(ctx)
+	case webhooksettings.FieldDefaultTTL:
+		return m.OldDefaultTTL(ctx)
+	}
+	return nil, fmt.Errorf("unknown WebhookSettings field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WebhookSettingsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case webhooksettings.FieldAPIKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAPIKey(v)
+		return nil
+	case webhooksettings.FieldDefaultTTL:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDefaultTTL(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WebhookSettings field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *WebhookSettingsMutation) AddedFields() []string {
+	var fields []string
+	if m.adddefault_ttl != nil {
+		fields = append(fields, webhooksettings.FieldDefaultTTL)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *WebhookSettingsMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case webhooksettings.FieldDefaultTTL:
+		return m.AddedDefaultTTL()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WebhookSettingsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case webhooksettings.FieldDefaultTTL:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDefaultTTL(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WebhookSettings numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *WebhookSettingsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *WebhookSettingsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *WebhookSettingsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown WebhookSettings nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *WebhookSettingsMutation) ResetField(name string) error {
+	switch name {
+	case webhooksettings.FieldAPIKey:
+		m.ResetAPIKey()
+		return nil
+	case webhooksettings.FieldDefaultTTL:
+		m.ResetDefaultTTL()
+		return nil
+	}
+	return fmt.Errorf("unknown WebhookSettings field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *WebhookSettingsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *WebhookSettingsMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *WebhookSettingsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *WebhookSettingsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *WebhookSettingsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *WebhookSettingsMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *WebhookSettingsMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown WebhookSettings unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *WebhookSettingsMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown WebhookSettings edge %s", name)
 }

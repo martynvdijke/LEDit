@@ -22,6 +22,7 @@ import (
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
@@ -31,11 +32,13 @@ import (
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
+	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/video"
 	"ledit/ent/weather"
+	"ledit/ent/webhooksettings"
 	"math"
 
 	"entgo.io/ent"
@@ -47,38 +50,41 @@ import (
 // GeneralSettingsQuery is the builder for querying GeneralSettings entities.
 type GeneralSettingsQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []generalsettings.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.GeneralSettings
-	withSonarr          *SonarrQuery
-	withRadarr          *RadarrQuery
-	withF1              *F1Query
-	withWeather         *WeatherQuery
-	withHomeAssistant   *HomeAssistantQuery
-	withUntappd         *UntappdQuery
-	withImages          *ImageQuery
-	withVideos          *VideoQuery
-	withCrypto          *CryptoQuery
-	withSchedules       *ScheduleQuery
-	withDeviceSettings  *DeviceSettingsQuery
-	withRssFeeds        *RssFeedQuery
-	withCalendars       *CalendarQuery
-	withStocks          *StockQuery
-	withTextSlides      *TextSlideQuery
-	withEmailSettings   *EmailSettingsQuery
-	withAiSettings      *AISettingsQuery
-	withUmamiSettings   *UmamiSettingsQuery
-	withGoogleCalendars *GoogleCalendarQuery
-	withNewsFeeds       *NewsFeedQuery
-	withGenericApis     *GenericAPIQuery
-	withMatrixLayouts   *MatrixLayoutQuery
-	withCountdowns      *CountdownQuery
-	withAiDigests       *AIDigestQuery
-	withAlertSettings   *AlertSettingsQuery
-	withPixelArts       *PixelArtQuery
-	withPlaylists       *PlaylistQuery
-	withDisplayrules    *DisplayRuleQuery
+	ctx                  *QueryContext
+	order                []generalsettings.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.GeneralSettings
+	withSonarr           *SonarrQuery
+	withRadarr           *RadarrQuery
+	withF1               *F1Query
+	withWeather          *WeatherQuery
+	withHomeAssistant    *HomeAssistantQuery
+	withUntappd          *UntappdQuery
+	withImages           *ImageQuery
+	withVideos           *VideoQuery
+	withCrypto           *CryptoQuery
+	withSchedules        *ScheduleQuery
+	withDeviceSettings   *DeviceSettingsQuery
+	withRssFeeds         *RssFeedQuery
+	withCalendars        *CalendarQuery
+	withStocks           *StockQuery
+	withTextSlides       *TextSlideQuery
+	withEmailSettings    *EmailSettingsQuery
+	withAiSettings       *AISettingsQuery
+	withUmamiSettings    *UmamiSettingsQuery
+	withGoogleCalendars  *GoogleCalendarQuery
+	withNewsFeeds        *NewsFeedQuery
+	withGenericApis      *GenericAPIQuery
+	withMatrixLayouts    *MatrixLayoutQuery
+	withCountdowns       *CountdownQuery
+	withAiDigests        *AIDigestQuery
+	withAlertSettings    *AlertSettingsQuery
+	withPixelArts        *PixelArtQuery
+	withPlaylists        *PlaylistQuery
+	withDisplayrules     *DisplayRuleQuery
+	withWebhooksettings  *WebhookSettingsQuery
+	withMqttsettings     *MQTTSettingsQuery
+	withTelegramsettings *TelegramSettingsQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -731,6 +737,72 @@ func (_q *GeneralSettingsQuery) QueryDisplayrules() *DisplayRuleQuery {
 	return query
 }
 
+// QueryWebhooksettings chains the current query on the "webhooksettings" edge.
+func (_q *GeneralSettingsQuery) QueryWebhooksettings() *WebhookSettingsQuery {
+	query := (&WebhookSettingsClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(webhooksettings.Table, webhooksettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.WebhooksettingsTable, generalsettings.WebhooksettingsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMqttsettings chains the current query on the "mqttsettings" edge.
+func (_q *GeneralSettingsQuery) QueryMqttsettings() *MQTTSettingsQuery {
+	query := (&MQTTSettingsClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(mqttsettings.Table, mqttsettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.MqttsettingsTable, generalsettings.MqttsettingsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTelegramsettings chains the current query on the "telegramsettings" edge.
+func (_q *GeneralSettingsQuery) QueryTelegramsettings() *TelegramSettingsQuery {
+	query := (&TelegramSettingsClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(telegramsettings.Table, telegramsettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.TelegramsettingsTable, generalsettings.TelegramsettingsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first GeneralSettings entity from the query.
 // Returns a *NotFoundError when no GeneralSettings was found.
 func (_q *GeneralSettingsQuery) First(ctx context.Context) (*GeneralSettings, error) {
@@ -918,39 +990,42 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		return nil
 	}
 	return &GeneralSettingsQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]generalsettings.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.GeneralSettings{}, _q.predicates...),
-		withSonarr:          _q.withSonarr.Clone(),
-		withRadarr:          _q.withRadarr.Clone(),
-		withF1:              _q.withF1.Clone(),
-		withWeather:         _q.withWeather.Clone(),
-		withHomeAssistant:   _q.withHomeAssistant.Clone(),
-		withUntappd:         _q.withUntappd.Clone(),
-		withImages:          _q.withImages.Clone(),
-		withVideos:          _q.withVideos.Clone(),
-		withCrypto:          _q.withCrypto.Clone(),
-		withSchedules:       _q.withSchedules.Clone(),
-		withDeviceSettings:  _q.withDeviceSettings.Clone(),
-		withRssFeeds:        _q.withRssFeeds.Clone(),
-		withCalendars:       _q.withCalendars.Clone(),
-		withStocks:          _q.withStocks.Clone(),
-		withTextSlides:      _q.withTextSlides.Clone(),
-		withEmailSettings:   _q.withEmailSettings.Clone(),
-		withAiSettings:      _q.withAiSettings.Clone(),
-		withUmamiSettings:   _q.withUmamiSettings.Clone(),
-		withGoogleCalendars: _q.withGoogleCalendars.Clone(),
-		withNewsFeeds:       _q.withNewsFeeds.Clone(),
-		withGenericApis:     _q.withGenericApis.Clone(),
-		withMatrixLayouts:   _q.withMatrixLayouts.Clone(),
-		withCountdowns:      _q.withCountdowns.Clone(),
-		withAiDigests:       _q.withAiDigests.Clone(),
-		withAlertSettings:   _q.withAlertSettings.Clone(),
-		withPixelArts:       _q.withPixelArts.Clone(),
-		withPlaylists:       _q.withPlaylists.Clone(),
-		withDisplayrules:    _q.withDisplayrules.Clone(),
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]generalsettings.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.GeneralSettings{}, _q.predicates...),
+		withSonarr:           _q.withSonarr.Clone(),
+		withRadarr:           _q.withRadarr.Clone(),
+		withF1:               _q.withF1.Clone(),
+		withWeather:          _q.withWeather.Clone(),
+		withHomeAssistant:    _q.withHomeAssistant.Clone(),
+		withUntappd:          _q.withUntappd.Clone(),
+		withImages:           _q.withImages.Clone(),
+		withVideos:           _q.withVideos.Clone(),
+		withCrypto:           _q.withCrypto.Clone(),
+		withSchedules:        _q.withSchedules.Clone(),
+		withDeviceSettings:   _q.withDeviceSettings.Clone(),
+		withRssFeeds:         _q.withRssFeeds.Clone(),
+		withCalendars:        _q.withCalendars.Clone(),
+		withStocks:           _q.withStocks.Clone(),
+		withTextSlides:       _q.withTextSlides.Clone(),
+		withEmailSettings:    _q.withEmailSettings.Clone(),
+		withAiSettings:       _q.withAiSettings.Clone(),
+		withUmamiSettings:    _q.withUmamiSettings.Clone(),
+		withGoogleCalendars:  _q.withGoogleCalendars.Clone(),
+		withNewsFeeds:        _q.withNewsFeeds.Clone(),
+		withGenericApis:      _q.withGenericApis.Clone(),
+		withMatrixLayouts:    _q.withMatrixLayouts.Clone(),
+		withCountdowns:       _q.withCountdowns.Clone(),
+		withAiDigests:        _q.withAiDigests.Clone(),
+		withAlertSettings:    _q.withAlertSettings.Clone(),
+		withPixelArts:        _q.withPixelArts.Clone(),
+		withPlaylists:        _q.withPlaylists.Clone(),
+		withDisplayrules:     _q.withDisplayrules.Clone(),
+		withWebhooksettings:  _q.withWebhooksettings.Clone(),
+		withMqttsettings:     _q.withMqttsettings.Clone(),
+		withTelegramsettings: _q.withTelegramsettings.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -1265,6 +1340,39 @@ func (_q *GeneralSettingsQuery) WithDisplayrules(opts ...func(*DisplayRuleQuery)
 	return _q
 }
 
+// WithWebhooksettings tells the query-builder to eager-load the nodes that are connected to
+// the "webhooksettings" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithWebhooksettings(opts ...func(*WebhookSettingsQuery)) *GeneralSettingsQuery {
+	query := (&WebhookSettingsClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withWebhooksettings = query
+	return _q
+}
+
+// WithMqttsettings tells the query-builder to eager-load the nodes that are connected to
+// the "mqttsettings" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithMqttsettings(opts ...func(*MQTTSettingsQuery)) *GeneralSettingsQuery {
+	query := (&MQTTSettingsClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withMqttsettings = query
+	return _q
+}
+
+// WithTelegramsettings tells the query-builder to eager-load the nodes that are connected to
+// the "telegramsettings" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithTelegramsettings(opts ...func(*TelegramSettingsQuery)) *GeneralSettingsQuery {
+	query := (&TelegramSettingsClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTelegramsettings = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -1343,7 +1451,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [28]bool{
+		loadedTypes = [31]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -1372,6 +1480,9 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withPixelArts != nil,
 			_q.withPlaylists != nil,
 			_q.withDisplayrules != nil,
+			_q.withWebhooksettings != nil,
+			_q.withMqttsettings != nil,
+			_q.withTelegramsettings != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -1589,6 +1700,31 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := _q.loadDisplayrules(ctx, query, nodes,
 			func(n *GeneralSettings) { n.Edges.Displayrules = []*DisplayRule{} },
 			func(n *GeneralSettings, e *DisplayRule) { n.Edges.Displayrules = append(n.Edges.Displayrules, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withWebhooksettings; query != nil {
+		if err := _q.loadWebhooksettings(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Webhooksettings = []*WebhookSettings{} },
+			func(n *GeneralSettings, e *WebhookSettings) {
+				n.Edges.Webhooksettings = append(n.Edges.Webhooksettings, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withMqttsettings; query != nil {
+		if err := _q.loadMqttsettings(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Mqttsettings = []*MQTTSettings{} },
+			func(n *GeneralSettings, e *MQTTSettings) { n.Edges.Mqttsettings = append(n.Edges.Mqttsettings, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTelegramsettings; query != nil {
+		if err := _q.loadTelegramsettings(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Telegramsettings = []*TelegramSettings{} },
+			func(n *GeneralSettings, e *TelegramSettings) {
+				n.Edges.Telegramsettings = append(n.Edges.Telegramsettings, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -2458,6 +2594,99 @@ func (_q *GeneralSettingsQuery) loadDisplayrules(ctx context.Context, query *Dis
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_displayrules" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadWebhooksettings(ctx context.Context, query *WebhookSettingsQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *WebhookSettings)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.WebhookSettings(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.WebhooksettingsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_webhooksettings
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_webhooksettings" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_webhooksettings" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadMqttsettings(ctx context.Context, query *MQTTSettingsQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *MQTTSettings)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.MQTTSettings(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.MqttsettingsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_mqttsettings
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_mqttsettings" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_mqttsettings" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadTelegramsettings(ctx context.Context, query *TelegramSettingsQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *TelegramSettings)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.TelegramSettings(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.TelegramsettingsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_telegramsettings
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_telegramsettings" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_telegramsettings" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -72,6 +72,9 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	srv.setupRoutes()
 	StartEventRuleEngine(client)
 
+	mqttCtrl = StartMQTT(srv)
+	tgBot = StartTelegram(srv)
+
 	return srv
 }
 
@@ -227,9 +230,12 @@ func (s *Server) setupRoutes() {
 			apiMut.POST("/feed/next", s.APIFeedNext)
 			apiMut.POST("/feed/pause", s.APIFeedPause)
 			apiMut.POST("/feed/resume", s.APIFeedResume)
-			apiMut.POST("/feed/priority", s.APIFeedPriority)
-			apiMut.POST("/webhook/notify", s.APIWebhookNotify)
 		}
+		// Webhook/display routes: authenticated via WebhookAuthMiddleware only (no-op when key unset).
+		// Separate from apiMut bearer-token mutations to preserve unauthenticated webhook behavior when key unset.
+		api.POST("/feed/priority", s.WebhookAuthMiddleware(), s.APIFeedPriority)
+		api.POST("/webhook/notify", s.WebhookAuthMiddleware(), s.APIWebhookNotify)
+		api.GET("/display", s.WebhookAuthMiddleware(), s.APIDisplay)
 	}
 
 	s.Router.GET("/setup", s.SetupPage)
@@ -468,6 +474,14 @@ func (s *Server) setupRoutes() {
 		admin.GET("/settings/alerts", s.AdminAlertSettings)
 		admin.POST("/settings/alerts", s.AdminAlertSettingsSave)
 		admin.POST("/settings/alerts/test", s.AdminAlertSettingsTest)
+
+		// Webhook/MQTT/Telegram Settings
+		admin.GET("/webhook", s.AdminWebhookSettingsGET)
+		admin.POST("/webhook", s.AdminWebhookSettingsPOST)
+		admin.GET("/mqtt", s.AdminMQTTSettingsGET)
+		admin.POST("/mqtt", s.AdminMQTTSettingsPOST)
+		admin.GET("/telegram", s.AdminTelegramSettingsGET)
+		admin.POST("/telegram", s.AdminTelegramSettingsPOST)
 
 		// Password Change
 		admin.GET("/password", s.AdminPasswordChange)

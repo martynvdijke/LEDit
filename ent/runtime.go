@@ -20,6 +20,7 @@ import (
 	"ledit/ent/homeassistant"
 	"ledit/ent/logsettings"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/pixelart"
@@ -30,10 +31,12 @@ import (
 	"ledit/ent/schema"
 	"ledit/ent/sonarr"
 	"ledit/ent/stock"
+	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/weather"
+	"ledit/ent/webhooksettings"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -332,6 +335,32 @@ func init() {
 	logsettingsDescOtelEnabled := logsettingsFields[5].Descriptor()
 	// logsettings.DefaultOtelEnabled holds the default value on creation for the otel_enabled field.
 	logsettings.DefaultOtelEnabled = logsettingsDescOtelEnabled.Default.(bool)
+	mqttsettingsFields := schema.MQTTSettings{}.Fields()
+	_ = mqttsettingsFields
+	// mqttsettingsDescEnabled is the schema descriptor for enabled field.
+	mqttsettingsDescEnabled := mqttsettingsFields[0].Descriptor()
+	// mqttsettings.DefaultEnabled holds the default value on creation for the enabled field.
+	mqttsettings.DefaultEnabled = mqttsettingsDescEnabled.Default.(bool)
+	// mqttsettingsDescBroker is the schema descriptor for broker field.
+	mqttsettingsDescBroker := mqttsettingsFields[1].Descriptor()
+	// mqttsettings.DefaultBroker holds the default value on creation for the broker field.
+	mqttsettings.DefaultBroker = mqttsettingsDescBroker.Default.(string)
+	// mqttsettingsDescUsername is the schema descriptor for username field.
+	mqttsettingsDescUsername := mqttsettingsFields[2].Descriptor()
+	// mqttsettings.DefaultUsername holds the default value on creation for the username field.
+	mqttsettings.DefaultUsername = mqttsettingsDescUsername.Default.(string)
+	// mqttsettingsDescPassword is the schema descriptor for password field.
+	mqttsettingsDescPassword := mqttsettingsFields[3].Descriptor()
+	// mqttsettings.DefaultPassword holds the default value on creation for the password field.
+	mqttsettings.DefaultPassword = mqttsettingsDescPassword.Default.(string)
+	// mqttsettingsDescControlTopic is the schema descriptor for control_topic field.
+	mqttsettingsDescControlTopic := mqttsettingsFields[4].Descriptor()
+	// mqttsettings.DefaultControlTopic holds the default value on creation for the control_topic field.
+	mqttsettings.DefaultControlTopic = mqttsettingsDescControlTopic.Default.(string)
+	// mqttsettingsDescDisplayTopic is the schema descriptor for display_topic field.
+	mqttsettingsDescDisplayTopic := mqttsettingsFields[5].Descriptor()
+	// mqttsettings.DefaultDisplayTopic holds the default value on creation for the display_topic field.
+	mqttsettings.DefaultDisplayTopic = mqttsettingsDescDisplayTopic.Default.(string)
 	matrixlayoutFields := schema.MatrixLayout{}.Fields()
 	_ = matrixlayoutFields
 	// matrixlayoutDescRows is the schema descriptor for rows field.
@@ -468,6 +497,20 @@ func init() {
 	stockDescURL := stockFields[1].Descriptor()
 	// stock.DefaultURL holds the default value on creation for the url field.
 	stock.DefaultURL = stockDescURL.Default.(string)
+	telegramsettingsFields := schema.TelegramSettings{}.Fields()
+	_ = telegramsettingsFields
+	// telegramsettingsDescEnabled is the schema descriptor for enabled field.
+	telegramsettingsDescEnabled := telegramsettingsFields[0].Descriptor()
+	// telegramsettings.DefaultEnabled holds the default value on creation for the enabled field.
+	telegramsettings.DefaultEnabled = telegramsettingsDescEnabled.Default.(bool)
+	// telegramsettingsDescBotToken is the schema descriptor for bot_token field.
+	telegramsettingsDescBotToken := telegramsettingsFields[1].Descriptor()
+	// telegramsettings.DefaultBotToken holds the default value on creation for the bot_token field.
+	telegramsettings.DefaultBotToken = telegramsettingsDescBotToken.Default.(string)
+	// telegramsettingsDescAllowedChatID is the schema descriptor for allowed_chat_id field.
+	telegramsettingsDescAllowedChatID := telegramsettingsFields[2].Descriptor()
+	// telegramsettings.DefaultAllowedChatID holds the default value on creation for the allowed_chat_id field.
+	telegramsettings.DefaultAllowedChatID = telegramsettingsDescAllowedChatID.Default.(int64)
 	textslideFields := schema.TextSlide{}.Fields()
 	_ = textslideFields
 	// textslideDescColor is the schema descriptor for color field.
@@ -508,4 +551,30 @@ func init() {
 	weatherDescURL := weatherFields[1].Descriptor()
 	// weather.DefaultURL holds the default value on creation for the url field.
 	weather.DefaultURL = weatherDescURL.Default.(string)
+	webhooksettingsFields := schema.WebhookSettings{}.Fields()
+	_ = webhooksettingsFields
+	// webhooksettingsDescAPIKey is the schema descriptor for api_key field.
+	webhooksettingsDescAPIKey := webhooksettingsFields[0].Descriptor()
+	// webhooksettings.DefaultAPIKey holds the default value on creation for the api_key field.
+	webhooksettings.DefaultAPIKey = webhooksettingsDescAPIKey.Default.(string)
+	// webhooksettingsDescDefaultTTL is the schema descriptor for default_ttl field.
+	webhooksettingsDescDefaultTTL := webhooksettingsFields[1].Descriptor()
+	// webhooksettings.DefaultDefaultTTL holds the default value on creation for the default_ttl field.
+	webhooksettings.DefaultDefaultTTL = webhooksettingsDescDefaultTTL.Default.(int)
+	// webhooksettings.DefaultTTLValidator is a validator for the "default_ttl" field. It is called by the builders before save.
+	webhooksettings.DefaultTTLValidator = func() func(int) error {
+		validators := webhooksettingsDescDefaultTTL.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(default_ttl int) error {
+			for _, fn := range fns {
+				if err := fn(default_ttl); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 }

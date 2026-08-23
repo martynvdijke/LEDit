@@ -1068,6 +1068,75 @@ func HasDisplayrulesWith(preds ...predicate.DisplayRule) predicate.GeneralSettin
 	})
 }
 
+// HasWebhooksettings applies the HasEdge predicate on the "webhooksettings" edge.
+func HasWebhooksettings() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, WebhooksettingsTable, WebhooksettingsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWebhooksettingsWith applies the HasEdge predicate on the "webhooksettings" edge with a given conditions (other predicates).
+func HasWebhooksettingsWith(preds ...predicate.WebhookSettings) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newWebhooksettingsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMqttsettings applies the HasEdge predicate on the "mqttsettings" edge.
+func HasMqttsettings() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MqttsettingsTable, MqttsettingsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMqttsettingsWith applies the HasEdge predicate on the "mqttsettings" edge with a given conditions (other predicates).
+func HasMqttsettingsWith(preds ...predicate.MQTTSettings) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newMqttsettingsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTelegramsettings applies the HasEdge predicate on the "telegramsettings" edge.
+func HasTelegramsettings() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TelegramsettingsTable, TelegramsettingsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTelegramsettingsWith applies the HasEdge predicate on the "telegramsettings" edge with a given conditions (other predicates).
+func HasTelegramsettingsWith(preds ...predicate.TelegramSettings) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newTelegramsettingsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.GeneralSettings) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.AndPredicates(predicates...))

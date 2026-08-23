@@ -96,9 +96,15 @@ type GeneralSettingsEdges struct {
 	Playlists []*Playlist `json:"playlists,omitempty"`
 	// Displayrules holds the value of the displayrules edge.
 	Displayrules []*DisplayRule `json:"displayrules,omitempty"`
+	// Webhooksettings holds the value of the webhooksettings edge.
+	Webhooksettings []*WebhookSettings `json:"webhooksettings,omitempty"`
+	// Mqttsettings holds the value of the mqttsettings edge.
+	Mqttsettings []*MQTTSettings `json:"mqttsettings,omitempty"`
+	// Telegramsettings holds the value of the telegramsettings edge.
+	Telegramsettings []*TelegramSettings `json:"telegramsettings,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [28]bool
+	loadedTypes [31]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -353,6 +359,33 @@ func (e GeneralSettingsEdges) DisplayrulesOrErr() ([]*DisplayRule, error) {
 	return nil, &NotLoadedError{edge: "displayrules"}
 }
 
+// WebhooksettingsOrErr returns the Webhooksettings value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) WebhooksettingsOrErr() ([]*WebhookSettings, error) {
+	if e.loadedTypes[28] {
+		return e.Webhooksettings, nil
+	}
+	return nil, &NotLoadedError{edge: "webhooksettings"}
+}
+
+// MqttsettingsOrErr returns the Mqttsettings value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) MqttsettingsOrErr() ([]*MQTTSettings, error) {
+	if e.loadedTypes[29] {
+		return e.Mqttsettings, nil
+	}
+	return nil, &NotLoadedError{edge: "mqttsettings"}
+}
+
+// TelegramsettingsOrErr returns the Telegramsettings value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) TelegramsettingsOrErr() ([]*TelegramSettings, error) {
+	if e.loadedTypes[30] {
+		return e.Telegramsettings, nil
+	}
+	return nil, &NotLoadedError{edge: "telegramsettings"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -586,6 +619,21 @@ func (_m *GeneralSettings) QueryPlaylists() *PlaylistQuery {
 // QueryDisplayrules queries the "displayrules" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryDisplayrules() *DisplayRuleQuery {
 	return NewGeneralSettingsClient(_m.config).QueryDisplayrules(_m)
+}
+
+// QueryWebhooksettings queries the "webhooksettings" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryWebhooksettings() *WebhookSettingsQuery {
+	return NewGeneralSettingsClient(_m.config).QueryWebhooksettings(_m)
+}
+
+// QueryMqttsettings queries the "mqttsettings" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryMqttsettings() *MQTTSettingsQuery {
+	return NewGeneralSettingsClient(_m.config).QueryMqttsettings(_m)
+}
+
+// QueryTelegramsettings queries the "telegramsettings" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryTelegramsettings() *TelegramSettingsQuery {
+	return NewGeneralSettingsClient(_m.config).QueryTelegramsettings(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.
