@@ -1,3 +1,10 @@
+# [1.28.0](https://github.com/martynvdijke/LEDit/compare/v1.27.0...v1.28.0) (2026-08-23)
+
+
+### Features
+
+* event-driven switching with display rules ([f3beb67](https://github.com/martynvdijke/LEDit/commit/f3beb672d2202bcb32d4d9dbeeb76a0627d9c7bd))
+
 # [1.27.0](https://github.com/martynvdijke/LEDit/compare/v1.26.0...v1.27.0) (2026-08-23)
 
 
