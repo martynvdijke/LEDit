@@ -1,3 +1,10 @@
+## [1.29.1](https://github.com/martynvdijke/LEDit/compare/v1.29.0...v1.29.1) (2026-08-23)
+
+
+### Bug Fixes
+
+* event rule edit template crash and sqlite test lock flake ([0d9a7ea](https://github.com/martynvdijke/LEDit/commit/0d9a7ea7738fb0363bd5c1f9c67f440dd04cd154))
+
 # [1.29.0](https://github.com/martynvdijke/LEDit/compare/v1.28.0...v1.29.0) (2026-08-23)
 
 
