@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/martynvdijke/LEDit/compare/v1.26.0...v1.27.0) (2026-08-23)
+
+
+### Features
+
+* device playlists — per-device content selection ([153dfbc](https://github.com/martynvdijke/LEDit/commit/153dfbc4b85aef612b1023166b707ff07a94f9cd))
+
 # [1.26.0](https://github.com/martynvdijke/LEDit/compare/v1.25.0...v1.26.0) (2026-08-23)
 
 
