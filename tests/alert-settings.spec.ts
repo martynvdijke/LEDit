@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, type Page } from './fixtures';
 
 async function seedCleanState(page: Page): Promise<void> {
   await page.request.post('/admin/settings', {

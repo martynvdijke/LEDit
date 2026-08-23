@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
@@ -19,8 +20,9 @@ import (
 )
 
 type RenderedImage struct {
-	Format string
-	Data   []byte
+	Format  string
+	Data    []byte
+	Scrolls bool
 }
 
 func RenderDict(dataDict map[string]string, width, height int, theme Theme, fontPath string) (*RenderedImage, error) {
@@ -75,6 +77,11 @@ func RenderDict(dataDict map[string]string, width, height int, theme Theme, font
 	}
 	yPos += 20
 
+	scrolls := false
+	availW := width - 2*margin
+	if availW < 1 {
+		availW = 1
+	}
 	for key, value := range dataDict {
 		markerX := margin - 15
 		markerY := yPos + 8
@@ -86,7 +93,13 @@ func RenderDict(dataDict map[string]string, width, height int, theme Theme, font
 		if fontErr == nil {
 			drawString(img, key+": "+value, margin, yPos, face, textCol)
 		} else {
-			drawStringSimple(img, key+": "+value, margin, yPos, textCol)
+			text := key + ": " + value
+			if shouldScroll(text, availW) {
+				scrolls = true
+				drawStringSimpleScrolling(img, text, margin, yPos, textCol, availW)
+			} else {
+				drawStringSimple(img, text, margin, yPos, textCol)
+			}
 		}
 		yPos += 35
 	}
@@ -105,7 +118,7 @@ func RenderDict(dataDict map[string]string, width, height int, theme Theme, font
 	if err := png.Encode(&buf, img); err != nil {
 		return nil, err
 	}
-	return &RenderedImage{Format: "PNG", Data: buf.Bytes()}, nil
+	return &RenderedImage{Format: "PNG", Data: buf.Bytes(), Scrolls: scrolls}, nil
 }
 
 func RenderText(text string, width, height int, bgColor, textColor string, fontSize float64, fontPath string) (*RenderedImage, error) {
@@ -263,6 +276,42 @@ func drawStringSimple(img *image.RGBA, text string, x, y int, col color.Color) {
 			}
 		}
 		baseX += charW
+	}
+}
+
+const simpleCharW = 6
+const simpleCharH = 7
+
+func shouldScroll(text string, availW int) bool {
+	return len(text)*simpleCharW > availW
+}
+
+func drawStringSimpleScrolling(img *image.RGBA, text string, x, y int, col color.Color, availW int) {
+	charW := simpleCharW
+	charH := simpleCharH
+	gap := charW * 3
+	textW := len(text) * charW
+	offset := ScrollOffset(time.Now(), 100, 30, textW, gap)
+	total := textW + gap
+	if total <= 0 {
+		return
+	}
+	// Build strip image of width total, height charH.
+	strip := image.NewRGBA(image.Rect(0, 0, total, charH))
+	drawStringSimple(strip, text, 0, 0, col)
+	// Copy visible window into target, clipped to availW.
+	for dx := 0; dx < availW; dx++ {
+		srcX := (offset + dx) % total
+		for row := 0; row < charH; row++ {
+			c := strip.RGBAAt(srcX, row)
+			if c.A != 0 {
+				tx := x + dx
+				ty := y + row
+				if tx >= 0 && tx < img.Bounds().Dx() && ty >= 0 && ty < img.Bounds().Dy() {
+					img.Set(tx, ty, col)
+				}
+			}
+		}
 	}
 }
 

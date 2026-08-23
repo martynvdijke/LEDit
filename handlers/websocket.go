@@ -85,6 +85,8 @@ func NewWSHub(client *ent.Client) *WSHub {
 // and device feeds.
 func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 	var sources []sourceWithName
+	// Built-in Clock: always first so the wall has a clock available.
+	sources = append(sources, sourceWithName{Name: "Clock", Source: &datasource.ClockDS{}, cacheKey: "clock:0"})
 
 	sonarr, _ := settings.Edges.SonarrOrErr()
 	for _, s := range sonarr {

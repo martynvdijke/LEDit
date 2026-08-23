@@ -36,6 +36,10 @@ func GetSystemStats() SystemStats {
 type SystemStatsDS struct{}
 
 func (s *SystemStatsDS) GetPNG(width, height int) (*render.RenderedImage, error) {
+	return s.GetPNGThemed(width, height, DefaultTheme())
+}
+
+func (s *SystemStatsDS) GetPNGThemed(width, height int, theme render.Theme) (*render.RenderedImage, error) {
 	slog.Info("collecting system stats", "source", "systemstats")
 	st := GetSystemStats()
 	data := map[string]string{
@@ -45,7 +49,7 @@ func (s *SystemStatsDS) GetPNG(width, height int) (*render.RenderedImage, error)
 		"MEM":  st.Memory,
 		"LOAD": st.Load,
 	}
-	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
+	return render.RenderDict(data, width, height, theme, "fonts/PixelifySans.ttf")
 }
 
 func memString() string {

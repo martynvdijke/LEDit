@@ -20,11 +20,19 @@ document.querySelectorAll<HTMLElement>('[data-dismiss]').forEach((element) => {
 // Live previews: debounced PNG previews for datasource + matrix forms
 // ---------------------------------------------------------------------------
 
+interface CellTheme {
+  accent?: string;
+  text?: string;
+  background?: string;
+  font_size?: number;
+}
+
 interface Binding {
   row: number;
   col: number;
   source_type?: string;
   source_id?: number;
+  theme?: CellTheme;
 }
 
 interface BindingOption {
@@ -127,6 +135,38 @@ if (matrixForm) {
       void postPreview(endpoint, data);
     }, DEBOUNCE_MS);
 
+    const hexRe = /^#?[0-9a-fA-F]{6}$/;
+    const isValidHex = (s: string): boolean => hexRe.test(s);
+    const normalizeHex = (s: string): string => (s.startsWith('#') ? s : `#${s}`).toLowerCase();
+
+    const syncBindingsInput = (): void => {
+      bindingsInput.value = JSON.stringify(bindings);
+    };
+
+    const readThemeFromCell = (
+      toggle: HTMLInputElement,
+      accentEl: HTMLInputElement,
+      textEl: HTMLInputElement,
+      bgEl: HTMLInputElement,
+      fontEl: HTMLInputElement,
+    ): CellTheme | undefined => {
+      if (!toggle.checked) return undefined;
+      const theme: CellTheme = {};
+      const a = accentEl.value.trim();
+      if (a && isValidHex(a)) theme.accent = normalizeHex(a);
+      const t = textEl.value.trim();
+      if (t && isValidHex(t)) theme.text = normalizeHex(t);
+      const bg = bgEl.value.trim();
+      if (bg && isValidHex(bg)) theme.background = normalizeHex(bg);
+      const f = fontEl.value.trim();
+      if (f !== '') {
+        const n = Number(f);
+        if (!Number.isNaN(n) && n > 0 && n <= 100) theme.font_size = n;
+      }
+      if (Object.keys(theme).length === 0) return {};
+      return theme;
+    };
+
     const renderGrid = (): void => {
       const rows = Number(rowsInput.value);
       const cols = Number(colsInput.value);
@@ -134,14 +174,24 @@ if (matrixForm) {
       const types = Object.keys(opts).sort();
       for (let r = 0; r < rows; r++) {
         const rowEl = document.createElement('div');
-        rowEl.className = 'd-flex gap-2 mb-2 align-items-center';
+        rowEl.className = 'd-flex gap-2 mb-2 align-items-start flex-wrap';
         const badge = document.createElement('span');
-        badge.className = 'badge bg-secondary';
+        badge.className = 'badge bg-secondary mt-2';
         badge.textContent = `R${r + 1}`;
         rowEl.appendChild(badge);
         for (let c = 0; c < cols; c++) {
+          const cur = bindingAt(r, c);
+          const cellWrap = document.createElement('div');
+          cellWrap.className = 'flex-grow-1 d-flex flex-column gap-1 border rounded p-2';
+          cellWrap.style.minWidth = '160px';
+
           const sel = document.createElement('select');
-          sel.className = 'form-select form-select-sm flex-grow-1';
+          sel.className = 'form-select form-select-sm';
+          sel.id = `cell-${r}-${c}-source`;
+          const selLabel = document.createElement('label');
+          selLabel.className = 'form-label small mb-0';
+          selLabel.htmlFor = sel.id;
+          selLabel.textContent = `Cell ${r + 1},${c + 1}`;
           const unbound = document.createElement('option');
           unbound.value = '';
           unbound.textContent = 'unbound';
@@ -157,20 +207,143 @@ if (matrixForm) {
             }
             sel.appendChild(grp);
           }
-          const cur = bindingAt(r, c);
           if (cur?.source_type !== undefined && cur.source_id !== undefined) {
             sel.value = `${cur.source_type}:${cur.source_id}`;
           }
-          sel.addEventListener('change', () => {
+
+          // Theme controls
+          const themeToggle = document.createElement('input');
+          themeToggle.type = 'checkbox';
+          themeToggle.className = 'form-check-input';
+          themeToggle.id = `cell-${r}-${c}-custom-theme`;
+          const themeToggleLabel = document.createElement('label');
+          themeToggleLabel.className = 'form-check-label small';
+          themeToggleLabel.htmlFor = themeToggle.id;
+          themeToggleLabel.textContent = 'custom theme';
+          const toggleWrap = document.createElement('div');
+          toggleWrap.className = 'form-check';
+          toggleWrap.appendChild(themeToggle);
+          toggleWrap.appendChild(themeToggleLabel);
+
+          const themePanel = document.createElement('div');
+          themePanel.className = 'd-flex flex-column gap-1';
+          themePanel.style.display = 'none';
+
+          const makeColorInput = (labelText: string, idSuffix: string, initial: string): HTMLInputElement => {
+            const wrap = document.createElement('div');
+            wrap.className = 'd-flex align-items-center gap-1';
+            const lab = document.createElement('label');
+            lab.className = 'form-label small mb-0';
+            lab.textContent = labelText;
+            lab.htmlFor = `cell-${r}-${c}-${idSuffix}`;
+            const inp = document.createElement('input');
+            inp.type = 'color';
+            inp.className = 'form-control form-control-color';
+            inp.id = `cell-${r}-${c}-${idSuffix}`;
+            inp.value = initial && isValidHex(initial) ? normalizeHex(initial) : '#000000';
+            // store actual emptiness via dataset when user hasn't set? Instead keep value but only serialize non-empty when toggle checked and value differs from default? We'll track whether theme had the field.
+            wrap.appendChild(lab);
+            wrap.appendChild(inp);
+            themePanel.appendChild(wrap);
+            return inp;
+          };
+
+          const hasTheme = !!cur?.theme;
+          const accentInput = makeColorInput('Accent', 'accent', cur?.theme?.accent ?? '');
+          const textInput = makeColorInput('Text', 'text', cur?.theme?.text ?? '');
+          const bgInput = makeColorInput('Background', 'bg', cur?.theme?.background ?? '');
+
+          // For color inputs, if original theme didn't have the field, mark as untouched so we can skip serializing default #000000
+          if (!cur?.theme?.accent) accentInput.dataset.touched = 'false';
+          else accentInput.dataset.touched = 'true';
+          if (!cur?.theme?.text) textInput.dataset.touched = 'false';
+          else textInput.dataset.touched = 'true';
+          if (!cur?.theme?.background) bgInput.dataset.touched = 'false';
+          else bgInput.dataset.touched = 'true';
+          [accentInput, textInput, bgInput].forEach((el) => {
+            el.addEventListener('input', () => {
+              el.dataset.touched = 'true';
+            });
+          });
+
+          const fontWrap = document.createElement('div');
+          fontWrap.className = 'd-flex align-items-center gap-1';
+          const fontLabel = document.createElement('label');
+          fontLabel.className = 'form-label small mb-0';
+          fontLabel.textContent = 'Font size';
+          fontLabel.htmlFor = `cell-${r}-${c}-font-size`;
+          const fontInput = document.createElement('input');
+          fontInput.type = 'number';
+          fontInput.className = 'form-control form-control-sm';
+          fontInput.id = `cell-${r}-${c}-font-size`;
+          fontInput.min = '1';
+          fontInput.max = '100';
+          fontInput.step = 'any';
+          fontInput.placeholder = 'inherit';
+          if (cur?.theme?.font_size) fontInput.value = String(cur.theme.font_size);
+          fontWrap.appendChild(fontLabel);
+          fontWrap.appendChild(fontInput);
+          themePanel.appendChild(fontWrap);
+
+          themeToggle.checked = hasTheme;
+          themePanel.style.display = hasTheme ? 'flex' : 'none';
+          themeToggle.addEventListener('change', () => {
+            themePanel.style.display = themeToggle.checked ? 'flex' : 'none';
+            syncCellBinding();
+          });
+
+          const buildThemeForSerialize = (): CellTheme | undefined => {
+            if (!themeToggle.checked) return undefined;
+            const theme: CellTheme = {};
+            if (accentInput.dataset.touched === 'true' && isValidHex(accentInput.value)) theme.accent = normalizeHex(accentInput.value);
+            if (textInput.dataset.touched === 'true' && isValidHex(textInput.value)) theme.text = normalizeHex(textInput.value);
+            if (bgInput.dataset.touched === 'true' && isValidHex(bgInput.value)) theme.background = normalizeHex(bgInput.value);
+            const f = fontInput.value.trim();
+            if (f !== '') {
+              const n = Number(f);
+              if (!Number.isNaN(n) && n > 0 && n <= 100) theme.font_size = n;
+            }
+            // When toggle checked but no fields set, emit empty object so server sees theme present (omitempty will drop empty strings but keep {}); use {} to indicate custom theme with defaults
+            if (Object.keys(theme).length === 0) return {};
+            return theme;
+          };
+
+          const syncCellBinding = (): void => {
             const [t, idStr] = sel.value.split(':');
+            // Remove existing binding for this cell
+            const existing = bindings.find((b) => b.row === r && b.col === c);
+            const theme = buildThemeForSerialize();
             bindings = bindings.filter((b) => !(b.row === r && b.col === c));
             if (t && idStr) {
-              bindings.push({ row: r, col: c, source_type: t, source_id: Number(idStr) });
+              const nb: Binding = { row: r, col: c, source_type: t, source_id: Number(idStr) };
+              if (theme !== undefined) nb.theme = theme;
+              bindings.push(nb);
+            } else if (theme !== undefined) {
+              // No source but theme alone? Don't create binding without source - keep no entry
+              // If we want to keep theme for empty cell, we could, but spec says theme on binding object; unbound cells have no binding so no theme
+            } else if (existing && !t) {
+              // unbound, nothing to push
             }
-            bindingsInput.value = JSON.stringify(bindings);
+            // If theme changed but no source selected, update existing if present
+            syncBindingsInput();
             schedulePreview();
-          });
-          rowEl.appendChild(sel);
+          };
+
+          sel.addEventListener('change', syncCellBinding);
+          accentInput.addEventListener('input', syncCellBinding);
+          accentInput.addEventListener('change', syncCellBinding);
+          textInput.addEventListener('input', syncCellBinding);
+          textInput.addEventListener('change', syncCellBinding);
+          bgInput.addEventListener('input', syncCellBinding);
+          bgInput.addEventListener('change', syncCellBinding);
+          fontInput.addEventListener('input', syncCellBinding);
+          fontInput.addEventListener('change', syncCellBinding);
+
+          cellWrap.appendChild(selLabel);
+          cellWrap.appendChild(sel);
+          cellWrap.appendChild(toggleWrap);
+          cellWrap.appendChild(themePanel);
+          rowEl.appendChild(cellWrap);
         }
         grid.appendChild(rowEl);
       }

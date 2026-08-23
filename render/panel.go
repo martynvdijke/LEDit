@@ -62,8 +62,6 @@ func RenderPanel(data map[string]string, width, height int, theme Theme, fontPat
 	size := PanelFontSize(height)
 	theme.FontSize = size
 	face, fontErr := loadFont(fontPath, size)
-
-	// Title.
 	margin := width / 10
 	if margin < 4 {
 		margin = 4
@@ -82,6 +80,11 @@ func RenderPanel(data map[string]string, width, height int, theme Theme, fontPat
 	if maxRows < 0 {
 		maxRows = 0
 	}
+	scrolls := false
+	availW := width - 2*margin
+	if availW < 1 {
+		availW = 1
+	}
 	i := 0
 	for key, value := range data {
 		if i >= maxRows {
@@ -99,7 +102,13 @@ func RenderPanel(data map[string]string, width, height int, theme Theme, fontPat
 		if fontErr == nil {
 			drawString(img, key+": "+value, margin, yPos, face, textCol)
 		} else {
-			drawStringSimple(img, key+": "+value, margin, yPos, textCol)
+			text := key + ": " + value
+			if shouldScroll(text, availW) {
+				scrolls = true
+				drawStringSimpleScrolling(img, text, margin, yPos, textCol, availW)
+			} else {
+				drawStringSimple(img, text, margin, yPos, textCol)
+			}
 		}
 		yPos += rowH
 		i++
@@ -109,7 +118,7 @@ func RenderPanel(data map[string]string, width, height int, theme Theme, fontPat
 	if err := png.Encode(&buf, img); err != nil {
 		return nil, err
 	}
-	return &RenderedImage{Format: "PNG", Data: buf.Bytes()}, nil
+	return &RenderedImage{Format: "PNG", Data: buf.Bytes(), Scrolls: scrolls}, nil
 }
 
 // TemplateGrid renders the PNG template for a matrix layout: background, cell

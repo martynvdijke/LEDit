@@ -82,6 +82,7 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	}
 
 	// Built-in ambience modes are always bindable.
+	add("clock", 0, "Clock")
 	add("analog-clock", 0, "Analog Clock")
 	add("matrix-rain", 0, "Matrix Rain")
 	add("systemstats", 0, "System Stats")
@@ -190,6 +191,8 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 	key := func(typ string, id int) string { return fmt.Sprintf("%s:%d", typ, id) }
 
 	// Built-in ambience modes (always available, no config).
+	idx.byKey[key("clock", 0)] = &datasource.ClockDS{}
+	idx.names[key("clock", 0)] = "Clock"
 	idx.byKey[key("analog-clock", 0)] = &datasource.AnalogClockDS{}
 	idx.names[key("analog-clock", 0)] = "Analog Clock"
 	idx.byKey[key("matrix-rain", 0)] = &datasource.MatrixRainDS{}

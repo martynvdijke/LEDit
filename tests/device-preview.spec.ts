@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, type Page } from './fixtures';
 
 const DEVICE_NAME = 'PW Preview Wall';
 

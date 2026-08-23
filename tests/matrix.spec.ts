@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './fixtures';
 
 // Matrix dashboard: new datasource forms, matrix layout editor, live previews
 // and the on-demand preview endpoint. Tests clean up after themselves so the

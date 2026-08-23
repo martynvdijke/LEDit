@@ -109,7 +109,7 @@ func TestCatalogParity(t *testing.T) {
 			t.Errorf("buildSourceIndex key %q missing in loadSources", k)
 		}
 	}
-	expectedCore := []string{"systemstats:0", "analog-clock:0", "matrix-rain:0"}
+	expectedCore := []string{"clock:0", "systemstats:0", "analog-clock:0", "matrix-rain:0"}
 	for _, ek := range expectedCore {
 		if !sourceKeys[ek] {
 			t.Errorf("expected core key %q missing in loadSources", ek)

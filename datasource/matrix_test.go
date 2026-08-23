@@ -248,3 +248,129 @@ func TestPanelCacheHook(t *testing.T) {
 		t.Fatalf("second render within TTL should be a cache hit, got %v", calls)
 	}
 }
+
+// --- CellTheme / PanelBinding theme tests (task 3.1) ---
+
+func TestCellThemeFullRoundTrip(t *testing.T) {
+	bindings := []PanelBinding{
+		{Row: 0, Col: 0, SourceType: "weather", SourceID: 1, Theme: &CellTheme{Accent: "#ff0000", Text: "00ff00", Background: "#0000ff", FontSize: 12.5}},
+	}
+	raw := BindingsJSON(bindings)
+	parsed := ParseBindings(raw)
+	if len(parsed) != 1 {
+		t.Fatalf("expected 1 binding, got %d", len(parsed))
+	}
+	th := parsed[0].Theme
+	if th == nil {
+		t.Fatal("expected non-nil theme after round-trip")
+	}
+	if th.Accent != "#ff0000" || th.Text != "00ff00" || th.Background != "#0000ff" || th.FontSize != 12.5 {
+		t.Fatalf("round-trip theme mismatch: %+v", th)
+	}
+	if !ValidBindings(raw, 2, 2) {
+		t.Fatal("full theme valid hex should pass ValidBindings")
+	}
+}
+
+func TestCellThemePartialAndNil(t *testing.T) {
+	// Partial: only accent
+	raw := `[{"row":0,"col":0,"source_type":"weather","source_id":1,"theme":{"accent":"#aabbcc"}}]`
+	parsed := ParseBindings(raw)
+	if len(parsed) != 1 || parsed[0].Theme == nil {
+		t.Fatalf("expected partial theme parsed, got %+v", parsed)
+	}
+	if parsed[0].Theme.Accent != "#aabbcc" || parsed[0].Theme.Text != "" || parsed[0].Theme.Background != "" || parsed[0].Theme.FontSize != 0 {
+		t.Fatalf("partial theme fields wrong: %+v", parsed[0].Theme)
+	}
+	if !ValidBindings(raw, 2, 2) {
+		t.Fatal("partial theme should be valid")
+	}
+	// Nil theme stays nil
+	raw2 := `[{"row":0,"col":0,"source_type":"weather","source_id":1}]`
+	parsed2 := ParseBindings(raw2)
+	if len(parsed2) != 1 || parsed2[0].Theme != nil {
+		t.Fatalf("expected nil theme, got %+v", parsed2[0].Theme)
+	}
+	// Also via BindingsJSON nil omits key
+	bNoTheme := []PanelBinding{{Row: 0, Col: 0, SourceType: "weather", SourceID: 1}}
+	rawNoTheme := BindingsJSON(bNoTheme)
+	if strings.Contains(rawNoTheme, "theme") {
+		t.Fatalf("nil theme should be omitted from JSON, got %s", rawNoTheme)
+	}
+}
+
+func TestCellThemeBadHexValidBindings(t *testing.T) {
+	bad := `[{"row":0,"col":0,"source_type":"weather","source_id":1,"theme":{"accent":"zzz"}}]`
+	if ValidBindings(bad, 2, 2) {
+		t.Fatal("expected ValidBindings false for bad hex zzz")
+	}
+	// Must still parse (validation is ValidBindings' job)
+	parsed := ParseBindings(bad)
+	if len(parsed) != 1 || parsed[0].Theme == nil || parsed[0].Theme.Accent != "zzz" {
+		t.Fatalf("bad theme should still parse, got %+v", parsed)
+	}
+	// Well-formed
+	good := `[{"row":0,"col":0,"source_type":"weather","source_id":1,"theme":{"accent":"#aabbcc","text":"112233","background":"#ffffff"}}]`
+	if !ValidBindings(good, 2, 2) {
+		t.Fatal("well-formed hex should pass ValidBindings")
+	}
+	// Validate directly
+	if (&CellTheme{Accent: "zzz"}).Validate() {
+		t.Fatal("zzz should fail Validate")
+	}
+	if !(&CellTheme{Accent: "#aabbcc"}).Validate() {
+		t.Fatal("#aabbcc should pass Validate")
+	}
+}
+
+func TestCellThemeOldFormatBackwardCompatible(t *testing.T) {
+	raw := `[{"row":0,"col":1,"source_type":"weather","source_id":2}]`
+	if !ValidBindings(raw, 2, 2) {
+		t.Fatal("old-format without theme key should be valid")
+	}
+	parsed := ParseBindings(raw)
+	if len(parsed) != 1 || parsed[0].Theme != nil {
+		t.Fatalf("old-format should yield Theme==nil, got %+v", parsed[0])
+	}
+}
+
+func TestCellThemeInvalidFontSize(t *testing.T) {
+	neg := `[{"row":0,"col":0,"source_type":"weather","source_id":1,"theme":{"font_size":-1}}]`
+	if ValidBindings(neg, 2, 2) {
+		t.Fatal("negative font_size should fail ValidBindings")
+	}
+	large := `[{"row":0,"col":0,"source_type":"weather","source_id":1,"theme":{"font_size":101}}]`
+	if ValidBindings(large, 2, 2) {
+		t.Fatal("font_size >100 should fail ValidBindings")
+	}
+	zero := `[{"row":0,"col":0,"source_type":"weather","source_id":1,"theme":{"font_size":0}}]`
+	if !ValidBindings(zero, 2, 2) {
+		t.Fatal("font_size 0 (unset) should pass ValidBindings")
+	}
+	valid := `[{"row":0,"col":0,"source_type":"weather","source_id":1,"theme":{"font_size":100}}]`
+	if !ValidBindings(valid, 2, 2) {
+		t.Fatal("font_size 100 should pass ValidBindings")
+	}
+	// Still parses
+	for _, raw := range []string{neg, large} {
+		p := ParseBindings(raw)
+		if len(p) != 1 || p[0].Theme == nil {
+			t.Fatalf("invalid font_size should still parse: %s got %+v", raw, p)
+		}
+	}
+}
+
+func TestCellThemeValidate(t *testing.T) {
+	if !(&CellTheme{}).Validate() {
+		t.Fatal("empty theme should validate")
+	}
+	if (&CellTheme{Accent: "gggggg"}).Validate() {
+		t.Fatal("gggggg should fail")
+	}
+	if !(&CellTheme{Accent: "#AABBCC"}).Validate() {
+		t.Fatal("uppercase hex should pass")
+	}
+	if (&CellTheme{FontSize: -0.1}).Validate() {
+		t.Fatal("negative font size should fail")
+	}
+}
