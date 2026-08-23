@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 
@@ -61,6 +62,31 @@ func (h *HomeAssistantDS) GetPNG(width, height int) (*render.RenderedImage, erro
 	slog.Info("homeassistant data fetched successfully", "source", "homeassistant", "entity_count", count)
 
 	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
+}
+
+// CurrentState fetches /api/states and returns raw state fields.
+// Shape: {"states": [...], "count": N} where states is the decoded array;
+// if the response is an object it is returned directly, otherwise wrapped.
+func (h *HomeAssistantDS) CurrentState(ctx context.Context) (map[string]any, error) {
+	_ = ctx
+	body, err := apiGet(h.URL+"/api/states", h.Token, map[string]string{
+		"Authorization": "Bearer " + h.Token,
+	})
+	if err != nil {
+		return nil, err
+	}
+	var decoded any
+	if err := json.Unmarshal(body, &decoded); err != nil {
+		return nil, err
+	}
+	if m, ok := decoded.(map[string]any); ok {
+		// Single entity object: expose as {state, attributes} style by returning map as-is
+		return m, nil
+	}
+	if arr, ok := decoded.([]any); ok {
+		return map[string]any{"states": arr, "count": len(arr)}, nil
+	}
+	return map[string]any{"body": decoded}, nil
 }
 
 func fallbackHA(width, height int) *render.RenderedImage {

@@ -10,7 +10,7 @@
     <div class="d-flex">
         {{template "sidebar" .}}
         <div class="container-fluid p-4">
-            <h1>Admin Dashboard</h1>
+            <h1>Admin Dashboard{{if .pinned_by}} <span class="badge bg-warning text-dark">Held by rule: {{.pinned_by}}</span>{{end}}</h1>
             {{if .has_settings}}
             <div class="row mt-4">
                 <div class="col-md-3">

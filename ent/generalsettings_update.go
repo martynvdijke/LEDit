@@ -13,6 +13,7 @@ import (
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
+	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
@@ -611,6 +612,21 @@ func (_u *GeneralSettingsUpdate) AddPlaylists(v ...*Playlist) *GeneralSettingsUp
 	return _u.AddPlaylistIDs(ids...)
 }
 
+// AddDisplayruleIDs adds the "displayrules" edge to the DisplayRule entity by IDs.
+func (_u *GeneralSettingsUpdate) AddDisplayruleIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddDisplayruleIDs(ids...)
+	return _u
+}
+
+// AddDisplayrules adds the "displayrules" edges to the DisplayRule entity.
+func (_u *GeneralSettingsUpdate) AddDisplayrules(v ...*DisplayRule) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDisplayruleIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdate) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -1181,6 +1197,27 @@ func (_u *GeneralSettingsUpdate) RemovePlaylists(v ...*Playlist) *GeneralSetting
 		ids[i] = v[i].ID
 	}
 	return _u.RemovePlaylistIDs(ids...)
+}
+
+// ClearDisplayrules clears all "displayrules" edges to the DisplayRule entity.
+func (_u *GeneralSettingsUpdate) ClearDisplayrules() *GeneralSettingsUpdate {
+	_u.mutation.ClearDisplayrules()
+	return _u
+}
+
+// RemoveDisplayruleIDs removes the "displayrules" edge to DisplayRule entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveDisplayruleIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveDisplayruleIDs(ids...)
+	return _u
+}
+
+// RemoveDisplayrules removes "displayrules" edges to DisplayRule entities.
+func (_u *GeneralSettingsUpdate) RemoveDisplayrules(v ...*DisplayRule) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDisplayruleIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -2494,6 +2531,51 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.DisplayrulesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DisplayrulesTable,
+			Columns: []string{generalsettings.DisplayrulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(displayrule.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDisplayrulesIDs(); len(nodes) > 0 && !_u.mutation.DisplayrulesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DisplayrulesTable,
+			Columns: []string{generalsettings.DisplayrulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(displayrule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DisplayrulesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DisplayrulesTable,
+			Columns: []string{generalsettings.DisplayrulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(displayrule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -3071,6 +3153,21 @@ func (_u *GeneralSettingsUpdateOne) AddPlaylists(v ...*Playlist) *GeneralSetting
 	return _u.AddPlaylistIDs(ids...)
 }
 
+// AddDisplayruleIDs adds the "displayrules" edge to the DisplayRule entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddDisplayruleIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddDisplayruleIDs(ids...)
+	return _u
+}
+
+// AddDisplayrules adds the "displayrules" edges to the DisplayRule entity.
+func (_u *GeneralSettingsUpdateOne) AddDisplayrules(v ...*DisplayRule) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDisplayruleIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdateOne) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -3641,6 +3738,27 @@ func (_u *GeneralSettingsUpdateOne) RemovePlaylists(v ...*Playlist) *GeneralSett
 		ids[i] = v[i].ID
 	}
 	return _u.RemovePlaylistIDs(ids...)
+}
+
+// ClearDisplayrules clears all "displayrules" edges to the DisplayRule entity.
+func (_u *GeneralSettingsUpdateOne) ClearDisplayrules() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearDisplayrules()
+	return _u
+}
+
+// RemoveDisplayruleIDs removes the "displayrules" edge to DisplayRule entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveDisplayruleIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveDisplayruleIDs(ids...)
+	return _u
+}
+
+// RemoveDisplayrules removes "displayrules" edges to DisplayRule entities.
+func (_u *GeneralSettingsUpdateOne) RemoveDisplayrules(v ...*DisplayRule) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDisplayruleIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -4977,6 +5095,51 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(playlist.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DisplayrulesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DisplayrulesTable,
+			Columns: []string{generalsettings.DisplayrulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(displayrule.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDisplayrulesIDs(); len(nodes) > 0 && !_u.mutation.DisplayrulesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DisplayrulesTable,
+			Columns: []string{generalsettings.DisplayrulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(displayrule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DisplayrulesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DisplayrulesTable,
+			Columns: []string{generalsettings.DisplayrulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(displayrule.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

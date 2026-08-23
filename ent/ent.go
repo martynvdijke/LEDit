@@ -15,6 +15,7 @@ import (
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
+	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
@@ -114,6 +115,7 @@ func checkColumn(t, c string) error {
 			countdown.Table:       countdown.ValidColumn,
 			crypto.Table:          crypto.ValidColumn,
 			devicesettings.Table:  devicesettings.ValidColumn,
+			displayrule.Table:     displayrule.ValidColumn,
 			emailsettings.Table:   emailsettings.ValidColumn,
 			f1.Table:              f1.ValidColumn,
 			generalsettings.Table: generalsettings.ValidColumn,

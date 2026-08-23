@@ -94,9 +94,11 @@ type GeneralSettingsEdges struct {
 	PixelArts []*PixelArt `json:"pixel_arts,omitempty"`
 	// Playlists holds the value of the playlists edge.
 	Playlists []*Playlist `json:"playlists,omitempty"`
+	// Displayrules holds the value of the displayrules edge.
+	Displayrules []*DisplayRule `json:"displayrules,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [27]bool
+	loadedTypes [28]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -342,6 +344,15 @@ func (e GeneralSettingsEdges) PlaylistsOrErr() ([]*Playlist, error) {
 	return nil, &NotLoadedError{edge: "playlists"}
 }
 
+// DisplayrulesOrErr returns the Displayrules value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) DisplayrulesOrErr() ([]*DisplayRule, error) {
+	if e.loadedTypes[27] {
+		return e.Displayrules, nil
+	}
+	return nil, &NotLoadedError{edge: "displayrules"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -570,6 +581,11 @@ func (_m *GeneralSettings) QueryPixelArts() *PixelArtQuery {
 // QueryPlaylists queries the "playlists" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryPlaylists() *PlaylistQuery {
 	return NewGeneralSettingsClient(_m.config).QueryPlaylists(_m)
+}
+
+// QueryDisplayrules queries the "displayrules" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryDisplayrules() *DisplayRuleQuery {
+	return NewGeneralSettingsClient(_m.config).QueryDisplayrules(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

@@ -11,6 +11,7 @@ import (
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
+	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
@@ -197,6 +198,40 @@ func init() {
 	devicesettings.DefaultContentMode = devicesettingsDescContentMode.Default.(string)
 	// devicesettings.ContentModeValidator is a validator for the "content_mode" field. It is called by the builders before save.
 	devicesettings.ContentModeValidator = devicesettingsDescContentMode.Validators[0].(func(string) error)
+	displayruleFields := schema.DisplayRule{}.Fields()
+	_ = displayruleFields
+	// displayruleDescName is the schema descriptor for name field.
+	displayruleDescName := displayruleFields[0].Descriptor()
+	// displayrule.DefaultName holds the default value on creation for the name field.
+	displayrule.DefaultName = displayruleDescName.Default.(string)
+	// displayruleDescEnabled is the schema descriptor for enabled field.
+	displayruleDescEnabled := displayruleFields[1].Descriptor()
+	// displayrule.DefaultEnabled holds the default value on creation for the enabled field.
+	displayrule.DefaultEnabled = displayruleDescEnabled.Default.(bool)
+	// displayruleDescSourceType is the schema descriptor for source_type field.
+	displayruleDescSourceType := displayruleFields[2].Descriptor()
+	// displayrule.DefaultSourceType holds the default value on creation for the source_type field.
+	displayrule.DefaultSourceType = displayruleDescSourceType.Default.(string)
+	// displayruleDescSourceID is the schema descriptor for source_id field.
+	displayruleDescSourceID := displayruleFields[3].Descriptor()
+	// displayrule.DefaultSourceID holds the default value on creation for the source_id field.
+	displayrule.DefaultSourceID = displayruleDescSourceID.Default.(int)
+	// displayruleDescCondition is the schema descriptor for condition field.
+	displayruleDescCondition := displayruleFields[4].Descriptor()
+	// displayrule.DefaultCondition holds the default value on creation for the condition field.
+	displayrule.DefaultCondition = displayruleDescCondition.Default.(string)
+	// displayruleDescCheckIntervalSeconds is the schema descriptor for check_interval_seconds field.
+	displayruleDescCheckIntervalSeconds := displayruleFields[5].Descriptor()
+	// displayrule.DefaultCheckIntervalSeconds holds the default value on creation for the check_interval_seconds field.
+	displayrule.DefaultCheckIntervalSeconds = displayruleDescCheckIntervalSeconds.Default.(int)
+	// displayrule.CheckIntervalSecondsValidator is a validator for the "check_interval_seconds" field. It is called by the builders before save.
+	displayrule.CheckIntervalSecondsValidator = displayruleDescCheckIntervalSeconds.Validators[0].(func(int) error)
+	// displayruleDescCooldownSeconds is the schema descriptor for cooldown_seconds field.
+	displayruleDescCooldownSeconds := displayruleFields[6].Descriptor()
+	// displayrule.DefaultCooldownSeconds holds the default value on creation for the cooldown_seconds field.
+	displayrule.DefaultCooldownSeconds = displayruleDescCooldownSeconds.Default.(int)
+	// displayrule.CooldownSecondsValidator is a validator for the "cooldown_seconds" field. It is called by the builders before save.
+	displayrule.CooldownSecondsValidator = displayruleDescCooldownSeconds.Validators[0].(func(int) error)
 	emailsettingsFields := schema.EmailSettings{}.Fields()
 	_ = emailsettingsFields
 	// emailsettingsDescUseTLS is the schema descriptor for use_tls field.

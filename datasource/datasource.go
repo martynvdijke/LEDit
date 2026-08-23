@@ -1,11 +1,19 @@
 package datasource
 
 import (
+	"context"
+
 	"ledit/render"
 )
 
 type Datasource interface {
 	GetPNG(width, height int) (*render.RenderedImage, error)
+}
+
+// StateProvider is an optional capability interface: sources that can expose
+// live state for event rules implement it (mirrors the Animator pattern).
+type StateProvider interface {
+	CurrentState(ctx context.Context) (map[string]any, error)
 }
 
 type RenderedBase struct{}

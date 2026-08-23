@@ -44,6 +44,7 @@ The project identity lives in [`brandkit/README.md`](brandkit/README.md), with r
 - **Configurable Display Timeout** — Per-source display duration
 - **Multiple Device Support** — Manage multiple LED matrix devices with individual settings (IP, port, resolution)
 - **Device Playlists** — Bind a device to a named, ordered playlist of datasources instead of the global rotation (Admin → Playlists, then pick it on the device form's Content section). Playlists play in saved order; Random/shuffle applies to global mode only. Missing or empty playlists fall back to the global list so a wall never goes blank.
+- **Event-Driven Switching** — Rules that hold the wall on a target source while a live condition is true (Admin → Event Rules). A rule watches one dot-path on a state-capable source (Generic API, Home Assistant, System Stats) with an operator (`eq`, `ne`, `gt`, `lt`, `ge`, `le`, `contains`, `exists`), checked every ≥5 s (±10% jitter, 30 s config reload). Precedence: notifications > pinned rule > rotation; manual skip releases a pin until the condition re-fires. Cooldown (default 0) suppresses flapping on both edges — no re-fire after release and a minimum hold after firing. Rule targets without live-state support are skipped safely.
 
 ### Rendering
 - **Custom Font Rendering** — Pixel font (PixelifySans) for crisp LED display text
@@ -196,7 +197,7 @@ are rejected with `401 Unauthorized`.
 
 ### Admin Endpoints
 
-All admin endpoints are under `/admin/` and require authentication. Full CRUD for every datasource type (Sonarr, Radarr, F1, Weather, HomeAssistant, Untappd, Crypto, Stock, RSS Feeds, Calendars, Images, Videos, Text Slides), plus schedules, devices, playlists, theme, settings, logs, analytics, and API token management.
+All admin endpoints are under `/admin/` and require authentication. Full CRUD for every datasource type (Sonarr, Radarr, F1, Weather, HomeAssistant, Untappd, Crypto, Stock, RSS Feeds, Calendars, Images, Videos, Text Slides), plus schedules, devices, playlists, event rules, theme, settings, logs, analytics, and API token management.
 
 ## License
 

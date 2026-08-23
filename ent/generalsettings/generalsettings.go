@@ -82,6 +82,8 @@ const (
 	EdgePixelArts = "pixel_arts"
 	// EdgePlaylists holds the string denoting the playlists edge name in mutations.
 	EdgePlaylists = "playlists"
+	// EdgeDisplayrules holds the string denoting the displayrules edge name in mutations.
+	EdgeDisplayrules = "displayrules"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -273,6 +275,13 @@ const (
 	PlaylistsInverseTable = "playlists"
 	// PlaylistsColumn is the table column denoting the playlists relation/edge.
 	PlaylistsColumn = "general_settings_playlists"
+	// DisplayrulesTable is the table that holds the displayrules relation/edge.
+	DisplayrulesTable = "display_rules"
+	// DisplayrulesInverseTable is the table name for the DisplayRule entity.
+	// It exists in this package in order to avoid circular dependency with the "displayrule" package.
+	DisplayrulesInverseTable = "display_rules"
+	// DisplayrulesColumn is the table column denoting the displayrules relation/edge.
+	DisplayrulesColumn = "general_settings_displayrules"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -742,6 +751,20 @@ func ByPlaylists(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newPlaylistsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByDisplayrulesCount orders the results by displayrules count.
+func ByDisplayrulesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDisplayrulesStep(), opts...)
+	}
+}
+
+// ByDisplayrules orders the results by displayrules terms.
+func ByDisplayrules(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDisplayrulesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -929,5 +952,12 @@ func newPlaylistsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PlaylistsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, PlaylistsTable, PlaylistsColumn),
+	)
+}
+func newDisplayrulesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DisplayrulesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DisplayrulesTable, DisplayrulesColumn),
 	)
 }

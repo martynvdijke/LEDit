@@ -70,6 +70,7 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	}
 
 	srv.setupRoutes()
+	StartEventRuleEngine(client)
 
 	return srv
 }
@@ -395,6 +396,14 @@ func (s *Server) setupRoutes() {
 		admin.GET("/playlists/:id/edit", s.AdminPlaylistEdit)
 		admin.POST("/playlists/:id/edit", s.AdminPlaylistUpdate)
 		admin.POST("/playlists/:id/delete", s.AdminPlaylistDelete)
+
+		// Event rules
+		admin.GET("/eventrules", s.AdminEventRuleList)
+		admin.GET("/eventrules/new", s.AdminEventRuleNew)
+		admin.POST("/eventrules/new", s.AdminEventRuleCreate)
+		admin.GET("/eventrules/:id/edit", s.AdminEventRuleEdit)
+		admin.POST("/eventrules/:id/edit", s.AdminEventRuleUpdate)
+		admin.POST("/eventrules/:id/delete", s.AdminEventRuleDelete)
 
 		// Matrix layouts
 		admin.GET("/matrixlayouts", s.AdminMatrixLayoutList)

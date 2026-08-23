@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -53,6 +54,19 @@ func memString() string {
 	alloc := float64(m.Alloc) / 1024 / 1024
 	total := float64(m.TotalAlloc) / 1024 / 1024
 	return fmt.Sprintf("%.0f/%.0f MB", alloc, total)
+}
+
+// CurrentState returns the stats it already computes as a flat map.
+func (s *SystemStatsDS) CurrentState(ctx context.Context) (map[string]any, error) {
+	_ = ctx
+	st := GetSystemStats()
+	return map[string]any{
+		"cpu_cores":  st.CPUCores,
+		"go_version": st.GoVersion,
+		"os":         st.OS,
+		"memory":     st.Memory,
+		"load":       st.Load,
+	}, nil
 }
 
 func loadString() string {

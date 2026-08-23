@@ -15,6 +15,8 @@ type FeedController struct {
 	Skip        bool
 	CurrentName string
 	NextName    string
+	PinnedKey   string
+	PinnedBy    string
 }
 
 var GlobalFeed = &FeedController{}
@@ -51,6 +53,31 @@ func (fc *FeedController) Next() {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
 	fc.Skip = true
+	fc.PinnedKey = ""
+	fc.PinnedBy = ""
+}
+
+func (fc *FeedController) Pin(key, by string) {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	fc.PinnedKey = key
+	fc.PinnedBy = by
+}
+
+func (fc *FeedController) Unpin() {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	fc.PinnedKey = ""
+	fc.PinnedBy = ""
+}
+
+func (fc *FeedController) IsPinned() (string, string, bool) {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	if fc.PinnedKey == "" {
+		return "", "", false
+	}
+	return fc.PinnedKey, fc.PinnedBy, true
 }
 
 func (fc *FeedController) SetCurrent(name, next string) {
@@ -63,11 +90,16 @@ func (fc *FeedController) SetCurrent(name, next string) {
 func (fc *FeedController) Status() map[string]any {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
-	return map[string]any{
+	m := map[string]any{
 		"paused":  fc.Paused,
 		"current": fc.CurrentName,
 		"next":    fc.NextName,
 	}
+	if fc.PinnedKey != "" {
+		m["pinned_by"] = fc.PinnedBy
+		m["pinned_key"] = fc.PinnedKey
+	}
+	return m
 }
 
 // API handlers

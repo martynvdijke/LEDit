@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Event Rules</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Event Rules</h1>
+                <a href="/admin/eventrules/new" class="btn btn-primary">New Rule</a>
+            </div>
+            {{if .eventrules}}
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Enabled</th>
+                        <th>Target</th>
+                        <th>Condition</th>
+                        <th>Interval</th>
+                        <th>Cooldown</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .eventrules}}
+                    <tr data-condition="{{.Condition}}">
+                        <td>{{.ID}}</td>
+                        <td>{{.Name}}</td>
+                        <td>{{if .Enabled}}<span class="badge bg-success">on</span>{{else}}<span class="badge bg-secondary">off</span>{{end}}</td>
+                        <td>{{.SourceType}}:{{.SourceID}}</td>
+                        <td class="condition-summary"><code>{{.Condition}}</code></td>
+                        <td>{{.CheckIntervalSeconds}}s</td>
+                        <td>{{.CooldownSeconds}}s</td>
+                        <td>
+                            <a href="/admin/eventrules/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            <form method="POST" action="/admin/eventrules/{{.ID}}/delete" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            <script>
+            (function(){
+                document.querySelectorAll('.condition-summary').forEach(function(el){
+                    try{
+                        var raw = el.textContent.trim();
+                        var c = JSON.parse(raw);
+                        if(c && c.path){
+                            var v = c.value;
+                            if(v===null||v===undefined) v='';
+                            el.textContent = c.path + ' ' + (c.operator||'') + ' ' + String(v);
+                        }
+                    }catch(e){}
+                });
+            })();
+            </script>
+            {{else}}
+            <p class="text-muted mt-4">No event rules yet. <a href="/admin/eventrules/new">Create one</a> to automate source switching.</p>
+            {{end}}
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

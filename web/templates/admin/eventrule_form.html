@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Event Rule</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Event Rule</h1>
+            {{if .error}}<div class="alert alert-danger">{{.error}}</div>{{end}}
+            <form method="POST" action="/admin/eventrules{{if .edit}}/{{if .id}}{{.id}}{{else if .obj.ID}}{{.obj.ID}}{{end}}/edit{{else}}/new{{end}}" class="mt-4" id="eventrule-form">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required value="{{if .obj}}{{if .obj.Name}}{{.obj.Name}}{{else}}{{index .obj "name"}}{{end}}{{end}}">
+                    </div>
+                    <div class="col-md-3 mb-3 form-check" style="padding-top:28px">
+                        <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if not .edit}}checked{{else if .obj.Enabled}}checked{{else if eq (index .obj "enabled") "on"}}checked{{end}}>
+                        <label for="enabled" class="form-check-label">Enabled</label>
+                    </div>
+                </div>
+
+                <!-- Target picker: reuses playlist_form.html two-select pattern driven by window.BINDING_OPTS -->
+                <input type="hidden" name="source_type" id="source_type" value="{{if .obj}}{{if .obj.SourceType}}{{.obj.SourceType}}{{else}}{{index .obj "source_type"}}{{end}}{{end}}">
+                <input type="hidden" name="source_id" id="source_id" value="{{if .obj}}{{if .obj.SourceID}}{{.obj.SourceID}}{{else}}{{index .obj "source_id"}}{{end}}{{end}}">
+                <input type="hidden" name="condition" id="condition" value="{{if .obj}}{{if .obj.Condition}}{{.obj.Condition}}{{else}}{{index .obj "condition"}}{{end}}{{end}}">
+
+                <div class="mb-3">
+                    <label class="form-label">Target</label>
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <select id="group-select" class="form-select" style="width:auto;min-width:180px">
+                            <option value="">— type —</option>
+                        </select>
+                        <select id="source-select" class="form-select" style="width:auto;min-width:220px">
+                            <option value="">— source —</option>
+                        </select>
+                    </div>
+                    <small class="text-muted">Sources grouped by type via binding options.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Condition</label>
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <input type="text" class="form-control" id="cond_path" placeholder="dot.path (e.g. status.temp)" style="max-width:260px" value="">
+                        <select id="cond_operator" class="form-select" style="width:auto;min-width:130px">
+                            <option value="eq">eq</option>
+                            <option value="ne">ne</option>
+                            <option value="gt">gt</option>
+                            <option value="lt">lt</option>
+                            <option value="ge">ge</option>
+                            <option value="le">le</option>
+                            <option value="contains">contains</option>
+                            <option value="exists">exists</option>
+                        </select>
+                        <input type="text" class="form-control" id="cond_value" placeholder="value" style="max-width:200px" value="">
+                    </div>
+                    <small class="text-muted">Condition evaluated against the source state map.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="check_interval_seconds" class="form-label">Check interval (seconds)</label>
+                        <input type="number" class="form-control" id="check_interval_seconds" name="check_interval_seconds" min="5" value="{{if .obj}}{{if .obj.CheckIntervalSeconds}}{{.obj.CheckIntervalSeconds}}{{else}}{{index .obj "check_interval_seconds"}}{{end}}{{else}}30{{end}}">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="cooldown_seconds" class="form-label">Cooldown (seconds)</label>
+                        <input type="number" class="form-control" id="cooldown_seconds" name="cooldown_seconds" min="0" value="{{if .obj}}{{if .obj.CooldownSeconds}}{{.obj.CooldownSeconds}}{{else}}{{index .obj "cooldown_seconds"}}{{end}}{{else}}0{{end}}">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                <a href="/admin/eventrules" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+<script>window.BINDING_OPTS = {{.options_json}};</script>
+<script>
+(function(){
+    var opts = window.BINDING_OPTS || {};
+    var groupSel = document.getElementById('group-select');
+    var sourceSel = document.getElementById('source-select');
+    var hiddenType = document.getElementById('source_type');
+    var hiddenID = document.getElementById('source_id');
+    var condPath = document.getElementById('cond_path');
+    var condOp = document.getElementById('cond_operator');
+    var condVal = document.getElementById('cond_value');
+    var condHidden = document.getElementById('condition');
+    var form = document.getElementById('eventrule-form');
+
+    // Populate group options
+    Object.keys(opts).sort().forEach(function(t){
+        var o=document.createElement('option');
+        o.value=t; o.textContent=t;
+        groupSel.appendChild(o);
+    });
+    function renderSourceOptions(){
+        sourceSel.innerHTML='<option value="">— source —</option>';
+        var t=groupSel.value;
+        if(!t||!opts[t]) return;
+        opts[t].forEach(function(entry){
+            var o=document.createElement('option');
+            o.value=String(entry.id);
+            o.textContent=entry.label+' (#'+entry.id+')';
+            sourceSel.appendChild(o);
+        });
+    }
+    function syncTargetHidden(){
+        hiddenType.value = groupSel.value || '';
+        hiddenID.value = sourceSel.value || '';
+    }
+    // Preselect from hidden values (edit)
+    if(hiddenType.value){
+        groupSel.value = hiddenType.value;
+    }
+    renderSourceOptions();
+    if(hiddenID.value){
+        sourceSel.value = String(hiddenID.value);
+    }
+    groupSel.addEventListener('change', function(){ renderSourceOptions(); syncTargetHidden(); });
+    sourceSel.addEventListener('change', syncTargetHidden);
+
+    // Prepopulate condition builder from .obj.Condition raw JSON (edit + error re-render map)
+    try{
+        var raw = condHidden.value || '';
+        if(raw){
+            var c = JSON.parse(raw);
+            if(c && typeof c==='object'){
+                if(c.path) condPath.value = c.path;
+                if(c.operator) condOp.value = c.operator;
+                if(c.value!==undefined && c.value!==null) condVal.value = String(c.value);
+                else condVal.value = '';
+            }
+        }
+    }catch(e){}
+
+    function coerceValue(s){
+        if(s===''||s===null||s===undefined) return null;
+        if(s==='true') return true;
+        if(s==='false') return false;
+        var n = Number(s);
+        if(s!=='' && !isNaN(n) && String(n)===String(s).trim()) return n;
+        // also handle numeric strings like "3.14" where Number succeeds
+        if(!isNaN(n) && s.trim()!=='' && isFinite(n)){
+            // only coerce if the string is purely numeric
+            if(/^[-+]?\d+(\.\d+)?$/.test(s.trim())) return n;
+        }
+        return s;
+    }
+
+    form.addEventListener('submit', function(){
+        syncTargetHidden();
+        var op = condOp.value;
+        var v = coerceValue(condVal.value);
+        // exists operator still includes value:null per spec
+        if(op==='exists') v = null;
+        var obj = {path: condPath.value, operator: op, value: v};
+        condHidden.value = JSON.stringify(obj);
+    });
+})();
+</script>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

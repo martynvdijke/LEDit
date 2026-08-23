@@ -218,6 +218,32 @@ var (
 			},
 		},
 	}
+	// DisplayRulesColumns holds the columns for the "display_rules" table.
+	DisplayRulesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Default: ""},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "source_type", Type: field.TypeString, Default: ""},
+		{Name: "source_id", Type: field.TypeInt, Default: 0},
+		{Name: "condition", Type: field.TypeString, Size: 2147483647, Default: "{}"},
+		{Name: "check_interval_seconds", Type: field.TypeInt, Default: 30},
+		{Name: "cooldown_seconds", Type: field.TypeInt, Default: 0},
+		{Name: "general_settings_displayrules", Type: field.TypeInt, Nullable: true},
+	}
+	// DisplayRulesTable holds the schema information for the "display_rules" table.
+	DisplayRulesTable = &schema.Table{
+		Name:       "display_rules",
+		Columns:    DisplayRulesColumns,
+		PrimaryKey: []*schema.Column{DisplayRulesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "display_rules_general_settings_displayrules",
+				Columns:    []*schema.Column{DisplayRulesColumns[8]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// EmailSettingsColumns holds the columns for the "email_settings" table.
 	EmailSettingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -736,6 +762,7 @@ var (
 		CountdownsTable,
 		CryptosTable,
 		DeviceSettingsTable,
+		DisplayRulesTable,
 		EmailSettingsTable,
 		F1sTable,
 		GeneralSettingsTable,
@@ -771,6 +798,7 @@ func init() {
 	CountdownsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	CryptosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	DeviceSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	DisplayRulesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	EmailSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	F1sTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	GenericApIsTable.ForeignKeys[0].RefTable = GeneralSettingsTable

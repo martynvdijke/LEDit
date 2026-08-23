@@ -289,6 +289,7 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 			"total_sources":           len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems) + len(countdownItems) + len(aiDigestItems) + len(pixelArtItems),
 		}
 	}
+	stats["pinned_by"] = GlobalFeed.Status()["pinned_by"]
 	s.renderPage(c, http.StatusOK, "dashboard.html", stats)
 }
 

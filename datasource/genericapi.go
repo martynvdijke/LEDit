@@ -1,11 +1,11 @@
 package datasource
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"strconv"
-	"strings"
 
 	"ledit/render"
 )
@@ -130,48 +130,49 @@ func extractRows(body []byte, cfg GenericAPIConfig) (string, []GenericAPIRowValu
 	return cfg.Title, rows, nil
 }
 
-// extractDotPath walks a decoded JSON value following dot-paths like
-// "data.btc.usd" or "items.0.name". Returns (value, true) when resolved.
+// extractDotPath is the legacy string-converting wrapper around DotPath.
+// Kept for backward compatibility; new code should use DotPath directly.
 func extractDotPath(root any, path string) (string, bool) {
-	if path == "" {
+	v, ok := DotPath(root, path)
+	if !ok {
 		return "", false
 	}
-	cur := root
-	for _, part := range strings.Split(path, ".") {
-		switch node := cur.(type) {
-		case map[string]any:
-			v, ok := node[part]
-			if !ok {
-				return "", false
-			}
-			cur = v
-		case []any:
-			idx, err := strconv.Atoi(part)
-			if err != nil || idx < 0 || idx >= len(node) {
-				return "", false
-			}
-			cur = node[idx]
-		default:
-			return "", false
-		}
+	if v == nil {
+		return "", false
 	}
-	switch v := cur.(type) {
+	switch val := v.(type) {
 	case string:
-		return v, true
+		return val, true
 	case float64:
-		return strconv.FormatFloat(v, 'f', -1, 64), true
+		return strconv.FormatFloat(val, 'f', -1, 64), true
 	case bool:
-		return strconv.FormatBool(v), true
-	case nil:
-		return "", false
+		return strconv.FormatBool(val), true
 	default:
-		// Nested object or array at the leaf: render as compact JSON.
-		b, err := json.Marshal(v)
+		b, err := json.Marshal(val)
 		if err != nil {
 			return "", false
 		}
 		return string(b), true
 	}
+}
+
+// CurrentState fetches the configured URL and returns the decoded JSON as
+// map[string]any. Non-object top-levels are wrapped as {"body": <decoded>}.
+func (g *GenericAPIDS) CurrentState(ctx context.Context) (map[string]any, error) {
+	_ = ctx
+	cfg := ParseGenericAPIConfig(g.Config)
+	body, err := apiGet(g.URL, g.Token, cfg.Headers)
+	if err != nil {
+		return nil, err
+	}
+	var decoded any
+	if err := json.Unmarshal(body, &decoded); err != nil {
+		return nil, fmt.Errorf("response is not valid JSON: %w", err)
+	}
+	if m, ok := decoded.(map[string]any); ok {
+		return m, nil
+	}
+	return map[string]any{"body": decoded}, nil
 }
 
 func fallbackGenericAPI(title string, width, height int) *render.RenderedImage {

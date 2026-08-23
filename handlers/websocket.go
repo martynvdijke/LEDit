@@ -462,6 +462,8 @@ func (h *WSHub) HandleDevicePreviewWS(c *gin.Context) {
 // rendering each datasource at the given resolution and advancing on the given
 // timeout. Notifications are broadcast to every connection exactly once.
 func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, random bool, timeout time.Duration, width, height int, feed *FeedController, transitionStyle string, transitionMs int) {
+	joinController(feed)
+	defer leaveController(feed)
 	cursor := CurrentNotifSeq()
 
 	// Transition config is fixed per connection (loaded ONCE at handshake).
@@ -524,6 +526,18 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				}
 				time.Sleep(timeout)
 				continue
+			}
+
+			// Pin honoring: BEFORE advancing, if pinned and resolvable in this connection's sources, render pinned source.
+			if pinnedKey, _, ok := feed.IsPinned(); ok {
+				for idx, s := range sources {
+					if s.cacheKey == pinnedKey {
+						sw = s
+						// recompute nextName relative to pinned idx
+						i = idx
+						break
+					}
+				}
 			}
 
 			// Compute next source name

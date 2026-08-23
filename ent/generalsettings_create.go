@@ -13,6 +13,7 @@ import (
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
+	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
@@ -545,6 +546,21 @@ func (_c *GeneralSettingsCreate) AddPlaylists(v ...*Playlist) *GeneralSettingsCr
 		ids[i] = v[i].ID
 	}
 	return _c.AddPlaylistIDs(ids...)
+}
+
+// AddDisplayruleIDs adds the "displayrules" edge to the DisplayRule entity by IDs.
+func (_c *GeneralSettingsCreate) AddDisplayruleIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddDisplayruleIDs(ids...)
+	return _c
+}
+
+// AddDisplayrules adds the "displayrules" edges to the DisplayRule entity.
+func (_c *GeneralSettingsCreate) AddDisplayrules(v ...*DisplayRule) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddDisplayruleIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -1121,6 +1137,22 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(playlist.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DisplayrulesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.DisplayrulesTable,
+			Columns: []string{generalsettings.DisplayrulesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(displayrule.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

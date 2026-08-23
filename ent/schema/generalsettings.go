@@ -61,5 +61,6 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("alert_settings", AlertSettings.Type),
 		edge.To("pixel_arts", PixelArt.Type),
 		edge.To("playlists", Playlist.Type),
+		edge.To("displayrules", DisplayRule.Type),
 	}
 }

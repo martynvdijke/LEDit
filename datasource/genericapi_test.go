@@ -137,6 +137,114 @@ func TestGenericAPIGetPNGFallback(t *testing.T) {
 	}
 }
 
+func TestDotPath(t *testing.T) {
+	root := map[string]any{
+		"a": map[string]any{"b": "hello"},
+		"arr": []any{
+			map[string]any{"x": 1},
+		},
+	}
+	tests := []struct {
+		name string
+		path string
+		ok   bool
+		want any
+	}{
+		{"nested", "a.b", true, "hello"},
+		{"array", "arr.0.x", true, float64(1)},
+		{"missing", "a.missing", false, nil},
+		{"empty", "", false, nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, ok := DotPath(root, tt.path)
+			if ok != tt.ok {
+				t.Fatalf("ok=%v want %v", ok, tt.ok)
+			}
+			if ok && got != tt.want {
+				// allow numeric comparison via string
+				if gotStr, wantStr := toStr(got), toStr(tt.want); gotStr != wantStr {
+					t.Fatalf("got %v want %v", got, tt.want)
+				}
+			}
+		})
+	}
+}
+
+func toStr(v any) string {
+	if s, ok := v.(string); ok {
+		return s
+	}
+	return ""
+}
+
+func TestGenericAPICurrentState(t *testing.T) {
+	tests := []struct {
+		name  string
+		body  string
+		check func(t *testing.T, m map[string]any)
+	}{
+		{
+			name: "object",
+			body: `{"foo":"bar","num":42}`,
+			check: func(t *testing.T, m map[string]any) {
+				if m["foo"] != "bar" {
+					t.Fatalf("foo=%v", m["foo"])
+				}
+				if _, ok := m["body"]; ok {
+					t.Fatal("object should not be wrapped in body")
+				}
+			},
+		},
+		{
+			name: "array wrapped",
+			body: `[1,2,3]`,
+			check: func(t *testing.T, m map[string]any) {
+				if _, ok := m["body"]; !ok {
+					t.Fatal("array should be wrapped as body")
+				}
+				arr, ok := m["body"].([]any)
+				if !ok || len(arr) != 3 {
+					t.Fatalf("body=%v", m["body"])
+				}
+			},
+		},
+		{
+			name: "string wrapped",
+			body: `"hello"`,
+			check: func(t *testing.T, m map[string]any) {
+				if m["body"] != "hello" {
+					t.Fatalf("body=%v", m["body"])
+				}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Write([]byte(tt.body))
+			}))
+			defer srv.Close()
+			ds := &GenericAPIDS{URL: srv.URL}
+			m, err := ds.CurrentState(t.Context())
+			if err != nil {
+				t.Fatalf("CurrentState: %v", err)
+			}
+			tt.check(t, m)
+		})
+	}
+	t.Run("error on upstream failure", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.Error(w, "boom", 500)
+		}))
+		defer srv.Close()
+		ds := &GenericAPIDS{URL: srv.URL}
+		if _, err := ds.CurrentState(t.Context()); err == nil {
+			t.Fatal("expected error")
+		}
+	})
+}
+
 func TestParseGenericAPIConfig(t *testing.T) {
 	cfg := ParseGenericAPIConfig(`{"title":"T","headers":{"H":"1"},"rows":[{"label":"L","path":"P"}]}`)
 	if cfg.Title != "T" || len(cfg.Rows) != 1 || cfg.Rows[0].Path != "P" {

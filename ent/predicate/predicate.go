@@ -33,6 +33,9 @@ type Crypto func(*sql.Selector)
 // DeviceSettings is the predicate function for devicesettings builders.
 type DeviceSettings func(*sql.Selector)
 
+// DisplayRule is the predicate function for displayrule builders.
+type DisplayRule func(*sql.Selector)
+
 // EmailSettings is the predicate function for emailsettings builders.
 type EmailSettings func(*sql.Selector)
 

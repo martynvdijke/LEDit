@@ -13,6 +13,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -2532,5 +2533,298 @@ func TestDevicePlaylistFeedSequence(t *testing.T) {
 	}
 	if len(srcFeed) < 2 {
 		t.Errorf("preview feed: expected >=2 frames, got %d %v", len(srcFeed), srcFeed)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Event-rule integration tests (task 5.1)
+// ---------------------------------------------------------------------------
+
+type fakeToggleDS struct {
+	mu     sync.Mutex
+	active bool
+}
+
+func (f *fakeToggleDS) GetPNG(width, height int) (*render.RenderedImage, error) {
+	return (&datasource.SystemStatsDS{}).GetPNG(width, height)
+}
+func (f *fakeToggleDS) CurrentState(ctx context.Context) (map[string]any, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return map[string]any{"active": f.active}, nil
+}
+func (f *fakeToggleDS) setActive(v bool) { f.mu.Lock(); f.active = v; f.mu.Unlock() }
+
+func collectSources(t *testing.T, conn *websocket.Conn, dur time.Duration) []string {
+	t.Helper()
+	var out []string
+	deadline := time.Now().Add(dur)
+	for time.Now().Before(deadline) {
+		remaining := time.Until(deadline)
+		if remaining <= 0 {
+			break
+		}
+		rt := 2 * time.Second
+		if rt > remaining+500*time.Millisecond {
+			rt = remaining + 500*time.Millisecond
+		}
+		conn.SetReadDeadline(time.Now().Add(rt))
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			break
+		}
+		var m map[string]any
+		if err := json.Unmarshal(msg, &m); err != nil {
+			continue
+		}
+		if s, ok := m["source"].(string); ok && s != "" {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+func TestEventRulePinHoldRelease(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+	srv := handlers.New(drv, nil)
+	// Stop background engine so we can drive pin deterministically.
+	handlers.StopEventRuleEngine()
+	defer handlers.StopEventRuleEngine()
+	// Ensure feed clean.
+	handlers.GlobalFeed.Unpin()
+	handlers.GlobalFeed.Resume()
+	for handlers.GlobalFeed.ShouldSkip() {
+	}
+
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SetTransitionStyle("none").
+		SaveX(testCtx)
+
+	fake := &fakeToggleDS{active: true}
+	origResolver := handlers.RuleTargetResolver
+	handlers.RuleTargetResolver = func(sourceType string, sourceID int) (datasource.Datasource, bool) {
+		if sourceType == "systemstats" && sourceID == 0 {
+			return fake, true
+		}
+		if origResolver != nil {
+			return origResolver(sourceType, sourceID)
+		}
+		return nil, false
+	}
+	defer func() { handlers.RuleTargetResolver = origResolver }()
+
+	// Create enabled rule targeting systemstats:0 with condition active==true
+	rule := srv.DB.DisplayRule.Create().
+		SetName("hold-rule").SetEnabled(true).
+		SetSourceType("systemstats").SetSourceID(0).
+		SetCondition(`{"path":"active","operator":"eq","value":true}`).
+		SetCheckIntervalSeconds(5).SetCooldownSeconds(0).
+		SaveX(testCtx)
+	_ = rule
+	// Bind to GeneralSettings edge (not required for engine but mirrors prod)
+	if gs, err := srv.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(testCtx); err == nil {
+		srv.DB.GeneralSettings.UpdateOne(gs).AddDisplayrules(rule).Exec(testCtx)
+	}
+
+	// Drive evaluator once: evaluate fake state and pin if true.
+	state, _ := fake.CurrentState(testCtx)
+	cond, _ := datasource.ParseCondition(`{"path":"active","operator":"eq","value":true}`)
+	if datasource.Evaluate(state, cond) {
+		handlers.GlobalFeed.Pin("systemstats:0", "hold-rule")
+	}
+	defer handlers.GlobalFeed.Unpin()
+
+	ts := httptest.NewServer(srv.Router)
+	defer ts.Close()
+	wsURL := "ws" + ts.URL[4:] + "/ws/feed"
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("dial ws/feed: %v", err)
+	}
+	defer conn.Close()
+
+	// Collect frames for >=3s with 1s timeout -> without pin we would see rotation (System Stats -> Analog Clock -> Matrix Rain).
+	// With pin, all frames should be System Stats.
+	srcs := collectSources(t, conn, 3500*time.Millisecond)
+	if len(srcs) < 3 {
+		t.Fatalf("expected >=3 frames in 3.5s, got %d %v", len(srcs), srcs)
+	}
+	for i, s := range srcs {
+		if s != "System Stats" {
+			t.Fatalf("pinned period: frame %d source=%q expected System Stats; full=%v pinned=%v", i, s, srcs, handlers.GlobalFeed.Status())
+		}
+	}
+
+	// Flip fake to false and simulate evaluator release tick.
+	fake.setActive(false)
+	state2, _ := fake.CurrentState(testCtx)
+	if !datasource.Evaluate(state2, cond) {
+		handlers.GlobalFeed.Unpin()
+	}
+	time.Sleep(200 * time.Millisecond)
+	// After release, a fresh connection should see rotation resume (not pinned).
+	// Reuse existing conn may have stale deadline; dial fresh to verify release.
+	conn2, _, err2 := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err2 != nil {
+		t.Fatalf("dial second conn: %v", err2)
+	}
+	defer conn2.Close()
+	srcs2 := collectSources(t, conn2, 4500*time.Millisecond)
+	t.Logf("post-release sources: %v", srcs2)
+	if len(srcs2) == 0 {
+		t.Fatalf("after release: no frames received")
+	}
+	seenOther := false
+	for _, s := range srcs2 {
+		if s != "System Stats" {
+			seenOther = true
+			break
+		}
+	}
+	if !seenOther {
+		t.Errorf("after unpin: expected rotation to advance beyond System Stats, got %v", srcs2)
+	}
+}
+
+func TestEventRuleNotificationPrecedenceAndSkipClearsPin(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+	srv := handlers.New(drv, nil)
+	handlers.StopEventRuleEngine()
+	defer handlers.StopEventRuleEngine()
+	handlers.GlobalFeed.Unpin()
+	handlers.GlobalFeed.Resume()
+	for handlers.GlobalFeed.ShouldSkip() {
+	}
+
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SetTransitionStyle("none").
+		SaveX(testCtx)
+
+	fake := &fakeToggleDS{active: true}
+	origResolver := handlers.RuleTargetResolver
+	handlers.RuleTargetResolver = func(sourceType string, sourceID int) (datasource.Datasource, bool) {
+		if sourceType == "systemstats" && sourceID == 0 {
+			return fake, true
+		}
+		if origResolver != nil {
+			return origResolver(sourceType, sourceID)
+		}
+		return nil, false
+	}
+	defer func() { handlers.RuleTargetResolver = origResolver }()
+
+	rule := srv.DB.DisplayRule.Create().
+		SetName("pin-notif").SetEnabled(true).
+		SetSourceType("systemstats").SetSourceID(0).
+		SetCondition(`{"path":"active","operator":"eq","value":true}`).
+		SetCheckIntervalSeconds(5).SetCooldownSeconds(0).
+		SaveX(testCtx)
+	if gs, err := srv.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(testCtx); err == nil {
+		srv.DB.GeneralSettings.UpdateOne(gs).AddDisplayrules(rule).Exec(testCtx)
+	}
+	cond, _ := datasource.ParseCondition(`{"path":"active","operator":"eq","value":true}`)
+	state, _ := fake.CurrentState(testCtx)
+	if datasource.Evaluate(state, cond) {
+		handlers.GlobalFeed.Pin("systemstats:0", "pin-notif")
+	}
+	defer handlers.GlobalFeed.Unpin()
+
+	ts := httptest.NewServer(srv.Router)
+	defer ts.Close()
+	wsURL := "ws" + ts.URL[4:] + "/ws/feed"
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.Close()
+
+	// Ensure pin is active via GlobalFeed
+	if _, _, ok := handlers.GlobalFeed.IsPinned(); !ok {
+		t.Fatalf("pin should be active")
+	}
+	// Prime the feed: read one frame to ensure connection is streaming pinned source
+	conn.SetReadDeadline(time.Now().Add(3 * time.Second))
+	_, msg0, err0 := conn.ReadMessage()
+	if err0 != nil {
+		t.Fatalf("initial read: %v", err0)
+	}
+	var m0 map[string]any
+	_ = json.Unmarshal(msg0, &m0)
+	if m0["source"] != "System Stats" {
+		t.Fatalf("pre-notif expected System Stats got %v", m0["source"])
+	}
+
+	// Broadcast a notification; it should appear before pinned source resumes.
+	srv.AddNotification("Alert", "hello pin test")
+
+	// Collect with generous deadlines until we see NOTIFICATION
+	var seenNotif bool
+	var afterNotif []string
+	conn.SetReadDeadline(time.Now().Add(8 * time.Second))
+	for {
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			break
+		}
+		var m map[string]any
+		_ = json.Unmarshal(msg, &m)
+		src, _ := m["source"].(string)
+		if src == "NOTIFICATION" {
+			seenNotif = true
+			break
+		}
+	}
+	if !seenNotif {
+		t.Fatalf("expected NOTIFICATION frame while pinned, not received within deadline")
+	}
+	// After notification, pinned source should resume (next frame System Stats)
+	afterNotif = collectSources(t, conn, 2000*time.Millisecond)
+	if len(afterNotif) == 0 {
+		t.Fatalf("no frames after notification")
+	}
+	// After notif, serveFeed sleeps timeout then continues loop; next frame should be pinned System Stats again
+	if afterNotif[0] != "System Stats" {
+		t.Errorf("after notification, expected pinned System Stats to resume, got %v", afterNotif)
+	}
+
+	// Now send {"action":"next"} – should clear pin even though condition still true.
+	if err := conn.WriteMessage(websocket.TextMessage, []byte(`{"action":"next"}`)); err != nil {
+		t.Fatalf("write next: %v", err)
+	}
+	// Give server time to process skip
+	time.Sleep(200 * time.Millisecond)
+	if _, _, ok := handlers.GlobalFeed.IsPinned(); ok {
+		t.Fatalf("pin should be cleared after next action")
+	}
+	// Collect frames after skip: should advance beyond pinned source
+	postSkip := collectSources(t, conn, 3500*time.Millisecond)
+	if len(postSkip) == 0 {
+		t.Fatalf("no frames after skip")
+	}
+	advanced := false
+	for _, s := range postSkip {
+		if s != "System Stats" && s != "NOTIFICATION" {
+			advanced = true
+			break
+		}
+	}
+	if !advanced {
+		t.Fatalf("after skip, expected source to advance beyond pinned System Stats, got %v", postSkip)
+	}
+	// Does NOT re-pin until re-eval fires: fake still true but pin remains cleared.
+	if _, _, ok := handlers.GlobalFeed.IsPinned(); ok {
+		t.Fatalf("pin should NOT re-pin without re-eval")
+	}
+	// Re-eval should re-pin.
+	state3, _ := fake.CurrentState(testCtx)
+	if datasource.Evaluate(state3, cond) {
+		handlers.GlobalFeed.Pin("systemstats:0", "pin-notif")
+	}
+	if _, _, ok := handlers.GlobalFeed.IsPinned(); !ok {
+		t.Fatalf("expected re-pin after evaluator tick")
 	}
 }

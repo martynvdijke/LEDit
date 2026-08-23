@@ -116,6 +116,18 @@ func (f DeviceSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DeviceSettingsMutation", m)
 }
 
+// The DisplayRuleFunc type is an adapter to allow the use of ordinary
+// function as DisplayRule mutator.
+type DisplayRuleFunc func(context.Context, *ent.DisplayRuleMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DisplayRuleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DisplayRuleMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DisplayRuleMutation", m)
+}
+
 // The EmailSettingsFunc type is an adapter to allow the use of ordinary
 // function as EmailSettings mutator.
 type EmailSettingsFunc func(context.Context, *ent.EmailSettingsMutation) (ent.Value, error)

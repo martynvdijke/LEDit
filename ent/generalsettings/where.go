@@ -1045,6 +1045,29 @@ func HasPlaylistsWith(preds ...predicate.Playlist) predicate.GeneralSettings {
 	})
 }
 
+// HasDisplayrules applies the HasEdge predicate on the "displayrules" edge.
+func HasDisplayrules() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DisplayrulesTable, DisplayrulesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDisplayrulesWith applies the HasEdge predicate on the "displayrules" edge with a given conditions (other predicates).
+func HasDisplayrulesWith(preds ...predicate.DisplayRule) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newDisplayrulesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.GeneralSettings) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.AndPredicates(predicates...))

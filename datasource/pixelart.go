@@ -229,7 +229,14 @@ func (p *PixelArtDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 		if !hasBody {
 			continue
 		}
-		valStr, ok := extractDotPath(root, ov.Path)
+		raw, ok := DotPath(root, ov.Path)
+		if !ok || raw == nil {
+			continue
+		}
+		valStr, ok := dotPathToString(raw)
+		if !ok {
+			continue
+		}
 		if !ok {
 			continue
 		}

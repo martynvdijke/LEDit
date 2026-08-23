@@ -20,6 +20,7 @@ import (
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
+	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
@@ -74,6 +75,8 @@ type Client struct {
 	Crypto *CryptoClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
 	DeviceSettings *DeviceSettingsClient
+	// DisplayRule is the client for interacting with the DisplayRule builders.
+	DisplayRule *DisplayRuleClient
 	// EmailSettings is the client for interacting with the EmailSettings builders.
 	EmailSettings *EmailSettingsClient
 	// F1 is the client for interacting with the F1 builders.
@@ -142,6 +145,7 @@ func (c *Client) init() {
 	c.Countdown = NewCountdownClient(c.config)
 	c.Crypto = NewCryptoClient(c.config)
 	c.DeviceSettings = NewDeviceSettingsClient(c.config)
+	c.DisplayRule = NewDisplayRuleClient(c.config)
 	c.EmailSettings = NewEmailSettingsClient(c.config)
 	c.F1 = NewF1Client(c.config)
 	c.GeneralSettings = NewGeneralSettingsClient(c.config)
@@ -267,6 +271,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Countdown:       NewCountdownClient(cfg),
 		Crypto:          NewCryptoClient(cfg),
 		DeviceSettings:  NewDeviceSettingsClient(cfg),
+		DisplayRule:     NewDisplayRuleClient(cfg),
 		EmailSettings:   NewEmailSettingsClient(cfg),
 		F1:              NewF1Client(cfg),
 		GeneralSettings: NewGeneralSettingsClient(cfg),
@@ -319,6 +324,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Countdown:       NewCountdownClient(cfg),
 		Crypto:          NewCryptoClient(cfg),
 		DeviceSettings:  NewDeviceSettingsClient(cfg),
+		DisplayRule:     NewDisplayRuleClient(cfg),
 		EmailSettings:   NewEmailSettingsClient(cfg),
 		F1:              NewF1Client(cfg),
 		GeneralSettings: NewGeneralSettingsClient(cfg),
@@ -373,11 +379,12 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
-		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
-		c.GeneralSettings, c.GenericAPI, c.GoogleCalendar, c.HomeAssistant, c.Image,
-		c.LogEntry, c.LogSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
-		c.PixelArt, c.Playlist, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
-		c.TextSlide, c.UmamiSettings, c.Untappd, c.Video, c.Weather,
+		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.DisplayRule,
+		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GoogleCalendar,
+		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MatrixLayout,
+		c.NewsFeed, c.Notification, c.PixelArt, c.Playlist, c.Radarr, c.RssFeed,
+		c.Schedule, c.Sonarr, c.Stock, c.TextSlide, c.UmamiSettings, c.Untappd,
+		c.Video, c.Weather,
 	} {
 		n.Use(hooks...)
 	}
@@ -388,11 +395,12 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
-		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
-		c.GeneralSettings, c.GenericAPI, c.GoogleCalendar, c.HomeAssistant, c.Image,
-		c.LogEntry, c.LogSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
-		c.PixelArt, c.Playlist, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
-		c.TextSlide, c.UmamiSettings, c.Untappd, c.Video, c.Weather,
+		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.DisplayRule,
+		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GoogleCalendar,
+		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MatrixLayout,
+		c.NewsFeed, c.Notification, c.PixelArt, c.Playlist, c.Radarr, c.RssFeed,
+		c.Schedule, c.Sonarr, c.Stock, c.TextSlide, c.UmamiSettings, c.Untappd,
+		c.Video, c.Weather,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -419,6 +427,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Crypto.mutate(ctx, m)
 	case *DeviceSettingsMutation:
 		return c.DeviceSettings.mutate(ctx, m)
+	case *DisplayRuleMutation:
+		return c.DisplayRule.mutate(ctx, m)
 	case *EmailSettingsMutation:
 		return c.EmailSettings.mutate(ctx, m)
 	case *F1Mutation:
@@ -1669,6 +1679,139 @@ func (c *DeviceSettingsClient) mutate(ctx context.Context, m *DeviceSettingsMuta
 	}
 }
 
+// DisplayRuleClient is a client for the DisplayRule schema.
+type DisplayRuleClient struct {
+	config
+}
+
+// NewDisplayRuleClient returns a client for the DisplayRule from the given config.
+func NewDisplayRuleClient(c config) *DisplayRuleClient {
+	return &DisplayRuleClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `displayrule.Hooks(f(g(h())))`.
+func (c *DisplayRuleClient) Use(hooks ...Hook) {
+	c.hooks.DisplayRule = append(c.hooks.DisplayRule, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `displayrule.Intercept(f(g(h())))`.
+func (c *DisplayRuleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DisplayRule = append(c.inters.DisplayRule, interceptors...)
+}
+
+// Create returns a builder for creating a DisplayRule entity.
+func (c *DisplayRuleClient) Create() *DisplayRuleCreate {
+	mutation := newDisplayRuleMutation(c.config, OpCreate)
+	return &DisplayRuleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DisplayRule entities.
+func (c *DisplayRuleClient) CreateBulk(builders ...*DisplayRuleCreate) *DisplayRuleCreateBulk {
+	return &DisplayRuleCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DisplayRuleClient) MapCreateBulk(slice any, setFunc func(*DisplayRuleCreate, int)) *DisplayRuleCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DisplayRuleCreateBulk{err: fmt.Errorf("calling to DisplayRuleClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DisplayRuleCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DisplayRuleCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DisplayRule.
+func (c *DisplayRuleClient) Update() *DisplayRuleUpdate {
+	mutation := newDisplayRuleMutation(c.config, OpUpdate)
+	return &DisplayRuleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DisplayRuleClient) UpdateOne(_m *DisplayRule) *DisplayRuleUpdateOne {
+	mutation := newDisplayRuleMutation(c.config, OpUpdateOne, withDisplayRule(_m))
+	return &DisplayRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DisplayRuleClient) UpdateOneID(id int) *DisplayRuleUpdateOne {
+	mutation := newDisplayRuleMutation(c.config, OpUpdateOne, withDisplayRuleID(id))
+	return &DisplayRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DisplayRule.
+func (c *DisplayRuleClient) Delete() *DisplayRuleDelete {
+	mutation := newDisplayRuleMutation(c.config, OpDelete)
+	return &DisplayRuleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DisplayRuleClient) DeleteOne(_m *DisplayRule) *DisplayRuleDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DisplayRuleClient) DeleteOneID(id int) *DisplayRuleDeleteOne {
+	builder := c.Delete().Where(displayrule.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DisplayRuleDeleteOne{builder}
+}
+
+// Query returns a query builder for DisplayRule.
+func (c *DisplayRuleClient) Query() *DisplayRuleQuery {
+	return &DisplayRuleQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDisplayRule},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DisplayRule entity by its id.
+func (c *DisplayRuleClient) Get(ctx context.Context, id int) (*DisplayRule, error) {
+	return c.Query().Where(displayrule.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DisplayRuleClient) GetX(ctx context.Context, id int) *DisplayRule {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DisplayRuleClient) Hooks() []Hook {
+	return c.hooks.DisplayRule
+}
+
+// Interceptors returns the client interceptors.
+func (c *DisplayRuleClient) Interceptors() []Interceptor {
+	return c.inters.DisplayRule
+}
+
+func (c *DisplayRuleClient) mutate(ctx context.Context, m *DisplayRuleMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DisplayRuleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DisplayRuleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DisplayRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DisplayRuleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DisplayRule mutation op: %q", m.Op())
+	}
+}
+
 // EmailSettingsClient is a client for the EmailSettings schema.
 type EmailSettingsClient struct {
 	config
@@ -2468,6 +2611,22 @@ func (c *GeneralSettingsClient) QueryPlaylists(_m *GeneralSettings) *PlaylistQue
 			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
 			sqlgraph.To(playlist.Table, playlist.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.PlaylistsTable, generalsettings.PlaylistsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDisplayrules queries the displayrules edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryDisplayrules(_m *GeneralSettings) *DisplayRuleQuery {
+	query := (&DisplayRuleClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(displayrule.Table, displayrule.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.DisplayrulesTable, generalsettings.DisplayrulesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -5297,18 +5456,18 @@ func (c *WeatherClient) mutate(ctx context.Context, m *WeatherMutation) (Value, 
 type (
 	hooks struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
-		Countdown, Crypto, DeviceSettings, EmailSettings, F1, GeneralSettings,
-		GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry, LogSettings,
-		MatrixLayout, NewsFeed, Notification, PixelArt, Playlist, Radarr, RssFeed,
-		Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
+		Countdown, Crypto, DeviceSettings, DisplayRule, EmailSettings, F1,
+		GeneralSettings, GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry,
+		LogSettings, MatrixLayout, NewsFeed, Notification, PixelArt, Playlist, Radarr,
+		RssFeed, Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
 		Weather []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
-		Countdown, Crypto, DeviceSettings, EmailSettings, F1, GeneralSettings,
-		GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry, LogSettings,
-		MatrixLayout, NewsFeed, Notification, PixelArt, Playlist, Radarr, RssFeed,
-		Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
+		Countdown, Crypto, DeviceSettings, DisplayRule, EmailSettings, F1,
+		GeneralSettings, GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry,
+		LogSettings, MatrixLayout, NewsFeed, Notification, PixelArt, Playlist, Radarr,
+		RssFeed, Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
 		Weather []ent.Interceptor
 	}
 )
