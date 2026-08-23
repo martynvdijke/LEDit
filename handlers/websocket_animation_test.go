@@ -113,7 +113,7 @@ func animTestServer(t *testing.T, sources []sourceWithName, timeout time.Duratio
 			return
 		}
 		defer conn.Close()
-		serveFeed(conn, feedConn{}, sources, false, timeout, 32, 32, fc)
+		serveFeed(conn, feedConn{}, sources, false, timeout, 32, 32, fc, "none", 500)
 	})
 	srv := httptest.NewServer(r)
 	t.Cleanup(srv.Close)

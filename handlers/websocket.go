@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/png"
 	"log/slog"
 	"math/rand"
 	"net/http"
@@ -247,7 +250,7 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 	}
 
 	timeout := time.Duration(settings.Timeout * float64(time.Second))
-	serveFeed(conn, feedConn{}, sources, settings.Random, timeout, 400, 400, GlobalFeed)
+	serveFeed(conn, feedConn{}, sources, settings.Random, timeout, 400, 400, GlobalFeed, settings.TransitionStyle, settings.TransitionMs)
 }
 
 // HandleDeviceWS serves a device feed at the device's configured resolution
@@ -323,7 +326,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 				slog.Warn("failed to increment device frames_served", "device", device.Name, "error", err)
 			}
 		},
-	}, sources, settings.Random, timeout, width, height, &FeedController{})
+	}, sources, settings.Random, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs)
 }
 
 // HandleDevicePreviewWS serves an admin-authenticated, device-accurate preview
@@ -389,14 +392,26 @@ func (h *WSHub) HandleDevicePreviewWS(c *gin.Context) {
 
 	// Each preview gets its own feed controller: pause/skip/next in the
 	// preview tab only affects that tab, never the physical device.
-	serveFeed(conn, feedConn{cacheKeyPrefix: fmt.Sprintf("device:%d:", id), deviceID: id}, sources, settings.Random, timeout, width, height, &FeedController{})
+	serveFeed(conn, feedConn{cacheKeyPrefix: fmt.Sprintf("device:%d:", id), deviceID: id}, sources, settings.Random, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs)
 }
 
 // serveFeed runs the source-cycle loop for a single WebSocket connection,
 // rendering each datasource at the given resolution and advancing on the given
 // timeout. Notifications are broadcast to every connection exactly once.
-func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, random bool, timeout time.Duration, width, height int, feed *FeedController) {
+func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, random bool, timeout time.Duration, width, height int, feed *FeedController, transitionStyle string, transitionMs int) {
 	cursor := CurrentNotifSeq()
+
+	// Transition config is fixed per connection (loaded ONCE at handshake).
+	// Normalize defaults.
+	if transitionStyle == "" {
+		transitionStyle = "none"
+	}
+	if transitionMs <= 0 {
+		transitionMs = 500
+	}
+
+	var prevPNG []byte
+	var prevOK bool
 
 	// Read control messages in a goroutine
 	done := make(chan struct{})
@@ -487,6 +502,79 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				continue
 			}
 
+			// Slide transition ramp: before sending the canonical new frame,
+			// emit intermediate blended frames (prev -> cur). Skipped when
+			// style=="none", no previous frame, or notification branch (handled
+			// via continue above). Errors fall back to plain cut.
+			if transitionStyle != "none" && prevOK {
+				steps := transitionMs / 40
+				if steps < 6 {
+					steps = 6
+				}
+				if steps > 16 {
+					steps = 16
+				}
+				pacing := time.Duration(transitionMs/steps) * time.Millisecond
+				prevImg, prevErr := render.DecodeNRGBA(prevPNG)
+				curImg, curErr := render.DecodeNRGBA(img.Data)
+				if prevErr != nil || curErr != nil {
+					slog.Warn("transition decode failed, falling back to cut", "prevErr", prevErr, "curErr", curErr)
+				} else {
+					for i := 1; i < steps; i++ {
+						t := float64(i) / float64(steps)
+						var blendedNRGBA *image.NRGBA
+						switch transitionStyle {
+						case "fade":
+							blendedNRGBA = render.BlendFade(prevImg, curImg, t)
+						case "wipe":
+							blendedNRGBA = render.BlendWipe(prevImg, curImg, t)
+						case "dissolve":
+							blendedNRGBA = render.BlendDissolve(prevImg, curImg, t)
+						default:
+							blendedNRGBA = nil
+						}
+						if blendedNRGBA == nil {
+							break
+						}
+						var buf bytes.Buffer
+						if err := png.Encode(&buf, blendedNRGBA); err != nil {
+							slog.Warn("transition encode failed, falling back to cut", "error", err)
+							break
+						}
+						rampMsg := map[string]any{
+							"format": "PNG",
+							"image":  base64.StdEncoding.EncodeToString(buf.Bytes()),
+							"source": sw.Name,
+							"next":   nextName,
+						}
+						rampData, _ := json.Marshal(rampMsg)
+						if err := conn.WriteMessage(websocket.TextMessage, rampData); err != nil {
+							if fc.deviceID > 0 {
+								Health.RecordFailure(fmt.Sprintf("device:%d", fc.deviceID), err, 0)
+							}
+							return
+						}
+						if fc.deviceID > 0 && fc.frames != nil {
+							fc.frames()
+						}
+						if feed.ShouldSkip() {
+							break
+						}
+						if feed.IsPaused() {
+							for feed.IsPaused() {
+								time.Sleep(100 * time.Millisecond)
+							}
+						}
+						if i < steps-1 {
+							time.Sleep(pacing)
+							if feed.ShouldSkip() {
+								break
+							}
+						}
+					}
+				}
+			}
+
 			msg := map[string]any{
 				"format": img.Format,
 				"image":  base64.StdEncoding.EncodeToString(img.Data),
@@ -512,6 +600,9 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				}
 			}
 			TrackDisplay(sw.Name, timeout.Seconds())
+			prevPNG = make([]byte, len(img.Data))
+			copy(prevPNG, img.Data)
+			prevOK = true
 
 			// 4.1/4.2: animated sources re-render within the slot.
 			if anim, ok := any(sw.Source).(datasource.Animator); ok && anim.FrameCount() > 1 {

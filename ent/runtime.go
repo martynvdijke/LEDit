@@ -224,6 +224,32 @@ func init() {
 	generalsettingsDescEinkMode := generalsettingsFields[5].Descriptor()
 	// generalsettings.DefaultEinkMode holds the default value on creation for the eink_mode field.
 	generalsettings.DefaultEinkMode = generalsettingsDescEinkMode.Default.(bool)
+	// generalsettingsDescTransitionStyle is the schema descriptor for transition_style field.
+	generalsettingsDescTransitionStyle := generalsettingsFields[6].Descriptor()
+	// generalsettings.DefaultTransitionStyle holds the default value on creation for the transition_style field.
+	generalsettings.DefaultTransitionStyle = generalsettingsDescTransitionStyle.Default.(string)
+	// generalsettings.TransitionStyleValidator is a validator for the "transition_style" field. It is called by the builders before save.
+	generalsettings.TransitionStyleValidator = generalsettingsDescTransitionStyle.Validators[0].(func(string) error)
+	// generalsettingsDescTransitionMs is the schema descriptor for transition_ms field.
+	generalsettingsDescTransitionMs := generalsettingsFields[7].Descriptor()
+	// generalsettings.DefaultTransitionMs holds the default value on creation for the transition_ms field.
+	generalsettings.DefaultTransitionMs = generalsettingsDescTransitionMs.Default.(int)
+	// generalsettings.TransitionMsValidator is a validator for the "transition_ms" field. It is called by the builders before save.
+	generalsettings.TransitionMsValidator = func() func(int) error {
+		validators := generalsettingsDescTransitionMs.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(transition_ms int) error {
+			for _, fn := range fns {
+				if err := fn(transition_ms); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	genericapiFields := schema.GenericAPI{}.Fields()
 	_ = genericapiFields
 	// genericapiDescToken is the schema descriptor for token field.

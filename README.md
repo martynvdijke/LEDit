@@ -37,6 +37,7 @@ The project identity lives in [`brandkit/README.md`](brandkit/README.md), with r
 ### Display & Feed
 - **WebSocket Feed** — Real-time streaming of rendered content to LED matrices
 - **Feed Control** — Pause, resume, skip via API or WebSocket commands
+- **Slide Transitions** — Optional animated hand-off between sources: `fade`, `wipe` (left→right), or `dissolve`; duration configurable 100–2000 ms (default 500 ms) under Admin → Settings. Disabled (`none`) by default. Tuned for LED refresh rates (~12 steps at the default); e-ink/TRMNL devices are unaffected as they poll static images.
 - **Priority Messages** — Urgent notifications that interrupt the current feed
 - **Notification History** — View past priority notifications
 - **Random/Sequential Ordering** — Cycle sources randomly or in order

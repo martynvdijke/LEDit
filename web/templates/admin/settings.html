@@ -32,6 +32,19 @@
                     <input type="checkbox" class="form-check-input" id="eink_mode" name="eink_mode"{{if and .settings .settings.EinkMode}} checked{{end}}>
                     <label for="eink_mode" class="form-check-label">E-Ink Mode (default for new visitors)</label>
                 </div>
+                <div class="mb-3">
+                    <label for="transition_style" class="form-label">Transition style</label>
+                    <select class="form-control" id="transition_style" name="transition_style">
+                        <option value="none"{{if and .settings (eq .settings.TransitionStyle "none")}} selected{{end}}>None</option>
+                        <option value="fade"{{if and .settings (eq .settings.TransitionStyle "fade")}} selected{{end}}>Fade</option>
+                        <option value="wipe"{{if and .settings (eq .settings.TransitionStyle "wipe")}} selected{{end}}>Wipe</option>
+                        <option value="dissolve"{{if and .settings (eq .settings.TransitionStyle "dissolve")}} selected{{end}}>Dissolve</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="transition_ms" class="form-label">Transition duration (ms)</label>
+                    <input type="number" class="form-control" id="transition_ms" name="transition_ms" min="100" max="2000" value="{{if .settings}}{{.settings.TransitionMs}}{{else}}500{{end}}">
+                </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
         </div>

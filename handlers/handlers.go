@@ -308,8 +308,19 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 	width, _ := strconv.Atoi(c.PostForm("width"))
 	height, _ := strconv.Atoi(c.PostForm("height"))
 	einkMode := c.PostForm("eink_mode") == "on"
+	transitionStyle := c.PostForm("transition_style")
+	if transitionStyle == "" {
+		transitionStyle = "none"
+	}
+	transitionMsStr := c.PostForm("transition_ms")
+	transitionMs := 500
+	if transitionMsStr != "" {
+		if v, err := strconv.Atoi(transitionMsStr); err == nil {
+			transitionMs = v
+		}
+	}
 
-	v := NewValidator().RangeFloat("Timeout", timeout, 0.1, 3600).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512)
+	v := NewValidator().RangeFloat("Timeout", timeout, 0.1, 3600).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512).OneOf("Transition style", transitionStyle, "none", "fade", "wipe", "dissolve").RangeInt("Transition duration", transitionMs, 100, 2000)
 	if !v.Valid() {
 		SetFlash(c, "danger", v.Error())
 		c.Redirect(http.StatusFound, "/admin/settings")
@@ -324,6 +335,8 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 			SetWidth(width).
 			SetHeight(height).
 			SetEinkMode(einkMode).
+			SetTransitionStyle(transitionStyle).
+			SetTransitionMs(transitionMs).
 			Save(s.Ctx)
 	} else {
 		s.DB.GeneralSettings.UpdateOneID(1).
@@ -332,6 +345,8 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 			SetWidth(width).
 			SetHeight(height).
 			SetEinkMode(einkMode).
+			SetTransitionStyle(transitionStyle).
+			SetTransitionMs(transitionMs).
 			Exec(s.Ctx)
 	}
 	SetFlash(c, "success", "Settings saved")

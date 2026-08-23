@@ -24,6 +24,10 @@ const (
 	FieldTheme = "theme"
 	// FieldEinkMode holds the string denoting the eink_mode field in the database.
 	FieldEinkMode = "eink_mode"
+	// FieldTransitionStyle holds the string denoting the transition_style field in the database.
+	FieldTransitionStyle = "transition_style"
+	// FieldTransitionMs holds the string denoting the transition_ms field in the database.
+	FieldTransitionMs = "transition_ms"
 	// EdgeSonarr holds the string denoting the sonarr edge name in mutations.
 	EdgeSonarr = "sonarr"
 	// EdgeRadarr holds the string denoting the radarr edge name in mutations.
@@ -271,6 +275,8 @@ var Columns = []string{
 	FieldHeight,
 	FieldTheme,
 	FieldEinkMode,
+	FieldTransitionStyle,
+	FieldTransitionMs,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -292,6 +298,14 @@ var (
 	DefaultTheme string
 	// DefaultEinkMode holds the default value on creation for the "eink_mode" field.
 	DefaultEinkMode bool
+	// DefaultTransitionStyle holds the default value on creation for the "transition_style" field.
+	DefaultTransitionStyle string
+	// TransitionStyleValidator is a validator for the "transition_style" field. It is called by the builders before save.
+	TransitionStyleValidator func(string) error
+	// DefaultTransitionMs holds the default value on creation for the "transition_ms" field.
+	DefaultTransitionMs int
+	// TransitionMsValidator is a validator for the "transition_ms" field. It is called by the builders before save.
+	TransitionMsValidator func(int) error
 )
 
 // OrderOption defines the ordering options for the GeneralSettings queries.
@@ -330,6 +344,16 @@ func ByTheme(opts ...sql.OrderTermOption) OrderOption {
 // ByEinkMode orders the results by the eink_mode field.
 func ByEinkMode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEinkMode, opts...).ToFunc()
+}
+
+// ByTransitionStyle orders the results by the transition_style field.
+func ByTransitionStyle(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTransitionStyle, opts...).ToFunc()
+}
+
+// ByTransitionMs orders the results by the transition_ms field.
+func ByTransitionMs(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTransitionMs, opts...).ToFunc()
 }
 
 // BySonarrCount orders the results by sonarr count.

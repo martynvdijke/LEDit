@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"errors"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -18,6 +20,15 @@ func (GeneralSettings) Fields() []ent.Field {
 		field.Int("height").Default(64),
 		field.Text("theme").Default("{}").Optional(),
 		field.Bool("eink_mode").Default(false).Optional(),
+		field.String("transition_style").Default("none").Validate(func(s string) error {
+			switch s {
+			case "none", "fade", "wipe", "dissolve":
+				return nil
+			default:
+				return errors.New("transition_style must be one of none, fade, wipe, dissolve")
+			}
+		}),
+		field.Int("transition_ms").Default(500).Min(100).Max(2000),
 	}
 }
 

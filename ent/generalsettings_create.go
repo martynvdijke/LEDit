@@ -113,6 +113,34 @@ func (_c *GeneralSettingsCreate) SetNillableEinkMode(v *bool) *GeneralSettingsCr
 	return _c
 }
 
+// SetTransitionStyle sets the "transition_style" field.
+func (_c *GeneralSettingsCreate) SetTransitionStyle(v string) *GeneralSettingsCreate {
+	_c.mutation.SetTransitionStyle(v)
+	return _c
+}
+
+// SetNillableTransitionStyle sets the "transition_style" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableTransitionStyle(v *string) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetTransitionStyle(*v)
+	}
+	return _c
+}
+
+// SetTransitionMs sets the "transition_ms" field.
+func (_c *GeneralSettingsCreate) SetTransitionMs(v int) *GeneralSettingsCreate {
+	_c.mutation.SetTransitionMs(v)
+	return _c
+}
+
+// SetNillableTransitionMs sets the "transition_ms" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableTransitionMs(v *int) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetTransitionMs(*v)
+	}
+	return _c
+}
+
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by IDs.
 func (_c *GeneralSettingsCreate) AddSonarrIDs(ids ...int) *GeneralSettingsCreate {
 	_c.mutation.AddSonarrIDs(ids...)
@@ -554,6 +582,14 @@ func (_c *GeneralSettingsCreate) defaults() {
 		v := generalsettings.DefaultEinkMode
 		_c.mutation.SetEinkMode(v)
 	}
+	if _, ok := _c.mutation.TransitionStyle(); !ok {
+		v := generalsettings.DefaultTransitionStyle
+		_c.mutation.SetTransitionStyle(v)
+	}
+	if _, ok := _c.mutation.TransitionMs(); !ok {
+		v := generalsettings.DefaultTransitionMs
+		_c.mutation.SetTransitionMs(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -569,6 +605,22 @@ func (_c *GeneralSettingsCreate) check() error {
 	}
 	if _, ok := _c.mutation.Height(); !ok {
 		return &ValidationError{Name: "height", err: errors.New(`ent: missing required field "GeneralSettings.height"`)}
+	}
+	if _, ok := _c.mutation.TransitionStyle(); !ok {
+		return &ValidationError{Name: "transition_style", err: errors.New(`ent: missing required field "GeneralSettings.transition_style"`)}
+	}
+	if v, ok := _c.mutation.TransitionStyle(); ok {
+		if err := generalsettings.TransitionStyleValidator(v); err != nil {
+			return &ValidationError{Name: "transition_style", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.transition_style": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.TransitionMs(); !ok {
+		return &ValidationError{Name: "transition_ms", err: errors.New(`ent: missing required field "GeneralSettings.transition_ms"`)}
+	}
+	if v, ok := _c.mutation.TransitionMs(); ok {
+		if err := generalsettings.TransitionMsValidator(v); err != nil {
+			return &ValidationError{Name: "transition_ms", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.transition_ms": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -619,6 +671,14 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 	if value, ok := _c.mutation.EinkMode(); ok {
 		_spec.SetField(generalsettings.FieldEinkMode, field.TypeBool, value)
 		_node.EinkMode = value
+	}
+	if value, ok := _c.mutation.TransitionStyle(); ok {
+		_spec.SetField(generalsettings.FieldTransitionStyle, field.TypeString, value)
+		_node.TransitionStyle = value
+	}
+	if value, ok := _c.mutation.TransitionMs(); ok {
+		_spec.SetField(generalsettings.FieldTransitionMs, field.TypeInt, value)
+		_node.TransitionMs = value
 	}
 	if nodes := _c.mutation.SonarrIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

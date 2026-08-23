@@ -6730,6 +6730,9 @@ type GeneralSettingsMutation struct {
 	addheight               *int
 	theme                   *string
 	eink_mode               *bool
+	transition_style        *string
+	transition_ms           *int
+	addtransition_ms        *int
 	clearedFields           map[string]struct{}
 	sonarr                  map[int]struct{}
 	removedsonarr           map[int]struct{}
@@ -7212,6 +7215,98 @@ func (m *GeneralSettingsMutation) EinkModeCleared() bool {
 func (m *GeneralSettingsMutation) ResetEinkMode() {
 	m.eink_mode = nil
 	delete(m.clearedFields, generalsettings.FieldEinkMode)
+}
+
+// SetTransitionStyle sets the "transition_style" field.
+func (m *GeneralSettingsMutation) SetTransitionStyle(s string) {
+	m.transition_style = &s
+}
+
+// TransitionStyle returns the value of the "transition_style" field in the mutation.
+func (m *GeneralSettingsMutation) TransitionStyle() (r string, exists bool) {
+	v := m.transition_style
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTransitionStyle returns the old "transition_style" field's value of the GeneralSettings entity.
+// If the GeneralSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GeneralSettingsMutation) OldTransitionStyle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTransitionStyle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTransitionStyle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTransitionStyle: %w", err)
+	}
+	return oldValue.TransitionStyle, nil
+}
+
+// ResetTransitionStyle resets all changes to the "transition_style" field.
+func (m *GeneralSettingsMutation) ResetTransitionStyle() {
+	m.transition_style = nil
+}
+
+// SetTransitionMs sets the "transition_ms" field.
+func (m *GeneralSettingsMutation) SetTransitionMs(i int) {
+	m.transition_ms = &i
+	m.addtransition_ms = nil
+}
+
+// TransitionMs returns the value of the "transition_ms" field in the mutation.
+func (m *GeneralSettingsMutation) TransitionMs() (r int, exists bool) {
+	v := m.transition_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTransitionMs returns the old "transition_ms" field's value of the GeneralSettings entity.
+// If the GeneralSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GeneralSettingsMutation) OldTransitionMs(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTransitionMs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTransitionMs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTransitionMs: %w", err)
+	}
+	return oldValue.TransitionMs, nil
+}
+
+// AddTransitionMs adds i to the "transition_ms" field.
+func (m *GeneralSettingsMutation) AddTransitionMs(i int) {
+	if m.addtransition_ms != nil {
+		*m.addtransition_ms += i
+	} else {
+		m.addtransition_ms = &i
+	}
+}
+
+// AddedTransitionMs returns the value that was added to the "transition_ms" field in this mutation.
+func (m *GeneralSettingsMutation) AddedTransitionMs() (r int, exists bool) {
+	v := m.addtransition_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTransitionMs resets all changes to the "transition_ms" field.
+func (m *GeneralSettingsMutation) ResetTransitionMs() {
+	m.transition_ms = nil
+	m.addtransition_ms = nil
 }
 
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by ids.
@@ -8652,7 +8747,7 @@ func (m *GeneralSettingsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GeneralSettingsMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.timeout != nil {
 		fields = append(fields, generalsettings.FieldTimeout)
 	}
@@ -8670,6 +8765,12 @@ func (m *GeneralSettingsMutation) Fields() []string {
 	}
 	if m.eink_mode != nil {
 		fields = append(fields, generalsettings.FieldEinkMode)
+	}
+	if m.transition_style != nil {
+		fields = append(fields, generalsettings.FieldTransitionStyle)
+	}
+	if m.transition_ms != nil {
+		fields = append(fields, generalsettings.FieldTransitionMs)
 	}
 	return fields
 }
@@ -8691,6 +8792,10 @@ func (m *GeneralSettingsMutation) Field(name string) (ent.Value, bool) {
 		return m.Theme()
 	case generalsettings.FieldEinkMode:
 		return m.EinkMode()
+	case generalsettings.FieldTransitionStyle:
+		return m.TransitionStyle()
+	case generalsettings.FieldTransitionMs:
+		return m.TransitionMs()
 	}
 	return nil, false
 }
@@ -8712,6 +8817,10 @@ func (m *GeneralSettingsMutation) OldField(ctx context.Context, name string) (en
 		return m.OldTheme(ctx)
 	case generalsettings.FieldEinkMode:
 		return m.OldEinkMode(ctx)
+	case generalsettings.FieldTransitionStyle:
+		return m.OldTransitionStyle(ctx)
+	case generalsettings.FieldTransitionMs:
+		return m.OldTransitionMs(ctx)
 	}
 	return nil, fmt.Errorf("unknown GeneralSettings field %s", name)
 }
@@ -8763,6 +8872,20 @@ func (m *GeneralSettingsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetEinkMode(v)
 		return nil
+	case generalsettings.FieldTransitionStyle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTransitionStyle(v)
+		return nil
+	case generalsettings.FieldTransitionMs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTransitionMs(v)
+		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings field %s", name)
 }
@@ -8780,6 +8903,9 @@ func (m *GeneralSettingsMutation) AddedFields() []string {
 	if m.addheight != nil {
 		fields = append(fields, generalsettings.FieldHeight)
 	}
+	if m.addtransition_ms != nil {
+		fields = append(fields, generalsettings.FieldTransitionMs)
+	}
 	return fields
 }
 
@@ -8794,6 +8920,8 @@ func (m *GeneralSettingsMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedWidth()
 	case generalsettings.FieldHeight:
 		return m.AddedHeight()
+	case generalsettings.FieldTransitionMs:
+		return m.AddedTransitionMs()
 	}
 	return nil, false
 }
@@ -8823,6 +8951,13 @@ func (m *GeneralSettingsMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddHeight(v)
+		return nil
+	case generalsettings.FieldTransitionMs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTransitionMs(v)
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings numeric field %s", name)
@@ -8883,6 +9018,12 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 		return nil
 	case generalsettings.FieldEinkMode:
 		m.ResetEinkMode()
+		return nil
+	case generalsettings.FieldTransitionStyle:
+		m.ResetTransitionStyle()
+		return nil
+	case generalsettings.FieldTransitionMs:
+		m.ResetTransitionMs()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings field %s", name)

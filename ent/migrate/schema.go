@@ -271,6 +271,8 @@ var (
 		{Name: "height", Type: field.TypeInt, Default: 64},
 		{Name: "theme", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: "{}"},
 		{Name: "eink_mode", Type: field.TypeBool, Nullable: true, Default: false},
+		{Name: "transition_style", Type: field.TypeString, Default: "none"},
+		{Name: "transition_ms", Type: field.TypeInt, Default: 500},
 	}
 	// GeneralSettingsTable holds the schema information for the "general_settings" table.
 	GeneralSettingsTable = &schema.Table{

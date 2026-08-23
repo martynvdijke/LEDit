@@ -28,6 +28,10 @@ type GeneralSettings struct {
 	Theme string `json:"theme,omitempty"`
 	// EinkMode holds the value of the "eink_mode" field.
 	EinkMode bool `json:"eink_mode,omitempty"`
+	// TransitionStyle holds the value of the "transition_style" field.
+	TransitionStyle string `json:"transition_style,omitempty"`
+	// TransitionMs holds the value of the "transition_ms" field.
+	TransitionMs int `json:"transition_ms,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GeneralSettingsQuery when eager-loading is set.
 	Edges        GeneralSettingsEdges `json:"edges"`
@@ -336,9 +340,9 @@ func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case generalsettings.FieldTimeout:
 			values[i] = new(sql.NullFloat64)
-		case generalsettings.FieldID, generalsettings.FieldWidth, generalsettings.FieldHeight:
+		case generalsettings.FieldID, generalsettings.FieldWidth, generalsettings.FieldHeight, generalsettings.FieldTransitionMs:
 			values[i] = new(sql.NullInt64)
-		case generalsettings.FieldTheme:
+		case generalsettings.FieldTheme, generalsettings.FieldTransitionStyle:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -396,6 +400,18 @@ func (_m *GeneralSettings) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field eink_mode", values[i])
 			} else if value.Valid {
 				_m.EinkMode = value.Bool
+			}
+		case generalsettings.FieldTransitionStyle:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field transition_style", values[i])
+			} else if value.Valid {
+				_m.TransitionStyle = value.String
+			}
+		case generalsettings.FieldTransitionMs:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field transition_ms", values[i])
+			} else if value.Valid {
+				_m.TransitionMs = int(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -580,6 +596,12 @@ func (_m *GeneralSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("eink_mode=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EinkMode))
+	builder.WriteString(", ")
+	builder.WriteString("transition_style=")
+	builder.WriteString(_m.TransitionStyle)
+	builder.WriteString(", ")
+	builder.WriteString("transition_ms=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TransitionMs))
 	builder.WriteByte(')')
 	return builder.String()
 }

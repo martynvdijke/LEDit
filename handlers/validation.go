@@ -76,3 +76,14 @@ func (v *Validator) RangeFloat(field string, value, min, max float64) *Validator
 func (v *Validator) Port(field string, value int) *Validator {
 	return v.RangeInt(field, value, 1, 65535)
 }
+
+// OneOf checks that value is one of the allowed strings.
+func (v *Validator) OneOf(field, value string, allowed ...string) *Validator {
+	for _, a := range allowed {
+		if value == a {
+			return v
+		}
+	}
+	v.Errors = append(v.Errors, ValidationError{Field: field, Message: "must be one of " + strings.Join(allowed, ", ")})
+	return v
+}

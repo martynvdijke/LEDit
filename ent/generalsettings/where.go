@@ -84,6 +84,16 @@ func EinkMode(v bool) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldEQ(FieldEinkMode, v))
 }
 
+// TransitionStyle applies equality check predicate on the "transition_style" field. It's identical to TransitionStyleEQ.
+func TransitionStyle(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldTransitionStyle, v))
+}
+
+// TransitionMs applies equality check predicate on the "transition_ms" field. It's identical to TransitionMsEQ.
+func TransitionMs(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldTransitionMs, v))
+}
+
 // TimeoutEQ applies the EQ predicate on the "timeout" field.
 func TimeoutEQ(v float64) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldEQ(FieldTimeout, v))
@@ -307,6 +317,111 @@ func EinkModeIsNil() predicate.GeneralSettings {
 // EinkModeNotNil applies the NotNil predicate on the "eink_mode" field.
 func EinkModeNotNil() predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldNotNull(FieldEinkMode))
+}
+
+// TransitionStyleEQ applies the EQ predicate on the "transition_style" field.
+func TransitionStyleEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldTransitionStyle, v))
+}
+
+// TransitionStyleNEQ applies the NEQ predicate on the "transition_style" field.
+func TransitionStyleNEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldTransitionStyle, v))
+}
+
+// TransitionStyleIn applies the In predicate on the "transition_style" field.
+func TransitionStyleIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldTransitionStyle, vs...))
+}
+
+// TransitionStyleNotIn applies the NotIn predicate on the "transition_style" field.
+func TransitionStyleNotIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldTransitionStyle, vs...))
+}
+
+// TransitionStyleGT applies the GT predicate on the "transition_style" field.
+func TransitionStyleGT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldTransitionStyle, v))
+}
+
+// TransitionStyleGTE applies the GTE predicate on the "transition_style" field.
+func TransitionStyleGTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldTransitionStyle, v))
+}
+
+// TransitionStyleLT applies the LT predicate on the "transition_style" field.
+func TransitionStyleLT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldTransitionStyle, v))
+}
+
+// TransitionStyleLTE applies the LTE predicate on the "transition_style" field.
+func TransitionStyleLTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldTransitionStyle, v))
+}
+
+// TransitionStyleContains applies the Contains predicate on the "transition_style" field.
+func TransitionStyleContains(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContains(FieldTransitionStyle, v))
+}
+
+// TransitionStyleHasPrefix applies the HasPrefix predicate on the "transition_style" field.
+func TransitionStyleHasPrefix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasPrefix(FieldTransitionStyle, v))
+}
+
+// TransitionStyleHasSuffix applies the HasSuffix predicate on the "transition_style" field.
+func TransitionStyleHasSuffix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasSuffix(FieldTransitionStyle, v))
+}
+
+// TransitionStyleEqualFold applies the EqualFold predicate on the "transition_style" field.
+func TransitionStyleEqualFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEqualFold(FieldTransitionStyle, v))
+}
+
+// TransitionStyleContainsFold applies the ContainsFold predicate on the "transition_style" field.
+func TransitionStyleContainsFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContainsFold(FieldTransitionStyle, v))
+}
+
+// TransitionMsEQ applies the EQ predicate on the "transition_ms" field.
+func TransitionMsEQ(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldTransitionMs, v))
+}
+
+// TransitionMsNEQ applies the NEQ predicate on the "transition_ms" field.
+func TransitionMsNEQ(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldTransitionMs, v))
+}
+
+// TransitionMsIn applies the In predicate on the "transition_ms" field.
+func TransitionMsIn(vs ...int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldTransitionMs, vs...))
+}
+
+// TransitionMsNotIn applies the NotIn predicate on the "transition_ms" field.
+func TransitionMsNotIn(vs ...int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldTransitionMs, vs...))
+}
+
+// TransitionMsGT applies the GT predicate on the "transition_ms" field.
+func TransitionMsGT(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldTransitionMs, v))
+}
+
+// TransitionMsGTE applies the GTE predicate on the "transition_ms" field.
+func TransitionMsGTE(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldTransitionMs, v))
+}
+
+// TransitionMsLT applies the LT predicate on the "transition_ms" field.
+func TransitionMsLT(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldTransitionMs, v))
+}
+
+// TransitionMsLTE applies the LTE predicate on the "transition_ms" field.
+func TransitionMsLTE(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldTransitionMs, v))
 }
 
 // HasSonarr applies the HasEdge predicate on the "sonarr" edge.

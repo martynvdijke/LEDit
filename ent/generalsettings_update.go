@@ -170,6 +170,41 @@ func (_u *GeneralSettingsUpdate) ClearEinkMode() *GeneralSettingsUpdate {
 	return _u
 }
 
+// SetTransitionStyle sets the "transition_style" field.
+func (_u *GeneralSettingsUpdate) SetTransitionStyle(v string) *GeneralSettingsUpdate {
+	_u.mutation.SetTransitionStyle(v)
+	return _u
+}
+
+// SetNillableTransitionStyle sets the "transition_style" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableTransitionStyle(v *string) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetTransitionStyle(*v)
+	}
+	return _u
+}
+
+// SetTransitionMs sets the "transition_ms" field.
+func (_u *GeneralSettingsUpdate) SetTransitionMs(v int) *GeneralSettingsUpdate {
+	_u.mutation.ResetTransitionMs()
+	_u.mutation.SetTransitionMs(v)
+	return _u
+}
+
+// SetNillableTransitionMs sets the "transition_ms" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableTransitionMs(v *int) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetTransitionMs(*v)
+	}
+	return _u
+}
+
+// AddTransitionMs adds value to the "transition_ms" field.
+func (_u *GeneralSettingsUpdate) AddTransitionMs(v int) *GeneralSettingsUpdate {
+	_u.mutation.AddTransitionMs(v)
+	return _u
+}
+
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by IDs.
 func (_u *GeneralSettingsUpdate) AddSonarrIDs(ids ...int) *GeneralSettingsUpdate {
 	_u.mutation.AddSonarrIDs(ids...)
@@ -1138,7 +1173,25 @@ func (_u *GeneralSettingsUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *GeneralSettingsUpdate) check() error {
+	if v, ok := _u.mutation.TransitionStyle(); ok {
+		if err := generalsettings.TransitionStyleValidator(v); err != nil {
+			return &ValidationError{Name: "transition_style", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.transition_style": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.TransitionMs(); ok {
+		if err := generalsettings.TransitionMsValidator(v); err != nil {
+			return &ValidationError{Name: "transition_ms", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.transition_ms": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(generalsettings.Table, generalsettings.Columns, sqlgraph.NewFieldSpec(generalsettings.FieldID, field.TypeInt))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -1179,6 +1232,15 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if _u.mutation.EinkModeCleared() {
 		_spec.ClearField(generalsettings.FieldEinkMode, field.TypeBool)
+	}
+	if value, ok := _u.mutation.TransitionStyle(); ok {
+		_spec.SetField(generalsettings.FieldTransitionStyle, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.TransitionMs(); ok {
+		_spec.SetField(generalsettings.FieldTransitionMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedTransitionMs(); ok {
+		_spec.AddField(generalsettings.FieldTransitionMs, field.TypeInt, value)
 	}
 	if _u.mutation.SonarrCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -2487,6 +2549,41 @@ func (_u *GeneralSettingsUpdateOne) ClearEinkMode() *GeneralSettingsUpdateOne {
 	return _u
 }
 
+// SetTransitionStyle sets the "transition_style" field.
+func (_u *GeneralSettingsUpdateOne) SetTransitionStyle(v string) *GeneralSettingsUpdateOne {
+	_u.mutation.SetTransitionStyle(v)
+	return _u
+}
+
+// SetNillableTransitionStyle sets the "transition_style" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableTransitionStyle(v *string) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetTransitionStyle(*v)
+	}
+	return _u
+}
+
+// SetTransitionMs sets the "transition_ms" field.
+func (_u *GeneralSettingsUpdateOne) SetTransitionMs(v int) *GeneralSettingsUpdateOne {
+	_u.mutation.ResetTransitionMs()
+	_u.mutation.SetTransitionMs(v)
+	return _u
+}
+
+// SetNillableTransitionMs sets the "transition_ms" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableTransitionMs(v *int) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetTransitionMs(*v)
+	}
+	return _u
+}
+
+// AddTransitionMs adds value to the "transition_ms" field.
+func (_u *GeneralSettingsUpdateOne) AddTransitionMs(v int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddTransitionMs(v)
+	return _u
+}
+
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by IDs.
 func (_u *GeneralSettingsUpdateOne) AddSonarrIDs(ids ...int) *GeneralSettingsUpdateOne {
 	_u.mutation.AddSonarrIDs(ids...)
@@ -3468,7 +3565,25 @@ func (_u *GeneralSettingsUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *GeneralSettingsUpdateOne) check() error {
+	if v, ok := _u.mutation.TransitionStyle(); ok {
+		if err := generalsettings.TransitionStyleValidator(v); err != nil {
+			return &ValidationError{Name: "transition_style", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.transition_style": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.TransitionMs(); ok {
+		if err := generalsettings.TransitionMsValidator(v); err != nil {
+			return &ValidationError{Name: "transition_ms", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.transition_ms": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *GeneralSettings, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(generalsettings.Table, generalsettings.Columns, sqlgraph.NewFieldSpec(generalsettings.FieldID, field.TypeInt))
 	id, ok := _u.mutation.ID()
 	if !ok {
@@ -3526,6 +3641,15 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 	}
 	if _u.mutation.EinkModeCleared() {
 		_spec.ClearField(generalsettings.FieldEinkMode, field.TypeBool)
+	}
+	if value, ok := _u.mutation.TransitionStyle(); ok {
+		_spec.SetField(generalsettings.FieldTransitionStyle, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.TransitionMs(); ok {
+		_spec.SetField(generalsettings.FieldTransitionMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedTransitionMs(); ok {
+		_spec.AddField(generalsettings.FieldTransitionMs, field.TypeInt, value)
 	}
 	if _u.mutation.SonarrCleared() {
 		edge := &sqlgraph.EdgeSpec{
