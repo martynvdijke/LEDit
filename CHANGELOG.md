@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/martynvdijke/LEDit/compare/v1.24.0...v1.25.0) (2026-08-23)
+
+
+### Features
+
+* pixel art maker and animator datasource ([c6fb15f](https://github.com/martynvdijke/LEDit/commit/c6fb15fa86dbb26a0d1fa21a0a1d8824bc5855a8))
+
 # [1.24.0](https://github.com/martynvdijke/LEDit/compare/v1.23.0...v1.24.0) (2026-08-22)
 
 
