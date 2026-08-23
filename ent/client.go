@@ -33,6 +33,7 @@ import (
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/pixelart"
+	"ledit/ent/playlist"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -99,6 +100,8 @@ type Client struct {
 	Notification *NotificationClient
 	// PixelArt is the client for interacting with the PixelArt builders.
 	PixelArt *PixelArtClient
+	// Playlist is the client for interacting with the Playlist builders.
+	Playlist *PlaylistClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
 	// RssFeed is the client for interacting with the RssFeed builders.
@@ -152,6 +155,7 @@ func (c *Client) init() {
 	c.NewsFeed = NewNewsFeedClient(c.config)
 	c.Notification = NewNotificationClient(c.config)
 	c.PixelArt = NewPixelArtClient(c.config)
+	c.Playlist = NewPlaylistClient(c.config)
 	c.Radarr = NewRadarrClient(c.config)
 	c.RssFeed = NewRssFeedClient(c.config)
 	c.Schedule = NewScheduleClient(c.config)
@@ -276,6 +280,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		NewsFeed:        NewNewsFeedClient(cfg),
 		Notification:    NewNotificationClient(cfg),
 		PixelArt:        NewPixelArtClient(cfg),
+		Playlist:        NewPlaylistClient(cfg),
 		Radarr:          NewRadarrClient(cfg),
 		RssFeed:         NewRssFeedClient(cfg),
 		Schedule:        NewScheduleClient(cfg),
@@ -327,6 +332,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		NewsFeed:        NewNewsFeedClient(cfg),
 		Notification:    NewNotificationClient(cfg),
 		PixelArt:        NewPixelArtClient(cfg),
+		Playlist:        NewPlaylistClient(cfg),
 		Radarr:          NewRadarrClient(cfg),
 		RssFeed:         NewRssFeedClient(cfg),
 		Schedule:        NewScheduleClient(cfg),
@@ -370,8 +376,8 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GoogleCalendar, c.HomeAssistant, c.Image,
 		c.LogEntry, c.LogSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
-		c.PixelArt, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
-		c.UmamiSettings, c.Untappd, c.Video, c.Weather,
+		c.PixelArt, c.Playlist, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
+		c.TextSlide, c.UmamiSettings, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Use(hooks...)
 	}
@@ -385,8 +391,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GoogleCalendar, c.HomeAssistant, c.Image,
 		c.LogEntry, c.LogSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
-		c.PixelArt, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TextSlide,
-		c.UmamiSettings, c.Untappd, c.Video, c.Weather,
+		c.PixelArt, c.Playlist, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Stock,
+		c.TextSlide, c.UmamiSettings, c.Untappd, c.Video, c.Weather,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -439,6 +445,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Notification.mutate(ctx, m)
 	case *PixelArtMutation:
 		return c.PixelArt.mutate(ctx, m)
+	case *PlaylistMutation:
+		return c.Playlist.mutate(ctx, m)
 	case *RadarrMutation:
 		return c.Radarr.mutate(ctx, m)
 	case *RssFeedMutation:
@@ -2451,6 +2459,22 @@ func (c *GeneralSettingsClient) QueryPixelArts(_m *GeneralSettings) *PixelArtQue
 	return query
 }
 
+// QueryPlaylists queries the playlists edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryPlaylists(_m *GeneralSettings) *PlaylistQuery {
+	query := (&PlaylistClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(playlist.Table, playlist.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.PlaylistsTable, generalsettings.PlaylistsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GeneralSettingsClient) Hooks() []Hook {
 	return c.hooks.GeneralSettings
@@ -3806,6 +3830,139 @@ func (c *PixelArtClient) mutate(ctx context.Context, m *PixelArtMutation) (Value
 	}
 }
 
+// PlaylistClient is a client for the Playlist schema.
+type PlaylistClient struct {
+	config
+}
+
+// NewPlaylistClient returns a client for the Playlist from the given config.
+func NewPlaylistClient(c config) *PlaylistClient {
+	return &PlaylistClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `playlist.Hooks(f(g(h())))`.
+func (c *PlaylistClient) Use(hooks ...Hook) {
+	c.hooks.Playlist = append(c.hooks.Playlist, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `playlist.Intercept(f(g(h())))`.
+func (c *PlaylistClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Playlist = append(c.inters.Playlist, interceptors...)
+}
+
+// Create returns a builder for creating a Playlist entity.
+func (c *PlaylistClient) Create() *PlaylistCreate {
+	mutation := newPlaylistMutation(c.config, OpCreate)
+	return &PlaylistCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Playlist entities.
+func (c *PlaylistClient) CreateBulk(builders ...*PlaylistCreate) *PlaylistCreateBulk {
+	return &PlaylistCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PlaylistClient) MapCreateBulk(slice any, setFunc func(*PlaylistCreate, int)) *PlaylistCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PlaylistCreateBulk{err: fmt.Errorf("calling to PlaylistClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PlaylistCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PlaylistCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Playlist.
+func (c *PlaylistClient) Update() *PlaylistUpdate {
+	mutation := newPlaylistMutation(c.config, OpUpdate)
+	return &PlaylistUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PlaylistClient) UpdateOne(_m *Playlist) *PlaylistUpdateOne {
+	mutation := newPlaylistMutation(c.config, OpUpdateOne, withPlaylist(_m))
+	return &PlaylistUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PlaylistClient) UpdateOneID(id int) *PlaylistUpdateOne {
+	mutation := newPlaylistMutation(c.config, OpUpdateOne, withPlaylistID(id))
+	return &PlaylistUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Playlist.
+func (c *PlaylistClient) Delete() *PlaylistDelete {
+	mutation := newPlaylistMutation(c.config, OpDelete)
+	return &PlaylistDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PlaylistClient) DeleteOne(_m *Playlist) *PlaylistDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PlaylistClient) DeleteOneID(id int) *PlaylistDeleteOne {
+	builder := c.Delete().Where(playlist.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PlaylistDeleteOne{builder}
+}
+
+// Query returns a query builder for Playlist.
+func (c *PlaylistClient) Query() *PlaylistQuery {
+	return &PlaylistQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePlaylist},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Playlist entity by its id.
+func (c *PlaylistClient) Get(ctx context.Context, id int) (*Playlist, error) {
+	return c.Query().Where(playlist.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PlaylistClient) GetX(ctx context.Context, id int) *Playlist {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *PlaylistClient) Hooks() []Hook {
+	return c.hooks.Playlist
+}
+
+// Interceptors returns the client interceptors.
+func (c *PlaylistClient) Interceptors() []Interceptor {
+	return c.inters.Playlist
+}
+
+func (c *PlaylistClient) mutate(ctx context.Context, m *PlaylistMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PlaylistCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PlaylistUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PlaylistUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PlaylistDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Playlist mutation op: %q", m.Op())
+	}
+}
+
 // RadarrClient is a client for the Radarr schema.
 type RadarrClient struct {
 	config
@@ -5142,15 +5299,16 @@ type (
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		Countdown, Crypto, DeviceSettings, EmailSettings, F1, GeneralSettings,
 		GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry, LogSettings,
-		MatrixLayout, NewsFeed, Notification, PixelArt, Radarr, RssFeed, Schedule,
-		Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video, Weather []ent.Hook
+		MatrixLayout, NewsFeed, Notification, PixelArt, Playlist, Radarr, RssFeed,
+		Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
+		Weather []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		Countdown, Crypto, DeviceSettings, EmailSettings, F1, GeneralSettings,
 		GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry, LogSettings,
-		MatrixLayout, NewsFeed, Notification, PixelArt, Radarr, RssFeed, Schedule,
-		Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
+		MatrixLayout, NewsFeed, Notification, PixelArt, Playlist, Radarr, RssFeed,
+		Schedule, Sonarr, Stock, TextSlide, UmamiSettings, Untappd, Video,
 		Weather []ent.Interceptor
 	}
 )

@@ -19,7 +19,7 @@
                 <tbody>
                     {{range .devices}}
                     <tr>
-                        <td>{{.ID}}</td><td>{{.Name}}</td><td>{{.IP}}</td><td>{{.Port}}</td>
+                        <td>{{.ID}}</td><td>{{.Name}}{{if eq .ContentMode "playlist"}}{{if .PlaylistName}}<span class="badge bg-info ms-1">{{.PlaylistName}}</span>{{else if .PlaylistID}}<span class="badge bg-secondary ms-1">#{{.PlaylistID}}</span>{{end}}{{end}}</td><td>{{.IP}}</td><td>{{.Port}}</td>
                         <td>{{.Width}}x{{.Height}}</td>
                         <td>{{if .Enabled}}Yes{{else}}No{{end}}</td>
                         <td>

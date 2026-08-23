@@ -114,6 +114,16 @@ func FramesServed(v int) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldFramesServed, v))
 }
 
+// ContentMode applies equality check predicate on the "content_mode" field. It's identical to ContentModeEQ.
+func ContentMode(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldContentMode, v))
+}
+
+// PlaylistID applies equality check predicate on the "playlist_id" field. It's identical to PlaylistIDEQ.
+func PlaylistID(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldPlaylistID, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldName, v))
@@ -697,6 +707,121 @@ func FramesServedLT(v int) predicate.DeviceSettings {
 // FramesServedLTE applies the LTE predicate on the "frames_served" field.
 func FramesServedLTE(v int) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldLTE(FieldFramesServed, v))
+}
+
+// ContentModeEQ applies the EQ predicate on the "content_mode" field.
+func ContentModeEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldContentMode, v))
+}
+
+// ContentModeNEQ applies the NEQ predicate on the "content_mode" field.
+func ContentModeNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldContentMode, v))
+}
+
+// ContentModeIn applies the In predicate on the "content_mode" field.
+func ContentModeIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldContentMode, vs...))
+}
+
+// ContentModeNotIn applies the NotIn predicate on the "content_mode" field.
+func ContentModeNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldContentMode, vs...))
+}
+
+// ContentModeGT applies the GT predicate on the "content_mode" field.
+func ContentModeGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldContentMode, v))
+}
+
+// ContentModeGTE applies the GTE predicate on the "content_mode" field.
+func ContentModeGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldContentMode, v))
+}
+
+// ContentModeLT applies the LT predicate on the "content_mode" field.
+func ContentModeLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldContentMode, v))
+}
+
+// ContentModeLTE applies the LTE predicate on the "content_mode" field.
+func ContentModeLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldContentMode, v))
+}
+
+// ContentModeContains applies the Contains predicate on the "content_mode" field.
+func ContentModeContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldContentMode, v))
+}
+
+// ContentModeHasPrefix applies the HasPrefix predicate on the "content_mode" field.
+func ContentModeHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldContentMode, v))
+}
+
+// ContentModeHasSuffix applies the HasSuffix predicate on the "content_mode" field.
+func ContentModeHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldContentMode, v))
+}
+
+// ContentModeEqualFold applies the EqualFold predicate on the "content_mode" field.
+func ContentModeEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldContentMode, v))
+}
+
+// ContentModeContainsFold applies the ContainsFold predicate on the "content_mode" field.
+func ContentModeContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldContentMode, v))
+}
+
+// PlaylistIDEQ applies the EQ predicate on the "playlist_id" field.
+func PlaylistIDEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldPlaylistID, v))
+}
+
+// PlaylistIDNEQ applies the NEQ predicate on the "playlist_id" field.
+func PlaylistIDNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldPlaylistID, v))
+}
+
+// PlaylistIDIn applies the In predicate on the "playlist_id" field.
+func PlaylistIDIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldPlaylistID, vs...))
+}
+
+// PlaylistIDNotIn applies the NotIn predicate on the "playlist_id" field.
+func PlaylistIDNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldPlaylistID, vs...))
+}
+
+// PlaylistIDGT applies the GT predicate on the "playlist_id" field.
+func PlaylistIDGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldPlaylistID, v))
+}
+
+// PlaylistIDGTE applies the GTE predicate on the "playlist_id" field.
+func PlaylistIDGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldPlaylistID, v))
+}
+
+// PlaylistIDLT applies the LT predicate on the "playlist_id" field.
+func PlaylistIDLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldPlaylistID, v))
+}
+
+// PlaylistIDLTE applies the LTE predicate on the "playlist_id" field.
+func PlaylistIDLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldPlaylistID, v))
+}
+
+// PlaylistIDIsNil applies the IsNil predicate on the "playlist_id" field.
+func PlaylistIDIsNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIsNull(FieldPlaylistID))
+}
+
+// PlaylistIDNotNil applies the NotNil predicate on the "playlist_id" field.
+func PlaylistIDNotNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotNull(FieldPlaylistID))
 }
 
 // And groups predicates with the AND operator between them.

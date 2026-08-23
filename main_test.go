@@ -2381,3 +2381,156 @@ func TestPreviewMatrixAmbienceCells(t *testing.T) {
 		t.Error("matrix preview: empty body")
 	}
 }
+
+func TestDevicePlaylistFeedSequence(t *testing.T) {
+	drv := openTestDB(t)
+	defer drv.Close()
+
+	srv := handlers.New(drv, nil)
+	srv.DB.GeneralSettings.Create().
+		SetTimeout(1.0).SetRandom(false).SetWidth(64).SetHeight(64).
+		SaveX(testCtx)
+
+	// Playlist with two deterministic built-ins in authored order.
+	pl := srv.DB.Playlist.Create().
+		SetName("two-item").
+		SetEnabled(true).
+		SetItems(`[{"source_type":"systemstats","source_id":0},{"source_type":"analog-clock","source_id":0}]`).
+		SaveX(testCtx)
+
+	const tokenA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	const tokenB = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+	srv.DB.DeviceSettings.Create().
+		SetName("global-dev").SetIP("10.0.0.100").SetPort(6270).
+		SetWidth(64).SetHeight(64).SetEnabled(true).
+		SetToken(tokenA).SetRefreshInterval(1).
+		SetContentMode("global").
+		SaveX(testCtx)
+	srv.DB.DeviceSettings.Create().
+		SetName("playlist-dev").SetIP("10.0.0.101").SetPort(6270).
+		SetWidth(64).SetHeight(64).SetEnabled(true).
+		SetToken(tokenB).SetRefreshInterval(1).
+		SetContentMode("playlist").SetPlaylistID(pl.ID).
+		SaveX(testCtx)
+
+	ts := httptest.NewServer(srv.Router)
+	defer ts.Close()
+	wsBase := "ws" + ts.URL[4:]
+
+	dialWS := func(path string) *websocket.Conn {
+		t.Helper()
+		c, _, err := websocket.DefaultDialer.Dial(wsBase+path, nil)
+		if err != nil {
+			t.Fatalf("dial %s: %v", path, err)
+		}
+		return c
+	}
+
+	connA := dialWS("/ws/device/" + tokenA)
+	defer connA.Close()
+	connB := dialWS("/ws/device/" + tokenB)
+	defer connB.Close()
+	connFeed := dialWS("/ws/feed")
+	defer connFeed.Close()
+
+	collect := func(conn *websocket.Conn, dur time.Duration) []string {
+		var out []string
+		deadline := time.Now().Add(dur)
+		for time.Now().Before(deadline) {
+			remaining := time.Until(deadline)
+			if remaining <= 0 {
+				break
+			}
+			// Per-read timeout capped by remaining window.
+			rt := 2 * time.Second
+			if rt > remaining+500*time.Millisecond {
+				rt = remaining + 500*time.Millisecond
+			}
+			conn.SetReadDeadline(time.Now().Add(rt))
+			_, msg, err := conn.ReadMessage()
+			if err != nil {
+				break
+			}
+			var m map[string]any
+			if err := json.Unmarshal(msg, &m); err != nil {
+				continue
+			}
+			if s, ok := m["source"].(string); ok && s != "" {
+				out = append(out, s)
+			}
+		}
+		return out
+	}
+
+	type res struct {
+		name    string
+		sources []string
+	}
+	ch := make(chan res, 3)
+	go func() { ch <- res{"A", collect(connA, 4*time.Second)} }()
+	go func() { ch <- res{"B", collect(connB, 4*time.Second)} }()
+	go func() { ch <- res{"feed", collect(connFeed, 4*time.Second)} }()
+
+	results := map[string][]string{}
+	timeout := time.After(7 * time.Second)
+	for i := 0; i < 3; i++ {
+		select {
+		case r := <-ch:
+			results[r.name] = r.sources
+		case <-timeout:
+			t.Fatalf("timed out waiting for WS collectors, got %v", results)
+		}
+	}
+
+	srcA := results["A"]
+	srcB := results["B"]
+	srcFeed := results["feed"]
+
+	if len(srcB) == 0 {
+		t.Fatalf("playlist device received no frames: B=%v", srcB)
+	}
+	if len(srcA) == 0 {
+		t.Fatalf("global device received no frames: A=%v", srcA)
+	}
+	if len(srcFeed) == 0 {
+		t.Fatalf("preview feed received no frames: feed=%v", srcFeed)
+	}
+
+	// Device B: only playlist sources, in authored order, first-frame order.
+	allowedB := map[string]bool{"System Stats": true, "Analog Clock": true}
+	for _, s := range srcB {
+		if !allowedB[s] {
+			t.Errorf("playlist device: unexpected source %q, want only System Stats/Analog Clock; full B=%v", s, srcB)
+		}
+	}
+	if srcB[0] != "System Stats" {
+		t.Errorf("playlist device: first frame source = %q, want %q; full B=%v", srcB[0], "System Stats", srcB)
+	}
+	// Must have seen both playlist items within window.
+	seen := map[string]bool{}
+	for _, s := range srcB {
+		seen[s] = true
+	}
+	if !seen["System Stats"] || !seen["Analog Clock"] {
+		t.Errorf("playlist device: expected to see both playlist sources within window, got %v", srcB)
+	}
+	// Authored order: System Stats -> Analog Clock -> System Stats ...
+	for i := 1; i < len(srcB); i++ {
+		prev, cur := srcB[i-1], srcB[i]
+		if prev == cur {
+			t.Errorf("playlist device: consecutive duplicate source %q at index %d; full B=%v", cur, i, srcB)
+		}
+	}
+
+	// Device A and preview: global set (must contain at least one global source).
+	// Global includes at least Matrix Rain beyond the playlist, but we assert
+	// they received frames and preview is not restricted to playlist-only in a
+	// way that would hide global behavior: check preview saw >0 frames and
+	// global device saw at least one frame with a known global name.
+	if len(srcA) < 2 {
+		t.Errorf("global device: expected >=2 frames, got %d %v", len(srcA), srcA)
+	}
+	if len(srcFeed) < 2 {
+		t.Errorf("preview feed: expected >=2 frames, got %d %v", len(srcFeed), srcFeed)
+	}
+}

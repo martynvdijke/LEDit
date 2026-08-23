@@ -23,6 +23,7 @@ import (
 	"ledit/ent/matrixlayout"
 	"ledit/ent/newsfeed"
 	"ledit/ent/pixelart"
+	"ledit/ent/playlist"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -529,6 +530,21 @@ func (_c *GeneralSettingsCreate) AddPixelArts(v ...*PixelArt) *GeneralSettingsCr
 		ids[i] = v[i].ID
 	}
 	return _c.AddPixelArtIDs(ids...)
+}
+
+// AddPlaylistIDs adds the "playlists" edge to the Playlist entity by IDs.
+func (_c *GeneralSettingsCreate) AddPlaylistIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddPlaylistIDs(ids...)
+	return _c
+}
+
+// AddPlaylists adds the "playlists" edges to the Playlist entity.
+func (_c *GeneralSettingsCreate) AddPlaylists(v ...*Playlist) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddPlaylistIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -1089,6 +1105,22 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(pixelart.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.PlaylistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PlaylistsTable,
+			Columns: []string{generalsettings.PlaylistsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playlist.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

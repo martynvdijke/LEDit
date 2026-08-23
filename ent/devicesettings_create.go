@@ -188,6 +188,34 @@ func (_c *DeviceSettingsCreate) SetNillableFramesServed(v *int) *DeviceSettingsC
 	return _c
 }
 
+// SetContentMode sets the "content_mode" field.
+func (_c *DeviceSettingsCreate) SetContentMode(v string) *DeviceSettingsCreate {
+	_c.mutation.SetContentMode(v)
+	return _c
+}
+
+// SetNillableContentMode sets the "content_mode" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableContentMode(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetContentMode(*v)
+	}
+	return _c
+}
+
+// SetPlaylistID sets the "playlist_id" field.
+func (_c *DeviceSettingsCreate) SetPlaylistID(v int) *DeviceSettingsCreate {
+	_c.mutation.SetPlaylistID(v)
+	return _c
+}
+
+// SetNillablePlaylistID sets the "playlist_id" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillablePlaylistID(v *int) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetPlaylistID(*v)
+	}
+	return _c
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_c *DeviceSettingsCreate) Mutation() *DeviceSettingsMutation {
 	return _c.mutation
@@ -267,6 +295,10 @@ func (_c *DeviceSettingsCreate) defaults() {
 		v := devicesettings.DefaultFramesServed
 		_c.mutation.SetFramesServed(v)
 	}
+	if _, ok := _c.mutation.ContentMode(); !ok {
+		v := devicesettings.DefaultContentMode
+		_c.mutation.SetContentMode(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -303,6 +335,14 @@ func (_c *DeviceSettingsCreate) check() error {
 	}
 	if _, ok := _c.mutation.FramesServed(); !ok {
 		return &ValidationError{Name: "frames_served", err: errors.New(`ent: missing required field "DeviceSettings.frames_served"`)}
+	}
+	if _, ok := _c.mutation.ContentMode(); !ok {
+		return &ValidationError{Name: "content_mode", err: errors.New(`ent: missing required field "DeviceSettings.content_mode"`)}
+	}
+	if v, ok := _c.mutation.ContentMode(); ok {
+		if err := devicesettings.ContentModeValidator(v); err != nil {
+			return &ValidationError{Name: "content_mode", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.content_mode": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -377,6 +417,14 @@ func (_c *DeviceSettingsCreate) createSpec() (*DeviceSettings, *sqlgraph.CreateS
 	if value, ok := _c.mutation.FramesServed(); ok {
 		_spec.SetField(devicesettings.FieldFramesServed, field.TypeInt, value)
 		_node.FramesServed = value
+	}
+	if value, ok := _c.mutation.ContentMode(); ok {
+		_spec.SetField(devicesettings.FieldContentMode, field.TypeString, value)
+		_node.ContentMode = value
+	}
+	if value, ok := _c.mutation.PlaylistID(); ok {
+		_spec.SetField(devicesettings.FieldPlaylistID, field.TypeInt, value)
+		_node.PlaylistID = &value
 	}
 	return _node, _spec
 }

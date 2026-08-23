@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Playlists</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Playlists</h1>
+                <a href="/admin/playlists/new" class="btn btn-primary">New Playlist</a>
+            </div>
+            {{if .playlists}}
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Enabled</th>
+                        <th>Items</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .playlists}}
+                    <tr data-items="{{.Items}}">
+                        <td>{{.ID}}</td>
+                        <td>{{.Name}}</td>
+                        <td>{{if .Enabled}}<span class="badge bg-success">on</span>{{else}}<span class="badge bg-secondary">off</span>{{end}}</td>
+                        <td class="items-count text-muted">—</td>
+                        <td>
+                            <a href="/admin/playlists/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            <form method="POST" action="/admin/playlists/{{.ID}}/delete" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            <script>
+            (function(){
+                document.querySelectorAll('tr[data-items]').forEach(function(tr){
+                    try{
+                        var raw = tr.getAttribute('data-items')||'[]';
+                        var d = JSON.parse(raw);
+                        var el = tr.querySelector('.items-count');
+                        if(el) el.textContent = Array.isArray(d) ? d.length : '0';
+                    }catch(e){}
+                });
+            })();
+            </script>
+            {{else}}
+            <p class="text-muted mt-4">No playlists yet. <a href="/admin/playlists/new">Create one</a> to curate an ordered source list.</p>
+            {{end}}
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

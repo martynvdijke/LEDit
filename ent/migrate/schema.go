@@ -200,6 +200,8 @@ var (
 		{Name: "refresh_interval", Type: field.TypeInt, Default: 60},
 		{Name: "last_seen_at", Type: field.TypeTime, Nullable: true},
 		{Name: "frames_served", Type: field.TypeInt, Default: 0},
+		{Name: "content_mode", Type: field.TypeString, Default: "global"},
+		{Name: "playlist_id", Type: field.TypeInt, Nullable: true},
 		{Name: "general_settings_device_settings", Type: field.TypeInt, Nullable: true},
 	}
 	// DeviceSettingsTable holds the schema information for the "device_settings" table.
@@ -210,7 +212,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "device_settings_general_settings_device_settings",
-				Columns:    []*schema.Column{DeviceSettingsColumns[13]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[15]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -488,6 +490,28 @@ var (
 			},
 		},
 	}
+	// PlaylistsColumns holds the columns for the "playlists" table.
+	PlaylistsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Default: ""},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "items", Type: field.TypeString, Size: 2147483647, Default: "[]"},
+		{Name: "general_settings_playlists", Type: field.TypeInt, Nullable: true},
+	}
+	// PlaylistsTable holds the schema information for the "playlists" table.
+	PlaylistsTable = &schema.Table{
+		Name:       "playlists",
+		Columns:    PlaylistsColumns,
+		PrimaryKey: []*schema.Column{PlaylistsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "playlists_general_settings_playlists",
+				Columns:    []*schema.Column{PlaylistsColumns[4]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// RadarrsColumns holds the columns for the "radarrs" table.
 	RadarrsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -725,6 +749,7 @@ var (
 		NewsFeedsTable,
 		NotificationsTable,
 		PixelArtsTable,
+		PlaylistsTable,
 		RadarrsTable,
 		RssFeedsTable,
 		SchedulesTable,
@@ -755,6 +780,7 @@ func init() {
 	MatrixLayoutsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	NewsFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PixelArtsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	PlaylistsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RadarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RssFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SchedulesTable.ForeignKeys[0].RefTable = GeneralSettingsTable

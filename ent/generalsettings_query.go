@@ -23,6 +23,7 @@ import (
 	"ledit/ent/matrixlayout"
 	"ledit/ent/newsfeed"
 	"ledit/ent/pixelart"
+	"ledit/ent/playlist"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -75,6 +76,7 @@ type GeneralSettingsQuery struct {
 	withAiDigests       *AIDigestQuery
 	withAlertSettings   *AlertSettingsQuery
 	withPixelArts       *PixelArtQuery
+	withPlaylists       *PlaylistQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -683,6 +685,28 @@ func (_q *GeneralSettingsQuery) QueryPixelArts() *PixelArtQuery {
 	return query
 }
 
+// QueryPlaylists chains the current query on the "playlists" edge.
+func (_q *GeneralSettingsQuery) QueryPlaylists() *PlaylistQuery {
+	query := (&PlaylistClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(playlist.Table, playlist.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.PlaylistsTable, generalsettings.PlaylistsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first GeneralSettings entity from the query.
 // Returns a *NotFoundError when no GeneralSettings was found.
 func (_q *GeneralSettingsQuery) First(ctx context.Context) (*GeneralSettings, error) {
@@ -901,6 +925,7 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		withAiDigests:       _q.withAiDigests.Clone(),
 		withAlertSettings:   _q.withAlertSettings.Clone(),
 		withPixelArts:       _q.withPixelArts.Clone(),
+		withPlaylists:       _q.withPlaylists.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -1193,6 +1218,17 @@ func (_q *GeneralSettingsQuery) WithPixelArts(opts ...func(*PixelArtQuery)) *Gen
 	return _q
 }
 
+// WithPlaylists tells the query-builder to eager-load the nodes that are connected to
+// the "playlists" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithPlaylists(opts ...func(*PlaylistQuery)) *GeneralSettingsQuery {
+	query := (&PlaylistClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withPlaylists = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -1271,7 +1307,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [26]bool{
+		loadedTypes = [27]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -1298,6 +1334,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withAiDigests != nil,
 			_q.withAlertSettings != nil,
 			_q.withPixelArts != nil,
+			_q.withPlaylists != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -1501,6 +1538,13 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := _q.loadPixelArts(ctx, query, nodes,
 			func(n *GeneralSettings) { n.Edges.PixelArts = []*PixelArt{} },
 			func(n *GeneralSettings, e *PixelArt) { n.Edges.PixelArts = append(n.Edges.PixelArts, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withPlaylists; query != nil {
+		if err := _q.loadPlaylists(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Playlists = []*Playlist{} },
+			func(n *GeneralSettings, e *Playlist) { n.Edges.Playlists = append(n.Edges.Playlists, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -2308,6 +2352,37 @@ func (_q *GeneralSettingsQuery) loadPixelArts(ctx context.Context, query *PixelA
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_pixel_arts" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadPlaylists(ctx context.Context, query *PlaylistQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Playlist)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Playlist(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.PlaylistsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_playlists
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_playlists" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_playlists" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

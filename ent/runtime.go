@@ -22,6 +22,7 @@ import (
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/pixelart"
+	"ledit/ent/playlist"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -190,6 +191,12 @@ func init() {
 	devicesettingsDescFramesServed := devicesettingsFields[11].Descriptor()
 	// devicesettings.DefaultFramesServed holds the default value on creation for the frames_served field.
 	devicesettings.DefaultFramesServed = devicesettingsDescFramesServed.Default.(int)
+	// devicesettingsDescContentMode is the schema descriptor for content_mode field.
+	devicesettingsDescContentMode := devicesettingsFields[12].Descriptor()
+	// devicesettings.DefaultContentMode holds the default value on creation for the content_mode field.
+	devicesettings.DefaultContentMode = devicesettingsDescContentMode.Default.(string)
+	// devicesettings.ContentModeValidator is a validator for the "content_mode" field. It is called by the builders before save.
+	devicesettings.ContentModeValidator = devicesettingsDescContentMode.Validators[0].(func(string) error)
 	emailsettingsFields := schema.EmailSettings{}.Fields()
 	_ = emailsettingsFields
 	// emailsettingsDescUseTLS is the schema descriptor for use_tls field.
@@ -362,6 +369,20 @@ func init() {
 	pixelartDescEnabled := pixelartFields[7].Descriptor()
 	// pixelart.DefaultEnabled holds the default value on creation for the enabled field.
 	pixelart.DefaultEnabled = pixelartDescEnabled.Default.(bool)
+	playlistFields := schema.Playlist{}.Fields()
+	_ = playlistFields
+	// playlistDescName is the schema descriptor for name field.
+	playlistDescName := playlistFields[0].Descriptor()
+	// playlist.DefaultName holds the default value on creation for the name field.
+	playlist.DefaultName = playlistDescName.Default.(string)
+	// playlistDescEnabled is the schema descriptor for enabled field.
+	playlistDescEnabled := playlistFields[1].Descriptor()
+	// playlist.DefaultEnabled holds the default value on creation for the enabled field.
+	playlist.DefaultEnabled = playlistDescEnabled.Default.(bool)
+	// playlistDescItems is the schema descriptor for items field.
+	playlistDescItems := playlistFields[2].Descriptor()
+	// playlist.DefaultItems holds the default value on creation for the items field.
+	playlist.DefaultItems = playlistDescItems.Default.(string)
 	radarrFields := schema.Radarr{}.Fields()
 	_ = radarrFields
 	// radarrDescToken is the schema descriptor for token field.

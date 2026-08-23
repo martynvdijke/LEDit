@@ -80,6 +80,8 @@ const (
 	EdgeAlertSettings = "alert_settings"
 	// EdgePixelArts holds the string denoting the pixel_arts edge name in mutations.
 	EdgePixelArts = "pixel_arts"
+	// EdgePlaylists holds the string denoting the playlists edge name in mutations.
+	EdgePlaylists = "playlists"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -264,6 +266,13 @@ const (
 	PixelArtsInverseTable = "pixel_arts"
 	// PixelArtsColumn is the table column denoting the pixel_arts relation/edge.
 	PixelArtsColumn = "general_settings_pixel_arts"
+	// PlaylistsTable is the table that holds the playlists relation/edge.
+	PlaylistsTable = "playlists"
+	// PlaylistsInverseTable is the table name for the Playlist entity.
+	// It exists in this package in order to avoid circular dependency with the "playlist" package.
+	PlaylistsInverseTable = "playlists"
+	// PlaylistsColumn is the table column denoting the playlists relation/edge.
+	PlaylistsColumn = "general_settings_playlists"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -719,6 +728,20 @@ func ByPixelArts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newPixelArtsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByPlaylistsCount orders the results by playlists count.
+func ByPlaylistsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPlaylistsStep(), opts...)
+	}
+}
+
+// ByPlaylists orders the results by playlists terms.
+func ByPlaylists(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPlaylistsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -899,5 +922,12 @@ func newPixelArtsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PixelArtsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, PixelArtsTable, PixelArtsColumn),
+	)
+}
+func newPlaylistsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PlaylistsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, PlaylistsTable, PlaylistsColumn),
 	)
 }

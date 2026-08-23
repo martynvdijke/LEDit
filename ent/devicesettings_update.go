@@ -237,6 +237,47 @@ func (_u *DeviceSettingsUpdate) AddFramesServed(v int) *DeviceSettingsUpdate {
 	return _u
 }
 
+// SetContentMode sets the "content_mode" field.
+func (_u *DeviceSettingsUpdate) SetContentMode(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetContentMode(v)
+	return _u
+}
+
+// SetNillableContentMode sets the "content_mode" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableContentMode(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetContentMode(*v)
+	}
+	return _u
+}
+
+// SetPlaylistID sets the "playlist_id" field.
+func (_u *DeviceSettingsUpdate) SetPlaylistID(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetPlaylistID()
+	_u.mutation.SetPlaylistID(v)
+	return _u
+}
+
+// SetNillablePlaylistID sets the "playlist_id" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillablePlaylistID(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetPlaylistID(*v)
+	}
+	return _u
+}
+
+// AddPlaylistID adds value to the "playlist_id" field.
+func (_u *DeviceSettingsUpdate) AddPlaylistID(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddPlaylistID(v)
+	return _u
+}
+
+// ClearPlaylistID clears the value of the "playlist_id" field.
+func (_u *DeviceSettingsUpdate) ClearPlaylistID() *DeviceSettingsUpdate {
+	_u.mutation.ClearPlaylistID()
+	return _u
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_u *DeviceSettingsUpdate) Mutation() *DeviceSettingsMutation {
 	return _u.mutation
@@ -269,7 +310,20 @@ func (_u *DeviceSettingsUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *DeviceSettingsUpdate) check() error {
+	if v, ok := _u.mutation.ContentMode(); ok {
+		if err := devicesettings.ContentModeValidator(v); err != nil {
+			return &ValidationError{Name: "content_mode", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.content_mode": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *DeviceSettingsUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(devicesettings.Table, devicesettings.Columns, sqlgraph.NewFieldSpec(devicesettings.FieldID, field.TypeInt))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -331,6 +385,18 @@ func (_u *DeviceSettingsUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.AddedFramesServed(); ok {
 		_spec.AddField(devicesettings.FieldFramesServed, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ContentMode(); ok {
+		_spec.SetField(devicesettings.FieldContentMode, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.PlaylistID(); ok {
+		_spec.SetField(devicesettings.FieldPlaylistID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPlaylistID(); ok {
+		_spec.AddField(devicesettings.FieldPlaylistID, field.TypeInt, value)
+	}
+	if _u.mutation.PlaylistIDCleared() {
+		_spec.ClearField(devicesettings.FieldPlaylistID, field.TypeInt)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -561,6 +627,47 @@ func (_u *DeviceSettingsUpdateOne) AddFramesServed(v int) *DeviceSettingsUpdateO
 	return _u
 }
 
+// SetContentMode sets the "content_mode" field.
+func (_u *DeviceSettingsUpdateOne) SetContentMode(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetContentMode(v)
+	return _u
+}
+
+// SetNillableContentMode sets the "content_mode" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableContentMode(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetContentMode(*v)
+	}
+	return _u
+}
+
+// SetPlaylistID sets the "playlist_id" field.
+func (_u *DeviceSettingsUpdateOne) SetPlaylistID(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetPlaylistID()
+	_u.mutation.SetPlaylistID(v)
+	return _u
+}
+
+// SetNillablePlaylistID sets the "playlist_id" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillablePlaylistID(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetPlaylistID(*v)
+	}
+	return _u
+}
+
+// AddPlaylistID adds value to the "playlist_id" field.
+func (_u *DeviceSettingsUpdateOne) AddPlaylistID(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddPlaylistID(v)
+	return _u
+}
+
+// ClearPlaylistID clears the value of the "playlist_id" field.
+func (_u *DeviceSettingsUpdateOne) ClearPlaylistID() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearPlaylistID()
+	return _u
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_u *DeviceSettingsUpdateOne) Mutation() *DeviceSettingsMutation {
 	return _u.mutation
@@ -606,7 +713,20 @@ func (_u *DeviceSettingsUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *DeviceSettingsUpdateOne) check() error {
+	if v, ok := _u.mutation.ContentMode(); ok {
+		if err := devicesettings.ContentModeValidator(v); err != nil {
+			return &ValidationError{Name: "content_mode", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.content_mode": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *DeviceSettingsUpdateOne) sqlSave(ctx context.Context) (_node *DeviceSettings, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(devicesettings.Table, devicesettings.Columns, sqlgraph.NewFieldSpec(devicesettings.FieldID, field.TypeInt))
 	id, ok := _u.mutation.ID()
 	if !ok {
@@ -685,6 +805,18 @@ func (_u *DeviceSettingsUpdateOne) sqlSave(ctx context.Context) (_node *DeviceSe
 	}
 	if value, ok := _u.mutation.AddedFramesServed(); ok {
 		_spec.AddField(devicesettings.FieldFramesServed, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ContentMode(); ok {
+		_spec.SetField(devicesettings.FieldContentMode, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.PlaylistID(); ok {
+		_spec.SetField(devicesettings.FieldPlaylistID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPlaylistID(); ok {
+		_spec.AddField(devicesettings.FieldPlaylistID, field.TypeInt, value)
+	}
+	if _u.mutation.PlaylistIDCleared() {
+		_spec.ClearField(devicesettings.FieldPlaylistID, field.TypeInt)
 	}
 	_node = &DeviceSettings{config: _u.config}
 	_spec.Assign = _node.assignValues

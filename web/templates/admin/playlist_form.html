@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Playlist</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Playlist</h1>
+            <p class="text-muted">Build an ordered list of sources. Order is preserved; devices play items top-to-bottom.</p>
+
+            <form method="POST" action="/admin/playlists{{if .edit}}/{{if .id}}{{.id}}{{else if .obj.ID}}{{.obj.ID}}{{end}}/edit{{else}}/new{{end}}" class="mt-4" id="playlist-form">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required value="{{if .obj}}{{if .obj.Name}}{{.obj.Name}}{{else}}{{index .obj "name"}}{{end}}{{end}}">
+                    </div>
+                    <div class="col-md-3 mb-3 form-check" style="padding-top:28px">
+                        <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if not .edit}}checked{{else if .obj.Enabled}}checked{{else if eq (index .obj "enabled") "on"}}checked{{end}}>
+                        <label for="enabled" class="form-check-label">Enabled</label>
+                    </div>
+                </div>
+
+                <input type="hidden" name="items" id="items" value="{{if .obj}}{{if .obj.Items}}{{.obj.Items}}{{else}}{{index .obj "items"}}{{end}}{{else}}[]{{end}}">
+
+                <div class="mb-3">
+                    <label class="form-label">Add source</label>
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <select id="source-type" class="form-select" style="width:auto;min-width:180px">
+                            <option value="">— type —</option>
+                        </select>
+                        <select id="source-id" class="form-select" style="width:auto;min-width:220px">
+                            <option value="">— source —</option>
+                        </select>
+                        <button type="button" id="add-item" class="btn btn-sm btn-primary">Add</button>
+                    </div>
+                    <small class="text-muted">Sources grouped by type via binding options.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Ordered items</label>
+                    <ul id="items-list" class="list-group"></ul>
+                    <small class="text-muted">Use ▲ ▼ to reorder, ✕ to remove.</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                <a href="/admin/playlists" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+<script>window.BINDING_OPTS = {{.options_json}};</script>
+<script>
+(function(){
+    var opts = window.BINDING_OPTS || {};
+    var typeSel = document.getElementById('source-type');
+    var idSel = document.getElementById('source-id');
+    var addBtn = document.getElementById('add-item');
+    var listEl = document.getElementById('items-list');
+    var hidden = document.getElementById('items');
+    var items = [];
+    try { var raw = hidden.value || '[]'; items = JSON.parse(raw); if(!Array.isArray(items)) items=[]; } catch(e){ items=[]; }
+
+    function renderTypeOptions(){
+        Object.keys(opts).sort().forEach(function(t){
+            var o = document.createElement('option');
+            o.value=t; o.textContent=t;
+            typeSel.appendChild(o);
+        });
+    }
+    function renderIdOptions(){
+        idSel.innerHTML='<option value="">— source —</option>';
+        var t = typeSel.value;
+        if(!t || !opts[t]) return;
+        opts[t].forEach(function(entry){
+            var o=document.createElement('option');
+            o.value=String(entry.id);
+            o.textContent=entry.label + ' (#'+entry.id+')';
+            idSel.appendChild(o);
+        });
+    }
+    function syncHidden(){ hidden.value = JSON.stringify(items); }
+    function labelFor(type,id){
+        var arr=opts[type]||[];
+        for(var i=0;i<arr.length;i++){ if(String(arr[i].id)===String(id)) return arr[i].label; }
+        return type+' #'+id;
+    }
+    function renderList(){
+        listEl.innerHTML='';
+        items.forEach(function(it,idx){
+            var li=document.createElement('li');
+            li.className='list-group-item d-flex justify-content-between align-items-center';
+            var span=document.createElement('span');
+            span.textContent=(idx+1)+'. '+ labelFor(it.source_type,it.source_id) + ' ('+it.source_type+':'+it.source_id+')';
+            var ctr=document.createElement('div');
+            ctr.className='d-flex gap-1';
+            var up=document.createElement('button'); up.type='button'; up.className='btn btn-sm btn-secondary'; up.textContent='▲';
+            up.onclick=function(){ if(idx>0){ var tmp=items[idx-1]; items[idx-1]=items[idx]; items[idx]=tmp; syncHidden(); renderList(); }};
+            var down=document.createElement('button'); down.type='button'; down.className='btn btn-sm btn-secondary'; down.textContent='▼';
+            down.onclick=function(){ if(idx<items.length-1){ var tmp=items[idx+1]; items[idx+1]=items[idx]; items[idx]=tmp; syncHidden(); renderList(); }};
+            var rm=document.createElement('button'); rm.type='button'; rm.className='btn btn-sm btn-danger'; rm.textContent='✕';
+            rm.onclick=function(){ items.splice(idx,1); syncHidden(); renderList(); };
+            ctr.appendChild(up); ctr.appendChild(down); ctr.appendChild(rm);
+            li.appendChild(span); li.appendChild(ctr);
+            listEl.appendChild(li);
+        });
+        syncHidden();
+    }
+    typeSel.addEventListener('change', renderIdOptions);
+    addBtn.addEventListener('click', function(){
+        var t=typeSel.value, sid=idSel.value;
+        if(!t || sid==='') return;
+        items.push({source_type:t, source_id: parseInt(sid,10)});
+        renderList();
+    });
+    document.getElementById('playlist-form').addEventListener('submit', function(){ syncHidden(); });
+    renderTypeOptions();
+    renderIdOptions();
+    renderList();
+})();
+</script>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

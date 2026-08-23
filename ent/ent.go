@@ -28,6 +28,7 @@ import (
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/pixelart"
+	"ledit/ent/playlist"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -126,6 +127,7 @@ func checkColumn(t, c string) error {
 			newsfeed.Table:        newsfeed.ValidColumn,
 			notification.Table:    notification.ValidColumn,
 			pixelart.Table:        pixelart.ValidColumn,
+			playlist.Table:        playlist.ValidColumn,
 			radarr.Table:          radarr.ValidColumn,
 			rssfeed.Table:         rssfeed.ValidColumn,
 			schedule.Table:        schedule.ValidColumn,

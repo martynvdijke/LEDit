@@ -23,6 +23,7 @@ import (
 	"ledit/ent/matrixlayout"
 	"ledit/ent/newsfeed"
 	"ledit/ent/pixelart"
+	"ledit/ent/playlist"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -595,6 +596,21 @@ func (_u *GeneralSettingsUpdate) AddPixelArts(v ...*PixelArt) *GeneralSettingsUp
 	return _u.AddPixelArtIDs(ids...)
 }
 
+// AddPlaylistIDs adds the "playlists" edge to the Playlist entity by IDs.
+func (_u *GeneralSettingsUpdate) AddPlaylistIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddPlaylistIDs(ids...)
+	return _u
+}
+
+// AddPlaylists adds the "playlists" edges to the Playlist entity.
+func (_u *GeneralSettingsUpdate) AddPlaylists(v ...*Playlist) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPlaylistIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdate) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -1144,6 +1160,27 @@ func (_u *GeneralSettingsUpdate) RemovePixelArts(v ...*PixelArt) *GeneralSetting
 		ids[i] = v[i].ID
 	}
 	return _u.RemovePixelArtIDs(ids...)
+}
+
+// ClearPlaylists clears all "playlists" edges to the Playlist entity.
+func (_u *GeneralSettingsUpdate) ClearPlaylists() *GeneralSettingsUpdate {
+	_u.mutation.ClearPlaylists()
+	return _u
+}
+
+// RemovePlaylistIDs removes the "playlists" edge to Playlist entities by IDs.
+func (_u *GeneralSettingsUpdate) RemovePlaylistIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemovePlaylistIDs(ids...)
+	return _u
+}
+
+// RemovePlaylists removes "playlists" edges to Playlist entities.
+func (_u *GeneralSettingsUpdate) RemovePlaylists(v ...*Playlist) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePlaylistIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -2412,6 +2449,51 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.PlaylistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PlaylistsTable,
+			Columns: []string{generalsettings.PlaylistsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playlist.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPlaylistsIDs(); len(nodes) > 0 && !_u.mutation.PlaylistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PlaylistsTable,
+			Columns: []string{generalsettings.PlaylistsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playlist.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PlaylistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PlaylistsTable,
+			Columns: []string{generalsettings.PlaylistsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playlist.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -2974,6 +3056,21 @@ func (_u *GeneralSettingsUpdateOne) AddPixelArts(v ...*PixelArt) *GeneralSetting
 	return _u.AddPixelArtIDs(ids...)
 }
 
+// AddPlaylistIDs adds the "playlists" edge to the Playlist entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddPlaylistIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddPlaylistIDs(ids...)
+	return _u
+}
+
+// AddPlaylists adds the "playlists" edges to the Playlist entity.
+func (_u *GeneralSettingsUpdateOne) AddPlaylists(v ...*Playlist) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPlaylistIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdateOne) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -3523,6 +3620,27 @@ func (_u *GeneralSettingsUpdateOne) RemovePixelArts(v ...*PixelArt) *GeneralSett
 		ids[i] = v[i].ID
 	}
 	return _u.RemovePixelArtIDs(ids...)
+}
+
+// ClearPlaylists clears all "playlists" edges to the Playlist entity.
+func (_u *GeneralSettingsUpdateOne) ClearPlaylists() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearPlaylists()
+	return _u
+}
+
+// RemovePlaylistIDs removes the "playlists" edge to Playlist entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemovePlaylistIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemovePlaylistIDs(ids...)
+	return _u
+}
+
+// RemovePlaylists removes "playlists" edges to Playlist entities.
+func (_u *GeneralSettingsUpdateOne) RemovePlaylists(v ...*Playlist) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePlaylistIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -4814,6 +4932,51 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(pixelart.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PlaylistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PlaylistsTable,
+			Columns: []string{generalsettings.PlaylistsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playlist.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPlaylistsIDs(); len(nodes) > 0 && !_u.mutation.PlaylistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PlaylistsTable,
+			Columns: []string{generalsettings.PlaylistsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playlist.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PlaylistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PlaylistsTable,
+			Columns: []string{generalsettings.PlaylistsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playlist.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

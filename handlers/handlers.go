@@ -17,6 +17,7 @@ import (
 	"ledit/ent"
 	"ledit/ent/devicesettings"
 	"ledit/ent/generalsettings"
+	"ledit/ent/playlist"
 )
 
 var pathToActive = map[string]string{
@@ -475,11 +476,30 @@ func (s *Server) AdminDeviceSettingsList(c *gin.Context) {
 			lastErrors[d.ID] = sh.LastError
 		}
 	}
+	// Batch-load playlist names for badge rendering.
+	playlists, _ := s.DB.Playlist.Query().All(s.Ctx)
+	playlistNames := map[int]string{}
+	for _, pl := range playlists {
+		playlistNames[pl.ID] = pl.Name
+	}
+	type deviceRow struct {
+		*ent.DeviceSettings
+		PlaylistName string
+	}
+	rows := make([]deviceRow, len(devices))
+	for i, d := range devices {
+		pn := ""
+		if d.ContentMode == "playlist" && d.PlaylistID != nil {
+			pn = playlistNames[*d.PlaylistID]
+		}
+		rows[i] = deviceRow{DeviceSettings: d, PlaylistName: pn}
+	}
 	s.renderPage(c, http.StatusOK, "devices.html", gin.H{
-		"devices":    devices,
-		"host":       c.Request.Host,
-		"liveness":   liveness,
-		"lastErrors": lastErrors,
+		"devices":       rows,
+		"host":          c.Request.Host,
+		"liveness":      liveness,
+		"lastErrors":    lastErrors,
+		"playlistNames": playlistNames,
 	})
 }
 
@@ -505,7 +525,8 @@ func (s *Server) AdminDevicePreview(c *gin.Context) {
 }
 
 func (s *Server) AdminDeviceSettingsNew(c *gin.Context) {
-	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{})
+	playlists, _ := s.DB.Playlist.Query().Where(playlist.EnabledEQ(true)).Order(playlist.ByName()).All(s.Ctx)
+	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"playlists": playlists, "selectedPlaylistID": 0})
 }
 
 func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
@@ -530,20 +551,39 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 	if refreshInterval <= 0 {
 		refreshInterval = 60
 	}
+	contentMode := c.PostForm("content_mode")
+	if contentMode == "" {
+		contentMode = "global"
+	}
+	playlistIDRaw := c.PostForm("playlist_id")
+	var playlistID *int
+	if playlistIDRaw != "" {
+		pid, err := strconv.Atoi(playlistIDRaw)
+		if err != nil {
+			SetFlash(c, "danger", "Playlist id: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		playlistID = &pid
+	}
 
-	v := NewValidator().Required("Name", name).Port("Port", port).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512)
+	v := NewValidator().Required("Name", name).Port("Port", port).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512).OneOf("Content mode", contentMode, "global", "playlist")
 	if !v.Valid() {
 		SetFlash(c, "danger", v.Error())
 		c.Redirect(http.StatusFound, "/admin/devices")
 		return
 	}
 
-	obj := s.DB.DeviceSettings.Create().
+	builder := s.DB.DeviceSettings.Create().
 		SetName(name).SetIP(ip).SetPort(port).
 		SetUsername(username).SetPassword(password).
 		SetWidth(width).SetHeight(height).SetEnabled(enabled).
 		SetToken(generateDeviceToken()).SetRefreshInterval(refreshInterval).
-		SaveX(s.Ctx)
+		SetContentMode(contentMode)
+	if playlistID != nil {
+		builder.SetPlaylistID(*playlistID)
+	}
+	obj := builder.SaveX(s.Ctx)
 	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
 		s.DB.GeneralSettings.UpdateOne(settings).AddDeviceSettings(obj).Exec(s.Ctx)
 	}
@@ -558,7 +598,12 @@ func (s *Server) AdminDeviceSettingsEdit(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/admin/devices")
 		return
 	}
-	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"obj": obj, "edit": true})
+	playlists, _ := s.DB.Playlist.Query().Where(playlist.EnabledEQ(true)).Order(playlist.ByName()).All(s.Ctx)
+	selectedID := 0
+	if obj.PlaylistID != nil {
+		selectedID = *obj.PlaylistID
+	}
+	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"obj": obj, "edit": true, "playlists": playlists, "selectedPlaylistID": selectedID})
 }
 
 func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
@@ -575,19 +620,40 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 	if refreshInterval <= 0 {
 		refreshInterval = 60
 	}
-	v := NewValidator().Required("Name", name).Port("Port", port).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512)
+	contentMode := c.PostForm("content_mode")
+	if contentMode == "" {
+		contentMode = "global"
+	}
+	playlistIDRaw := c.PostForm("playlist_id")
+	var playlistID *int
+	if playlistIDRaw != "" {
+		pid, err := strconv.Atoi(playlistIDRaw)
+		if err != nil {
+			SetFlash(c, "danger", "Playlist id: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		playlistID = &pid
+	}
+	v := NewValidator().Required("Name", name).Port("Port", port).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512).OneOf("Content mode", contentMode, "global", "playlist")
 	if !v.Valid() {
 		SetFlash(c, "danger", v.Error())
 		c.Redirect(http.StatusFound, "/admin/devices")
 		return
 	}
 
-	s.DB.DeviceSettings.UpdateOneID(id).
+	upd := s.DB.DeviceSettings.UpdateOneID(id).
 		SetName(name).SetIP(ip).SetPort(port).
 		SetUsername(username).SetPassword(password).
 		SetWidth(width).SetHeight(height).SetEnabled(enabled).
 		SetRefreshInterval(refreshInterval).
-		Exec(s.Ctx)
+		SetContentMode(contentMode)
+	if playlistID != nil {
+		upd.SetPlaylistID(*playlistID)
+	} else {
+		upd.ClearPlaylistID()
+	}
+	upd.Exec(s.Ctx)
 	SetFlash(c, "success", "Device updated")
 	c.Redirect(http.StatusFound, "/admin/devices")
 }

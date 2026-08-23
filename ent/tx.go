@@ -56,6 +56,8 @@ type Tx struct {
 	Notification *NotificationClient
 	// PixelArt is the client for interacting with the PixelArt builders.
 	PixelArt *PixelArtClient
+	// Playlist is the client for interacting with the Playlist builders.
+	Playlist *PlaylistClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
 	// RssFeed is the client for interacting with the RssFeed builders.
@@ -229,6 +231,7 @@ func (tx *Tx) init() {
 	tx.NewsFeed = NewNewsFeedClient(tx.config)
 	tx.Notification = NewNotificationClient(tx.config)
 	tx.PixelArt = NewPixelArtClient(tx.config)
+	tx.Playlist = NewPlaylistClient(tx.config)
 	tx.Radarr = NewRadarrClient(tx.config)
 	tx.RssFeed = NewRssFeedClient(tx.config)
 	tx.Schedule = NewScheduleClient(tx.config)

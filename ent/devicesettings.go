@@ -40,7 +40,11 @@ type DeviceSettings struct {
 	// LastSeenAt holds the value of the "last_seen_at" field.
 	LastSeenAt *time.Time `json:"last_seen_at,omitempty"`
 	// FramesServed holds the value of the "frames_served" field.
-	FramesServed                     int `json:"frames_served,omitempty"`
+	FramesServed int `json:"frames_served,omitempty"`
+	// ContentMode holds the value of the "content_mode" field.
+	ContentMode string `json:"content_mode,omitempty"`
+	// PlaylistID holds the value of the "playlist_id" field.
+	PlaylistID                       *int `json:"playlist_id,omitempty"`
 	general_settings_device_settings *int
 	selectValues                     sql.SelectValues
 }
@@ -52,9 +56,9 @@ func (*DeviceSettings) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case devicesettings.FieldEnabled:
 			values[i] = new(sql.NullBool)
-		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed:
+		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed, devicesettings.FieldPlaylistID:
 			values[i] = new(sql.NullInt64)
-		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken:
+		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken, devicesettings.FieldContentMode:
 			values[i] = new(sql.NullString)
 		case devicesettings.FieldLastSeenAt:
 			values[i] = new(sql.NullTime)
@@ -154,6 +158,19 @@ func (_m *DeviceSettings) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.FramesServed = int(value.Int64)
 			}
+		case devicesettings.FieldContentMode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field content_mode", values[i])
+			} else if value.Valid {
+				_m.ContentMode = value.String
+			}
+		case devicesettings.FieldPlaylistID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field playlist_id", values[i])
+			} else if value.Valid {
+				_m.PlaylistID = new(int)
+				*_m.PlaylistID = int(value.Int64)
+			}
 		case devicesettings.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field general_settings_device_settings", value)
@@ -234,6 +251,14 @@ func (_m *DeviceSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("frames_served=")
 	builder.WriteString(fmt.Sprintf("%v", _m.FramesServed))
+	builder.WriteString(", ")
+	builder.WriteString("content_mode=")
+	builder.WriteString(_m.ContentMode)
+	builder.WriteString(", ")
+	if v := _m.PlaylistID; v != nil {
+		builder.WriteString("playlist_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

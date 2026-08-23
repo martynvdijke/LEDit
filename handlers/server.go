@@ -388,6 +388,14 @@ func (s *Server) setupRoutes() {
 		admin.POST("/pixelarts/:id/delete", s.PixelArtDelete)
 		admin.POST("/pixelarts/preview", s.PixelArtPreview)
 
+		// Playlists
+		admin.GET("/playlists", s.AdminPlaylistList)
+		admin.GET("/playlists/new", s.AdminPlaylistNew)
+		admin.POST("/playlists/new", s.AdminPlaylistCreate)
+		admin.GET("/playlists/:id/edit", s.AdminPlaylistEdit)
+		admin.POST("/playlists/:id/edit", s.AdminPlaylistUpdate)
+		admin.POST("/playlists/:id/delete", s.AdminPlaylistDelete)
+
 		// Matrix layouts
 		admin.GET("/matrixlayouts", s.AdminMatrixLayoutList)
 		admin.GET("/matrixlayouts/new", s.AdminMatrixLayoutNew)

@@ -35,6 +35,10 @@ const (
 	FieldLastSeenAt = "last_seen_at"
 	// FieldFramesServed holds the string denoting the frames_served field in the database.
 	FieldFramesServed = "frames_served"
+	// FieldContentMode holds the string denoting the content_mode field in the database.
+	FieldContentMode = "content_mode"
+	// FieldPlaylistID holds the string denoting the playlist_id field in the database.
+	FieldPlaylistID = "playlist_id"
 	// Table holds the table name of the devicesettings in the database.
 	Table = "device_settings"
 )
@@ -54,6 +58,8 @@ var Columns = []string{
 	FieldRefreshInterval,
 	FieldLastSeenAt,
 	FieldFramesServed,
+	FieldContentMode,
+	FieldPlaylistID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "device_settings"
@@ -100,6 +106,10 @@ var (
 	DefaultRefreshInterval int
 	// DefaultFramesServed holds the default value on creation for the "frames_served" field.
 	DefaultFramesServed int
+	// DefaultContentMode holds the default value on creation for the "content_mode" field.
+	DefaultContentMode string
+	// ContentModeValidator is a validator for the "content_mode" field. It is called by the builders before save.
+	ContentModeValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the DeviceSettings queries.
@@ -168,4 +178,14 @@ func ByLastSeenAt(opts ...sql.OrderTermOption) OrderOption {
 // ByFramesServed orders the results by the frames_served field.
 func ByFramesServed(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFramesServed, opts...).ToFunc()
+}
+
+// ByContentMode orders the results by the content_mode field.
+func ByContentMode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldContentMode, opts...).ToFunc()
+}
+
+// ByPlaylistID orders the results by the playlist_id field.
+func ByPlaylistID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPlaylistID, opts...).ToFunc()
 }

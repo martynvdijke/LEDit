@@ -24,6 +24,18 @@
                     <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if not .edit}}checked{{else if .obj.Enabled}}checked{{end}}>
                     <label for="enabled" class="form-check-label">Enabled</label>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Content</label>
+                    <select class="form-select mb-2" id="content_mode" name="content_mode">
+                        <option value="global" {{if .obj}}{{if eq .obj.ContentMode "playlist"}}{{else}}selected{{end}}{{else}}selected{{end}}>Global rotation</option>
+                        <option value="playlist" {{if .obj}}{{if eq .obj.ContentMode "playlist"}}selected{{end}}{{end}}>Playlist</option>
+                    </select>
+                    <select class="form-select" id="playlist_id" name="playlist_id">
+                        <option value="">— No playlist —</option>
+                        {{range .playlists}}<option value="{{.ID}}" {{if eq $.selectedPlaylistID .ID}}selected{{end}}>{{.Name}}</option>{{end}}
+                    </select>
+                    <div class="form-text text-muted small">Playlists play in saved order; Random applies to global mode only.</div>
+                </div>
                 <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
                 <a href="/admin/devices" class="btn btn-secondary">Cancel</a>
             </form>

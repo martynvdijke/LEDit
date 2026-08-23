@@ -226,6 +226,63 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 	return sources
 }
 
+// composeDeviceSources returns the ordered feed sources for a device. In
+// global mode (or empty content_mode) it returns the global list unchanged.
+// In playlist mode it loads the playlist by device.PlaylistID and resolves
+// each item via buildSourceIndex. Dangling refs are skipped and logged once
+// per composition. Any fallback condition (nil id, not found, disabled, parse
+// error, zero resolvable) falls back to the global list with a single warn.
+func (h *WSHub) composeDeviceSources(device *ent.DeviceSettings, settings *ent.GeneralSettings) []sourceWithName {
+	if device == nil || device.ContentMode != "playlist" {
+		return h.loadSources(settings)
+	}
+	if device.PlaylistID == nil {
+		slog.Warn("playlist mode without playlist id, falling back to global", "device", device.Name)
+		return h.loadSources(settings)
+	}
+	pl, err := h.Client.Playlist.Get(context.Background(), *device.PlaylistID)
+	if err != nil {
+		slog.Warn("playlist not found, falling back to global", "device", device.Name, "playlist_id", *device.PlaylistID, "error", err)
+		return h.loadSources(settings)
+	}
+	if !pl.Enabled {
+		slog.Warn("playlist disabled, falling back to global", "device", device.Name, "playlist_id", pl.ID)
+		return h.loadSources(settings)
+	}
+	items, err := datasource.ParsePlaylistItems(pl.Items)
+	if err != nil {
+		slog.Warn("playlist items parse error, falling back to global", "device", device.Name, "playlist_id", pl.ID, "error", err)
+		return h.loadSources(settings)
+	}
+	if len(items) == 0 {
+		slog.Warn("playlist has no resolvable items, falling back to global", "device", device.Name, "playlist_id", pl.ID)
+		return h.loadSources(settings)
+	}
+	idx := buildSourceIndex(settings, h.aiConfig(context.Background()))
+	var composed []sourceWithName
+	skipped := 0
+	for _, it := range items {
+		src, name, err := idx.Resolve(it.SourceType, it.SourceID)
+		if err != nil {
+			skipped++
+			continue
+		}
+		composed = append(composed, sourceWithName{
+			Name:     name,
+			Source:   src,
+			cacheKey: fmt.Sprintf("%s:%d", it.SourceType, it.SourceID),
+		})
+	}
+	if skipped > 0 {
+		slog.Warn("playlist had dangling refs skipped", "device", device.Name, "playlist_id", pl.ID, "skipped", skipped)
+	}
+	if len(composed) == 0 {
+		slog.Warn("playlist had zero resolvable items, falling back to global", "device", device.Name, "playlist_id", pl.ID)
+		return h.loadSources(settings)
+	}
+	return composed
+}
+
 // HandleWS serves the browser preview feed at a fixed 400x400 resolution,
 // controlled by the shared GlobalFeed controller.
 func (h *WSHub) HandleWS(c *gin.Context) {
@@ -296,7 +353,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		return
 	}
 
-	sources := h.loadSources(settings)
+	sources := h.composeDeviceSources(device, settings)
 	if len(sources) == 0 {
 		msg, _ := json.Marshal(map[string]string{"error": "no datasources configured"})
 		conn.WriteMessage(websocket.TextMessage, msg)
@@ -317,6 +374,12 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 	}
 	timeout := time.Duration(interval) * time.Second
 
+	playlistActive := device.ContentMode == "playlist"
+	randomFlag := settings.Random
+	if playlistActive {
+		randomFlag = false
+	}
+
 	// Each device gets its own feed controller so pause/skip/next are
 	// independent of the shared preview feed.
 	serveFeed(conn, feedConn{
@@ -326,7 +389,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 				slog.Warn("failed to increment device frames_served", "device", device.Name, "error", err)
 			}
 		},
-	}, sources, settings.Random, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs)
+	}, sources, randomFlag, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs)
 }
 
 // HandleDevicePreviewWS serves an admin-authenticated, device-accurate preview

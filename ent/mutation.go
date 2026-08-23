@@ -28,6 +28,7 @@ import (
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
 	"ledit/ent/pixelart"
+	"ledit/ent/playlist"
 	"ledit/ent/predicate"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
@@ -77,6 +78,7 @@ const (
 	TypeNewsFeed        = "NewsFeed"
 	TypeNotification    = "Notification"
 	TypePixelArt        = "PixelArt"
+	TypePlaylist        = "Playlist"
 	TypeRadarr          = "Radarr"
 	TypeRssFeed         = "RssFeed"
 	TypeSchedule        = "Schedule"
@@ -4610,6 +4612,9 @@ type DeviceSettingsMutation struct {
 	last_seen_at        *time.Time
 	frames_served       *int
 	addframes_served    *int
+	content_mode        *string
+	playlist_id         *int
+	addplaylist_id      *int
 	clearedFields       map[string]struct{}
 	done                bool
 	oldValue            func(context.Context) (*DeviceSettings, error)
@@ -5259,6 +5264,112 @@ func (m *DeviceSettingsMutation) ResetFramesServed() {
 	m.addframes_served = nil
 }
 
+// SetContentMode sets the "content_mode" field.
+func (m *DeviceSettingsMutation) SetContentMode(s string) {
+	m.content_mode = &s
+}
+
+// ContentMode returns the value of the "content_mode" field in the mutation.
+func (m *DeviceSettingsMutation) ContentMode() (r string, exists bool) {
+	v := m.content_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContentMode returns the old "content_mode" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldContentMode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContentMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContentMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContentMode: %w", err)
+	}
+	return oldValue.ContentMode, nil
+}
+
+// ResetContentMode resets all changes to the "content_mode" field.
+func (m *DeviceSettingsMutation) ResetContentMode() {
+	m.content_mode = nil
+}
+
+// SetPlaylistID sets the "playlist_id" field.
+func (m *DeviceSettingsMutation) SetPlaylistID(i int) {
+	m.playlist_id = &i
+	m.addplaylist_id = nil
+}
+
+// PlaylistID returns the value of the "playlist_id" field in the mutation.
+func (m *DeviceSettingsMutation) PlaylistID() (r int, exists bool) {
+	v := m.playlist_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPlaylistID returns the old "playlist_id" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldPlaylistID(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPlaylistID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPlaylistID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPlaylistID: %w", err)
+	}
+	return oldValue.PlaylistID, nil
+}
+
+// AddPlaylistID adds i to the "playlist_id" field.
+func (m *DeviceSettingsMutation) AddPlaylistID(i int) {
+	if m.addplaylist_id != nil {
+		*m.addplaylist_id += i
+	} else {
+		m.addplaylist_id = &i
+	}
+}
+
+// AddedPlaylistID returns the value that was added to the "playlist_id" field in this mutation.
+func (m *DeviceSettingsMutation) AddedPlaylistID() (r int, exists bool) {
+	v := m.addplaylist_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearPlaylistID clears the value of the "playlist_id" field.
+func (m *DeviceSettingsMutation) ClearPlaylistID() {
+	m.playlist_id = nil
+	m.addplaylist_id = nil
+	m.clearedFields[devicesettings.FieldPlaylistID] = struct{}{}
+}
+
+// PlaylistIDCleared returns if the "playlist_id" field was cleared in this mutation.
+func (m *DeviceSettingsMutation) PlaylistIDCleared() bool {
+	_, ok := m.clearedFields[devicesettings.FieldPlaylistID]
+	return ok
+}
+
+// ResetPlaylistID resets all changes to the "playlist_id" field.
+func (m *DeviceSettingsMutation) ResetPlaylistID() {
+	m.playlist_id = nil
+	m.addplaylist_id = nil
+	delete(m.clearedFields, devicesettings.FieldPlaylistID)
+}
+
 // Where appends a list predicates to the DeviceSettingsMutation builder.
 func (m *DeviceSettingsMutation) Where(ps ...predicate.DeviceSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -5293,7 +5404,7 @@ func (m *DeviceSettingsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DeviceSettingsMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 14)
 	if m.name != nil {
 		fields = append(fields, devicesettings.FieldName)
 	}
@@ -5330,6 +5441,12 @@ func (m *DeviceSettingsMutation) Fields() []string {
 	if m.frames_served != nil {
 		fields = append(fields, devicesettings.FieldFramesServed)
 	}
+	if m.content_mode != nil {
+		fields = append(fields, devicesettings.FieldContentMode)
+	}
+	if m.playlist_id != nil {
+		fields = append(fields, devicesettings.FieldPlaylistID)
+	}
 	return fields
 }
 
@@ -5362,6 +5479,10 @@ func (m *DeviceSettingsMutation) Field(name string) (ent.Value, bool) {
 		return m.LastSeenAt()
 	case devicesettings.FieldFramesServed:
 		return m.FramesServed()
+	case devicesettings.FieldContentMode:
+		return m.ContentMode()
+	case devicesettings.FieldPlaylistID:
+		return m.PlaylistID()
 	}
 	return nil, false
 }
@@ -5395,6 +5516,10 @@ func (m *DeviceSettingsMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldLastSeenAt(ctx)
 	case devicesettings.FieldFramesServed:
 		return m.OldFramesServed(ctx)
+	case devicesettings.FieldContentMode:
+		return m.OldContentMode(ctx)
+	case devicesettings.FieldPlaylistID:
+		return m.OldPlaylistID(ctx)
 	}
 	return nil, fmt.Errorf("unknown DeviceSettings field %s", name)
 }
@@ -5488,6 +5613,20 @@ func (m *DeviceSettingsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetFramesServed(v)
 		return nil
+	case devicesettings.FieldContentMode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContentMode(v)
+		return nil
+	case devicesettings.FieldPlaylistID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPlaylistID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DeviceSettings field %s", name)
 }
@@ -5511,6 +5650,9 @@ func (m *DeviceSettingsMutation) AddedFields() []string {
 	if m.addframes_served != nil {
 		fields = append(fields, devicesettings.FieldFramesServed)
 	}
+	if m.addplaylist_id != nil {
+		fields = append(fields, devicesettings.FieldPlaylistID)
+	}
 	return fields
 }
 
@@ -5529,6 +5671,8 @@ func (m *DeviceSettingsMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedRefreshInterval()
 	case devicesettings.FieldFramesServed:
 		return m.AddedFramesServed()
+	case devicesettings.FieldPlaylistID:
+		return m.AddedPlaylistID()
 	}
 	return nil, false
 }
@@ -5573,6 +5717,13 @@ func (m *DeviceSettingsMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddFramesServed(v)
 		return nil
+	case devicesettings.FieldPlaylistID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPlaylistID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DeviceSettings numeric field %s", name)
 }
@@ -5583,6 +5734,9 @@ func (m *DeviceSettingsMutation) ClearedFields() []string {
 	var fields []string
 	if m.FieldCleared(devicesettings.FieldLastSeenAt) {
 		fields = append(fields, devicesettings.FieldLastSeenAt)
+	}
+	if m.FieldCleared(devicesettings.FieldPlaylistID) {
+		fields = append(fields, devicesettings.FieldPlaylistID)
 	}
 	return fields
 }
@@ -5600,6 +5754,9 @@ func (m *DeviceSettingsMutation) ClearField(name string) error {
 	switch name {
 	case devicesettings.FieldLastSeenAt:
 		m.ClearLastSeenAt()
+		return nil
+	case devicesettings.FieldPlaylistID:
+		m.ClearPlaylistID()
 		return nil
 	}
 	return fmt.Errorf("unknown DeviceSettings nullable field %s", name)
@@ -5644,6 +5801,12 @@ func (m *DeviceSettingsMutation) ResetField(name string) error {
 		return nil
 	case devicesettings.FieldFramesServed:
 		m.ResetFramesServed()
+		return nil
+	case devicesettings.FieldContentMode:
+		m.ResetContentMode()
+		return nil
+	case devicesettings.FieldPlaylistID:
+		m.ResetPlaylistID()
 		return nil
 	}
 	return fmt.Errorf("unknown DeviceSettings field %s", name)
@@ -6812,6 +6975,9 @@ type GeneralSettingsMutation struct {
 	pixel_arts              map[int]struct{}
 	removedpixel_arts       map[int]struct{}
 	clearedpixel_arts       bool
+	playlists               map[int]struct{}
+	removedplaylists        map[int]struct{}
+	clearedplaylists        bool
 	done                    bool
 	oldValue                func(context.Context) (*GeneralSettings, error)
 	predicates              []predicate.GeneralSettings
@@ -8713,6 +8879,60 @@ func (m *GeneralSettingsMutation) ResetPixelArts() {
 	m.removedpixel_arts = nil
 }
 
+// AddPlaylistIDs adds the "playlists" edge to the Playlist entity by ids.
+func (m *GeneralSettingsMutation) AddPlaylistIDs(ids ...int) {
+	if m.playlists == nil {
+		m.playlists = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.playlists[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPlaylists clears the "playlists" edge to the Playlist entity.
+func (m *GeneralSettingsMutation) ClearPlaylists() {
+	m.clearedplaylists = true
+}
+
+// PlaylistsCleared reports if the "playlists" edge to the Playlist entity was cleared.
+func (m *GeneralSettingsMutation) PlaylistsCleared() bool {
+	return m.clearedplaylists
+}
+
+// RemovePlaylistIDs removes the "playlists" edge to the Playlist entity by IDs.
+func (m *GeneralSettingsMutation) RemovePlaylistIDs(ids ...int) {
+	if m.removedplaylists == nil {
+		m.removedplaylists = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.playlists, ids[i])
+		m.removedplaylists[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPlaylists returns the removed IDs of the "playlists" edge to the Playlist entity.
+func (m *GeneralSettingsMutation) RemovedPlaylistsIDs() (ids []int) {
+	for id := range m.removedplaylists {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PlaylistsIDs returns the "playlists" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) PlaylistsIDs() (ids []int) {
+	for id := range m.playlists {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPlaylists resets all changes to the "playlists" edge.
+func (m *GeneralSettingsMutation) ResetPlaylists() {
+	m.playlists = nil
+	m.clearedplaylists = false
+	m.removedplaylists = nil
+}
+
 // Where appends a list predicates to the GeneralSettingsMutation builder.
 func (m *GeneralSettingsMutation) Where(ps ...predicate.GeneralSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -9031,7 +9251,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 26)
+	edges := make([]string, 0, 27)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -9109,6 +9329,9 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.pixel_arts != nil {
 		edges = append(edges, generalsettings.EdgePixelArts)
+	}
+	if m.playlists != nil {
+		edges = append(edges, generalsettings.EdgePlaylists)
 	}
 	return edges
 }
@@ -9273,13 +9496,19 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgePlaylists:
+		ids := make([]ent.Value, 0, len(m.playlists))
+		for id := range m.playlists {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 26)
+	edges := make([]string, 0, 27)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -9357,6 +9586,9 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removedpixel_arts != nil {
 		edges = append(edges, generalsettings.EdgePixelArts)
+	}
+	if m.removedplaylists != nil {
+		edges = append(edges, generalsettings.EdgePlaylists)
 	}
 	return edges
 }
@@ -9521,13 +9753,19 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgePlaylists:
+		ids := make([]ent.Value, 0, len(m.removedplaylists))
+		for id := range m.removedplaylists {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 26)
+	edges := make([]string, 0, 27)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -9606,6 +9844,9 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	if m.clearedpixel_arts {
 		edges = append(edges, generalsettings.EdgePixelArts)
 	}
+	if m.clearedplaylists {
+		edges = append(edges, generalsettings.EdgePlaylists)
+	}
 	return edges
 }
 
@@ -9665,6 +9906,8 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedalert_settings
 	case generalsettings.EdgePixelArts:
 		return m.clearedpixel_arts
+	case generalsettings.EdgePlaylists:
+		return m.clearedplaylists
 	}
 	return false
 }
@@ -9758,6 +10001,9 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 		return nil
 	case generalsettings.EdgePixelArts:
 		m.ResetPixelArts()
+		return nil
+	case generalsettings.EdgePlaylists:
+		m.ResetPlaylists()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings edge %s", name)
@@ -14821,6 +15067,440 @@ func (m *PixelArtMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *PixelArtMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown PixelArt edge %s", name)
+}
+
+// PlaylistMutation represents an operation that mutates the Playlist nodes in the graph.
+type PlaylistMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	name          *string
+	enabled       *bool
+	items         *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Playlist, error)
+	predicates    []predicate.Playlist
+}
+
+var _ ent.Mutation = (*PlaylistMutation)(nil)
+
+// playlistOption allows management of the mutation configuration using functional options.
+type playlistOption func(*PlaylistMutation)
+
+// newPlaylistMutation creates new mutation for the Playlist entity.
+func newPlaylistMutation(c config, op Op, opts ...playlistOption) *PlaylistMutation {
+	m := &PlaylistMutation{
+		config:        c,
+		op:            op,
+		typ:           TypePlaylist,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withPlaylistID sets the ID field of the mutation.
+func withPlaylistID(id int) playlistOption {
+	return func(m *PlaylistMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Playlist
+		)
+		m.oldValue = func(ctx context.Context) (*Playlist, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Playlist.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withPlaylist sets the old Playlist of the mutation.
+func withPlaylist(node *Playlist) playlistOption {
+	return func(m *PlaylistMutation) {
+		m.oldValue = func(context.Context) (*Playlist, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m PlaylistMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m PlaylistMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *PlaylistMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *PlaylistMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Playlist.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *PlaylistMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *PlaylistMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Playlist entity.
+// If the Playlist object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlaylistMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *PlaylistMutation) ResetName() {
+	m.name = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *PlaylistMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *PlaylistMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the Playlist entity.
+// If the Playlist object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlaylistMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *PlaylistMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetItems sets the "items" field.
+func (m *PlaylistMutation) SetItems(s string) {
+	m.items = &s
+}
+
+// Items returns the value of the "items" field in the mutation.
+func (m *PlaylistMutation) Items() (r string, exists bool) {
+	v := m.items
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldItems returns the old "items" field's value of the Playlist entity.
+// If the Playlist object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlaylistMutation) OldItems(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldItems is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldItems requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldItems: %w", err)
+	}
+	return oldValue.Items, nil
+}
+
+// ResetItems resets all changes to the "items" field.
+func (m *PlaylistMutation) ResetItems() {
+	m.items = nil
+}
+
+// Where appends a list predicates to the PlaylistMutation builder.
+func (m *PlaylistMutation) Where(ps ...predicate.Playlist) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the PlaylistMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *PlaylistMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Playlist, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *PlaylistMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *PlaylistMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Playlist).
+func (m *PlaylistMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *PlaylistMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.name != nil {
+		fields = append(fields, playlist.FieldName)
+	}
+	if m.enabled != nil {
+		fields = append(fields, playlist.FieldEnabled)
+	}
+	if m.items != nil {
+		fields = append(fields, playlist.FieldItems)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *PlaylistMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case playlist.FieldName:
+		return m.Name()
+	case playlist.FieldEnabled:
+		return m.Enabled()
+	case playlist.FieldItems:
+		return m.Items()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *PlaylistMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case playlist.FieldName:
+		return m.OldName(ctx)
+	case playlist.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case playlist.FieldItems:
+		return m.OldItems(ctx)
+	}
+	return nil, fmt.Errorf("unknown Playlist field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PlaylistMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case playlist.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case playlist.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case playlist.FieldItems:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetItems(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Playlist field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *PlaylistMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *PlaylistMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PlaylistMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Playlist numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *PlaylistMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *PlaylistMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *PlaylistMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Playlist nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *PlaylistMutation) ResetField(name string) error {
+	switch name {
+	case playlist.FieldName:
+		m.ResetName()
+		return nil
+	case playlist.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case playlist.FieldItems:
+		m.ResetItems()
+		return nil
+	}
+	return fmt.Errorf("unknown Playlist field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *PlaylistMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *PlaylistMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *PlaylistMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *PlaylistMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *PlaylistMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *PlaylistMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *PlaylistMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Playlist unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *PlaylistMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Playlist edge %s", name)
 }
 
 // RadarrMutation represents an operation that mutates the Radarr nodes in the graph.

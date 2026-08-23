@@ -272,6 +272,18 @@ func (f PixelArtFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PixelArtMutation", m)
 }
 
+// The PlaylistFunc type is an adapter to allow the use of ordinary
+// function as Playlist mutator.
+type PlaylistFunc func(context.Context, *ent.PlaylistMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PlaylistFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PlaylistMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlaylistMutation", m)
+}
+
 // The RadarrFunc type is an adapter to allow the use of ordinary
 // function as Radarr mutator.
 type RadarrFunc func(context.Context, *ent.RadarrMutation) (ent.Value, error)
