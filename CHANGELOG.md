@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/martynvdijke/LEDit/compare/v1.28.0...v1.29.0) (2026-08-23)
+
+
+### Features
+
+* push-to-display controls (webhook override, MQTT, Telegram, GPIO buttons) ([9af45cf](https://github.com/martynvdijke/LEDit/commit/9af45cf2a42fb3b7db4e30cf4495c57dcd18542b))
+
 # [1.28.0](https://github.com/martynvdijke/LEDit/compare/v1.27.0...v1.28.0) (2026-08-23)
 
 
