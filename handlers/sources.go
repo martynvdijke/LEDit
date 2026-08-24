@@ -68,7 +68,7 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
 		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
 		WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
-		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().Only(c.Request.Context())
+		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().Only(c.Request.Context())
 	if err != nil || settings == nil {
 		return opts
 	}
@@ -158,6 +158,34 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	digests, _ := settings.Edges.AiDigestsOrErr()
 	for _, d := range digests {
 		add("aidigest", d.ID, "AI: "+d.Name)
+	}
+	transits, _ := settings.Edges.TransitsOrErr()
+	for _, t := range transits {
+		add("transit", t.ID, "Transit #"+strconv.Itoa(t.ID))
+	}
+	uptimes, _ := settings.Edges.UptimesOrErr()
+	for _, u := range uptimes {
+		add("uptime", u.ID, "Uptime #"+strconv.Itoa(u.ID))
+	}
+	piholes, _ := settings.Edges.PiholesOrErr()
+	for _, p := range piholes {
+		add("pihole", p.ID, "Pi-hole #"+strconv.Itoa(p.ID))
+	}
+	githubs, _ := settings.Edges.GithubsOrErr()
+	for _, g := range githubs {
+		add("github", g.ID, "GitHub #"+strconv.Itoa(g.ID))
+	}
+	sportsItems, _ := settings.Edges.SportsOrErr()
+	for _, sp := range sportsItems {
+		add("sports", sp.ID, "Sports #"+strconv.Itoa(sp.ID))
+	}
+	sunmoons, _ := settings.Edges.SunmoonsOrErr()
+	for _, sm := range sunmoons {
+		add("sunmoon", sm.ID, "Sun/Moon #"+strconv.Itoa(sm.ID))
+	}
+	jellyfins, _ := settings.Edges.JellyfinsOrErr()
+	for _, jf := range jellyfins {
+		add("jellyfin", jf.ID, "Jellyfin #"+strconv.Itoa(jf.ID))
 	}
 	return opts
 }
@@ -303,6 +331,41 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 			Config:   aiCfg,
 		}
 		idx.names[key("aidigest", d.ID)] = "AI: " + d.Name
+	}
+	transits, _ := settings.Edges.TransitsOrErr()
+	for _, t := range transits {
+		idx.byKey[key("transit", t.ID)] = &datasource.TransitDS{Token: t.Token, URL: t.URL}
+		idx.names[key("transit", t.ID)] = "Transit"
+	}
+	uptimes, _ := settings.Edges.UptimesOrErr()
+	for _, u := range uptimes {
+		idx.byKey[key("uptime", u.ID)] = &datasource.UptimeDS{URL: u.URL, Config: u.Config}
+		idx.names[key("uptime", u.ID)] = "Uptime"
+	}
+	piholes, _ := settings.Edges.PiholesOrErr()
+	for _, p := range piholes {
+		idx.byKey[key("pihole", p.ID)] = &datasource.PiHoleDS{Token: p.Token, URL: p.URL}
+		idx.names[key("pihole", p.ID)] = "Pi-hole"
+	}
+	githubs, _ := settings.Edges.GithubsOrErr()
+	for _, g := range githubs {
+		idx.byKey[key("github", g.ID)] = &datasource.GitHubDS{Token: g.Token, URL: g.URL}
+		idx.names[key("github", g.ID)] = "GitHub"
+	}
+	sportsItems, _ := settings.Edges.SportsOrErr()
+	for _, sp := range sportsItems {
+		idx.byKey[key("sports", sp.ID)] = &datasource.SportsDS{Token: sp.Token, URL: sp.URL}
+		idx.names[key("sports", sp.ID)] = "Sports"
+	}
+	sunmoons, _ := settings.Edges.SunmoonsOrErr()
+	for _, sm := range sunmoons {
+		idx.byKey[key("sunmoon", sm.ID)] = &datasource.SunMoonDS{Token: sm.Token, URL: sm.URL}
+		idx.names[key("sunmoon", sm.ID)] = "Sun/Moon"
+	}
+	jellyfins, _ := settings.Edges.JellyfinsOrErr()
+	for _, jf := range jellyfins {
+		idx.byKey[key("jellyfin", jf.ID)] = &datasource.JellyfinDS{Token: jf.Token, URL: jf.URL}
+		idx.names[key("jellyfin", jf.ID)] = "Jellyfin"
 	}
 	return idx
 }

@@ -199,6 +199,104 @@ func init() {
 				return db.GenericAPI.UpdateOneID(id).SetToken(f["token"]).SetURL(f["url"]).SetConfig(f["config"]).Exec(ctx)
 			},
 		},
+		"transit": {
+			TypeName: "Transit",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Transit.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Transit.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Transit.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Transit.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddTransits(obj.(*ent.Transit))
+			},
+		},
+		"uptime": {
+			TypeName: "Uptime",
+			Get:      func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Uptime.Get(ctx, id) },
+			Delete:   func(db *ent.Client, ctx context.Context, id int) error { return db.Uptime.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddUptimes(obj.(*ent.Uptime))
+			},
+			CreateFields: func(db *ent.Client, ctx context.Context, f map[string]string) (any, error) {
+				return db.Uptime.Create().SetURL(f["url"]).SetConfig(f["config"]).Save(ctx)
+			},
+			UpdateFields: func(db *ent.Client, ctx context.Context, id int, f map[string]string) error {
+				return db.Uptime.UpdateOneID(id).SetURL(f["url"]).SetConfig(f["config"]).Exec(ctx)
+			},
+		},
+		"pihole": {
+			TypeName: "Pi-hole",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.PiHole.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.PiHole.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.PiHole.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.PiHole.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddPiholes(obj.(*ent.PiHole))
+			},
+		},
+		"github": {
+			TypeName: "GitHub",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.GitHub.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.GitHub.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.GitHub.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.GitHub.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddGithubs(obj.(*ent.GitHub))
+			},
+		},
+		"sports": {
+			TypeName: "Sports",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Sports.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Sports.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Sports.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Sports.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddSports(obj.(*ent.Sports))
+			},
+		},
+		"sunmoon": {
+			TypeName: "Sun/Moon",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.SunMoon.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.SunMoon.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.SunMoon.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.SunMoon.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddSunmoons(obj.(*ent.SunMoon))
+			},
+		},
+		"jellyfin": {
+			TypeName: "Jellyfin",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Jellyfin.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Jellyfin.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Jellyfin.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Jellyfin.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddJellyfins(obj.(*ent.Jellyfin))
+			},
+		},
 		"pixelart": {
 			TypeName: "Pixel Art",
 			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) {
@@ -390,7 +488,7 @@ func (s *Server) editFieldDS(c *gin.Context, endpoint string, extra gin.H) {
 	}
 	if entry.CreateFields != nil {
 		data["has_name"] = endpoint != "genericapi"
-		data["has_config"] = endpoint == "genericapi"
+		data["has_config"] = endpoint == "genericapi" || endpoint == "uptime"
 	}
 	for k, v := range extra {
 		data[k] = v

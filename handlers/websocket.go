@@ -179,6 +179,35 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 		sources = append(sources, sourceWithName{Name: "API: " + label, Source: &datasource.GenericAPIDS{Token: ga.Token, URL: ga.URL, Config: ga.Config}, cacheKey: fmt.Sprintf("genericapi:%d", ga.ID)})
 	}
 
+	transits, _ := settings.Edges.TransitsOrErr()
+	for _, t := range transits {
+		sources = append(sources, sourceWithName{Name: "Transit", Source: &datasource.TransitDS{Token: t.Token, URL: t.URL}, cacheKey: fmt.Sprintf("transit:%d", t.ID)})
+	}
+	uptimes, _ := settings.Edges.UptimesOrErr()
+	for _, u := range uptimes {
+		sources = append(sources, sourceWithName{Name: "Uptime", Source: &datasource.UptimeDS{URL: u.URL, Config: u.Config}, cacheKey: fmt.Sprintf("uptime:%d", u.ID)})
+	}
+	piholes, _ := settings.Edges.PiholesOrErr()
+	for _, p := range piholes {
+		sources = append(sources, sourceWithName{Name: "Pi-hole", Source: &datasource.PiHoleDS{Token: p.Token, URL: p.URL}, cacheKey: fmt.Sprintf("pihole:%d", p.ID)})
+	}
+	githubs, _ := settings.Edges.GithubsOrErr()
+	for _, g := range githubs {
+		sources = append(sources, sourceWithName{Name: "GitHub", Source: &datasource.GitHubDS{Token: g.Token, URL: g.URL}, cacheKey: fmt.Sprintf("github:%d", g.ID)})
+	}
+	sportsItems, _ := settings.Edges.SportsOrErr()
+	for _, sp := range sportsItems {
+		sources = append(sources, sourceWithName{Name: "Sports", Source: &datasource.SportsDS{Token: sp.Token, URL: sp.URL}, cacheKey: fmt.Sprintf("sports:%d", sp.ID)})
+	}
+	sunmoons, _ := settings.Edges.SunmoonsOrErr()
+	for _, sm := range sunmoons {
+		sources = append(sources, sourceWithName{Name: "Sun/Moon", Source: &datasource.SunMoonDS{Token: sm.Token, URL: sm.URL}, cacheKey: fmt.Sprintf("sunmoon:%d", sm.ID)})
+	}
+	jellyfins, _ := settings.Edges.JellyfinsOrErr()
+	for _, jf := range jellyfins {
+		sources = append(sources, sourceWithName{Name: "Jellyfin", Source: &datasource.JellyfinDS{Token: jf.Token, URL: jf.URL}, cacheKey: fmt.Sprintf("jellyfin:%d", jf.ID)})
+	}
+
 	// Enabled countdown timers stream as "Countdown: <name>".
 	countdowns, _ := settings.Edges.CountdownsOrErr()
 	for _, cd := range countdowns {
@@ -295,7 +324,7 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().Only(c.Request.Context())
+	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().Only(c.Request.Context())
 	if err != nil {
 		slog.Error("Failed to load settings for WebSocket", "error", err, "source", "websocket")
 		return
@@ -349,7 +378,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		}
 	}()
 
-	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().Only(c.Request.Context())
+	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().Only(c.Request.Context())
 	if err != nil {
 		slog.Error("Failed to load settings for device WebSocket", "error", err, "source", "websocket", "device", device.Name)
 		return
@@ -428,7 +457,7 @@ func (h *WSHub) HandleDevicePreviewWS(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().Only(c.Request.Context())
+	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().Only(c.Request.Context())
 	if err != nil {
 		slog.Error("Failed to load settings for device preview WebSocket", "error", err, "source", "websocket", "device", device.Name)
 		return

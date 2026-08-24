@@ -20,26 +20,33 @@ import (
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
+	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
 	"ledit/ent/matrixlayout"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/sports"
 	"ledit/ent/stock"
+	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
+	"ledit/ent/uptime"
 	"ledit/ent/video"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
@@ -123,26 +130,33 @@ func checkColumn(t, c string) error {
 			f1.Table:               f1.ValidColumn,
 			generalsettings.Table:  generalsettings.ValidColumn,
 			genericapi.Table:       genericapi.ValidColumn,
+			github.Table:           github.ValidColumn,
 			googlecalendar.Table:   googlecalendar.ValidColumn,
 			homeassistant.Table:    homeassistant.ValidColumn,
 			image.Table:            image.ValidColumn,
+			jellyfin.Table:         jellyfin.ValidColumn,
 			logentry.Table:         logentry.ValidColumn,
 			logsettings.Table:      logsettings.ValidColumn,
 			mqttsettings.Table:     mqttsettings.ValidColumn,
 			matrixlayout.Table:     matrixlayout.ValidColumn,
 			newsfeed.Table:         newsfeed.ValidColumn,
 			notification.Table:     notification.ValidColumn,
+			pihole.Table:           pihole.ValidColumn,
 			pixelart.Table:         pixelart.ValidColumn,
 			playlist.Table:         playlist.ValidColumn,
 			radarr.Table:           radarr.ValidColumn,
 			rssfeed.Table:          rssfeed.ValidColumn,
 			schedule.Table:         schedule.ValidColumn,
 			sonarr.Table:           sonarr.ValidColumn,
+			sports.Table:           sports.ValidColumn,
 			stock.Table:            stock.ValidColumn,
+			sunmoon.Table:          sunmoon.ValidColumn,
 			telegramsettings.Table: telegramsettings.ValidColumn,
 			textslide.Table:        textslide.ValidColumn,
+			transit.Table:          transit.ValidColumn,
 			umamisettings.Table:    umamisettings.ValidColumn,
 			untappd.Table:          untappd.ValidColumn,
+			uptime.Table:           uptime.ValidColumn,
 			video.Table:            video.ValidColumn,
 			weather.Table:          weather.ValidColumn,
 			webhooksettings.Table:  webhooksettings.ValidColumn,

@@ -127,7 +127,7 @@ func (s *Server) IndexHandler(c *gin.Context) {
 }
 
 func (s *Server) AdminDashboard(c *gin.Context) {
-	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithEmailSettings().WithAiSettings().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithPixelArts().Only(s.Ctx)
+	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithEmailSettings().WithAiSettings().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithPixelArts().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().Only(s.Ctx)
 
 	stats := gin.H{
 		"has_settings": err == nil,
@@ -153,6 +153,13 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		countdownItems, _ := settings.Edges.CountdownsOrErr()
 		aiDigestItems, _ := settings.Edges.AiDigestsOrErr()
 		pixelArtItems, _ := settings.Edges.PixelArtsOrErr()
+		transitItems, _ := settings.Edges.TransitsOrErr()
+		uptimeItems, _ := settings.Edges.UptimesOrErr()
+		piholeItems, _ := settings.Edges.PiholesOrErr()
+		githubItems, _ := settings.Edges.GithubsOrErr()
+		sportsItems, _ := settings.Edges.SportsOrErr()
+		sunMoonItems, _ := settings.Edges.SunmoonsOrErr()
+		jellyfinItems, _ := settings.Edges.JellyfinsOrErr()
 
 		type sourceEntry struct {
 			ID       int
@@ -230,6 +237,27 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 			}
 			sources = append(sources, sourceEntry{ID: pa.ID, Type: "Pixel Art", Endpoint: "pixelart", Name: pa.Name})
 		}
+		for _, t := range transitItems {
+			sources = append(sources, sourceEntry{ID: t.ID, Type: "Transit", Endpoint: "transit", Token: t.Token, URL: t.URL})
+		}
+		for _, u := range uptimeItems {
+			sources = append(sources, sourceEntry{ID: u.ID, Type: "Uptime", Endpoint: "uptime", URL: u.URL, Name: u.Config})
+		}
+		for _, p := range piholeItems {
+			sources = append(sources, sourceEntry{ID: p.ID, Type: "Pi-hole", Endpoint: "pihole", Token: p.Token, URL: p.URL})
+		}
+		for _, g := range githubItems {
+			sources = append(sources, sourceEntry{ID: g.ID, Type: "GitHub", Endpoint: "github", Token: g.Token, URL: g.URL})
+		}
+		for _, sp := range sportsItems {
+			sources = append(sources, sourceEntry{ID: sp.ID, Type: "Sports", Endpoint: "sports", Token: sp.Token, URL: sp.URL})
+		}
+		for _, sm := range sunMoonItems {
+			sources = append(sources, sourceEntry{ID: sm.ID, Type: "Sun/Moon", Endpoint: "sunmoon", Token: sm.Token, URL: sm.URL})
+		}
+		for _, jf := range jellyfinItems {
+			sources = append(sources, sourceEntry{ID: jf.ID, Type: "Jellyfin", Endpoint: "jellyfin", Token: jf.Token, URL: jf.URL})
+		}
 
 		// Attach live health status (from the in-memory registry) to each
 		// source and compute fleet-wide summary stats.
@@ -284,12 +312,19 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 			"countdown_count":         len(countdownItems),
 			"aidigest_count":          len(aiDigestItems),
 			"pixelart_count":          len(pixelArtItems),
+			"transit_count":           len(transitItems),
+			"uptime_count":            len(uptimeItems),
+			"pihole_count":            len(piholeItems),
+			"github_count":            len(githubItems),
+			"sports_count":            len(sportsItems),
+			"sunmoon_count":           len(sunMoonItems),
+			"jellyfin_count":          len(jellyfinItems),
 			"health_green":            healthGreen,
 			"health_yellow":           healthYellow,
 			"health_red":              healthRed,
 			"avg_ewma_ms":             avgEWMA,
 			"cache_hit_ratio_percent": cacheRatio,
-			"total_sources":           len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems) + len(countdownItems) + len(aiDigestItems) + len(pixelArtItems),
+			"total_sources":           len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems) + len(countdownItems) + len(aiDigestItems) + len(pixelArtItems) + len(transitItems) + len(uptimeItems) + len(piholeItems) + len(githubItems) + len(sportsItems) + len(sunMoonItems) + len(jellyfinItems),
 		}
 	}
 	stats["pinned_by"] = GlobalFeed.Status()["pinned_by"]

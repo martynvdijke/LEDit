@@ -102,9 +102,23 @@ type GeneralSettingsEdges struct {
 	Mqttsettings []*MQTTSettings `json:"mqttsettings,omitempty"`
 	// Telegramsettings holds the value of the telegramsettings edge.
 	Telegramsettings []*TelegramSettings `json:"telegramsettings,omitempty"`
+	// Transits holds the value of the transits edge.
+	Transits []*Transit `json:"transits,omitempty"`
+	// Uptimes holds the value of the uptimes edge.
+	Uptimes []*Uptime `json:"uptimes,omitempty"`
+	// Piholes holds the value of the piholes edge.
+	Piholes []*PiHole `json:"piholes,omitempty"`
+	// Githubs holds the value of the githubs edge.
+	Githubs []*GitHub `json:"githubs,omitempty"`
+	// Sports holds the value of the sports edge.
+	Sports []*Sports `json:"sports,omitempty"`
+	// Sunmoons holds the value of the sunmoons edge.
+	Sunmoons []*SunMoon `json:"sunmoons,omitempty"`
+	// Jellyfins holds the value of the jellyfins edge.
+	Jellyfins []*Jellyfin `json:"jellyfins,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [31]bool
+	loadedTypes [38]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -386,6 +400,69 @@ func (e GeneralSettingsEdges) TelegramsettingsOrErr() ([]*TelegramSettings, erro
 	return nil, &NotLoadedError{edge: "telegramsettings"}
 }
 
+// TransitsOrErr returns the Transits value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) TransitsOrErr() ([]*Transit, error) {
+	if e.loadedTypes[31] {
+		return e.Transits, nil
+	}
+	return nil, &NotLoadedError{edge: "transits"}
+}
+
+// UptimesOrErr returns the Uptimes value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) UptimesOrErr() ([]*Uptime, error) {
+	if e.loadedTypes[32] {
+		return e.Uptimes, nil
+	}
+	return nil, &NotLoadedError{edge: "uptimes"}
+}
+
+// PiholesOrErr returns the Piholes value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) PiholesOrErr() ([]*PiHole, error) {
+	if e.loadedTypes[33] {
+		return e.Piholes, nil
+	}
+	return nil, &NotLoadedError{edge: "piholes"}
+}
+
+// GithubsOrErr returns the Githubs value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) GithubsOrErr() ([]*GitHub, error) {
+	if e.loadedTypes[34] {
+		return e.Githubs, nil
+	}
+	return nil, &NotLoadedError{edge: "githubs"}
+}
+
+// SportsOrErr returns the Sports value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) SportsOrErr() ([]*Sports, error) {
+	if e.loadedTypes[35] {
+		return e.Sports, nil
+	}
+	return nil, &NotLoadedError{edge: "sports"}
+}
+
+// SunmoonsOrErr returns the Sunmoons value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) SunmoonsOrErr() ([]*SunMoon, error) {
+	if e.loadedTypes[36] {
+		return e.Sunmoons, nil
+	}
+	return nil, &NotLoadedError{edge: "sunmoons"}
+}
+
+// JellyfinsOrErr returns the Jellyfins value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) JellyfinsOrErr() ([]*Jellyfin, error) {
+	if e.loadedTypes[37] {
+		return e.Jellyfins, nil
+	}
+	return nil, &NotLoadedError{edge: "jellyfins"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -634,6 +711,41 @@ func (_m *GeneralSettings) QueryMqttsettings() *MQTTSettingsQuery {
 // QueryTelegramsettings queries the "telegramsettings" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryTelegramsettings() *TelegramSettingsQuery {
 	return NewGeneralSettingsClient(_m.config).QueryTelegramsettings(_m)
+}
+
+// QueryTransits queries the "transits" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryTransits() *TransitQuery {
+	return NewGeneralSettingsClient(_m.config).QueryTransits(_m)
+}
+
+// QueryUptimes queries the "uptimes" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryUptimes() *UptimeQuery {
+	return NewGeneralSettingsClient(_m.config).QueryUptimes(_m)
+}
+
+// QueryPiholes queries the "piholes" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryPiholes() *PiHoleQuery {
+	return NewGeneralSettingsClient(_m.config).QueryPiholes(_m)
+}
+
+// QueryGithubs queries the "githubs" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryGithubs() *GitHubQuery {
+	return NewGeneralSettingsClient(_m.config).QueryGithubs(_m)
+}
+
+// QuerySports queries the "sports" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QuerySports() *SportsQuery {
+	return NewGeneralSettingsClient(_m.config).QuerySports(_m)
+}
+
+// QuerySunmoons queries the "sunmoons" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QuerySunmoons() *SunMoonQuery {
+	return NewGeneralSettingsClient(_m.config).QuerySunmoons(_m)
+}
+
+// QueryJellyfins queries the "jellyfins" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryJellyfins() *JellyfinQuery {
+	return NewGeneralSettingsClient(_m.config).QueryJellyfins(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

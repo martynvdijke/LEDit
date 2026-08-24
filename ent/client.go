@@ -25,26 +25,33 @@ import (
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
+	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
 	"ledit/ent/matrixlayout"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/sports"
 	"ledit/ent/stock"
+	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
+	"ledit/ent/uptime"
 	"ledit/ent/video"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
@@ -88,12 +95,16 @@ type Client struct {
 	GeneralSettings *GeneralSettingsClient
 	// GenericAPI is the client for interacting with the GenericAPI builders.
 	GenericAPI *GenericAPIClient
+	// GitHub is the client for interacting with the GitHub builders.
+	GitHub *GitHubClient
 	// GoogleCalendar is the client for interacting with the GoogleCalendar builders.
 	GoogleCalendar *GoogleCalendarClient
 	// HomeAssistant is the client for interacting with the HomeAssistant builders.
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// Jellyfin is the client for interacting with the Jellyfin builders.
+	Jellyfin *JellyfinClient
 	// LogEntry is the client for interacting with the LogEntry builders.
 	LogEntry *LogEntryClient
 	// LogSettings is the client for interacting with the LogSettings builders.
@@ -106,6 +117,8 @@ type Client struct {
 	NewsFeed *NewsFeedClient
 	// Notification is the client for interacting with the Notification builders.
 	Notification *NotificationClient
+	// PiHole is the client for interacting with the PiHole builders.
+	PiHole *PiHoleClient
 	// PixelArt is the client for interacting with the PixelArt builders.
 	PixelArt *PixelArtClient
 	// Playlist is the client for interacting with the Playlist builders.
@@ -118,16 +131,24 @@ type Client struct {
 	Schedule *ScheduleClient
 	// Sonarr is the client for interacting with the Sonarr builders.
 	Sonarr *SonarrClient
+	// Sports is the client for interacting with the Sports builders.
+	Sports *SportsClient
 	// Stock is the client for interacting with the Stock builders.
 	Stock *StockClient
+	// SunMoon is the client for interacting with the SunMoon builders.
+	SunMoon *SunMoonClient
 	// TelegramSettings is the client for interacting with the TelegramSettings builders.
 	TelegramSettings *TelegramSettingsClient
 	// TextSlide is the client for interacting with the TextSlide builders.
 	TextSlide *TextSlideClient
+	// Transit is the client for interacting with the Transit builders.
+	Transit *TransitClient
 	// UmamiSettings is the client for interacting with the UmamiSettings builders.
 	UmamiSettings *UmamiSettingsClient
 	// Untappd is the client for interacting with the Untappd builders.
 	Untappd *UntappdClient
+	// Uptime is the client for interacting with the Uptime builders.
+	Uptime *UptimeClient
 	// Video is the client for interacting with the Video builders.
 	Video *VideoClient
 	// Weather is the client for interacting with the Weather builders.
@@ -159,26 +180,33 @@ func (c *Client) init() {
 	c.F1 = NewF1Client(c.config)
 	c.GeneralSettings = NewGeneralSettingsClient(c.config)
 	c.GenericAPI = NewGenericAPIClient(c.config)
+	c.GitHub = NewGitHubClient(c.config)
 	c.GoogleCalendar = NewGoogleCalendarClient(c.config)
 	c.HomeAssistant = NewHomeAssistantClient(c.config)
 	c.Image = NewImageClient(c.config)
+	c.Jellyfin = NewJellyfinClient(c.config)
 	c.LogEntry = NewLogEntryClient(c.config)
 	c.LogSettings = NewLogSettingsClient(c.config)
 	c.MQTTSettings = NewMQTTSettingsClient(c.config)
 	c.MatrixLayout = NewMatrixLayoutClient(c.config)
 	c.NewsFeed = NewNewsFeedClient(c.config)
 	c.Notification = NewNotificationClient(c.config)
+	c.PiHole = NewPiHoleClient(c.config)
 	c.PixelArt = NewPixelArtClient(c.config)
 	c.Playlist = NewPlaylistClient(c.config)
 	c.Radarr = NewRadarrClient(c.config)
 	c.RssFeed = NewRssFeedClient(c.config)
 	c.Schedule = NewScheduleClient(c.config)
 	c.Sonarr = NewSonarrClient(c.config)
+	c.Sports = NewSportsClient(c.config)
 	c.Stock = NewStockClient(c.config)
+	c.SunMoon = NewSunMoonClient(c.config)
 	c.TelegramSettings = NewTelegramSettingsClient(c.config)
 	c.TextSlide = NewTextSlideClient(c.config)
+	c.Transit = NewTransitClient(c.config)
 	c.UmamiSettings = NewUmamiSettingsClient(c.config)
 	c.Untappd = NewUntappdClient(c.config)
+	c.Uptime = NewUptimeClient(c.config)
 	c.Video = NewVideoClient(c.config)
 	c.Weather = NewWeatherClient(c.config)
 	c.WebhookSettings = NewWebhookSettingsClient(c.config)
@@ -288,26 +316,33 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		F1:               NewF1Client(cfg),
 		GeneralSettings:  NewGeneralSettingsClient(cfg),
 		GenericAPI:       NewGenericAPIClient(cfg),
+		GitHub:           NewGitHubClient(cfg),
 		GoogleCalendar:   NewGoogleCalendarClient(cfg),
 		HomeAssistant:    NewHomeAssistantClient(cfg),
 		Image:            NewImageClient(cfg),
+		Jellyfin:         NewJellyfinClient(cfg),
 		LogEntry:         NewLogEntryClient(cfg),
 		LogSettings:      NewLogSettingsClient(cfg),
 		MQTTSettings:     NewMQTTSettingsClient(cfg),
 		MatrixLayout:     NewMatrixLayoutClient(cfg),
 		NewsFeed:         NewNewsFeedClient(cfg),
 		Notification:     NewNotificationClient(cfg),
+		PiHole:           NewPiHoleClient(cfg),
 		PixelArt:         NewPixelArtClient(cfg),
 		Playlist:         NewPlaylistClient(cfg),
 		Radarr:           NewRadarrClient(cfg),
 		RssFeed:          NewRssFeedClient(cfg),
 		Schedule:         NewScheduleClient(cfg),
 		Sonarr:           NewSonarrClient(cfg),
+		Sports:           NewSportsClient(cfg),
 		Stock:            NewStockClient(cfg),
+		SunMoon:          NewSunMoonClient(cfg),
 		TelegramSettings: NewTelegramSettingsClient(cfg),
 		TextSlide:        NewTextSlideClient(cfg),
+		Transit:          NewTransitClient(cfg),
 		UmamiSettings:    NewUmamiSettingsClient(cfg),
 		Untappd:          NewUntappdClient(cfg),
+		Uptime:           NewUptimeClient(cfg),
 		Video:            NewVideoClient(cfg),
 		Weather:          NewWeatherClient(cfg),
 		WebhookSettings:  NewWebhookSettingsClient(cfg),
@@ -344,26 +379,33 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		F1:               NewF1Client(cfg),
 		GeneralSettings:  NewGeneralSettingsClient(cfg),
 		GenericAPI:       NewGenericAPIClient(cfg),
+		GitHub:           NewGitHubClient(cfg),
 		GoogleCalendar:   NewGoogleCalendarClient(cfg),
 		HomeAssistant:    NewHomeAssistantClient(cfg),
 		Image:            NewImageClient(cfg),
+		Jellyfin:         NewJellyfinClient(cfg),
 		LogEntry:         NewLogEntryClient(cfg),
 		LogSettings:      NewLogSettingsClient(cfg),
 		MQTTSettings:     NewMQTTSettingsClient(cfg),
 		MatrixLayout:     NewMatrixLayoutClient(cfg),
 		NewsFeed:         NewNewsFeedClient(cfg),
 		Notification:     NewNotificationClient(cfg),
+		PiHole:           NewPiHoleClient(cfg),
 		PixelArt:         NewPixelArtClient(cfg),
 		Playlist:         NewPlaylistClient(cfg),
 		Radarr:           NewRadarrClient(cfg),
 		RssFeed:          NewRssFeedClient(cfg),
 		Schedule:         NewScheduleClient(cfg),
 		Sonarr:           NewSonarrClient(cfg),
+		Sports:           NewSportsClient(cfg),
 		Stock:            NewStockClient(cfg),
+		SunMoon:          NewSunMoonClient(cfg),
 		TelegramSettings: NewTelegramSettingsClient(cfg),
 		TextSlide:        NewTextSlideClient(cfg),
+		Transit:          NewTransitClient(cfg),
 		UmamiSettings:    NewUmamiSettingsClient(cfg),
 		Untappd:          NewUntappdClient(cfg),
+		Uptime:           NewUptimeClient(cfg),
 		Video:            NewVideoClient(cfg),
 		Weather:          NewWeatherClient(cfg),
 		WebhookSettings:  NewWebhookSettingsClient(cfg),
@@ -398,11 +440,12 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
 		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.DisplayRule,
-		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GoogleCalendar,
-		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MQTTSettings,
-		c.MatrixLayout, c.NewsFeed, c.Notification, c.PixelArt, c.Playlist, c.Radarr,
-		c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TelegramSettings, c.TextSlide,
-		c.UmamiSettings, c.Untappd, c.Video, c.Weather, c.WebhookSettings,
+		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GitHub,
+		c.GoogleCalendar, c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry,
+		c.LogSettings, c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
+		c.PiHole, c.PixelArt, c.Playlist, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr,
+		c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide, c.Transit,
+		c.UmamiSettings, c.Untappd, c.Uptime, c.Video, c.Weather, c.WebhookSettings,
 	} {
 		n.Use(hooks...)
 	}
@@ -414,11 +457,12 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
 		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.DisplayRule,
-		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GoogleCalendar,
-		c.HomeAssistant, c.Image, c.LogEntry, c.LogSettings, c.MQTTSettings,
-		c.MatrixLayout, c.NewsFeed, c.Notification, c.PixelArt, c.Playlist, c.Radarr,
-		c.RssFeed, c.Schedule, c.Sonarr, c.Stock, c.TelegramSettings, c.TextSlide,
-		c.UmamiSettings, c.Untappd, c.Video, c.Weather, c.WebhookSettings,
+		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GitHub,
+		c.GoogleCalendar, c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry,
+		c.LogSettings, c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
+		c.PiHole, c.PixelArt, c.Playlist, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr,
+		c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide, c.Transit,
+		c.UmamiSettings, c.Untappd, c.Uptime, c.Video, c.Weather, c.WebhookSettings,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -455,12 +499,16 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.GeneralSettings.mutate(ctx, m)
 	case *GenericAPIMutation:
 		return c.GenericAPI.mutate(ctx, m)
+	case *GitHubMutation:
+		return c.GitHub.mutate(ctx, m)
 	case *GoogleCalendarMutation:
 		return c.GoogleCalendar.mutate(ctx, m)
 	case *HomeAssistantMutation:
 		return c.HomeAssistant.mutate(ctx, m)
 	case *ImageMutation:
 		return c.Image.mutate(ctx, m)
+	case *JellyfinMutation:
+		return c.Jellyfin.mutate(ctx, m)
 	case *LogEntryMutation:
 		return c.LogEntry.mutate(ctx, m)
 	case *LogSettingsMutation:
@@ -473,6 +521,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.NewsFeed.mutate(ctx, m)
 	case *NotificationMutation:
 		return c.Notification.mutate(ctx, m)
+	case *PiHoleMutation:
+		return c.PiHole.mutate(ctx, m)
 	case *PixelArtMutation:
 		return c.PixelArt.mutate(ctx, m)
 	case *PlaylistMutation:
@@ -485,16 +535,24 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Schedule.mutate(ctx, m)
 	case *SonarrMutation:
 		return c.Sonarr.mutate(ctx, m)
+	case *SportsMutation:
+		return c.Sports.mutate(ctx, m)
 	case *StockMutation:
 		return c.Stock.mutate(ctx, m)
+	case *SunMoonMutation:
+		return c.SunMoon.mutate(ctx, m)
 	case *TelegramSettingsMutation:
 		return c.TelegramSettings.mutate(ctx, m)
 	case *TextSlideMutation:
 		return c.TextSlide.mutate(ctx, m)
+	case *TransitMutation:
+		return c.Transit.mutate(ctx, m)
 	case *UmamiSettingsMutation:
 		return c.UmamiSettings.mutate(ctx, m)
 	case *UntappdMutation:
 		return c.Untappd.mutate(ctx, m)
+	case *UptimeMutation:
+		return c.Uptime.mutate(ctx, m)
 	case *VideoMutation:
 		return c.Video.mutate(ctx, m)
 	case *WeatherMutation:
@@ -2706,6 +2764,118 @@ func (c *GeneralSettingsClient) QueryTelegramsettings(_m *GeneralSettings) *Tele
 	return query
 }
 
+// QueryTransits queries the transits edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryTransits(_m *GeneralSettings) *TransitQuery {
+	query := (&TransitClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(transit.Table, transit.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.TransitsTable, generalsettings.TransitsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUptimes queries the uptimes edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryUptimes(_m *GeneralSettings) *UptimeQuery {
+	query := (&UptimeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(uptime.Table, uptime.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.UptimesTable, generalsettings.UptimesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPiholes queries the piholes edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryPiholes(_m *GeneralSettings) *PiHoleQuery {
+	query := (&PiHoleClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(pihole.Table, pihole.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.PiholesTable, generalsettings.PiholesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGithubs queries the githubs edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryGithubs(_m *GeneralSettings) *GitHubQuery {
+	query := (&GitHubClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(github.Table, github.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.GithubsTable, generalsettings.GithubsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySports queries the sports edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QuerySports(_m *GeneralSettings) *SportsQuery {
+	query := (&SportsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(sports.Table, sports.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.SportsTable, generalsettings.SportsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySunmoons queries the sunmoons edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QuerySunmoons(_m *GeneralSettings) *SunMoonQuery {
+	query := (&SunMoonClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(sunmoon.Table, sunmoon.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.SunmoonsTable, generalsettings.SunmoonsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryJellyfins queries the jellyfins edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryJellyfins(_m *GeneralSettings) *JellyfinQuery {
+	query := (&JellyfinClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(jellyfin.Table, jellyfin.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.JellyfinsTable, generalsettings.JellyfinsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GeneralSettingsClient) Hooks() []Hook {
 	return c.hooks.GeneralSettings
@@ -2861,6 +3031,139 @@ func (c *GenericAPIClient) mutate(ctx context.Context, m *GenericAPIMutation) (V
 		return (&GenericAPIDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown GenericAPI mutation op: %q", m.Op())
+	}
+}
+
+// GitHubClient is a client for the GitHub schema.
+type GitHubClient struct {
+	config
+}
+
+// NewGitHubClient returns a client for the GitHub from the given config.
+func NewGitHubClient(c config) *GitHubClient {
+	return &GitHubClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `github.Hooks(f(g(h())))`.
+func (c *GitHubClient) Use(hooks ...Hook) {
+	c.hooks.GitHub = append(c.hooks.GitHub, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `github.Intercept(f(g(h())))`.
+func (c *GitHubClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GitHub = append(c.inters.GitHub, interceptors...)
+}
+
+// Create returns a builder for creating a GitHub entity.
+func (c *GitHubClient) Create() *GitHubCreate {
+	mutation := newGitHubMutation(c.config, OpCreate)
+	return &GitHubCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GitHub entities.
+func (c *GitHubClient) CreateBulk(builders ...*GitHubCreate) *GitHubCreateBulk {
+	return &GitHubCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GitHubClient) MapCreateBulk(slice any, setFunc func(*GitHubCreate, int)) *GitHubCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GitHubCreateBulk{err: fmt.Errorf("calling to GitHubClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GitHubCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GitHubCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GitHub.
+func (c *GitHubClient) Update() *GitHubUpdate {
+	mutation := newGitHubMutation(c.config, OpUpdate)
+	return &GitHubUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GitHubClient) UpdateOne(_m *GitHub) *GitHubUpdateOne {
+	mutation := newGitHubMutation(c.config, OpUpdateOne, withGitHub(_m))
+	return &GitHubUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GitHubClient) UpdateOneID(id int) *GitHubUpdateOne {
+	mutation := newGitHubMutation(c.config, OpUpdateOne, withGitHubID(id))
+	return &GitHubUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GitHub.
+func (c *GitHubClient) Delete() *GitHubDelete {
+	mutation := newGitHubMutation(c.config, OpDelete)
+	return &GitHubDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GitHubClient) DeleteOne(_m *GitHub) *GitHubDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GitHubClient) DeleteOneID(id int) *GitHubDeleteOne {
+	builder := c.Delete().Where(github.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GitHubDeleteOne{builder}
+}
+
+// Query returns a query builder for GitHub.
+func (c *GitHubClient) Query() *GitHubQuery {
+	return &GitHubQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGitHub},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GitHub entity by its id.
+func (c *GitHubClient) Get(ctx context.Context, id int) (*GitHub, error) {
+	return c.Query().Where(github.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GitHubClient) GetX(ctx context.Context, id int) *GitHub {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *GitHubClient) Hooks() []Hook {
+	return c.hooks.GitHub
+}
+
+// Interceptors returns the client interceptors.
+func (c *GitHubClient) Interceptors() []Interceptor {
+	return c.inters.GitHub
+}
+
+func (c *GitHubClient) mutate(ctx context.Context, m *GitHubMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GitHubCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GitHubUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GitHubUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GitHubDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GitHub mutation op: %q", m.Op())
 	}
 }
 
@@ -3260,6 +3563,139 @@ func (c *ImageClient) mutate(ctx context.Context, m *ImageMutation) (Value, erro
 		return (&ImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Image mutation op: %q", m.Op())
+	}
+}
+
+// JellyfinClient is a client for the Jellyfin schema.
+type JellyfinClient struct {
+	config
+}
+
+// NewJellyfinClient returns a client for the Jellyfin from the given config.
+func NewJellyfinClient(c config) *JellyfinClient {
+	return &JellyfinClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `jellyfin.Hooks(f(g(h())))`.
+func (c *JellyfinClient) Use(hooks ...Hook) {
+	c.hooks.Jellyfin = append(c.hooks.Jellyfin, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `jellyfin.Intercept(f(g(h())))`.
+func (c *JellyfinClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Jellyfin = append(c.inters.Jellyfin, interceptors...)
+}
+
+// Create returns a builder for creating a Jellyfin entity.
+func (c *JellyfinClient) Create() *JellyfinCreate {
+	mutation := newJellyfinMutation(c.config, OpCreate)
+	return &JellyfinCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Jellyfin entities.
+func (c *JellyfinClient) CreateBulk(builders ...*JellyfinCreate) *JellyfinCreateBulk {
+	return &JellyfinCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *JellyfinClient) MapCreateBulk(slice any, setFunc func(*JellyfinCreate, int)) *JellyfinCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &JellyfinCreateBulk{err: fmt.Errorf("calling to JellyfinClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*JellyfinCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &JellyfinCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Jellyfin.
+func (c *JellyfinClient) Update() *JellyfinUpdate {
+	mutation := newJellyfinMutation(c.config, OpUpdate)
+	return &JellyfinUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *JellyfinClient) UpdateOne(_m *Jellyfin) *JellyfinUpdateOne {
+	mutation := newJellyfinMutation(c.config, OpUpdateOne, withJellyfin(_m))
+	return &JellyfinUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *JellyfinClient) UpdateOneID(id int) *JellyfinUpdateOne {
+	mutation := newJellyfinMutation(c.config, OpUpdateOne, withJellyfinID(id))
+	return &JellyfinUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Jellyfin.
+func (c *JellyfinClient) Delete() *JellyfinDelete {
+	mutation := newJellyfinMutation(c.config, OpDelete)
+	return &JellyfinDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *JellyfinClient) DeleteOne(_m *Jellyfin) *JellyfinDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *JellyfinClient) DeleteOneID(id int) *JellyfinDeleteOne {
+	builder := c.Delete().Where(jellyfin.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &JellyfinDeleteOne{builder}
+}
+
+// Query returns a query builder for Jellyfin.
+func (c *JellyfinClient) Query() *JellyfinQuery {
+	return &JellyfinQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeJellyfin},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Jellyfin entity by its id.
+func (c *JellyfinClient) Get(ctx context.Context, id int) (*Jellyfin, error) {
+	return c.Query().Where(jellyfin.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *JellyfinClient) GetX(ctx context.Context, id int) *Jellyfin {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *JellyfinClient) Hooks() []Hook {
+	return c.hooks.Jellyfin
+}
+
+// Interceptors returns the client interceptors.
+func (c *JellyfinClient) Interceptors() []Interceptor {
+	return c.inters.Jellyfin
+}
+
+func (c *JellyfinClient) mutate(ctx context.Context, m *JellyfinMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&JellyfinCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&JellyfinUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&JellyfinUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&JellyfinDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Jellyfin mutation op: %q", m.Op())
 	}
 }
 
@@ -4061,6 +4497,139 @@ func (c *NotificationClient) mutate(ctx context.Context, m *NotificationMutation
 	}
 }
 
+// PiHoleClient is a client for the PiHole schema.
+type PiHoleClient struct {
+	config
+}
+
+// NewPiHoleClient returns a client for the PiHole from the given config.
+func NewPiHoleClient(c config) *PiHoleClient {
+	return &PiHoleClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `pihole.Hooks(f(g(h())))`.
+func (c *PiHoleClient) Use(hooks ...Hook) {
+	c.hooks.PiHole = append(c.hooks.PiHole, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `pihole.Intercept(f(g(h())))`.
+func (c *PiHoleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PiHole = append(c.inters.PiHole, interceptors...)
+}
+
+// Create returns a builder for creating a PiHole entity.
+func (c *PiHoleClient) Create() *PiHoleCreate {
+	mutation := newPiHoleMutation(c.config, OpCreate)
+	return &PiHoleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PiHole entities.
+func (c *PiHoleClient) CreateBulk(builders ...*PiHoleCreate) *PiHoleCreateBulk {
+	return &PiHoleCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PiHoleClient) MapCreateBulk(slice any, setFunc func(*PiHoleCreate, int)) *PiHoleCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PiHoleCreateBulk{err: fmt.Errorf("calling to PiHoleClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PiHoleCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PiHoleCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PiHole.
+func (c *PiHoleClient) Update() *PiHoleUpdate {
+	mutation := newPiHoleMutation(c.config, OpUpdate)
+	return &PiHoleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PiHoleClient) UpdateOne(_m *PiHole) *PiHoleUpdateOne {
+	mutation := newPiHoleMutation(c.config, OpUpdateOne, withPiHole(_m))
+	return &PiHoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PiHoleClient) UpdateOneID(id int) *PiHoleUpdateOne {
+	mutation := newPiHoleMutation(c.config, OpUpdateOne, withPiHoleID(id))
+	return &PiHoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PiHole.
+func (c *PiHoleClient) Delete() *PiHoleDelete {
+	mutation := newPiHoleMutation(c.config, OpDelete)
+	return &PiHoleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PiHoleClient) DeleteOne(_m *PiHole) *PiHoleDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PiHoleClient) DeleteOneID(id int) *PiHoleDeleteOne {
+	builder := c.Delete().Where(pihole.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PiHoleDeleteOne{builder}
+}
+
+// Query returns a query builder for PiHole.
+func (c *PiHoleClient) Query() *PiHoleQuery {
+	return &PiHoleQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePiHole},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PiHole entity by its id.
+func (c *PiHoleClient) Get(ctx context.Context, id int) (*PiHole, error) {
+	return c.Query().Where(pihole.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PiHoleClient) GetX(ctx context.Context, id int) *PiHole {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *PiHoleClient) Hooks() []Hook {
+	return c.hooks.PiHole
+}
+
+// Interceptors returns the client interceptors.
+func (c *PiHoleClient) Interceptors() []Interceptor {
+	return c.inters.PiHole
+}
+
+func (c *PiHoleClient) mutate(ctx context.Context, m *PiHoleMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PiHoleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PiHoleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PiHoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PiHoleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PiHole mutation op: %q", m.Op())
+	}
+}
+
 // PixelArtClient is a client for the PixelArt schema.
 type PixelArtClient struct {
 	config
@@ -4859,6 +5428,139 @@ func (c *SonarrClient) mutate(ctx context.Context, m *SonarrMutation) (Value, er
 	}
 }
 
+// SportsClient is a client for the Sports schema.
+type SportsClient struct {
+	config
+}
+
+// NewSportsClient returns a client for the Sports from the given config.
+func NewSportsClient(c config) *SportsClient {
+	return &SportsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `sports.Hooks(f(g(h())))`.
+func (c *SportsClient) Use(hooks ...Hook) {
+	c.hooks.Sports = append(c.hooks.Sports, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `sports.Intercept(f(g(h())))`.
+func (c *SportsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Sports = append(c.inters.Sports, interceptors...)
+}
+
+// Create returns a builder for creating a Sports entity.
+func (c *SportsClient) Create() *SportsCreate {
+	mutation := newSportsMutation(c.config, OpCreate)
+	return &SportsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Sports entities.
+func (c *SportsClient) CreateBulk(builders ...*SportsCreate) *SportsCreateBulk {
+	return &SportsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SportsClient) MapCreateBulk(slice any, setFunc func(*SportsCreate, int)) *SportsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SportsCreateBulk{err: fmt.Errorf("calling to SportsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SportsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SportsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Sports.
+func (c *SportsClient) Update() *SportsUpdate {
+	mutation := newSportsMutation(c.config, OpUpdate)
+	return &SportsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SportsClient) UpdateOne(_m *Sports) *SportsUpdateOne {
+	mutation := newSportsMutation(c.config, OpUpdateOne, withSports(_m))
+	return &SportsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SportsClient) UpdateOneID(id int) *SportsUpdateOne {
+	mutation := newSportsMutation(c.config, OpUpdateOne, withSportsID(id))
+	return &SportsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Sports.
+func (c *SportsClient) Delete() *SportsDelete {
+	mutation := newSportsMutation(c.config, OpDelete)
+	return &SportsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SportsClient) DeleteOne(_m *Sports) *SportsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SportsClient) DeleteOneID(id int) *SportsDeleteOne {
+	builder := c.Delete().Where(sports.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SportsDeleteOne{builder}
+}
+
+// Query returns a query builder for Sports.
+func (c *SportsClient) Query() *SportsQuery {
+	return &SportsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSports},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Sports entity by its id.
+func (c *SportsClient) Get(ctx context.Context, id int) (*Sports, error) {
+	return c.Query().Where(sports.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SportsClient) GetX(ctx context.Context, id int) *Sports {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *SportsClient) Hooks() []Hook {
+	return c.hooks.Sports
+}
+
+// Interceptors returns the client interceptors.
+func (c *SportsClient) Interceptors() []Interceptor {
+	return c.inters.Sports
+}
+
+func (c *SportsClient) mutate(ctx context.Context, m *SportsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SportsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SportsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SportsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SportsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Sports mutation op: %q", m.Op())
+	}
+}
+
 // StockClient is a client for the Stock schema.
 type StockClient struct {
 	config
@@ -4989,6 +5691,139 @@ func (c *StockClient) mutate(ctx context.Context, m *StockMutation) (Value, erro
 		return (&StockDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Stock mutation op: %q", m.Op())
+	}
+}
+
+// SunMoonClient is a client for the SunMoon schema.
+type SunMoonClient struct {
+	config
+}
+
+// NewSunMoonClient returns a client for the SunMoon from the given config.
+func NewSunMoonClient(c config) *SunMoonClient {
+	return &SunMoonClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `sunmoon.Hooks(f(g(h())))`.
+func (c *SunMoonClient) Use(hooks ...Hook) {
+	c.hooks.SunMoon = append(c.hooks.SunMoon, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `sunmoon.Intercept(f(g(h())))`.
+func (c *SunMoonClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SunMoon = append(c.inters.SunMoon, interceptors...)
+}
+
+// Create returns a builder for creating a SunMoon entity.
+func (c *SunMoonClient) Create() *SunMoonCreate {
+	mutation := newSunMoonMutation(c.config, OpCreate)
+	return &SunMoonCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SunMoon entities.
+func (c *SunMoonClient) CreateBulk(builders ...*SunMoonCreate) *SunMoonCreateBulk {
+	return &SunMoonCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SunMoonClient) MapCreateBulk(slice any, setFunc func(*SunMoonCreate, int)) *SunMoonCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SunMoonCreateBulk{err: fmt.Errorf("calling to SunMoonClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SunMoonCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SunMoonCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SunMoon.
+func (c *SunMoonClient) Update() *SunMoonUpdate {
+	mutation := newSunMoonMutation(c.config, OpUpdate)
+	return &SunMoonUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SunMoonClient) UpdateOne(_m *SunMoon) *SunMoonUpdateOne {
+	mutation := newSunMoonMutation(c.config, OpUpdateOne, withSunMoon(_m))
+	return &SunMoonUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SunMoonClient) UpdateOneID(id int) *SunMoonUpdateOne {
+	mutation := newSunMoonMutation(c.config, OpUpdateOne, withSunMoonID(id))
+	return &SunMoonUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SunMoon.
+func (c *SunMoonClient) Delete() *SunMoonDelete {
+	mutation := newSunMoonMutation(c.config, OpDelete)
+	return &SunMoonDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SunMoonClient) DeleteOne(_m *SunMoon) *SunMoonDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SunMoonClient) DeleteOneID(id int) *SunMoonDeleteOne {
+	builder := c.Delete().Where(sunmoon.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SunMoonDeleteOne{builder}
+}
+
+// Query returns a query builder for SunMoon.
+func (c *SunMoonClient) Query() *SunMoonQuery {
+	return &SunMoonQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSunMoon},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SunMoon entity by its id.
+func (c *SunMoonClient) Get(ctx context.Context, id int) (*SunMoon, error) {
+	return c.Query().Where(sunmoon.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SunMoonClient) GetX(ctx context.Context, id int) *SunMoon {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *SunMoonClient) Hooks() []Hook {
+	return c.hooks.SunMoon
+}
+
+// Interceptors returns the client interceptors.
+func (c *SunMoonClient) Interceptors() []Interceptor {
+	return c.inters.SunMoon
+}
+
+func (c *SunMoonClient) mutate(ctx context.Context, m *SunMoonMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SunMoonCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SunMoonUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SunMoonUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SunMoonDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SunMoon mutation op: %q", m.Op())
 	}
 }
 
@@ -5258,6 +6093,139 @@ func (c *TextSlideClient) mutate(ctx context.Context, m *TextSlideMutation) (Val
 	}
 }
 
+// TransitClient is a client for the Transit schema.
+type TransitClient struct {
+	config
+}
+
+// NewTransitClient returns a client for the Transit from the given config.
+func NewTransitClient(c config) *TransitClient {
+	return &TransitClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `transit.Hooks(f(g(h())))`.
+func (c *TransitClient) Use(hooks ...Hook) {
+	c.hooks.Transit = append(c.hooks.Transit, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `transit.Intercept(f(g(h())))`.
+func (c *TransitClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Transit = append(c.inters.Transit, interceptors...)
+}
+
+// Create returns a builder for creating a Transit entity.
+func (c *TransitClient) Create() *TransitCreate {
+	mutation := newTransitMutation(c.config, OpCreate)
+	return &TransitCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Transit entities.
+func (c *TransitClient) CreateBulk(builders ...*TransitCreate) *TransitCreateBulk {
+	return &TransitCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TransitClient) MapCreateBulk(slice any, setFunc func(*TransitCreate, int)) *TransitCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TransitCreateBulk{err: fmt.Errorf("calling to TransitClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TransitCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TransitCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Transit.
+func (c *TransitClient) Update() *TransitUpdate {
+	mutation := newTransitMutation(c.config, OpUpdate)
+	return &TransitUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TransitClient) UpdateOne(_m *Transit) *TransitUpdateOne {
+	mutation := newTransitMutation(c.config, OpUpdateOne, withTransit(_m))
+	return &TransitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TransitClient) UpdateOneID(id int) *TransitUpdateOne {
+	mutation := newTransitMutation(c.config, OpUpdateOne, withTransitID(id))
+	return &TransitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Transit.
+func (c *TransitClient) Delete() *TransitDelete {
+	mutation := newTransitMutation(c.config, OpDelete)
+	return &TransitDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TransitClient) DeleteOne(_m *Transit) *TransitDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TransitClient) DeleteOneID(id int) *TransitDeleteOne {
+	builder := c.Delete().Where(transit.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TransitDeleteOne{builder}
+}
+
+// Query returns a query builder for Transit.
+func (c *TransitClient) Query() *TransitQuery {
+	return &TransitQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTransit},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Transit entity by its id.
+func (c *TransitClient) Get(ctx context.Context, id int) (*Transit, error) {
+	return c.Query().Where(transit.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TransitClient) GetX(ctx context.Context, id int) *Transit {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TransitClient) Hooks() []Hook {
+	return c.hooks.Transit
+}
+
+// Interceptors returns the client interceptors.
+func (c *TransitClient) Interceptors() []Interceptor {
+	return c.inters.Transit
+}
+
+func (c *TransitClient) mutate(ctx context.Context, m *TransitMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TransitCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TransitUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TransitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TransitDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Transit mutation op: %q", m.Op())
+	}
+}
+
 // UmamiSettingsClient is a client for the UmamiSettings schema.
 type UmamiSettingsClient struct {
 	config
@@ -5521,6 +6489,139 @@ func (c *UntappdClient) mutate(ctx context.Context, m *UntappdMutation) (Value, 
 		return (&UntappdDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Untappd mutation op: %q", m.Op())
+	}
+}
+
+// UptimeClient is a client for the Uptime schema.
+type UptimeClient struct {
+	config
+}
+
+// NewUptimeClient returns a client for the Uptime from the given config.
+func NewUptimeClient(c config) *UptimeClient {
+	return &UptimeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `uptime.Hooks(f(g(h())))`.
+func (c *UptimeClient) Use(hooks ...Hook) {
+	c.hooks.Uptime = append(c.hooks.Uptime, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `uptime.Intercept(f(g(h())))`.
+func (c *UptimeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Uptime = append(c.inters.Uptime, interceptors...)
+}
+
+// Create returns a builder for creating a Uptime entity.
+func (c *UptimeClient) Create() *UptimeCreate {
+	mutation := newUptimeMutation(c.config, OpCreate)
+	return &UptimeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Uptime entities.
+func (c *UptimeClient) CreateBulk(builders ...*UptimeCreate) *UptimeCreateBulk {
+	return &UptimeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UptimeClient) MapCreateBulk(slice any, setFunc func(*UptimeCreate, int)) *UptimeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UptimeCreateBulk{err: fmt.Errorf("calling to UptimeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UptimeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UptimeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Uptime.
+func (c *UptimeClient) Update() *UptimeUpdate {
+	mutation := newUptimeMutation(c.config, OpUpdate)
+	return &UptimeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UptimeClient) UpdateOne(_m *Uptime) *UptimeUpdateOne {
+	mutation := newUptimeMutation(c.config, OpUpdateOne, withUptime(_m))
+	return &UptimeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UptimeClient) UpdateOneID(id int) *UptimeUpdateOne {
+	mutation := newUptimeMutation(c.config, OpUpdateOne, withUptimeID(id))
+	return &UptimeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Uptime.
+func (c *UptimeClient) Delete() *UptimeDelete {
+	mutation := newUptimeMutation(c.config, OpDelete)
+	return &UptimeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UptimeClient) DeleteOne(_m *Uptime) *UptimeDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UptimeClient) DeleteOneID(id int) *UptimeDeleteOne {
+	builder := c.Delete().Where(uptime.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UptimeDeleteOne{builder}
+}
+
+// Query returns a query builder for Uptime.
+func (c *UptimeClient) Query() *UptimeQuery {
+	return &UptimeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUptime},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Uptime entity by its id.
+func (c *UptimeClient) Get(ctx context.Context, id int) (*Uptime, error) {
+	return c.Query().Where(uptime.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UptimeClient) GetX(ctx context.Context, id int) *Uptime {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *UptimeClient) Hooks() []Hook {
+	return c.hooks.Uptime
+}
+
+// Interceptors returns the client interceptors.
+func (c *UptimeClient) Interceptors() []Interceptor {
+	return c.inters.Uptime
+}
+
+func (c *UptimeClient) mutate(ctx context.Context, m *UptimeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UptimeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UptimeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UptimeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UptimeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Uptime mutation op: %q", m.Op())
 	}
 }
 
@@ -5928,18 +7029,19 @@ type (
 	hooks struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		Countdown, Crypto, DeviceSettings, DisplayRule, EmailSettings, F1,
-		GeneralSettings, GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry,
-		LogSettings, MQTTSettings, MatrixLayout, NewsFeed, Notification, PixelArt,
-		Playlist, Radarr, RssFeed, Schedule, Sonarr, Stock, TelegramSettings,
-		TextSlide, UmamiSettings, Untappd, Video, Weather, WebhookSettings []ent.Hook
+		GeneralSettings, GenericAPI, GitHub, GoogleCalendar, HomeAssistant, Image,
+		Jellyfin, LogEntry, LogSettings, MQTTSettings, MatrixLayout, NewsFeed,
+		Notification, PiHole, PixelArt, Playlist, Radarr, RssFeed, Schedule, Sonarr,
+		Sports, Stock, SunMoon, TelegramSettings, TextSlide, Transit, UmamiSettings,
+		Untappd, Uptime, Video, Weather, WebhookSettings []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		Countdown, Crypto, DeviceSettings, DisplayRule, EmailSettings, F1,
-		GeneralSettings, GenericAPI, GoogleCalendar, HomeAssistant, Image, LogEntry,
-		LogSettings, MQTTSettings, MatrixLayout, NewsFeed, Notification, PixelArt,
-		Playlist, Radarr, RssFeed, Schedule, Sonarr, Stock, TelegramSettings,
-		TextSlide, UmamiSettings, Untappd, Video, Weather,
-		WebhookSettings []ent.Interceptor
+		GeneralSettings, GenericAPI, GitHub, GoogleCalendar, HomeAssistant, Image,
+		Jellyfin, LogEntry, LogSettings, MQTTSettings, MatrixLayout, NewsFeed,
+		Notification, PiHole, PixelArt, Playlist, Radarr, RssFeed, Schedule, Sonarr,
+		Sports, Stock, SunMoon, TelegramSettings, TextSlide, Transit, UmamiSettings,
+		Untappd, Uptime, Video, Weather, WebhookSettings []ent.Interceptor
 	}
 )

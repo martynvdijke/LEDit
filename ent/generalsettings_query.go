@@ -18,12 +18,15 @@ import (
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
+	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/jellyfin"
 	"ledit/ent/matrixlayout"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
+	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/predicate"
@@ -31,11 +34,15 @@ import (
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/sports"
 	"ledit/ent/stock"
+	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
+	"ledit/ent/uptime"
 	"ledit/ent/video"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
@@ -85,6 +92,13 @@ type GeneralSettingsQuery struct {
 	withWebhooksettings  *WebhookSettingsQuery
 	withMqttsettings     *MQTTSettingsQuery
 	withTelegramsettings *TelegramSettingsQuery
+	withTransits         *TransitQuery
+	withUptimes          *UptimeQuery
+	withPiholes          *PiHoleQuery
+	withGithubs          *GitHubQuery
+	withSports           *SportsQuery
+	withSunmoons         *SunMoonQuery
+	withJellyfins        *JellyfinQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -803,6 +817,160 @@ func (_q *GeneralSettingsQuery) QueryTelegramsettings() *TelegramSettingsQuery {
 	return query
 }
 
+// QueryTransits chains the current query on the "transits" edge.
+func (_q *GeneralSettingsQuery) QueryTransits() *TransitQuery {
+	query := (&TransitClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(transit.Table, transit.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.TransitsTable, generalsettings.TransitsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUptimes chains the current query on the "uptimes" edge.
+func (_q *GeneralSettingsQuery) QueryUptimes() *UptimeQuery {
+	query := (&UptimeClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(uptime.Table, uptime.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.UptimesTable, generalsettings.UptimesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPiholes chains the current query on the "piholes" edge.
+func (_q *GeneralSettingsQuery) QueryPiholes() *PiHoleQuery {
+	query := (&PiHoleClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(pihole.Table, pihole.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.PiholesTable, generalsettings.PiholesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryGithubs chains the current query on the "githubs" edge.
+func (_q *GeneralSettingsQuery) QueryGithubs() *GitHubQuery {
+	query := (&GitHubClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(github.Table, github.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.GithubsTable, generalsettings.GithubsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySports chains the current query on the "sports" edge.
+func (_q *GeneralSettingsQuery) QuerySports() *SportsQuery {
+	query := (&SportsClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(sports.Table, sports.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.SportsTable, generalsettings.SportsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySunmoons chains the current query on the "sunmoons" edge.
+func (_q *GeneralSettingsQuery) QuerySunmoons() *SunMoonQuery {
+	query := (&SunMoonClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(sunmoon.Table, sunmoon.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.SunmoonsTable, generalsettings.SunmoonsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryJellyfins chains the current query on the "jellyfins" edge.
+func (_q *GeneralSettingsQuery) QueryJellyfins() *JellyfinQuery {
+	query := (&JellyfinClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(jellyfin.Table, jellyfin.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.JellyfinsTable, generalsettings.JellyfinsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first GeneralSettings entity from the query.
 // Returns a *NotFoundError when no GeneralSettings was found.
 func (_q *GeneralSettingsQuery) First(ctx context.Context) (*GeneralSettings, error) {
@@ -1026,6 +1194,13 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		withWebhooksettings:  _q.withWebhooksettings.Clone(),
 		withMqttsettings:     _q.withMqttsettings.Clone(),
 		withTelegramsettings: _q.withTelegramsettings.Clone(),
+		withTransits:         _q.withTransits.Clone(),
+		withUptimes:          _q.withUptimes.Clone(),
+		withPiholes:          _q.withPiholes.Clone(),
+		withGithubs:          _q.withGithubs.Clone(),
+		withSports:           _q.withSports.Clone(),
+		withSunmoons:         _q.withSunmoons.Clone(),
+		withJellyfins:        _q.withJellyfins.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -1373,6 +1548,83 @@ func (_q *GeneralSettingsQuery) WithTelegramsettings(opts ...func(*TelegramSetti
 	return _q
 }
 
+// WithTransits tells the query-builder to eager-load the nodes that are connected to
+// the "transits" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithTransits(opts ...func(*TransitQuery)) *GeneralSettingsQuery {
+	query := (&TransitClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTransits = query
+	return _q
+}
+
+// WithUptimes tells the query-builder to eager-load the nodes that are connected to
+// the "uptimes" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithUptimes(opts ...func(*UptimeQuery)) *GeneralSettingsQuery {
+	query := (&UptimeClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withUptimes = query
+	return _q
+}
+
+// WithPiholes tells the query-builder to eager-load the nodes that are connected to
+// the "piholes" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithPiholes(opts ...func(*PiHoleQuery)) *GeneralSettingsQuery {
+	query := (&PiHoleClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withPiholes = query
+	return _q
+}
+
+// WithGithubs tells the query-builder to eager-load the nodes that are connected to
+// the "githubs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithGithubs(opts ...func(*GitHubQuery)) *GeneralSettingsQuery {
+	query := (&GitHubClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGithubs = query
+	return _q
+}
+
+// WithSports tells the query-builder to eager-load the nodes that are connected to
+// the "sports" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithSports(opts ...func(*SportsQuery)) *GeneralSettingsQuery {
+	query := (&SportsClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSports = query
+	return _q
+}
+
+// WithSunmoons tells the query-builder to eager-load the nodes that are connected to
+// the "sunmoons" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithSunmoons(opts ...func(*SunMoonQuery)) *GeneralSettingsQuery {
+	query := (&SunMoonClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSunmoons = query
+	return _q
+}
+
+// WithJellyfins tells the query-builder to eager-load the nodes that are connected to
+// the "jellyfins" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithJellyfins(opts ...func(*JellyfinQuery)) *GeneralSettingsQuery {
+	query := (&JellyfinClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withJellyfins = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -1451,7 +1703,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [31]bool{
+		loadedTypes = [38]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -1483,6 +1735,13 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withWebhooksettings != nil,
 			_q.withMqttsettings != nil,
 			_q.withTelegramsettings != nil,
+			_q.withTransits != nil,
+			_q.withUptimes != nil,
+			_q.withPiholes != nil,
+			_q.withGithubs != nil,
+			_q.withSports != nil,
+			_q.withSunmoons != nil,
+			_q.withJellyfins != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -1725,6 +1984,55 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			func(n *GeneralSettings, e *TelegramSettings) {
 				n.Edges.Telegramsettings = append(n.Edges.Telegramsettings, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTransits; query != nil {
+		if err := _q.loadTransits(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Transits = []*Transit{} },
+			func(n *GeneralSettings, e *Transit) { n.Edges.Transits = append(n.Edges.Transits, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withUptimes; query != nil {
+		if err := _q.loadUptimes(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Uptimes = []*Uptime{} },
+			func(n *GeneralSettings, e *Uptime) { n.Edges.Uptimes = append(n.Edges.Uptimes, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withPiholes; query != nil {
+		if err := _q.loadPiholes(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Piholes = []*PiHole{} },
+			func(n *GeneralSettings, e *PiHole) { n.Edges.Piholes = append(n.Edges.Piholes, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGithubs; query != nil {
+		if err := _q.loadGithubs(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Githubs = []*GitHub{} },
+			func(n *GeneralSettings, e *GitHub) { n.Edges.Githubs = append(n.Edges.Githubs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSports; query != nil {
+		if err := _q.loadSports(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Sports = []*Sports{} },
+			func(n *GeneralSettings, e *Sports) { n.Edges.Sports = append(n.Edges.Sports, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSunmoons; query != nil {
+		if err := _q.loadSunmoons(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Sunmoons = []*SunMoon{} },
+			func(n *GeneralSettings, e *SunMoon) { n.Edges.Sunmoons = append(n.Edges.Sunmoons, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withJellyfins; query != nil {
+		if err := _q.loadJellyfins(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Jellyfins = []*Jellyfin{} },
+			func(n *GeneralSettings, e *Jellyfin) { n.Edges.Jellyfins = append(n.Edges.Jellyfins, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -2687,6 +2995,223 @@ func (_q *GeneralSettingsQuery) loadTelegramsettings(ctx context.Context, query 
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_telegramsettings" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadTransits(ctx context.Context, query *TransitQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Transit)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Transit(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.TransitsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_transits
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_transits" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_transits" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadUptimes(ctx context.Context, query *UptimeQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Uptime)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Uptime(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.UptimesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_uptimes
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_uptimes" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_uptimes" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadPiholes(ctx context.Context, query *PiHoleQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *PiHole)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.PiHole(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.PiholesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_piholes
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_piholes" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_piholes" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadGithubs(ctx context.Context, query *GitHubQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *GitHub)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.GitHub(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.GithubsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_githubs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_githubs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_githubs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadSports(ctx context.Context, query *SportsQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Sports)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Sports(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.SportsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_sports
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_sports" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_sports" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadSunmoons(ctx context.Context, query *SunMoonQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *SunMoon)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.SunMoon(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.SunmoonsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_sunmoons
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_sunmoons" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_sunmoons" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadJellyfins(ctx context.Context, query *JellyfinQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Jellyfin)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Jellyfin(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.JellyfinsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_jellyfins
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_jellyfins" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_jellyfins" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

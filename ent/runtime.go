@@ -16,13 +16,16 @@ import (
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
+	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
+	"ledit/ent/jellyfin"
 	"ledit/ent/logsettings"
 	"ledit/ent/matrixlayout"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/radarr"
@@ -30,11 +33,15 @@ import (
 	"ledit/ent/schedule"
 	"ledit/ent/schema"
 	"ledit/ent/sonarr"
+	"ledit/ent/sports"
 	"ledit/ent/stock"
+	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
+	"ledit/ent/uptime"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
 )
@@ -305,6 +312,16 @@ func init() {
 	genericapiDescConfig := genericapiFields[2].Descriptor()
 	// genericapi.DefaultConfig holds the default value on creation for the config field.
 	genericapi.DefaultConfig = genericapiDescConfig.Default.(string)
+	githubFields := schema.GitHub{}.Fields()
+	_ = githubFields
+	// githubDescToken is the schema descriptor for token field.
+	githubDescToken := githubFields[0].Descriptor()
+	// github.DefaultToken holds the default value on creation for the token field.
+	github.DefaultToken = githubDescToken.Default.(string)
+	// githubDescURL is the schema descriptor for url field.
+	githubDescURL := githubFields[1].Descriptor()
+	// github.DefaultURL holds the default value on creation for the url field.
+	github.DefaultURL = githubDescURL.Default.(string)
 	googlecalendarFields := schema.GoogleCalendar{}.Fields()
 	_ = googlecalendarFields
 	// googlecalendarDescName is the schema descriptor for name field.
@@ -321,6 +338,12 @@ func init() {
 	homeassistantDescURL := homeassistantFields[1].Descriptor()
 	// homeassistant.DefaultURL holds the default value on creation for the url field.
 	homeassistant.DefaultURL = homeassistantDescURL.Default.(string)
+	jellyfinFields := schema.Jellyfin{}.Fields()
+	_ = jellyfinFields
+	// jellyfinDescToken is the schema descriptor for token field.
+	jellyfinDescToken := jellyfinFields[0].Descriptor()
+	// jellyfin.DefaultToken holds the default value on creation for the token field.
+	jellyfin.DefaultToken = jellyfinDescToken.Default.(string)
 	logsettingsFields := schema.LogSettings{}.Fields()
 	_ = logsettingsFields
 	// logsettingsDescVerbosity is the schema descriptor for verbosity field.
@@ -403,6 +426,16 @@ func init() {
 	notificationDescMessage := notificationFields[2].Descriptor()
 	// notification.DefaultMessage holds the default value on creation for the message field.
 	notification.DefaultMessage = notificationDescMessage.Default.(string)
+	piholeFields := schema.PiHole{}.Fields()
+	_ = piholeFields
+	// piholeDescToken is the schema descriptor for token field.
+	piholeDescToken := piholeFields[0].Descriptor()
+	// pihole.DefaultToken holds the default value on creation for the token field.
+	pihole.DefaultToken = piholeDescToken.Default.(string)
+	// piholeDescURL is the schema descriptor for url field.
+	piholeDescURL := piholeFields[1].Descriptor()
+	// pihole.DefaultURL holds the default value on creation for the url field.
+	pihole.DefaultURL = piholeDescURL.Default.(string)
 	pixelartFields := schema.PixelArt{}.Fields()
 	_ = pixelartFields
 	// pixelartDescGridWidth is the schema descriptor for grid_width field.
@@ -487,6 +520,16 @@ func init() {
 	sonarrDescURL := sonarrFields[1].Descriptor()
 	// sonarr.DefaultURL holds the default value on creation for the url field.
 	sonarr.DefaultURL = sonarrDescURL.Default.(string)
+	sportsFields := schema.Sports{}.Fields()
+	_ = sportsFields
+	// sportsDescToken is the schema descriptor for token field.
+	sportsDescToken := sportsFields[0].Descriptor()
+	// sports.DefaultToken holds the default value on creation for the token field.
+	sports.DefaultToken = sportsDescToken.Default.(string)
+	// sportsDescURL is the schema descriptor for url field.
+	sportsDescURL := sportsFields[1].Descriptor()
+	// sports.DefaultURL holds the default value on creation for the url field.
+	sports.DefaultURL = sportsDescURL.Default.(string)
 	stockFields := schema.Stock{}.Fields()
 	_ = stockFields
 	// stockDescToken is the schema descriptor for token field.
@@ -497,6 +540,16 @@ func init() {
 	stockDescURL := stockFields[1].Descriptor()
 	// stock.DefaultURL holds the default value on creation for the url field.
 	stock.DefaultURL = stockDescURL.Default.(string)
+	sunmoonFields := schema.SunMoon{}.Fields()
+	_ = sunmoonFields
+	// sunmoonDescToken is the schema descriptor for token field.
+	sunmoonDescToken := sunmoonFields[0].Descriptor()
+	// sunmoon.DefaultToken holds the default value on creation for the token field.
+	sunmoon.DefaultToken = sunmoonDescToken.Default.(string)
+	// sunmoonDescURL is the schema descriptor for url field.
+	sunmoonDescURL := sunmoonFields[1].Descriptor()
+	// sunmoon.DefaultURL holds the default value on creation for the url field.
+	sunmoon.DefaultURL = sunmoonDescURL.Default.(string)
 	telegramsettingsFields := schema.TelegramSettings{}.Fields()
 	_ = telegramsettingsFields
 	// telegramsettingsDescEnabled is the schema descriptor for enabled field.
@@ -525,6 +578,16 @@ func init() {
 	textslideDescFontSize := textslideFields[3].Descriptor()
 	// textslide.DefaultFontSize holds the default value on creation for the font_size field.
 	textslide.DefaultFontSize = textslideDescFontSize.Default.(int)
+	transitFields := schema.Transit{}.Fields()
+	_ = transitFields
+	// transitDescToken is the schema descriptor for token field.
+	transitDescToken := transitFields[0].Descriptor()
+	// transit.DefaultToken holds the default value on creation for the token field.
+	transit.DefaultToken = transitDescToken.Default.(string)
+	// transitDescURL is the schema descriptor for url field.
+	transitDescURL := transitFields[1].Descriptor()
+	// transit.DefaultURL holds the default value on creation for the url field.
+	transit.DefaultURL = transitDescURL.Default.(string)
 	umamisettingsFields := schema.UmamiSettings{}.Fields()
 	_ = umamisettingsFields
 	// umamisettingsDescEnable is the schema descriptor for enable field.
@@ -541,6 +604,12 @@ func init() {
 	untappdDescURL := untappdFields[1].Descriptor()
 	// untappd.DefaultURL holds the default value on creation for the url field.
 	untappd.DefaultURL = untappdDescURL.Default.(string)
+	uptimeFields := schema.Uptime{}.Fields()
+	_ = uptimeFields
+	// uptimeDescConfig is the schema descriptor for config field.
+	uptimeDescConfig := uptimeFields[1].Descriptor()
+	// uptime.DefaultConfig holds the default value on creation for the config field.
+	uptime.DefaultConfig = uptimeDescConfig.Default.(string)
 	weatherFields := schema.Weather{}.Fields()
 	_ = weatherFields
 	// weatherDescToken is the schema descriptor for token field.

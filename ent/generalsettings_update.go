@@ -18,12 +18,15 @@ import (
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
+	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/jellyfin"
 	"ledit/ent/matrixlayout"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
+	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/predicate"
@@ -31,11 +34,15 @@ import (
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/sports"
 	"ledit/ent/stock"
+	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
+	"ledit/ent/uptime"
 	"ledit/ent/video"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
@@ -673,6 +680,111 @@ func (_u *GeneralSettingsUpdate) AddTelegramsettings(v ...*TelegramSettings) *Ge
 		ids[i] = v[i].ID
 	}
 	return _u.AddTelegramsettingIDs(ids...)
+}
+
+// AddTransitIDs adds the "transits" edge to the Transit entity by IDs.
+func (_u *GeneralSettingsUpdate) AddTransitIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddTransitIDs(ids...)
+	return _u
+}
+
+// AddTransits adds the "transits" edges to the Transit entity.
+func (_u *GeneralSettingsUpdate) AddTransits(v ...*Transit) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTransitIDs(ids...)
+}
+
+// AddUptimeIDs adds the "uptimes" edge to the Uptime entity by IDs.
+func (_u *GeneralSettingsUpdate) AddUptimeIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddUptimeIDs(ids...)
+	return _u
+}
+
+// AddUptimes adds the "uptimes" edges to the Uptime entity.
+func (_u *GeneralSettingsUpdate) AddUptimes(v ...*Uptime) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUptimeIDs(ids...)
+}
+
+// AddPiholeIDs adds the "piholes" edge to the PiHole entity by IDs.
+func (_u *GeneralSettingsUpdate) AddPiholeIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddPiholeIDs(ids...)
+	return _u
+}
+
+// AddPiholes adds the "piholes" edges to the PiHole entity.
+func (_u *GeneralSettingsUpdate) AddPiholes(v ...*PiHole) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPiholeIDs(ids...)
+}
+
+// AddGithubIDs adds the "githubs" edge to the GitHub entity by IDs.
+func (_u *GeneralSettingsUpdate) AddGithubIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddGithubIDs(ids...)
+	return _u
+}
+
+// AddGithubs adds the "githubs" edges to the GitHub entity.
+func (_u *GeneralSettingsUpdate) AddGithubs(v ...*GitHub) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubIDs(ids...)
+}
+
+// AddSportIDs adds the "sports" edge to the Sports entity by IDs.
+func (_u *GeneralSettingsUpdate) AddSportIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddSportIDs(ids...)
+	return _u
+}
+
+// AddSports adds the "sports" edges to the Sports entity.
+func (_u *GeneralSettingsUpdate) AddSports(v ...*Sports) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSportIDs(ids...)
+}
+
+// AddSunmoonIDs adds the "sunmoons" edge to the SunMoon entity by IDs.
+func (_u *GeneralSettingsUpdate) AddSunmoonIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddSunmoonIDs(ids...)
+	return _u
+}
+
+// AddSunmoons adds the "sunmoons" edges to the SunMoon entity.
+func (_u *GeneralSettingsUpdate) AddSunmoons(v ...*SunMoon) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSunmoonIDs(ids...)
+}
+
+// AddJellyfinIDs adds the "jellyfins" edge to the Jellyfin entity by IDs.
+func (_u *GeneralSettingsUpdate) AddJellyfinIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddJellyfinIDs(ids...)
+	return _u
+}
+
+// AddJellyfins adds the "jellyfins" edges to the Jellyfin entity.
+func (_u *GeneralSettingsUpdate) AddJellyfins(v ...*Jellyfin) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddJellyfinIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -1329,6 +1441,153 @@ func (_u *GeneralSettingsUpdate) RemoveTelegramsettings(v ...*TelegramSettings) 
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTelegramsettingIDs(ids...)
+}
+
+// ClearTransits clears all "transits" edges to the Transit entity.
+func (_u *GeneralSettingsUpdate) ClearTransits() *GeneralSettingsUpdate {
+	_u.mutation.ClearTransits()
+	return _u
+}
+
+// RemoveTransitIDs removes the "transits" edge to Transit entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveTransitIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveTransitIDs(ids...)
+	return _u
+}
+
+// RemoveTransits removes "transits" edges to Transit entities.
+func (_u *GeneralSettingsUpdate) RemoveTransits(v ...*Transit) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTransitIDs(ids...)
+}
+
+// ClearUptimes clears all "uptimes" edges to the Uptime entity.
+func (_u *GeneralSettingsUpdate) ClearUptimes() *GeneralSettingsUpdate {
+	_u.mutation.ClearUptimes()
+	return _u
+}
+
+// RemoveUptimeIDs removes the "uptimes" edge to Uptime entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveUptimeIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveUptimeIDs(ids...)
+	return _u
+}
+
+// RemoveUptimes removes "uptimes" edges to Uptime entities.
+func (_u *GeneralSettingsUpdate) RemoveUptimes(v ...*Uptime) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUptimeIDs(ids...)
+}
+
+// ClearPiholes clears all "piholes" edges to the PiHole entity.
+func (_u *GeneralSettingsUpdate) ClearPiholes() *GeneralSettingsUpdate {
+	_u.mutation.ClearPiholes()
+	return _u
+}
+
+// RemovePiholeIDs removes the "piholes" edge to PiHole entities by IDs.
+func (_u *GeneralSettingsUpdate) RemovePiholeIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemovePiholeIDs(ids...)
+	return _u
+}
+
+// RemovePiholes removes "piholes" edges to PiHole entities.
+func (_u *GeneralSettingsUpdate) RemovePiholes(v ...*PiHole) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePiholeIDs(ids...)
+}
+
+// ClearGithubs clears all "githubs" edges to the GitHub entity.
+func (_u *GeneralSettingsUpdate) ClearGithubs() *GeneralSettingsUpdate {
+	_u.mutation.ClearGithubs()
+	return _u
+}
+
+// RemoveGithubIDs removes the "githubs" edge to GitHub entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveGithubIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveGithubIDs(ids...)
+	return _u
+}
+
+// RemoveGithubs removes "githubs" edges to GitHub entities.
+func (_u *GeneralSettingsUpdate) RemoveGithubs(v ...*GitHub) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubIDs(ids...)
+}
+
+// ClearSports clears all "sports" edges to the Sports entity.
+func (_u *GeneralSettingsUpdate) ClearSports() *GeneralSettingsUpdate {
+	_u.mutation.ClearSports()
+	return _u
+}
+
+// RemoveSportIDs removes the "sports" edge to Sports entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveSportIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveSportIDs(ids...)
+	return _u
+}
+
+// RemoveSports removes "sports" edges to Sports entities.
+func (_u *GeneralSettingsUpdate) RemoveSports(v ...*Sports) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSportIDs(ids...)
+}
+
+// ClearSunmoons clears all "sunmoons" edges to the SunMoon entity.
+func (_u *GeneralSettingsUpdate) ClearSunmoons() *GeneralSettingsUpdate {
+	_u.mutation.ClearSunmoons()
+	return _u
+}
+
+// RemoveSunmoonIDs removes the "sunmoons" edge to SunMoon entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveSunmoonIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveSunmoonIDs(ids...)
+	return _u
+}
+
+// RemoveSunmoons removes "sunmoons" edges to SunMoon entities.
+func (_u *GeneralSettingsUpdate) RemoveSunmoons(v ...*SunMoon) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSunmoonIDs(ids...)
+}
+
+// ClearJellyfins clears all "jellyfins" edges to the Jellyfin entity.
+func (_u *GeneralSettingsUpdate) ClearJellyfins() *GeneralSettingsUpdate {
+	_u.mutation.ClearJellyfins()
+	return _u
+}
+
+// RemoveJellyfinIDs removes the "jellyfins" edge to Jellyfin entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveJellyfinIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveJellyfinIDs(ids...)
+	return _u
+}
+
+// RemoveJellyfins removes "jellyfins" edges to Jellyfin entities.
+func (_u *GeneralSettingsUpdate) RemoveJellyfins(v ...*Jellyfin) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveJellyfinIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -2822,6 +3081,321 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.TransitsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransitsTable,
+			Columns: []string{generalsettings.TransitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transit.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTransitsIDs(); len(nodes) > 0 && !_u.mutation.TransitsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransitsTable,
+			Columns: []string{generalsettings.TransitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transit.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransitsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransitsTable,
+			Columns: []string{generalsettings.TransitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transit.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UptimesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimesTable,
+			Columns: []string{generalsettings.UptimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptime.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUptimesIDs(); len(nodes) > 0 && !_u.mutation.UptimesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimesTable,
+			Columns: []string{generalsettings.UptimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptime.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UptimesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimesTable,
+			Columns: []string{generalsettings.UptimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptime.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PiholesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PiholesTable,
+			Columns: []string{generalsettings.PiholesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pihole.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPiholesIDs(); len(nodes) > 0 && !_u.mutation.PiholesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PiholesTable,
+			Columns: []string{generalsettings.PiholesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pihole.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PiholesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PiholesTable,
+			Columns: []string{generalsettings.PiholesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pihole.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GithubsTable,
+			Columns: []string{generalsettings.GithubsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(github.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubsIDs(); len(nodes) > 0 && !_u.mutation.GithubsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GithubsTable,
+			Columns: []string{generalsettings.GithubsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(github.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GithubsTable,
+			Columns: []string{generalsettings.GithubsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(github.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SportsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SportsTable,
+			Columns: []string{generalsettings.SportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sports.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSportsIDs(); len(nodes) > 0 && !_u.mutation.SportsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SportsTable,
+			Columns: []string{generalsettings.SportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sports.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SportsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SportsTable,
+			Columns: []string{generalsettings.SportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sports.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SunmoonsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SunmoonsTable,
+			Columns: []string{generalsettings.SunmoonsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sunmoon.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSunmoonsIDs(); len(nodes) > 0 && !_u.mutation.SunmoonsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SunmoonsTable,
+			Columns: []string{generalsettings.SunmoonsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sunmoon.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SunmoonsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SunmoonsTable,
+			Columns: []string{generalsettings.SunmoonsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sunmoon.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.JellyfinsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.JellyfinsTable,
+			Columns: []string{generalsettings.JellyfinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(jellyfin.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedJellyfinsIDs(); len(nodes) > 0 && !_u.mutation.JellyfinsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.JellyfinsTable,
+			Columns: []string{generalsettings.JellyfinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(jellyfin.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.JellyfinsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.JellyfinsTable,
+			Columns: []string{generalsettings.JellyfinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(jellyfin.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -3457,6 +4031,111 @@ func (_u *GeneralSettingsUpdateOne) AddTelegramsettings(v ...*TelegramSettings) 
 		ids[i] = v[i].ID
 	}
 	return _u.AddTelegramsettingIDs(ids...)
+}
+
+// AddTransitIDs adds the "transits" edge to the Transit entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddTransitIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddTransitIDs(ids...)
+	return _u
+}
+
+// AddTransits adds the "transits" edges to the Transit entity.
+func (_u *GeneralSettingsUpdateOne) AddTransits(v ...*Transit) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTransitIDs(ids...)
+}
+
+// AddUptimeIDs adds the "uptimes" edge to the Uptime entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddUptimeIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddUptimeIDs(ids...)
+	return _u
+}
+
+// AddUptimes adds the "uptimes" edges to the Uptime entity.
+func (_u *GeneralSettingsUpdateOne) AddUptimes(v ...*Uptime) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUptimeIDs(ids...)
+}
+
+// AddPiholeIDs adds the "piholes" edge to the PiHole entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddPiholeIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddPiholeIDs(ids...)
+	return _u
+}
+
+// AddPiholes adds the "piholes" edges to the PiHole entity.
+func (_u *GeneralSettingsUpdateOne) AddPiholes(v ...*PiHole) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPiholeIDs(ids...)
+}
+
+// AddGithubIDs adds the "githubs" edge to the GitHub entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddGithubIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddGithubIDs(ids...)
+	return _u
+}
+
+// AddGithubs adds the "githubs" edges to the GitHub entity.
+func (_u *GeneralSettingsUpdateOne) AddGithubs(v ...*GitHub) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubIDs(ids...)
+}
+
+// AddSportIDs adds the "sports" edge to the Sports entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddSportIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddSportIDs(ids...)
+	return _u
+}
+
+// AddSports adds the "sports" edges to the Sports entity.
+func (_u *GeneralSettingsUpdateOne) AddSports(v ...*Sports) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSportIDs(ids...)
+}
+
+// AddSunmoonIDs adds the "sunmoons" edge to the SunMoon entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddSunmoonIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddSunmoonIDs(ids...)
+	return _u
+}
+
+// AddSunmoons adds the "sunmoons" edges to the SunMoon entity.
+func (_u *GeneralSettingsUpdateOne) AddSunmoons(v ...*SunMoon) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSunmoonIDs(ids...)
+}
+
+// AddJellyfinIDs adds the "jellyfins" edge to the Jellyfin entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddJellyfinIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddJellyfinIDs(ids...)
+	return _u
+}
+
+// AddJellyfins adds the "jellyfins" edges to the Jellyfin entity.
+func (_u *GeneralSettingsUpdateOne) AddJellyfins(v ...*Jellyfin) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddJellyfinIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -4113,6 +4792,153 @@ func (_u *GeneralSettingsUpdateOne) RemoveTelegramsettings(v ...*TelegramSetting
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTelegramsettingIDs(ids...)
+}
+
+// ClearTransits clears all "transits" edges to the Transit entity.
+func (_u *GeneralSettingsUpdateOne) ClearTransits() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearTransits()
+	return _u
+}
+
+// RemoveTransitIDs removes the "transits" edge to Transit entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveTransitIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveTransitIDs(ids...)
+	return _u
+}
+
+// RemoveTransits removes "transits" edges to Transit entities.
+func (_u *GeneralSettingsUpdateOne) RemoveTransits(v ...*Transit) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTransitIDs(ids...)
+}
+
+// ClearUptimes clears all "uptimes" edges to the Uptime entity.
+func (_u *GeneralSettingsUpdateOne) ClearUptimes() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearUptimes()
+	return _u
+}
+
+// RemoveUptimeIDs removes the "uptimes" edge to Uptime entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveUptimeIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveUptimeIDs(ids...)
+	return _u
+}
+
+// RemoveUptimes removes "uptimes" edges to Uptime entities.
+func (_u *GeneralSettingsUpdateOne) RemoveUptimes(v ...*Uptime) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUptimeIDs(ids...)
+}
+
+// ClearPiholes clears all "piholes" edges to the PiHole entity.
+func (_u *GeneralSettingsUpdateOne) ClearPiholes() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearPiholes()
+	return _u
+}
+
+// RemovePiholeIDs removes the "piholes" edge to PiHole entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemovePiholeIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemovePiholeIDs(ids...)
+	return _u
+}
+
+// RemovePiholes removes "piholes" edges to PiHole entities.
+func (_u *GeneralSettingsUpdateOne) RemovePiholes(v ...*PiHole) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePiholeIDs(ids...)
+}
+
+// ClearGithubs clears all "githubs" edges to the GitHub entity.
+func (_u *GeneralSettingsUpdateOne) ClearGithubs() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearGithubs()
+	return _u
+}
+
+// RemoveGithubIDs removes the "githubs" edge to GitHub entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveGithubIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveGithubIDs(ids...)
+	return _u
+}
+
+// RemoveGithubs removes "githubs" edges to GitHub entities.
+func (_u *GeneralSettingsUpdateOne) RemoveGithubs(v ...*GitHub) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubIDs(ids...)
+}
+
+// ClearSports clears all "sports" edges to the Sports entity.
+func (_u *GeneralSettingsUpdateOne) ClearSports() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearSports()
+	return _u
+}
+
+// RemoveSportIDs removes the "sports" edge to Sports entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveSportIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveSportIDs(ids...)
+	return _u
+}
+
+// RemoveSports removes "sports" edges to Sports entities.
+func (_u *GeneralSettingsUpdateOne) RemoveSports(v ...*Sports) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSportIDs(ids...)
+}
+
+// ClearSunmoons clears all "sunmoons" edges to the SunMoon entity.
+func (_u *GeneralSettingsUpdateOne) ClearSunmoons() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearSunmoons()
+	return _u
+}
+
+// RemoveSunmoonIDs removes the "sunmoons" edge to SunMoon entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveSunmoonIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveSunmoonIDs(ids...)
+	return _u
+}
+
+// RemoveSunmoons removes "sunmoons" edges to SunMoon entities.
+func (_u *GeneralSettingsUpdateOne) RemoveSunmoons(v ...*SunMoon) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSunmoonIDs(ids...)
+}
+
+// ClearJellyfins clears all "jellyfins" edges to the Jellyfin entity.
+func (_u *GeneralSettingsUpdateOne) ClearJellyfins() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearJellyfins()
+	return _u
+}
+
+// RemoveJellyfinIDs removes the "jellyfins" edge to Jellyfin entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveJellyfinIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveJellyfinIDs(ids...)
+	return _u
+}
+
+// RemoveJellyfins removes "jellyfins" edges to Jellyfin entities.
+func (_u *GeneralSettingsUpdateOne) RemoveJellyfins(v ...*Jellyfin) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveJellyfinIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -5629,6 +6455,321 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(telegramsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TransitsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransitsTable,
+			Columns: []string{generalsettings.TransitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transit.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTransitsIDs(); len(nodes) > 0 && !_u.mutation.TransitsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransitsTable,
+			Columns: []string{generalsettings.TransitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transit.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransitsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransitsTable,
+			Columns: []string{generalsettings.TransitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transit.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UptimesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimesTable,
+			Columns: []string{generalsettings.UptimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptime.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUptimesIDs(); len(nodes) > 0 && !_u.mutation.UptimesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimesTable,
+			Columns: []string{generalsettings.UptimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptime.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UptimesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimesTable,
+			Columns: []string{generalsettings.UptimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptime.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PiholesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PiholesTable,
+			Columns: []string{generalsettings.PiholesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pihole.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPiholesIDs(); len(nodes) > 0 && !_u.mutation.PiholesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PiholesTable,
+			Columns: []string{generalsettings.PiholesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pihole.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PiholesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PiholesTable,
+			Columns: []string{generalsettings.PiholesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pihole.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GithubsTable,
+			Columns: []string{generalsettings.GithubsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(github.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubsIDs(); len(nodes) > 0 && !_u.mutation.GithubsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GithubsTable,
+			Columns: []string{generalsettings.GithubsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(github.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GithubsTable,
+			Columns: []string{generalsettings.GithubsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(github.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SportsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SportsTable,
+			Columns: []string{generalsettings.SportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sports.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSportsIDs(); len(nodes) > 0 && !_u.mutation.SportsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SportsTable,
+			Columns: []string{generalsettings.SportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sports.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SportsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SportsTable,
+			Columns: []string{generalsettings.SportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sports.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SunmoonsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SunmoonsTable,
+			Columns: []string{generalsettings.SunmoonsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sunmoon.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSunmoonsIDs(); len(nodes) > 0 && !_u.mutation.SunmoonsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SunmoonsTable,
+			Columns: []string{generalsettings.SunmoonsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sunmoon.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SunmoonsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SunmoonsTable,
+			Columns: []string{generalsettings.SunmoonsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sunmoon.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.JellyfinsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.JellyfinsTable,
+			Columns: []string{generalsettings.JellyfinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(jellyfin.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedJellyfinsIDs(); len(nodes) > 0 && !_u.mutation.JellyfinsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.JellyfinsTable,
+			Columns: []string{generalsettings.JellyfinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(jellyfin.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.JellyfinsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.JellyfinsTable,
+			Columns: []string{generalsettings.JellyfinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(jellyfin.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

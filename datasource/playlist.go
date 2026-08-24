@@ -51,6 +51,13 @@ var KnownSourceTypes = map[string]bool{
 	"countdown":      true,
 	"aidigest":       true,
 	"pixelart":       true,
+	"transit":        true,
+	"uptime":         true,
+	"pihole":         true,
+	"github":         true,
+	"sports":         true,
+	"sunmoon":        true,
+	"jellyfin":       true,
 }
 
 // IsValidSourceType reports whether sourceType is a known endpoint key.

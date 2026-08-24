@@ -65,5 +65,12 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("webhooksettings", WebhookSettings.Type),
 		edge.To("mqttsettings", MQTTSettings.Type),
 		edge.To("telegramsettings", TelegramSettings.Type),
+		edge.To("transits", Transit.Type),
+		edge.To("uptimes", Uptime.Type),
+		edge.To("piholes", PiHole.Type),
+		edge.To("githubs", GitHub.Type),
+		edge.To("sports", Sports.Type),
+		edge.To("sunmoons", SunMoon.Type),
+		edge.To("jellyfins", Jellyfin.Type),
 	}
 }

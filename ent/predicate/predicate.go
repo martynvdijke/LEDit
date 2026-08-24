@@ -48,6 +48,9 @@ type GeneralSettings func(*sql.Selector)
 // GenericAPI is the predicate function for genericapi builders.
 type GenericAPI func(*sql.Selector)
 
+// GitHub is the predicate function for github builders.
+type GitHub func(*sql.Selector)
+
 // GoogleCalendar is the predicate function for googlecalendar builders.
 type GoogleCalendar func(*sql.Selector)
 
@@ -56,6 +59,9 @@ type HomeAssistant func(*sql.Selector)
 
 // Image is the predicate function for image builders.
 type Image func(*sql.Selector)
+
+// Jellyfin is the predicate function for jellyfin builders.
+type Jellyfin func(*sql.Selector)
 
 // LogEntry is the predicate function for logentry builders.
 type LogEntry func(*sql.Selector)
@@ -75,6 +81,9 @@ type NewsFeed func(*sql.Selector)
 // Notification is the predicate function for notification builders.
 type Notification func(*sql.Selector)
 
+// PiHole is the predicate function for pihole builders.
+type PiHole func(*sql.Selector)
+
 // PixelArt is the predicate function for pixelart builders.
 type PixelArt func(*sql.Selector)
 
@@ -93,8 +102,14 @@ type Schedule func(*sql.Selector)
 // Sonarr is the predicate function for sonarr builders.
 type Sonarr func(*sql.Selector)
 
+// Sports is the predicate function for sports builders.
+type Sports func(*sql.Selector)
+
 // Stock is the predicate function for stock builders.
 type Stock func(*sql.Selector)
+
+// SunMoon is the predicate function for sunmoon builders.
+type SunMoon func(*sql.Selector)
 
 // TelegramSettings is the predicate function for telegramsettings builders.
 type TelegramSettings func(*sql.Selector)
@@ -102,11 +117,17 @@ type TelegramSettings func(*sql.Selector)
 // TextSlide is the predicate function for textslide builders.
 type TextSlide func(*sql.Selector)
 
+// Transit is the predicate function for transit builders.
+type Transit func(*sql.Selector)
+
 // UmamiSettings is the predicate function for umamisettings builders.
 type UmamiSettings func(*sql.Selector)
 
 // Untappd is the predicate function for untappd builders.
 type Untappd func(*sql.Selector)
+
+// Uptime is the predicate function for uptime builders.
+type Uptime func(*sql.Selector)
 
 // Video is the predicate function for video builders.
 type Video func(*sql.Selector)

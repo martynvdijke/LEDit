@@ -330,6 +330,27 @@ var (
 			},
 		},
 	}
+	// GitHubsColumns holds the columns for the "git_hubs" table.
+	GitHubsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: "https://api.github.com/repos/%s"},
+		{Name: "general_settings_githubs", Type: field.TypeInt, Nullable: true},
+	}
+	// GitHubsTable holds the schema information for the "git_hubs" table.
+	GitHubsTable = &schema.Table{
+		Name:       "git_hubs",
+		Columns:    GitHubsColumns,
+		PrimaryKey: []*schema.Column{GitHubsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "git_hubs_general_settings_githubs",
+				Columns:    []*schema.Column{GitHubsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// GoogleCalendarsColumns holds the columns for the "google_calendars" table.
 	GoogleCalendarsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -387,6 +408,27 @@ var (
 			{
 				Symbol:     "images_general_settings_images",
 				Columns:    []*schema.Column{ImagesColumns[2]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// JellyfinsColumns holds the columns for the "jellyfins" table.
+	JellyfinsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString},
+		{Name: "general_settings_jellyfins", Type: field.TypeInt, Nullable: true},
+	}
+	// JellyfinsTable holds the schema information for the "jellyfins" table.
+	JellyfinsTable = &schema.Table{
+		Name:       "jellyfins",
+		Columns:    JellyfinsColumns,
+		PrimaryKey: []*schema.Column{JellyfinsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "jellyfins_general_settings_jellyfins",
+				Columns:    []*schema.Column{JellyfinsColumns[3]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -513,6 +555,27 @@ var (
 		Name:       "notifications",
 		Columns:    NotificationsColumns,
 		PrimaryKey: []*schema.Column{NotificationsColumns[0]},
+	}
+	// PiHolesColumns holds the columns for the "pi_holes" table.
+	PiHolesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: "http://pi.hole/admin/api.php?summary"},
+		{Name: "general_settings_piholes", Type: field.TypeInt, Nullable: true},
+	}
+	// PiHolesTable holds the schema information for the "pi_holes" table.
+	PiHolesTable = &schema.Table{
+		Name:       "pi_holes",
+		Columns:    PiHolesColumns,
+		PrimaryKey: []*schema.Column{PiHolesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "pi_holes_general_settings_piholes",
+				Columns:    []*schema.Column{PiHolesColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// PixelArtsColumns holds the columns for the "pixel_arts" table.
 	PixelArtsColumns = []*schema.Column{
@@ -648,6 +711,27 @@ var (
 			},
 		},
 	}
+	// SportsColumns holds the columns for the "sports" table.
+	SportsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: "https://site.api.espn.com/apis/site/v2/sports/%s/scoreboard"},
+		{Name: "general_settings_sports", Type: field.TypeInt, Nullable: true},
+	}
+	// SportsTable holds the schema information for the "sports" table.
+	SportsTable = &schema.Table{
+		Name:       "sports",
+		Columns:    SportsColumns,
+		PrimaryKey: []*schema.Column{SportsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sports_general_settings_sports",
+				Columns:    []*schema.Column{SportsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// StocksColumns holds the columns for the "stocks" table.
 	StocksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -664,6 +748,27 @@ var (
 			{
 				Symbol:     "stocks_general_settings_stocks",
 				Columns:    []*schema.Column{StocksColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// SunMoonsColumns holds the columns for the "sun_moons" table.
+	SunMoonsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: "https://api.sunrise-sunset.org/json?lat=%s&lng=%s&formatted=0"},
+		{Name: "general_settings_sunmoons", Type: field.TypeInt, Nullable: true},
+	}
+	// SunMoonsTable holds the schema information for the "sun_moons" table.
+	SunMoonsTable = &schema.Table{
+		Name:       "sun_moons",
+		Columns:    SunMoonsColumns,
+		PrimaryKey: []*schema.Column{SunMoonsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sun_moons_general_settings_sunmoons",
+				Columns:    []*schema.Column{SunMoonsColumns[3]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -714,6 +819,27 @@ var (
 			},
 		},
 	}
+	// TransitsColumns holds the columns for the "transits" table.
+	TransitsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: "https://v6.vbb.transport.rest/stops/%s/departures"},
+		{Name: "general_settings_transits", Type: field.TypeInt, Nullable: true},
+	}
+	// TransitsTable holds the schema information for the "transits" table.
+	TransitsTable = &schema.Table{
+		Name:       "transits",
+		Columns:    TransitsColumns,
+		PrimaryKey: []*schema.Column{TransitsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "transits_general_settings_transits",
+				Columns:    []*schema.Column{TransitsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UmamiSettingsColumns holds the columns for the "umami_settings" table.
 	UmamiSettingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -752,6 +878,27 @@ var (
 			{
 				Symbol:     "untappds_general_settings_untappd",
 				Columns:    []*schema.Column{UntappdsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// UptimesColumns holds the columns for the "uptimes" table.
+	UptimesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "url", Type: field.TypeString},
+		{Name: "config", Type: field.TypeString, Size: 2147483647, Default: "[]"},
+		{Name: "general_settings_uptimes", Type: field.TypeInt, Nullable: true},
+	}
+	// UptimesTable holds the schema information for the "uptimes" table.
+	UptimesTable = &schema.Table{
+		Name:       "uptimes",
+		Columns:    UptimesColumns,
+		PrimaryKey: []*schema.Column{UptimesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "uptimes_general_settings_uptimes",
+				Columns:    []*schema.Column{UptimesColumns[3]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -835,26 +982,33 @@ var (
 		F1sTable,
 		GeneralSettingsTable,
 		GenericApIsTable,
+		GitHubsTable,
 		GoogleCalendarsTable,
 		HomeAssistantsTable,
 		ImagesTable,
+		JellyfinsTable,
 		LogEntriesTable,
 		LogSettingsTable,
 		MqttSettingsTable,
 		MatrixLayoutsTable,
 		NewsFeedsTable,
 		NotificationsTable,
+		PiHolesTable,
 		PixelArtsTable,
 		PlaylistsTable,
 		RadarrsTable,
 		RssFeedsTable,
 		SchedulesTable,
 		SonarrsTable,
+		SportsTable,
 		StocksTable,
+		SunMoonsTable,
 		TelegramSettingsTable,
 		TextSlidesTable,
+		TransitsTable,
 		UmamiSettingsTable,
 		UntappdsTable,
+		UptimesTable,
 		VideosTable,
 		WeathersTable,
 		WebhookSettingsTable,
@@ -873,23 +1027,30 @@ func init() {
 	EmailSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	F1sTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	GenericApIsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	GitHubsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	GoogleCalendarsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	HomeAssistantsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	ImagesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	JellyfinsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	MqttSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	MatrixLayoutsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	NewsFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	PiHolesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PixelArtsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PlaylistsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RadarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RssFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SchedulesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SonarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	SportsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	StocksTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	SunMoonsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	TelegramSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	TextSlidesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	TransitsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UmamiSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UntappdsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	UptimesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	VideosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	WeathersTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	WebhookSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable

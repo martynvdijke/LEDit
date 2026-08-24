@@ -90,6 +90,20 @@ const (
 	EdgeMqttsettings = "mqttsettings"
 	// EdgeTelegramsettings holds the string denoting the telegramsettings edge name in mutations.
 	EdgeTelegramsettings = "telegramsettings"
+	// EdgeTransits holds the string denoting the transits edge name in mutations.
+	EdgeTransits = "transits"
+	// EdgeUptimes holds the string denoting the uptimes edge name in mutations.
+	EdgeUptimes = "uptimes"
+	// EdgePiholes holds the string denoting the piholes edge name in mutations.
+	EdgePiholes = "piholes"
+	// EdgeGithubs holds the string denoting the githubs edge name in mutations.
+	EdgeGithubs = "githubs"
+	// EdgeSports holds the string denoting the sports edge name in mutations.
+	EdgeSports = "sports"
+	// EdgeSunmoons holds the string denoting the sunmoons edge name in mutations.
+	EdgeSunmoons = "sunmoons"
+	// EdgeJellyfins holds the string denoting the jellyfins edge name in mutations.
+	EdgeJellyfins = "jellyfins"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -309,6 +323,55 @@ const (
 	TelegramsettingsInverseTable = "telegram_settings"
 	// TelegramsettingsColumn is the table column denoting the telegramsettings relation/edge.
 	TelegramsettingsColumn = "general_settings_telegramsettings"
+	// TransitsTable is the table that holds the transits relation/edge.
+	TransitsTable = "transits"
+	// TransitsInverseTable is the table name for the Transit entity.
+	// It exists in this package in order to avoid circular dependency with the "transit" package.
+	TransitsInverseTable = "transits"
+	// TransitsColumn is the table column denoting the transits relation/edge.
+	TransitsColumn = "general_settings_transits"
+	// UptimesTable is the table that holds the uptimes relation/edge.
+	UptimesTable = "uptimes"
+	// UptimesInverseTable is the table name for the Uptime entity.
+	// It exists in this package in order to avoid circular dependency with the "uptime" package.
+	UptimesInverseTable = "uptimes"
+	// UptimesColumn is the table column denoting the uptimes relation/edge.
+	UptimesColumn = "general_settings_uptimes"
+	// PiholesTable is the table that holds the piholes relation/edge.
+	PiholesTable = "pi_holes"
+	// PiholesInverseTable is the table name for the PiHole entity.
+	// It exists in this package in order to avoid circular dependency with the "pihole" package.
+	PiholesInverseTable = "pi_holes"
+	// PiholesColumn is the table column denoting the piholes relation/edge.
+	PiholesColumn = "general_settings_piholes"
+	// GithubsTable is the table that holds the githubs relation/edge.
+	GithubsTable = "git_hubs"
+	// GithubsInverseTable is the table name for the GitHub entity.
+	// It exists in this package in order to avoid circular dependency with the "github" package.
+	GithubsInverseTable = "git_hubs"
+	// GithubsColumn is the table column denoting the githubs relation/edge.
+	GithubsColumn = "general_settings_githubs"
+	// SportsTable is the table that holds the sports relation/edge.
+	SportsTable = "sports"
+	// SportsInverseTable is the table name for the Sports entity.
+	// It exists in this package in order to avoid circular dependency with the "sports" package.
+	SportsInverseTable = "sports"
+	// SportsColumn is the table column denoting the sports relation/edge.
+	SportsColumn = "general_settings_sports"
+	// SunmoonsTable is the table that holds the sunmoons relation/edge.
+	SunmoonsTable = "sun_moons"
+	// SunmoonsInverseTable is the table name for the SunMoon entity.
+	// It exists in this package in order to avoid circular dependency with the "sunmoon" package.
+	SunmoonsInverseTable = "sun_moons"
+	// SunmoonsColumn is the table column denoting the sunmoons relation/edge.
+	SunmoonsColumn = "general_settings_sunmoons"
+	// JellyfinsTable is the table that holds the jellyfins relation/edge.
+	JellyfinsTable = "jellyfins"
+	// JellyfinsInverseTable is the table name for the Jellyfin entity.
+	// It exists in this package in order to avoid circular dependency with the "jellyfin" package.
+	JellyfinsInverseTable = "jellyfins"
+	// JellyfinsColumn is the table column denoting the jellyfins relation/edge.
+	JellyfinsColumn = "general_settings_jellyfins"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -834,6 +897,104 @@ func ByTelegramsettings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption 
 		sqlgraph.OrderByNeighborTerms(s, newTelegramsettingsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTransitsCount orders the results by transits count.
+func ByTransitsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTransitsStep(), opts...)
+	}
+}
+
+// ByTransits orders the results by transits terms.
+func ByTransits(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTransitsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByUptimesCount orders the results by uptimes count.
+func ByUptimesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUptimesStep(), opts...)
+	}
+}
+
+// ByUptimes orders the results by uptimes terms.
+func ByUptimes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUptimesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByPiholesCount orders the results by piholes count.
+func ByPiholesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPiholesStep(), opts...)
+	}
+}
+
+// ByPiholes orders the results by piholes terms.
+func ByPiholes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPiholesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByGithubsCount orders the results by githubs count.
+func ByGithubsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGithubsStep(), opts...)
+	}
+}
+
+// ByGithubs orders the results by githubs terms.
+func ByGithubs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGithubsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySportsCount orders the results by sports count.
+func BySportsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSportsStep(), opts...)
+	}
+}
+
+// BySports orders the results by sports terms.
+func BySports(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSportsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySunmoonsCount orders the results by sunmoons count.
+func BySunmoonsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSunmoonsStep(), opts...)
+	}
+}
+
+// BySunmoons orders the results by sunmoons terms.
+func BySunmoons(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSunmoonsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByJellyfinsCount orders the results by jellyfins count.
+func ByJellyfinsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newJellyfinsStep(), opts...)
+	}
+}
+
+// ByJellyfins orders the results by jellyfins terms.
+func ByJellyfins(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newJellyfinsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -1049,5 +1210,54 @@ func newTelegramsettingsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TelegramsettingsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, TelegramsettingsTable, TelegramsettingsColumn),
+	)
+}
+func newTransitsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TransitsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TransitsTable, TransitsColumn),
+	)
+}
+func newUptimesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UptimesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, UptimesTable, UptimesColumn),
+	)
+}
+func newPiholesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PiholesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, PiholesTable, PiholesColumn),
+	)
+}
+func newGithubsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GithubsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, GithubsTable, GithubsColumn),
+	)
+}
+func newSportsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SportsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SportsTable, SportsColumn),
+	)
+}
+func newSunmoonsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SunmoonsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SunmoonsTable, SunmoonsColumn),
+	)
+}
+func newJellyfinsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(JellyfinsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, JellyfinsTable, JellyfinsColumn),
 	)
 }

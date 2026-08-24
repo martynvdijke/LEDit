@@ -384,6 +384,57 @@ func (s *Server) setupRoutes() {
 		admin.GET("/datasources/genericapi/:id/edit", s.AdminGenericAPIEdit)
 		admin.POST("/datasources/genericapi/:id/edit", s.AdminGenericAPIUpdate)
 		admin.POST("/datasources/genericapi/:id/delete", s.AdminGenericAPIDelete)
+
+		// Transit
+		admin.GET("/datasources/transit/new", func(c *gin.Context) { s.renderForm(c, "Transit", "transit", false, nil) })
+		admin.POST("/datasources/transit/new", func(c *gin.Context) { s.createTokenURLDS(c, "transit") })
+		admin.GET("/datasources/transit/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "transit") })
+		admin.POST("/datasources/transit/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "transit") })
+		admin.POST("/datasources/transit/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "transit") })
+
+		// Uptime
+		admin.GET("/datasources/uptime/new", func(c *gin.Context) {
+			s.renderPage(c, 200, "datasource_form.html", gin.H{"type": "Uptime", "endpoint": "uptime", "has_config": true})
+		})
+		admin.POST("/datasources/uptime/new", func(c *gin.Context) { s.createFieldDS(c, "uptime") })
+		admin.GET("/datasources/uptime/:id/edit", func(c *gin.Context) { s.editFieldDS(c, "uptime", nil) })
+		admin.POST("/datasources/uptime/:id/edit", func(c *gin.Context) { s.updateFieldDS(c, "uptime") })
+		admin.POST("/datasources/uptime/:id/delete", func(c *gin.Context) { s.deleteFieldDS(c, "uptime") })
+
+		// Pi-hole
+		admin.GET("/datasources/pihole/new", func(c *gin.Context) { s.renderForm(c, "Pi-hole", "pihole", false, nil) })
+		admin.POST("/datasources/pihole/new", func(c *gin.Context) { s.createTokenURLDS(c, "pihole") })
+		admin.GET("/datasources/pihole/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "pihole") })
+		admin.POST("/datasources/pihole/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "pihole") })
+		admin.POST("/datasources/pihole/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "pihole") })
+
+		// GitHub
+		admin.GET("/datasources/github/new", func(c *gin.Context) { s.renderForm(c, "GitHub", "github", false, nil) })
+		admin.POST("/datasources/github/new", func(c *gin.Context) { s.createTokenURLDS(c, "github") })
+		admin.GET("/datasources/github/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "github") })
+		admin.POST("/datasources/github/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "github") })
+		admin.POST("/datasources/github/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "github") })
+
+		// Sports
+		admin.GET("/datasources/sports/new", func(c *gin.Context) { s.renderForm(c, "Sports", "sports", false, nil) })
+		admin.POST("/datasources/sports/new", func(c *gin.Context) { s.createTokenURLDS(c, "sports") })
+		admin.GET("/datasources/sports/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "sports") })
+		admin.POST("/datasources/sports/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "sports") })
+		admin.POST("/datasources/sports/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "sports") })
+
+		// Sun/Moon
+		admin.GET("/datasources/sunmoon/new", func(c *gin.Context) { s.renderForm(c, "Sun/Moon", "sunmoon", false, nil) })
+		admin.POST("/datasources/sunmoon/new", func(c *gin.Context) { s.createTokenURLDS(c, "sunmoon") })
+		admin.GET("/datasources/sunmoon/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "sunmoon") })
+		admin.POST("/datasources/sunmoon/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "sunmoon") })
+		admin.POST("/datasources/sunmoon/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "sunmoon") })
+
+		// Jellyfin
+		admin.GET("/datasources/jellyfin/new", func(c *gin.Context) { s.renderForm(c, "Jellyfin", "jellyfin", false, nil) })
+		admin.POST("/datasources/jellyfin/new", func(c *gin.Context) { s.createTokenURLDS(c, "jellyfin") })
+		admin.GET("/datasources/jellyfin/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "jellyfin") })
+		admin.POST("/datasources/jellyfin/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "jellyfin") })
+		admin.POST("/datasources/jellyfin/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "jellyfin") })
 		admin.POST("/datasources/genericapi/test", s.AdminGenericAPITest)
 
 		// Pixel Art

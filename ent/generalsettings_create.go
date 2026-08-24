@@ -18,23 +18,30 @@ import (
 	"ledit/ent/f1"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
+	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/jellyfin"
 	"ledit/ent/matrixlayout"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
+	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/sports"
 	"ledit/ent/stock"
+	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
+	"ledit/ent/uptime"
 	"ledit/ent/video"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
@@ -609,6 +616,111 @@ func (_c *GeneralSettingsCreate) AddTelegramsettings(v ...*TelegramSettings) *Ge
 		ids[i] = v[i].ID
 	}
 	return _c.AddTelegramsettingIDs(ids...)
+}
+
+// AddTransitIDs adds the "transits" edge to the Transit entity by IDs.
+func (_c *GeneralSettingsCreate) AddTransitIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddTransitIDs(ids...)
+	return _c
+}
+
+// AddTransits adds the "transits" edges to the Transit entity.
+func (_c *GeneralSettingsCreate) AddTransits(v ...*Transit) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddTransitIDs(ids...)
+}
+
+// AddUptimeIDs adds the "uptimes" edge to the Uptime entity by IDs.
+func (_c *GeneralSettingsCreate) AddUptimeIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddUptimeIDs(ids...)
+	return _c
+}
+
+// AddUptimes adds the "uptimes" edges to the Uptime entity.
+func (_c *GeneralSettingsCreate) AddUptimes(v ...*Uptime) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddUptimeIDs(ids...)
+}
+
+// AddPiholeIDs adds the "piholes" edge to the PiHole entity by IDs.
+func (_c *GeneralSettingsCreate) AddPiholeIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddPiholeIDs(ids...)
+	return _c
+}
+
+// AddPiholes adds the "piholes" edges to the PiHole entity.
+func (_c *GeneralSettingsCreate) AddPiholes(v ...*PiHole) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddPiholeIDs(ids...)
+}
+
+// AddGithubIDs adds the "githubs" edge to the GitHub entity by IDs.
+func (_c *GeneralSettingsCreate) AddGithubIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddGithubIDs(ids...)
+	return _c
+}
+
+// AddGithubs adds the "githubs" edges to the GitHub entity.
+func (_c *GeneralSettingsCreate) AddGithubs(v ...*GitHub) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddGithubIDs(ids...)
+}
+
+// AddSportIDs adds the "sports" edge to the Sports entity by IDs.
+func (_c *GeneralSettingsCreate) AddSportIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddSportIDs(ids...)
+	return _c
+}
+
+// AddSports adds the "sports" edges to the Sports entity.
+func (_c *GeneralSettingsCreate) AddSports(v ...*Sports) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSportIDs(ids...)
+}
+
+// AddSunmoonIDs adds the "sunmoons" edge to the SunMoon entity by IDs.
+func (_c *GeneralSettingsCreate) AddSunmoonIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddSunmoonIDs(ids...)
+	return _c
+}
+
+// AddSunmoons adds the "sunmoons" edges to the SunMoon entity.
+func (_c *GeneralSettingsCreate) AddSunmoons(v ...*SunMoon) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSunmoonIDs(ids...)
+}
+
+// AddJellyfinIDs adds the "jellyfins" edge to the Jellyfin entity by IDs.
+func (_c *GeneralSettingsCreate) AddJellyfinIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddJellyfinIDs(ids...)
+	return _c
+}
+
+// AddJellyfins adds the "jellyfins" edges to the Jellyfin entity.
+func (_c *GeneralSettingsCreate) AddJellyfins(v ...*Jellyfin) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddJellyfinIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -1249,6 +1361,118 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(telegramsettings.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TransitsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransitsTable,
+			Columns: []string{generalsettings.TransitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transit.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.UptimesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimesTable,
+			Columns: []string{generalsettings.UptimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptime.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.PiholesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.PiholesTable,
+			Columns: []string{generalsettings.PiholesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(pihole.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GithubsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.GithubsTable,
+			Columns: []string{generalsettings.GithubsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(github.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SportsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SportsTable,
+			Columns: []string{generalsettings.SportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sports.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SunmoonsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SunmoonsTable,
+			Columns: []string{generalsettings.SunmoonsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sunmoon.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.JellyfinsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.JellyfinsTable,
+			Columns: []string{generalsettings.JellyfinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(jellyfin.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

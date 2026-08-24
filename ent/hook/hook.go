@@ -176,6 +176,18 @@ func (f GenericAPIFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GenericAPIMutation", m)
 }
 
+// The GitHubFunc type is an adapter to allow the use of ordinary
+// function as GitHub mutator.
+type GitHubFunc func(context.Context, *ent.GitHubMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GitHubFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GitHubMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GitHubMutation", m)
+}
+
 // The GoogleCalendarFunc type is an adapter to allow the use of ordinary
 // function as GoogleCalendar mutator.
 type GoogleCalendarFunc func(context.Context, *ent.GoogleCalendarMutation) (ent.Value, error)
@@ -210,6 +222,18 @@ func (f ImageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ImageMutation", m)
+}
+
+// The JellyfinFunc type is an adapter to allow the use of ordinary
+// function as Jellyfin mutator.
+type JellyfinFunc func(context.Context, *ent.JellyfinMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f JellyfinFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.JellyfinMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.JellyfinMutation", m)
 }
 
 // The LogEntryFunc type is an adapter to allow the use of ordinary
@@ -284,6 +308,18 @@ func (f NotificationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NotificationMutation", m)
 }
 
+// The PiHoleFunc type is an adapter to allow the use of ordinary
+// function as PiHole mutator.
+type PiHoleFunc func(context.Context, *ent.PiHoleMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PiHoleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PiHoleMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PiHoleMutation", m)
+}
+
 // The PixelArtFunc type is an adapter to allow the use of ordinary
 // function as PixelArt mutator.
 type PixelArtFunc func(context.Context, *ent.PixelArtMutation) (ent.Value, error)
@@ -356,6 +392,18 @@ func (f SonarrFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SonarrMutation", m)
 }
 
+// The SportsFunc type is an adapter to allow the use of ordinary
+// function as Sports mutator.
+type SportsFunc func(context.Context, *ent.SportsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SportsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SportsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SportsMutation", m)
+}
+
 // The StockFunc type is an adapter to allow the use of ordinary
 // function as Stock mutator.
 type StockFunc func(context.Context, *ent.StockMutation) (ent.Value, error)
@@ -366,6 +414,18 @@ func (f StockFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StockMutation", m)
+}
+
+// The SunMoonFunc type is an adapter to allow the use of ordinary
+// function as SunMoon mutator.
+type SunMoonFunc func(context.Context, *ent.SunMoonMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SunMoonFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SunMoonMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SunMoonMutation", m)
 }
 
 // The TelegramSettingsFunc type is an adapter to allow the use of ordinary
@@ -392,6 +452,18 @@ func (f TextSlideFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TextSlideMutation", m)
 }
 
+// The TransitFunc type is an adapter to allow the use of ordinary
+// function as Transit mutator.
+type TransitFunc func(context.Context, *ent.TransitMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TransitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TransitMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TransitMutation", m)
+}
+
 // The UmamiSettingsFunc type is an adapter to allow the use of ordinary
 // function as UmamiSettings mutator.
 type UmamiSettingsFunc func(context.Context, *ent.UmamiSettingsMutation) (ent.Value, error)
@@ -414,6 +486,18 @@ func (f UntappdFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UntappdMutation", m)
+}
+
+// The UptimeFunc type is an adapter to allow the use of ordinary
+// function as Uptime mutator.
+type UptimeFunc func(context.Context, *ent.UptimeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UptimeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UptimeMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UptimeMutation", m)
 }
 
 // The VideoFunc type is an adapter to allow the use of ordinary

@@ -40,12 +40,16 @@ type Tx struct {
 	GeneralSettings *GeneralSettingsClient
 	// GenericAPI is the client for interacting with the GenericAPI builders.
 	GenericAPI *GenericAPIClient
+	// GitHub is the client for interacting with the GitHub builders.
+	GitHub *GitHubClient
 	// GoogleCalendar is the client for interacting with the GoogleCalendar builders.
 	GoogleCalendar *GoogleCalendarClient
 	// HomeAssistant is the client for interacting with the HomeAssistant builders.
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// Jellyfin is the client for interacting with the Jellyfin builders.
+	Jellyfin *JellyfinClient
 	// LogEntry is the client for interacting with the LogEntry builders.
 	LogEntry *LogEntryClient
 	// LogSettings is the client for interacting with the LogSettings builders.
@@ -58,6 +62,8 @@ type Tx struct {
 	NewsFeed *NewsFeedClient
 	// Notification is the client for interacting with the Notification builders.
 	Notification *NotificationClient
+	// PiHole is the client for interacting with the PiHole builders.
+	PiHole *PiHoleClient
 	// PixelArt is the client for interacting with the PixelArt builders.
 	PixelArt *PixelArtClient
 	// Playlist is the client for interacting with the Playlist builders.
@@ -70,16 +76,24 @@ type Tx struct {
 	Schedule *ScheduleClient
 	// Sonarr is the client for interacting with the Sonarr builders.
 	Sonarr *SonarrClient
+	// Sports is the client for interacting with the Sports builders.
+	Sports *SportsClient
 	// Stock is the client for interacting with the Stock builders.
 	Stock *StockClient
+	// SunMoon is the client for interacting with the SunMoon builders.
+	SunMoon *SunMoonClient
 	// TelegramSettings is the client for interacting with the TelegramSettings builders.
 	TelegramSettings *TelegramSettingsClient
 	// TextSlide is the client for interacting with the TextSlide builders.
 	TextSlide *TextSlideClient
+	// Transit is the client for interacting with the Transit builders.
+	Transit *TransitClient
 	// UmamiSettings is the client for interacting with the UmamiSettings builders.
 	UmamiSettings *UmamiSettingsClient
 	// Untappd is the client for interacting with the Untappd builders.
 	Untappd *UntappdClient
+	// Uptime is the client for interacting with the Uptime builders.
+	Uptime *UptimeClient
 	// Video is the client for interacting with the Video builders.
 	Video *VideoClient
 	// Weather is the client for interacting with the Weather builders.
@@ -231,26 +245,33 @@ func (tx *Tx) init() {
 	tx.F1 = NewF1Client(tx.config)
 	tx.GeneralSettings = NewGeneralSettingsClient(tx.config)
 	tx.GenericAPI = NewGenericAPIClient(tx.config)
+	tx.GitHub = NewGitHubClient(tx.config)
 	tx.GoogleCalendar = NewGoogleCalendarClient(tx.config)
 	tx.HomeAssistant = NewHomeAssistantClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
+	tx.Jellyfin = NewJellyfinClient(tx.config)
 	tx.LogEntry = NewLogEntryClient(tx.config)
 	tx.LogSettings = NewLogSettingsClient(tx.config)
 	tx.MQTTSettings = NewMQTTSettingsClient(tx.config)
 	tx.MatrixLayout = NewMatrixLayoutClient(tx.config)
 	tx.NewsFeed = NewNewsFeedClient(tx.config)
 	tx.Notification = NewNotificationClient(tx.config)
+	tx.PiHole = NewPiHoleClient(tx.config)
 	tx.PixelArt = NewPixelArtClient(tx.config)
 	tx.Playlist = NewPlaylistClient(tx.config)
 	tx.Radarr = NewRadarrClient(tx.config)
 	tx.RssFeed = NewRssFeedClient(tx.config)
 	tx.Schedule = NewScheduleClient(tx.config)
 	tx.Sonarr = NewSonarrClient(tx.config)
+	tx.Sports = NewSportsClient(tx.config)
 	tx.Stock = NewStockClient(tx.config)
+	tx.SunMoon = NewSunMoonClient(tx.config)
 	tx.TelegramSettings = NewTelegramSettingsClient(tx.config)
 	tx.TextSlide = NewTextSlideClient(tx.config)
+	tx.Transit = NewTransitClient(tx.config)
 	tx.UmamiSettings = NewUmamiSettingsClient(tx.config)
 	tx.Untappd = NewUntappdClient(tx.config)
+	tx.Uptime = NewUptimeClient(tx.config)
 	tx.Video = NewVideoClient(tx.config)
 	tx.Weather = NewWeatherClient(tx.config)
 	tx.WebhookSettings = NewWebhookSettingsClient(tx.config)
