@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/martynvdijke/LEDit/compare/v1.30.1...v1.31.0) (2026-08-24)
+
+
+### Features
+
+* more datasources — transit, uptime, pihole, github, sports, sunmoon, jellyfin ([e4fea9f](https://github.com/martynvdijke/LEDit/commit/e4fea9f1c4ad7ae55f65a6275dd2041765556476))
+
 ## [1.30.1](https://github.com/martynvdijke/LEDit/compare/v1.30.0...v1.30.1) (2026-08-24)
 
 # [1.30.0](https://github.com/martynvdijke/LEDit/compare/v1.29.1...v1.30.0) (2026-08-23)
