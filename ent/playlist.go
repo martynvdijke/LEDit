@@ -21,7 +21,9 @@ type Playlist struct {
 	// Enabled holds the value of the "enabled" field.
 	Enabled bool `json:"enabled,omitempty"`
 	// JSON: [{"source_type":"weather","source_id":3},{"source_type":"builtin","source_id":"analog-clock"}]
-	Items                      string `json:"items,omitempty"`
+	Items string `json:"items,omitempty"`
+	// JSON: [{"days":[1,2,3,4,5],"start":"07:00","end":"09:00","priority":10}]
+	ScheduleWindows            string `json:"schedule_windows,omitempty"`
 	general_settings_playlists *int
 	selectValues               sql.SelectValues
 }
@@ -35,7 +37,7 @@ func (*Playlist) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case playlist.FieldID:
 			values[i] = new(sql.NullInt64)
-		case playlist.FieldName, playlist.FieldItems:
+		case playlist.FieldName, playlist.FieldItems, playlist.FieldScheduleWindows:
 			values[i] = new(sql.NullString)
 		case playlist.ForeignKeys[0]: // general_settings_playlists
 			values[i] = new(sql.NullInt64)
@@ -77,6 +79,12 @@ func (_m *Playlist) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field items", values[i])
 			} else if value.Valid {
 				_m.Items = value.String
+			}
+		case playlist.FieldScheduleWindows:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field schedule_windows", values[i])
+			} else if value.Valid {
+				_m.ScheduleWindows = value.String
 			}
 		case playlist.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -129,6 +137,9 @@ func (_m *Playlist) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("items=")
 	builder.WriteString(_m.Items)
+	builder.WriteString(", ")
+	builder.WriteString("schedule_windows=")
+	builder.WriteString(_m.ScheduleWindows)
 	builder.WriteByte(')')
 	return builder.String()
 }

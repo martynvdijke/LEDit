@@ -32,6 +32,22 @@ type GeneralSettings struct {
 	TransitionStyle string `json:"transition_style,omitempty"`
 	// TransitionMs holds the value of the "transition_ms" field.
 	TransitionMs int `json:"transition_ms,omitempty"`
+	// ChartRetentionHours holds the value of the "chart_retention_hours" field.
+	ChartRetentionHours int `json:"chart_retention_hours,omitempty"`
+	// ChartMaxPointsPerSource holds the value of the "chart_max_points_per_source" field.
+	ChartMaxPointsPerSource int `json:"chart_max_points_per_source,omitempty"`
+	// NowPlayingProvider holds the value of the "now_playing_provider" field.
+	NowPlayingProvider string `json:"now_playing_provider,omitempty"`
+	// OrderingMode holds the value of the "ordering_mode" field.
+	OrderingMode string `json:"ordering_mode,omitempty"`
+	// AdaptiveFloor holds the value of the "adaptive_floor" field.
+	AdaptiveFloor float64 `json:"adaptive_floor,omitempty"`
+	// AdaptiveHalfLifeDays holds the value of the "adaptive_half_life_days" field.
+	AdaptiveHalfLifeDays int `json:"adaptive_half_life_days,omitempty"`
+	// AdaptiveWindowDays holds the value of the "adaptive_window_days" field.
+	AdaptiveWindowDays int `json:"adaptive_window_days,omitempty"`
+	// AdaptiveEpsilon holds the value of the "adaptive_epsilon" field.
+	AdaptiveEpsilon float64 `json:"adaptive_epsilon,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GeneralSettingsQuery when eager-loading is set.
 	Edges        GeneralSettingsEdges `json:"edges"`
@@ -116,9 +132,13 @@ type GeneralSettingsEdges struct {
 	Sunmoons []*SunMoon `json:"sunmoons,omitempty"`
 	// Jellyfins holds the value of the jellyfins edge.
 	Jellyfins []*Jellyfin `json:"jellyfins,omitempty"`
+	// Mpds holds the value of the mpds edge.
+	Mpds []*MPD `json:"mpds,omitempty"`
+	// Qrcodes holds the value of the qrcodes edge.
+	Qrcodes []*Qrcode `json:"qrcodes,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [38]bool
+	loadedTypes [40]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -463,6 +483,24 @@ func (e GeneralSettingsEdges) JellyfinsOrErr() ([]*Jellyfin, error) {
 	return nil, &NotLoadedError{edge: "jellyfins"}
 }
 
+// MpdsOrErr returns the Mpds value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) MpdsOrErr() ([]*MPD, error) {
+	if e.loadedTypes[38] {
+		return e.Mpds, nil
+	}
+	return nil, &NotLoadedError{edge: "mpds"}
+}
+
+// QrcodesOrErr returns the Qrcodes value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) QrcodesOrErr() ([]*Qrcode, error) {
+	if e.loadedTypes[39] {
+		return e.Qrcodes, nil
+	}
+	return nil, &NotLoadedError{edge: "qrcodes"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -470,11 +508,11 @@ func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case generalsettings.FieldRandom, generalsettings.FieldEinkMode:
 			values[i] = new(sql.NullBool)
-		case generalsettings.FieldTimeout:
+		case generalsettings.FieldTimeout, generalsettings.FieldAdaptiveFloor, generalsettings.FieldAdaptiveEpsilon:
 			values[i] = new(sql.NullFloat64)
-		case generalsettings.FieldID, generalsettings.FieldWidth, generalsettings.FieldHeight, generalsettings.FieldTransitionMs:
+		case generalsettings.FieldID, generalsettings.FieldWidth, generalsettings.FieldHeight, generalsettings.FieldTransitionMs, generalsettings.FieldChartRetentionHours, generalsettings.FieldChartMaxPointsPerSource, generalsettings.FieldAdaptiveHalfLifeDays, generalsettings.FieldAdaptiveWindowDays:
 			values[i] = new(sql.NullInt64)
-		case generalsettings.FieldTheme, generalsettings.FieldTransitionStyle:
+		case generalsettings.FieldTheme, generalsettings.FieldTransitionStyle, generalsettings.FieldNowPlayingProvider, generalsettings.FieldOrderingMode:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -544,6 +582,54 @@ func (_m *GeneralSettings) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field transition_ms", values[i])
 			} else if value.Valid {
 				_m.TransitionMs = int(value.Int64)
+			}
+		case generalsettings.FieldChartRetentionHours:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field chart_retention_hours", values[i])
+			} else if value.Valid {
+				_m.ChartRetentionHours = int(value.Int64)
+			}
+		case generalsettings.FieldChartMaxPointsPerSource:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field chart_max_points_per_source", values[i])
+			} else if value.Valid {
+				_m.ChartMaxPointsPerSource = int(value.Int64)
+			}
+		case generalsettings.FieldNowPlayingProvider:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field now_playing_provider", values[i])
+			} else if value.Valid {
+				_m.NowPlayingProvider = value.String
+			}
+		case generalsettings.FieldOrderingMode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field ordering_mode", values[i])
+			} else if value.Valid {
+				_m.OrderingMode = value.String
+			}
+		case generalsettings.FieldAdaptiveFloor:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field adaptive_floor", values[i])
+			} else if value.Valid {
+				_m.AdaptiveFloor = value.Float64
+			}
+		case generalsettings.FieldAdaptiveHalfLifeDays:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field adaptive_half_life_days", values[i])
+			} else if value.Valid {
+				_m.AdaptiveHalfLifeDays = int(value.Int64)
+			}
+		case generalsettings.FieldAdaptiveWindowDays:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field adaptive_window_days", values[i])
+			} else if value.Valid {
+				_m.AdaptiveWindowDays = int(value.Int64)
+			}
+		case generalsettings.FieldAdaptiveEpsilon:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field adaptive_epsilon", values[i])
+			} else if value.Valid {
+				_m.AdaptiveEpsilon = value.Float64
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -748,6 +834,16 @@ func (_m *GeneralSettings) QueryJellyfins() *JellyfinQuery {
 	return NewGeneralSettingsClient(_m.config).QueryJellyfins(_m)
 }
 
+// QueryMpds queries the "mpds" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryMpds() *MPDQuery {
+	return NewGeneralSettingsClient(_m.config).QueryMpds(_m)
+}
+
+// QueryQrcodes queries the "qrcodes" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryQrcodes() *QrcodeQuery {
+	return NewGeneralSettingsClient(_m.config).QueryQrcodes(_m)
+}
+
 // Update returns a builder for updating this GeneralSettings.
 // Note that you need to call GeneralSettings.Unwrap() before calling this method if this GeneralSettings
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -794,6 +890,30 @@ func (_m *GeneralSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("transition_ms=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TransitionMs))
+	builder.WriteString(", ")
+	builder.WriteString("chart_retention_hours=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChartRetentionHours))
+	builder.WriteString(", ")
+	builder.WriteString("chart_max_points_per_source=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChartMaxPointsPerSource))
+	builder.WriteString(", ")
+	builder.WriteString("now_playing_provider=")
+	builder.WriteString(_m.NowPlayingProvider)
+	builder.WriteString(", ")
+	builder.WriteString("ordering_mode=")
+	builder.WriteString(_m.OrderingMode)
+	builder.WriteString(", ")
+	builder.WriteString("adaptive_floor=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AdaptiveFloor))
+	builder.WriteString(", ")
+	builder.WriteString("adaptive_half_life_days=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AdaptiveHalfLifeDays))
+	builder.WriteString(", ")
+	builder.WriteString("adaptive_window_days=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AdaptiveWindowDays))
+	builder.WriteString(", ")
+	builder.WriteString("adaptive_epsilon=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AdaptiveEpsilon))
 	builder.WriteByte(')')
 	return builder.String()
 }

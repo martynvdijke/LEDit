@@ -12,7 +12,35 @@
         <div class="container-fluid p-4">
             <div class="d-flex justify-content-between align-items-center">
                 <h1>Pixel Arts</h1>
-                <a href="/admin/pixelarts/new" class="btn btn-primary">New Pixel Art</a>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-secondary" id="gallery-import-btn">Import image/GIF</button>
+                    <a href="/admin/pixelarts/new" class="btn btn-primary">New Pixel Art</a>
+                </div>
+            </div>
+            <div id="gallery-import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+                <div style="background:var(--panel);padding:20px;border-radius:8px;min-width:380px;max-width:90vw">
+                    <h5>Import image/GIF</h5>
+                    <div class="mb-2"><input type="file" id="gallery-import-file" accept=".png,.jpg,.jpeg,.webp,.gif" class="form-control"></div>
+                    <div class="row mb-2">
+                        <div class="col-6"><label class="form-label">Width</label><input type="number" id="gallery-import-w" class="form-control" value="32" min="1" max="128"></div>
+                        <div class="col-6"><label class="form-label">Height</label><input type="number" id="gallery-import-h" class="form-control" value="32" min="1" max="128"></div>
+                    </div>
+                    <div class="mb-2"><label class="form-label">Aspect</label><select id="gallery-import-aspect" class="form-select"><option value="fit" selected>fit</option><option value="stretch">stretch</option><option value="crop">crop</option></select></div>
+                    <div class="mb-2"><label class="form-label">Palette</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <label><input type="radio" name="gallery-palette-mode" value="auto" checked> Auto</label>
+                            <label><input type="radio" name="gallery-palette-mode" value="custom"> Custom JSON</label>
+                        </div>
+                        <input type="number" id="gallery-import-colors" class="form-control mt-1" value="16" min="4" max="64" placeholder="colors 4-64">
+                        <input type="text" id="gallery-import-palette" class="form-control mt-1" placeholder='["#ff0000","#00ff00"]' style="display:none">
+                    </div>
+                    <div id="gallery-import-preview-wrap" class="mb-2" style="display:none"><img id="gallery-import-preview" style="max-width:256px;border:1px solid var(--line);image-rendering:pixelated"><div id="gallery-import-error" class="small text-danger"></div></div>
+                    <div class="d-flex gap-2">
+                        <button type="button" id="gallery-import-preview-btn" class="btn btn-sm btn-secondary">Preview</button>
+                        <button type="button" id="gallery-import-submit" class="btn btn-sm btn-primary">Import</button>
+                        <button type="button" id="gallery-import-cancel" class="btn btn-sm btn-ghost">Cancel</button>
+                    </div>
+                </div>
             </div>
             {{if .pixelarts}}
             <table class="table table-striped mt-3">
@@ -31,13 +59,14 @@
                     {{range .pixelarts}}
                     <tr data-frames="{{.Frames}}">
                         <td>{{.ID}}</td>
-                        <td>{{.Name}}</td>
+                        <td>{{.Name}} {{if .IsDraft}}<span class="badge bg-warning text-dark">Draft</span>{{end}}</td>
                         <td>{{.GridWidth}}×{{.GridHeight}}</td>
                         <td class="frames-count text-muted">—</td>
                         <td>{{if .Enabled}}<span class="badge bg-success">on</span>{{else}}<span class="badge bg-secondary">off</span>{{end}}</td>
                         <td>{{if .ApiURL}}<span class="badge bg-info">bound</span><span class="small text-muted ms-1" title="{{.ApiURL}}">●</span>{{else}}<span class="text-muted">—</span>{{end}}</td>
                         <td>
                             <a href="/admin/pixelarts/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            {{if .IsDraft}}<form method="POST" action="/api/pixelart/{{.ID}}/publish" style="display:inline" class="publish-form"><button type="button" onclick="fetch('/api/pixelart/{{.ID}}/publish',{method:'POST'}).then(()=>location.reload())" class="btn btn-sm btn-success">Publish</button></form>{{end}}
                             <form method="POST" action="/admin/pixelarts/{{.ID}}/delete" style="display:inline">
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                             </form>
@@ -63,5 +92,5 @@
             {{end}}
         </div>
     </div>
-</body><script type="module" src="/static/assets/app.js"></script>
+</body><script type="module" src="/static/assets/app.js"></script><script type="module" src="/static/assets/media_import.js"></script>
 </html>

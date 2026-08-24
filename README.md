@@ -64,6 +64,9 @@ The project identity lives in [`brandkit/README.md`](brandkit/README.md), with r
 - **Analytics** — Display tracking (displays by source, uptime stats)
 - **Umami Analytics** — Optional web analytics integration
 
+### Datasource Plugins
+- **Plugin seam** — Community datasources without forking: register an `exec` binary or `localhost` HTTP endpoint (Admin → Plugins). LEDit sends `{v:1, config, width, height, timestamp, device_id}` and the plugin returns either `{v:1, rows:[{label,value,text}]}` (server-rendered) or `{v:1, png_b64}` (validated PNG at requested resolution). Explicit enablement, `PLUGINS_ALLOW_PREFIX` env to restrict exec paths, localhost-only HTTP, per-plugin timeout (default 3000ms), stderr tail (4KB) and health at `GET /api/plugins/:id/health`. **No sandboxing — run only trusted plugins.** Contract is versioned (`v:1`); wrong version or unknown fields are rejected; rows capped at 20, field lengths capped; PNG dimensions must match request or is rejected. Optional seed from `config/plugins.yaml` (disabled by default).
+
 ### Observability
 - **Database-Backed Logging** — All logs stored in SQLite with filtering
 - **OpenTelemetry Export** — Forward logs to OTLP-compatible backends

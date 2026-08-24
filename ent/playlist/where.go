@@ -68,6 +68,11 @@ func Items(v string) predicate.Playlist {
 	return predicate.Playlist(sql.FieldEQ(FieldItems, v))
 }
 
+// ScheduleWindows applies equality check predicate on the "schedule_windows" field. It's identical to ScheduleWindowsEQ.
+func ScheduleWindows(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldEQ(FieldScheduleWindows, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Playlist {
 	return predicate.Playlist(sql.FieldEQ(FieldName, v))
@@ -206,6 +211,71 @@ func ItemsEqualFold(v string) predicate.Playlist {
 // ItemsContainsFold applies the ContainsFold predicate on the "items" field.
 func ItemsContainsFold(v string) predicate.Playlist {
 	return predicate.Playlist(sql.FieldContainsFold(FieldItems, v))
+}
+
+// ScheduleWindowsEQ applies the EQ predicate on the "schedule_windows" field.
+func ScheduleWindowsEQ(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldEQ(FieldScheduleWindows, v))
+}
+
+// ScheduleWindowsNEQ applies the NEQ predicate on the "schedule_windows" field.
+func ScheduleWindowsNEQ(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldNEQ(FieldScheduleWindows, v))
+}
+
+// ScheduleWindowsIn applies the In predicate on the "schedule_windows" field.
+func ScheduleWindowsIn(vs ...string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldIn(FieldScheduleWindows, vs...))
+}
+
+// ScheduleWindowsNotIn applies the NotIn predicate on the "schedule_windows" field.
+func ScheduleWindowsNotIn(vs ...string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldNotIn(FieldScheduleWindows, vs...))
+}
+
+// ScheduleWindowsGT applies the GT predicate on the "schedule_windows" field.
+func ScheduleWindowsGT(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldGT(FieldScheduleWindows, v))
+}
+
+// ScheduleWindowsGTE applies the GTE predicate on the "schedule_windows" field.
+func ScheduleWindowsGTE(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldGTE(FieldScheduleWindows, v))
+}
+
+// ScheduleWindowsLT applies the LT predicate on the "schedule_windows" field.
+func ScheduleWindowsLT(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldLT(FieldScheduleWindows, v))
+}
+
+// ScheduleWindowsLTE applies the LTE predicate on the "schedule_windows" field.
+func ScheduleWindowsLTE(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldLTE(FieldScheduleWindows, v))
+}
+
+// ScheduleWindowsContains applies the Contains predicate on the "schedule_windows" field.
+func ScheduleWindowsContains(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldContains(FieldScheduleWindows, v))
+}
+
+// ScheduleWindowsHasPrefix applies the HasPrefix predicate on the "schedule_windows" field.
+func ScheduleWindowsHasPrefix(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldHasPrefix(FieldScheduleWindows, v))
+}
+
+// ScheduleWindowsHasSuffix applies the HasSuffix predicate on the "schedule_windows" field.
+func ScheduleWindowsHasSuffix(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldHasSuffix(FieldScheduleWindows, v))
+}
+
+// ScheduleWindowsEqualFold applies the EqualFold predicate on the "schedule_windows" field.
+func ScheduleWindowsEqualFold(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldEqualFold(FieldScheduleWindows, v))
+}
+
+// ScheduleWindowsContainsFold applies the ContainsFold predicate on the "schedule_windows" field.
+func ScheduleWindowsContainsFold(v string) predicate.Playlist {
+	return predicate.Playlist(sql.FieldContainsFold(FieldScheduleWindows, v))
 }
 
 // And groups predicates with the AND operator between them.

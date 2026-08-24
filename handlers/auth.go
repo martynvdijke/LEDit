@@ -13,9 +13,16 @@ import (
 	"ledit/ent/apitoken"
 )
 
+type sessionData struct {
+	UserID   int
+	Username string
+	Role     string
+	Expiry   time.Time
+}
+
 var (
 	authMu      sync.Mutex
-	sessions    = map[string]time.Time{}
+	sessions    = map[string]sessionData{}
 	authEnabled = false
 )
 
@@ -42,7 +49,11 @@ func AuthMiddleware() gin.HandlerFunc {
 			token = t
 		}
 		authMu.Lock()
-		_, valid := sessions[token]
+		sd, valid := sessions[token]
+		if valid && sd.Expiry.Before(time.Now()) {
+			valid = false
+			delete(sessions, token)
+		}
 		authMu.Unlock()
 		if !valid {
 			c.Redirect(http.StatusFound, "/login")
@@ -65,29 +76,69 @@ func (s *Server) LoginPage(c *gin.Context) {
 }
 
 func (s *Server) LoginAction(c *gin.Context) {
-	user := c.PostForm("username")
+	username := c.PostForm("username")
 	pass := c.PostForm("password")
 
-	admin, err := s.DB.AdminSettings.Query().First(s.Ctx)
-	if err != nil {
-		c.HTML(http.StatusOK, "login.html", gin.H{"error": "Authentication not configured"})
-		return
+	// Try user table first.
+	var uid int
+	var role string
+	var hash string
+	foundUser := false
+	// Manual case-insensitive search
+	users, err := s.DB.User.Query().All(s.Ctx)
+	if err == nil {
+		for _, u := range users {
+			if strings.EqualFold(u.Username, username) {
+				uid = u.ID
+				role = string(u.Role)
+				hash = u.PasswordHash
+				foundUser = true
+				break
+			}
+		}
+	}
+	if !foundUser {
+		// Fallback to legacy AdminSettings for migration period.
+		admin, err := s.DB.AdminSettings.Query().First(s.Ctx)
+		if err != nil {
+			c.HTML(http.StatusOK, "login.html", gin.H{"error": "Authentication not configured"})
+			return
+		}
+		if !strings.EqualFold(admin.Username, username) || bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(pass)) != nil {
+			c.HTML(http.StatusOK, "login.html", gin.H{"error": "Invalid credentials"})
+			return
+		}
+		// Legacy admin success: treat as admin role with id 0.
+		uid = 0
+		role = "admin"
+		hash = admin.PasswordHash
+		foundUser = true
+		_ = hash
+	} else {
+		if bcrypt.CompareHashAndPassword([]byte(hash), []byte(pass)) != nil {
+			c.HTML(http.StatusOK, "login.html", gin.H{"error": "Invalid credentials"})
+			return
+		}
 	}
 
-	if user != admin.Username || bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(pass)) != nil {
-		c.HTML(http.StatusOK, "login.html", gin.H{"error": "Invalid credentials"})
-		return
-	}
-
-	token := hashSessionToken(time.Now().String())
+	token := hashSessionToken(time.Now().String() + username)
 	authMu.Lock()
-	sessions[token] = time.Now().Add(24 * time.Hour)
+	sessions[token] = sessionData{UserID: uid, Username: username, Role: role, Expiry: time.Now().Add(24 * time.Hour)}
 	authMu.Unlock()
 	c.SetCookie("session", token, 86400, "/", "", false, true)
+	// Update last_login_at if real user.
+	if uid != 0 {
+		_, _ = s.DB.User.UpdateOneID(uid).SetLastLoginAt(time.Now()).Save(s.Ctx)
+	}
 	c.Redirect(http.StatusFound, "/admin/")
 }
 
 func (s *Server) LogoutAction(c *gin.Context) {
+	if token, err := c.Cookie("session"); err == nil {
+		authMu.Lock()
+		delete(sessions, token)
+		authMu.Unlock()
+	}
 	c.SetCookie("session", "", -1, "/", "", false, true)
 	c.Redirect(http.StatusFound, "/login")
 }
@@ -100,7 +151,11 @@ func (s *Server) IsAuthenticated(c *gin.Context) bool {
 	}
 	if token, err := c.Cookie("session"); err == nil {
 		authMu.Lock()
-		_, valid := sessions[token]
+		sd, valid := sessions[token]
+		if valid && sd.Expiry.Before(time.Now()) {
+			valid = false
+			delete(sessions, token)
+		}
 		authMu.Unlock()
 		if valid {
 			return true

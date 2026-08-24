@@ -4,10 +4,12 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"ledit/ent/generalsettings"
+	"ledit/ent/user"
 )
 
 // NeedsSetup reports whether the first-time setup wizard should be shown.
@@ -186,6 +188,20 @@ func (s *Server) SetupAction(c *gin.Context) {
 			c.HTML(http.StatusOK, "setup.html", gin.H{"error": "Failed to update admin account", "username": username})
 			return
 		}
+	}
+	// Also create/update user admin.
+	existingUsers, _ := s.DB.User.Query().All(s.Ctx)
+	found := false
+	for _, u := range existingUsers {
+		if u.Username == username {
+			_, _ = s.DB.User.UpdateOneID(u.ID).SetPasswordHash(string(hash)).SetRole(user.RoleAdmin).Save(s.Ctx)
+			found = true
+			break
+		}
+	}
+	if !found {
+		// Check case-insensitive duplicate?
+		_, _ = s.DB.User.Create().SetUsername(username).SetPasswordHash(string(hash)).SetRole(user.RoleAdmin).SetCreatedAt(time.Now()).Save(s.Ctx)
 	}
 
 	// Upsert general settings (ID 1).

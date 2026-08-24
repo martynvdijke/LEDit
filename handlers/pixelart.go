@@ -76,7 +76,7 @@ func validatePixelArtForm(f map[string]string) error {
 
 // PixelArtList GET /admin/pixelarts
 func (s *Server) PixelArtList(c *gin.Context) {
-	arts, err := s.DB.PixelArt.Query().Order(ent.Asc(pixelart.FieldID)).All(s.Ctx)
+	arts, err := s.DB.PixelArt.Query().Order(ent.Desc(pixelart.FieldIsDraft), ent.Asc(pixelart.FieldID)).All(s.Ctx)
 	if err != nil {
 		arts = []*ent.PixelArt{}
 	}
@@ -85,7 +85,8 @@ func (s *Server) PixelArtList(c *gin.Context) {
 
 // PixelArtNew GET /admin/pixelarts/new
 func (s *Server) PixelArtNew(c *gin.Context) {
-	s.renderPage(c, http.StatusOK, "pixelart_form.html", gin.H{})
+	_, aiOk := getAIConfig(c.Request.Context(), s.DB)
+	s.renderPage(c, http.StatusOK, "pixelart_form.html", gin.H{"aiConfigured": aiOk})
 }
 
 // PixelArtCreate POST /admin/pixelarts/new
@@ -123,7 +124,8 @@ func (s *Server) PixelArtEdit(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/admin/pixelarts")
 		return
 	}
-	s.renderPage(c, http.StatusOK, "pixelart_form.html", gin.H{"obj": obj, "edit": true})
+	_, aiOk := getAIConfig(c.Request.Context(), s.DB)
+	s.renderPage(c, http.StatusOK, "pixelart_form.html", gin.H{"obj": obj, "edit": true, "aiConfigured": aiOk})
 }
 
 // PixelArtUpdate POST /admin/pixelarts/:id/edit

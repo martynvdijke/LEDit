@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -122,6 +123,46 @@ func ContentMode(v string) predicate.DeviceSettings {
 // PlaylistID applies equality check predicate on the "playlist_id" field. It's identical to PlaylistIDEQ.
 func PlaylistID(v int) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldPlaylistID, v))
+}
+
+// ScheduledPlaylistIds applies equality check predicate on the "scheduled_playlist_ids" field. It's identical to ScheduledPlaylistIdsEQ.
+func ScheduledPlaylistIds(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldScheduledPlaylistIds, v))
+}
+
+// FallbackPlaylistID applies equality check predicate on the "fallback_playlist_id" field. It's identical to FallbackPlaylistIDEQ.
+func FallbackPlaylistID(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldFallbackPlaylistID, v))
+}
+
+// BrightnessEnabled applies equality check predicate on the "brightness_enabled" field. It's identical to BrightnessEnabledEQ.
+func BrightnessEnabled(v bool) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldBrightnessEnabled, v))
+}
+
+// BrightnessSchedules applies equality check predicate on the "brightness_schedules" field. It's identical to BrightnessSchedulesEQ.
+func BrightnessSchedules(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldBrightnessSchedules, v))
+}
+
+// BrightnessOverride applies equality check predicate on the "brightness_override" field. It's identical to BrightnessOverrideEQ.
+func BrightnessOverride(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldBrightnessOverride, v))
+}
+
+// BrightnessSensorConfig applies equality check predicate on the "brightness_sensor_config" field. It's identical to BrightnessSensorConfigEQ.
+func BrightnessSensorConfig(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldBrightnessSensorConfig, v))
+}
+
+// IdleScreensaver applies equality check predicate on the "idle_screensaver" field. It's identical to IdleScreensaverEQ.
+func IdleScreensaver(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldIdleScreensaver, v))
+}
+
+// GroupID applies equality check predicate on the "group_id" field. It's identical to GroupIDEQ.
+func GroupID(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldGroupID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -822,6 +863,449 @@ func PlaylistIDIsNil() predicate.DeviceSettings {
 // PlaylistIDNotNil applies the NotNil predicate on the "playlist_id" field.
 func PlaylistIDNotNil() predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldNotNull(FieldPlaylistID))
+}
+
+// ScheduledPlaylistIdsEQ applies the EQ predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldScheduledPlaylistIds, v))
+}
+
+// ScheduledPlaylistIdsNEQ applies the NEQ predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldScheduledPlaylistIds, v))
+}
+
+// ScheduledPlaylistIdsIn applies the In predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldScheduledPlaylistIds, vs...))
+}
+
+// ScheduledPlaylistIdsNotIn applies the NotIn predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldScheduledPlaylistIds, vs...))
+}
+
+// ScheduledPlaylistIdsGT applies the GT predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldScheduledPlaylistIds, v))
+}
+
+// ScheduledPlaylistIdsGTE applies the GTE predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldScheduledPlaylistIds, v))
+}
+
+// ScheduledPlaylistIdsLT applies the LT predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldScheduledPlaylistIds, v))
+}
+
+// ScheduledPlaylistIdsLTE applies the LTE predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldScheduledPlaylistIds, v))
+}
+
+// ScheduledPlaylistIdsContains applies the Contains predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldScheduledPlaylistIds, v))
+}
+
+// ScheduledPlaylistIdsHasPrefix applies the HasPrefix predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldScheduledPlaylistIds, v))
+}
+
+// ScheduledPlaylistIdsHasSuffix applies the HasSuffix predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldScheduledPlaylistIds, v))
+}
+
+// ScheduledPlaylistIdsEqualFold applies the EqualFold predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldScheduledPlaylistIds, v))
+}
+
+// ScheduledPlaylistIdsContainsFold applies the ContainsFold predicate on the "scheduled_playlist_ids" field.
+func ScheduledPlaylistIdsContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldScheduledPlaylistIds, v))
+}
+
+// FallbackPlaylistIDEQ applies the EQ predicate on the "fallback_playlist_id" field.
+func FallbackPlaylistIDEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldFallbackPlaylistID, v))
+}
+
+// FallbackPlaylistIDNEQ applies the NEQ predicate on the "fallback_playlist_id" field.
+func FallbackPlaylistIDNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldFallbackPlaylistID, v))
+}
+
+// FallbackPlaylistIDIn applies the In predicate on the "fallback_playlist_id" field.
+func FallbackPlaylistIDIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldFallbackPlaylistID, vs...))
+}
+
+// FallbackPlaylistIDNotIn applies the NotIn predicate on the "fallback_playlist_id" field.
+func FallbackPlaylistIDNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldFallbackPlaylistID, vs...))
+}
+
+// FallbackPlaylistIDGT applies the GT predicate on the "fallback_playlist_id" field.
+func FallbackPlaylistIDGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldFallbackPlaylistID, v))
+}
+
+// FallbackPlaylistIDGTE applies the GTE predicate on the "fallback_playlist_id" field.
+func FallbackPlaylistIDGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldFallbackPlaylistID, v))
+}
+
+// FallbackPlaylistIDLT applies the LT predicate on the "fallback_playlist_id" field.
+func FallbackPlaylistIDLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldFallbackPlaylistID, v))
+}
+
+// FallbackPlaylistIDLTE applies the LTE predicate on the "fallback_playlist_id" field.
+func FallbackPlaylistIDLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldFallbackPlaylistID, v))
+}
+
+// FallbackPlaylistIDIsNil applies the IsNil predicate on the "fallback_playlist_id" field.
+func FallbackPlaylistIDIsNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIsNull(FieldFallbackPlaylistID))
+}
+
+// FallbackPlaylistIDNotNil applies the NotNil predicate on the "fallback_playlist_id" field.
+func FallbackPlaylistIDNotNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotNull(FieldFallbackPlaylistID))
+}
+
+// BrightnessEnabledEQ applies the EQ predicate on the "brightness_enabled" field.
+func BrightnessEnabledEQ(v bool) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldBrightnessEnabled, v))
+}
+
+// BrightnessEnabledNEQ applies the NEQ predicate on the "brightness_enabled" field.
+func BrightnessEnabledNEQ(v bool) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldBrightnessEnabled, v))
+}
+
+// BrightnessSchedulesEQ applies the EQ predicate on the "brightness_schedules" field.
+func BrightnessSchedulesEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesNEQ applies the NEQ predicate on the "brightness_schedules" field.
+func BrightnessSchedulesNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesIn applies the In predicate on the "brightness_schedules" field.
+func BrightnessSchedulesIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldBrightnessSchedules, vs...))
+}
+
+// BrightnessSchedulesNotIn applies the NotIn predicate on the "brightness_schedules" field.
+func BrightnessSchedulesNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldBrightnessSchedules, vs...))
+}
+
+// BrightnessSchedulesGT applies the GT predicate on the "brightness_schedules" field.
+func BrightnessSchedulesGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesGTE applies the GTE predicate on the "brightness_schedules" field.
+func BrightnessSchedulesGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesLT applies the LT predicate on the "brightness_schedules" field.
+func BrightnessSchedulesLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesLTE applies the LTE predicate on the "brightness_schedules" field.
+func BrightnessSchedulesLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesContains applies the Contains predicate on the "brightness_schedules" field.
+func BrightnessSchedulesContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesHasPrefix applies the HasPrefix predicate on the "brightness_schedules" field.
+func BrightnessSchedulesHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesHasSuffix applies the HasSuffix predicate on the "brightness_schedules" field.
+func BrightnessSchedulesHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesEqualFold applies the EqualFold predicate on the "brightness_schedules" field.
+func BrightnessSchedulesEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesContainsFold applies the ContainsFold predicate on the "brightness_schedules" field.
+func BrightnessSchedulesContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldBrightnessSchedules, v))
+}
+
+// BrightnessOverrideEQ applies the EQ predicate on the "brightness_override" field.
+func BrightnessOverrideEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideNEQ applies the NEQ predicate on the "brightness_override" field.
+func BrightnessOverrideNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideIn applies the In predicate on the "brightness_override" field.
+func BrightnessOverrideIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldBrightnessOverride, vs...))
+}
+
+// BrightnessOverrideNotIn applies the NotIn predicate on the "brightness_override" field.
+func BrightnessOverrideNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldBrightnessOverride, vs...))
+}
+
+// BrightnessOverrideGT applies the GT predicate on the "brightness_override" field.
+func BrightnessOverrideGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideGTE applies the GTE predicate on the "brightness_override" field.
+func BrightnessOverrideGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideLT applies the LT predicate on the "brightness_override" field.
+func BrightnessOverrideLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideLTE applies the LTE predicate on the "brightness_override" field.
+func BrightnessOverrideLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideIsNil applies the IsNil predicate on the "brightness_override" field.
+func BrightnessOverrideIsNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIsNull(FieldBrightnessOverride))
+}
+
+// BrightnessOverrideNotNil applies the NotNil predicate on the "brightness_override" field.
+func BrightnessOverrideNotNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotNull(FieldBrightnessOverride))
+}
+
+// BrightnessSensorConfigEQ applies the EQ predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigNEQ applies the NEQ predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigIn applies the In predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldBrightnessSensorConfig, vs...))
+}
+
+// BrightnessSensorConfigNotIn applies the NotIn predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldBrightnessSensorConfig, vs...))
+}
+
+// BrightnessSensorConfigGT applies the GT predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigGTE applies the GTE predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigLT applies the LT predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigLTE applies the LTE predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigContains applies the Contains predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigHasPrefix applies the HasPrefix predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigHasSuffix applies the HasSuffix predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigIsNil applies the IsNil predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigIsNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIsNull(FieldBrightnessSensorConfig))
+}
+
+// BrightnessSensorConfigNotNil applies the NotNil predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigNotNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotNull(FieldBrightnessSensorConfig))
+}
+
+// BrightnessSensorConfigEqualFold applies the EqualFold predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigContainsFold applies the ContainsFold predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldBrightnessSensorConfig, v))
+}
+
+// IdleScreensaverEQ applies the EQ predicate on the "idle_screensaver" field.
+func IdleScreensaverEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldIdleScreensaver, v))
+}
+
+// IdleScreensaverNEQ applies the NEQ predicate on the "idle_screensaver" field.
+func IdleScreensaverNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldIdleScreensaver, v))
+}
+
+// IdleScreensaverIn applies the In predicate on the "idle_screensaver" field.
+func IdleScreensaverIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldIdleScreensaver, vs...))
+}
+
+// IdleScreensaverNotIn applies the NotIn predicate on the "idle_screensaver" field.
+func IdleScreensaverNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldIdleScreensaver, vs...))
+}
+
+// IdleScreensaverGT applies the GT predicate on the "idle_screensaver" field.
+func IdleScreensaverGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldIdleScreensaver, v))
+}
+
+// IdleScreensaverGTE applies the GTE predicate on the "idle_screensaver" field.
+func IdleScreensaverGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldIdleScreensaver, v))
+}
+
+// IdleScreensaverLT applies the LT predicate on the "idle_screensaver" field.
+func IdleScreensaverLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldIdleScreensaver, v))
+}
+
+// IdleScreensaverLTE applies the LTE predicate on the "idle_screensaver" field.
+func IdleScreensaverLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldIdleScreensaver, v))
+}
+
+// IdleScreensaverContains applies the Contains predicate on the "idle_screensaver" field.
+func IdleScreensaverContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldIdleScreensaver, v))
+}
+
+// IdleScreensaverHasPrefix applies the HasPrefix predicate on the "idle_screensaver" field.
+func IdleScreensaverHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldIdleScreensaver, v))
+}
+
+// IdleScreensaverHasSuffix applies the HasSuffix predicate on the "idle_screensaver" field.
+func IdleScreensaverHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldIdleScreensaver, v))
+}
+
+// IdleScreensaverIsNil applies the IsNil predicate on the "idle_screensaver" field.
+func IdleScreensaverIsNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIsNull(FieldIdleScreensaver))
+}
+
+// IdleScreensaverNotNil applies the NotNil predicate on the "idle_screensaver" field.
+func IdleScreensaverNotNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotNull(FieldIdleScreensaver))
+}
+
+// IdleScreensaverEqualFold applies the EqualFold predicate on the "idle_screensaver" field.
+func IdleScreensaverEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldIdleScreensaver, v))
+}
+
+// IdleScreensaverContainsFold applies the ContainsFold predicate on the "idle_screensaver" field.
+func IdleScreensaverContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldIdleScreensaver, v))
+}
+
+// GroupIDEQ applies the EQ predicate on the "group_id" field.
+func GroupIDEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldGroupID, v))
+}
+
+// GroupIDNEQ applies the NEQ predicate on the "group_id" field.
+func GroupIDNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldGroupID, v))
+}
+
+// GroupIDIn applies the In predicate on the "group_id" field.
+func GroupIDIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldGroupID, vs...))
+}
+
+// GroupIDNotIn applies the NotIn predicate on the "group_id" field.
+func GroupIDNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldGroupID, vs...))
+}
+
+// GroupIDIsNil applies the IsNil predicate on the "group_id" field.
+func GroupIDIsNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIsNull(FieldGroupID))
+}
+
+// GroupIDNotNil applies the NotNil predicate on the "group_id" field.
+func GroupIDNotNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotNull(FieldGroupID))
+}
+
+// HasGroup applies the HasEdge predicate on the "group" edge.
+func HasGroup() predicate.DeviceSettings {
+	return predicate.DeviceSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, GroupTable, GroupColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGroupWith applies the HasEdge predicate on the "group" edge with a given conditions (other predicates).
+func HasGroupWith(preds ...predicate.DeviceGroup) predicate.DeviceSettings {
+	return predicate.DeviceSettings(func(s *sql.Selector) {
+		step := newGroupStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

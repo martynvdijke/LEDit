@@ -32,7 +32,9 @@ type ApiToken struct {
 	// RevokedAt holds the value of the "revoked_at" field.
 	RevokedAt *time.Time `json:"revoked_at,omitempty"`
 	// LastUsedAt holds the value of the "last_used_at" field.
-	LastUsedAt   *time.Time `json:"last_used_at,omitempty"`
+	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
+	// Role holds the value of the "role" field.
+	Role         apitoken.Role `json:"role,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -43,7 +45,7 @@ func (*ApiToken) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case apitoken.FieldID, apitoken.FieldOwnerID:
 			values[i] = new(sql.NullInt64)
-		case apitoken.FieldName, apitoken.FieldTokenHash, apitoken.FieldTokenPrefix:
+		case apitoken.FieldName, apitoken.FieldTokenHash, apitoken.FieldTokenPrefix, apitoken.FieldRole:
 			values[i] = new(sql.NullString)
 		case apitoken.FieldCreatedAt, apitoken.FieldExpiresAt, apitoken.FieldRevokedAt, apitoken.FieldLastUsedAt:
 			values[i] = new(sql.NullTime)
@@ -119,6 +121,12 @@ func (_m *ApiToken) assignValues(columns []string, values []any) error {
 				_m.LastUsedAt = new(time.Time)
 				*_m.LastUsedAt = value.Time
 			}
+		case apitoken.FieldRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field role", values[i])
+			} else if value.Valid {
+				_m.Role = apitoken.Role(value.String)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -184,6 +192,9 @@ func (_m *ApiToken) String() string {
 		builder.WriteString("last_used_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("role=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Role))
 	builder.WriteByte(')')
 	return builder.String()
 }

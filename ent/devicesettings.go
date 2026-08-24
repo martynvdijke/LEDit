@@ -4,6 +4,7 @@ package ent
 
 import (
 	"fmt"
+	"ledit/ent/devicegroup"
 	"ledit/ent/devicesettings"
 	"strings"
 	"time"
@@ -44,9 +45,48 @@ type DeviceSettings struct {
 	// ContentMode holds the value of the "content_mode" field.
 	ContentMode string `json:"content_mode,omitempty"`
 	// PlaylistID holds the value of the "playlist_id" field.
-	PlaylistID                       *int `json:"playlist_id,omitempty"`
+	PlaylistID *int `json:"playlist_id,omitempty"`
+	// JSON: [1,2,3] ordered candidate playlist ids for scheduled mode
+	ScheduledPlaylistIds string `json:"scheduled_playlist_ids,omitempty"`
+	// FallbackPlaylistID holds the value of the "fallback_playlist_id" field.
+	FallbackPlaylistID *int `json:"fallback_playlist_id,omitempty"`
+	// BrightnessEnabled holds the value of the "brightness_enabled" field.
+	BrightnessEnabled bool `json:"brightness_enabled,omitempty"`
+	// JSON: [{days:[0..6], start:"HH:MM", end:"HH:MM", level:int}]
+	BrightnessSchedules string `json:"brightness_schedules,omitempty"`
+	// BrightnessOverride holds the value of the "brightness_override" field.
+	BrightnessOverride *int `json:"brightness_override,omitempty"`
+	// JSON: {entity_id:string, lux_levels:[{maxLux,float level int}]}
+	BrightnessSensorConfig *string `json:"brightness_sensor_config,omitempty"`
+	// IdleScreensaver holds the value of the "idle_screensaver" field.
+	IdleScreensaver *string `json:"idle_screensaver,omitempty"`
+	// GroupID holds the value of the "group_id" field.
+	GroupID *int `json:"group_id,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the DeviceSettingsQuery when eager-loading is set.
+	Edges                            DeviceSettingsEdges `json:"edges"`
 	general_settings_device_settings *int
 	selectValues                     sql.SelectValues
+}
+
+// DeviceSettingsEdges holds the relations/edges for other nodes in the graph.
+type DeviceSettingsEdges struct {
+	// Group holds the value of the group edge.
+	Group *DeviceGroup `json:"group,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// GroupOrErr returns the Group value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DeviceSettingsEdges) GroupOrErr() (*DeviceGroup, error) {
+	if e.Group != nil {
+		return e.Group, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: devicegroup.Label}
+	}
+	return nil, &NotLoadedError{edge: "group"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -54,11 +94,11 @@ func (*DeviceSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case devicesettings.FieldEnabled:
+		case devicesettings.FieldEnabled, devicesettings.FieldBrightnessEnabled:
 			values[i] = new(sql.NullBool)
-		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed, devicesettings.FieldPlaylistID:
+		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed, devicesettings.FieldPlaylistID, devicesettings.FieldFallbackPlaylistID, devicesettings.FieldBrightnessOverride, devicesettings.FieldGroupID:
 			values[i] = new(sql.NullInt64)
-		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken, devicesettings.FieldContentMode:
+		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken, devicesettings.FieldContentMode, devicesettings.FieldScheduledPlaylistIds, devicesettings.FieldBrightnessSchedules, devicesettings.FieldBrightnessSensorConfig, devicesettings.FieldIdleScreensaver:
 			values[i] = new(sql.NullString)
 		case devicesettings.FieldLastSeenAt:
 			values[i] = new(sql.NullTime)
@@ -171,6 +211,59 @@ func (_m *DeviceSettings) assignValues(columns []string, values []any) error {
 				_m.PlaylistID = new(int)
 				*_m.PlaylistID = int(value.Int64)
 			}
+		case devicesettings.FieldScheduledPlaylistIds:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field scheduled_playlist_ids", values[i])
+			} else if value.Valid {
+				_m.ScheduledPlaylistIds = value.String
+			}
+		case devicesettings.FieldFallbackPlaylistID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field fallback_playlist_id", values[i])
+			} else if value.Valid {
+				_m.FallbackPlaylistID = new(int)
+				*_m.FallbackPlaylistID = int(value.Int64)
+			}
+		case devicesettings.FieldBrightnessEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field brightness_enabled", values[i])
+			} else if value.Valid {
+				_m.BrightnessEnabled = value.Bool
+			}
+		case devicesettings.FieldBrightnessSchedules:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field brightness_schedules", values[i])
+			} else if value.Valid {
+				_m.BrightnessSchedules = value.String
+			}
+		case devicesettings.FieldBrightnessOverride:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field brightness_override", values[i])
+			} else if value.Valid {
+				_m.BrightnessOverride = new(int)
+				*_m.BrightnessOverride = int(value.Int64)
+			}
+		case devicesettings.FieldBrightnessSensorConfig:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field brightness_sensor_config", values[i])
+			} else if value.Valid {
+				_m.BrightnessSensorConfig = new(string)
+				*_m.BrightnessSensorConfig = value.String
+			}
+		case devicesettings.FieldIdleScreensaver:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field idle_screensaver", values[i])
+			} else if value.Valid {
+				_m.IdleScreensaver = new(string)
+				*_m.IdleScreensaver = value.String
+			}
+		case devicesettings.FieldGroupID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field group_id", values[i])
+			} else if value.Valid {
+				_m.GroupID = new(int)
+				*_m.GroupID = int(value.Int64)
+			}
 		case devicesettings.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field general_settings_device_settings", value)
@@ -189,6 +282,11 @@ func (_m *DeviceSettings) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *DeviceSettings) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryGroup queries the "group" edge of the DeviceSettings entity.
+func (_m *DeviceSettings) QueryGroup() *DeviceGroupQuery {
+	return NewDeviceSettingsClient(_m.config).QueryGroup(_m)
 }
 
 // Update returns a builder for updating this DeviceSettings.
@@ -257,6 +355,40 @@ func (_m *DeviceSettings) String() string {
 	builder.WriteString(", ")
 	if v := _m.PlaylistID; v != nil {
 		builder.WriteString("playlist_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("scheduled_playlist_ids=")
+	builder.WriteString(_m.ScheduledPlaylistIds)
+	builder.WriteString(", ")
+	if v := _m.FallbackPlaylistID; v != nil {
+		builder.WriteString("fallback_playlist_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("brightness_enabled=")
+	builder.WriteString(fmt.Sprintf("%v", _m.BrightnessEnabled))
+	builder.WriteString(", ")
+	builder.WriteString("brightness_schedules=")
+	builder.WriteString(_m.BrightnessSchedules)
+	builder.WriteString(", ")
+	if v := _m.BrightnessOverride; v != nil {
+		builder.WriteString("brightness_override=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.BrightnessSensorConfig; v != nil {
+		builder.WriteString("brightness_sensor_config=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.IdleScreensaver; v != nil {
+		builder.WriteString("idle_screensaver=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.GroupID; v != nil {
+		builder.WriteString("group_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteByte(')')

@@ -112,6 +112,7 @@ type apiTokenView struct {
 	ID         int        `json:"id"`
 	Name       string     `json:"name"`
 	Prefix     string     `json:"prefix"`
+	Role       string     `json:"role"`
 	CreatedAt  time.Time  `json:"created_at"`
 	ExpiresAt  *time.Time `json:"expires_at,omitempty"`
 	RevokedAt  *time.Time `json:"revoked_at,omitempty"`
@@ -123,6 +124,7 @@ func toAPITokenView(t *ent.ApiToken) apiTokenView {
 		ID:         t.ID,
 		Name:       t.Name,
 		Prefix:     t.TokenPrefix,
+		Role:       string(t.Role),
 		CreatedAt:  t.CreatedAt,
 		ExpiresAt:  t.ExpiresAt,
 		RevokedAt:  t.RevokedAt,
@@ -154,6 +156,17 @@ func (s *Server) AdminAPITokenCreate(c *gin.Context) {
 	if name == "" {
 		name = "default"
 	}
+	roleStr := strings.TrimSpace(c.PostForm("role"))
+	if roleStr == "" {
+		roleStr = c.Query("role")
+	}
+	if roleStr == "" {
+		roleStr = "admin"
+	}
+	if roleStr != "admin" && roleStr != "viewer" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid role"})
+		return
+	}
 
 	owner, err := s.DB.AdminSettings.Query().First(s.Ctx)
 	if err != nil {
@@ -162,13 +175,18 @@ func (s *Server) AdminAPITokenCreate(c *gin.Context) {
 	}
 
 	secret, prefix := generateAPIToken()
-	tok, err := s.DB.ApiToken.Create().
+	builder := s.DB.ApiToken.Create().
 		SetName(name).
 		SetTokenHash(hashAPIToken(secret)).
 		SetTokenPrefix(prefix).
 		SetOwnerID(owner.ID).
-		SetCreatedAt(time.Now()).
-		Save(s.Ctx)
+		SetCreatedAt(time.Now())
+	if roleStr == "viewer" {
+		builder.SetRole(apitoken.RoleViewer)
+	} else {
+		builder.SetRole(apitoken.RoleAdmin)
+	}
+	tok, err := builder.Save(s.Ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create token"})
 		return
@@ -179,6 +197,7 @@ func (s *Server) AdminAPITokenCreate(c *gin.Context) {
 		"id":     tok.ID,
 		"name":   tok.Name,
 		"prefix": tok.TokenPrefix,
+		"role":   string(tok.Role),
 		"secret": secret,
 	})
 }
@@ -234,6 +253,7 @@ func (s *Server) AdminAPITokenRotate(c *gin.Context) {
 		SetTokenHash(hashAPIToken(secret)).
 		SetTokenPrefix(prefix).
 		SetOwnerID(owner.ID).
+		SetRole(existing.Role).
 		SetCreatedAt(now).
 		Save(s.Ctx)
 	if err != nil {
@@ -245,6 +265,7 @@ func (s *Server) AdminAPITokenRotate(c *gin.Context) {
 		"id":     tok.ID,
 		"name":   tok.Name,
 		"prefix": tok.TokenPrefix,
+		"role":   string(tok.Role),
 		"secret": secret,
 	})
 }

@@ -14,8 +14,37 @@ type displayEvent struct {
 var (
 	analyticsMu sync.Mutex
 	events      []displayEvent
+	skipEvents  []skipEvent
 	startTime   = time.Now()
 )
+
+type skipEvent struct {
+	SourceType  string
+	SourceID    int
+	SourceLabel string
+	Time        time.Time
+}
+
+var unattributedSkips int
+
+func RecordSkip(sourceType string, sourceID int, label string) {
+	analyticsMu.Lock()
+	defer analyticsMu.Unlock()
+	if sourceType == "" && label == "" {
+		unattributedSkips++
+		return
+	}
+	skipEvents = append(skipEvents, skipEvent{SourceType: sourceType, SourceID: sourceID, SourceLabel: label, Time: time.Now()})
+	if len(skipEvents) > 1000 {
+		skipEvents = skipEvents[len(skipEvents)-1000:]
+	}
+}
+
+func GetUnattributedSkips() int {
+	analyticsMu.Lock()
+	defer analyticsMu.Unlock()
+	return unattributedSkips
+}
 
 func TrackDisplay(source string, duration float64) {
 	analyticsMu.Lock()

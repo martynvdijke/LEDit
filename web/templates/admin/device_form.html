@@ -11,7 +11,7 @@
         {{template "sidebar" .}}
         <div class="container-fluid p-4">
             <h1>{{if .edit}}Edit{{else}}New{{end}} Device</h1>
-            <form method="POST" action="/admin/devices{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4">
+            <form method="POST" action="/admin/devices{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4" id="device-form">
                 <div class="mb-3"><label for="name" class="form-label">Name</label><input type="text" class="form-control" id="name" name="name" value="{{if .obj}}{{.obj.Name}}{{end}}"></div>
                 <div class="mb-3"><label for="ip" class="form-label">IP Address</label><input type="text" class="form-control" id="ip" name="ip" value="{{if .obj}}{{.obj.IP}}{{end}}"></div>
                 <div class="mb-3"><label for="port" class="form-label">Port</label><input type="number" class="form-control" id="port" name="port" value="{{if .obj}}{{.obj.Port}}{{else}}6270{{end}}"></div>
@@ -24,22 +24,151 @@
                     <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if not .edit}}checked{{else if .obj.Enabled}}checked{{end}}>
                     <label for="enabled" class="form-check-label">Enabled</label>
                 </div>
+                <input type="hidden" name="scheduled_playlist_ids" id="scheduled_playlist_ids" value="{{if .scheduledJSON}}{{.scheduledJSON}}{{else if .selectedScheduledIDs}}[{{range $i,$v := .selectedScheduledIDs}}{{if $i}},{{end}}{{$v}}{{end}}]{{else}}[]{{end}}">
                 <div class="mb-3">
                     <label class="form-label">Content</label>
                     <select class="form-select mb-2" id="content_mode" name="content_mode">
-                        <option value="global" {{if .obj}}{{if eq .obj.ContentMode "playlist"}}{{else}}selected{{end}}{{else}}selected{{end}}>Global rotation</option>
+                        <option value="global" {{if .obj}}{{if eq .obj.ContentMode "scheduled"}}{{else if eq .obj.ContentMode "playlist"}}{{else}}selected{{end}}{{else}}selected{{end}}>Global rotation</option>
                         <option value="playlist" {{if .obj}}{{if eq .obj.ContentMode "playlist"}}selected{{end}}{{end}}>Playlist</option>
+                        <option value="scheduled" {{if .obj}}{{if eq .obj.ContentMode "scheduled"}}selected{{end}}{{end}}>Scheduled</option>
                     </select>
-                    <select class="form-select" id="playlist_id" name="playlist_id">
-                        <option value="">— No playlist —</option>
-                        {{range .playlists}}<option value="{{.ID}}" {{if eq $.selectedPlaylistID .ID}}selected{{end}}>{{.Name}}</option>{{end}}
-                    </select>
+                    <div id="playlist-section">
+                        <select class="form-select" id="playlist_id" name="playlist_id">
+                            <option value="">— No playlist —</option>
+                            {{range .playlists}}<option value="{{.ID}}" {{if eq $.selectedPlaylistID .ID}}selected{{end}}>{{.Name}}</option>{{end}}
+                        </select>
+                    </div>
+                    <div id="scheduled-section" style="display:none">
+                        <label class="form-label small text-muted mb-1">Scheduled candidates (ordered)</label>
+                        <div class="d-flex gap-2 align-items-center flex-wrap mb-2">
+                            <select id="candidate-picker" class="form-select" style="width:auto;min-width:220px">
+                                <option value="">— select playlist —</option>
+                                {{range .playlists}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+                            </select>
+                            <button type="button" id="add-candidate" class="btn btn-sm btn-outline-primary">Add</button>
+                        </div>
+                        <ul id="candidates-list" class="list-group mb-2"></ul>
+                        <small class="text-muted d-block mb-3">Max 16 candidates. Order matters: earlier wins on priority tie.</small>
+                        <label for="fallback_playlist_id" class="form-label small text-muted">Fallback</label>
+                        <select id="fallback_playlist_id" name="fallback_playlist_id" class="form-select" style="max-width:360px">
+                            <option value="">— No fallback (use global) —</option>
+                            {{range .playlists}}<option value="{{.ID}}" {{if eq $.selectedFallbackID .ID}}selected{{end}}>{{.Name}}</option>{{end}}
+                        </select>
+                    </div>
                     <div class="form-text text-muted small">Playlists play in saved order; Random applies to global mode only.</div>
+                    {{if .obj}}{{if .obj.GroupID}}<small class="text-muted inherited-hint">(inherited from group)</small>{{end}}{{end}}
+                </div>
+                <div class="mb-3"><label class="form-label">Idle screensaver (fallback when no content)</label><select class="form-select" name="idle_screensaver"><option value="" {{if .obj}}{{if not .obj.IdleScreensaver}}selected{{end}}{{else}}selected{{end}}>— Disabled —</option><option value="starfield" {{if .obj}}{{if .obj.IdleScreensaver}}{{if eq (print .obj.IdleScreensaver) "starfield"}}selected{{end}}{{end}}{{end}}>Starfield</option><option value="dvd" {{if .obj}}{{if .obj.IdleScreensaver}}{{if eq (print .obj.IdleScreensaver) "dvd"}}selected{{end}}{{end}}{{end}}>DVD Bounce</option><option value="matrix" {{if .obj}}{{if .obj.IdleScreensaver}}{{if eq (print .obj.IdleScreensaver) "matrix"}}selected{{end}}{{end}}{{end}}>Matrix</option><option value="plasma" {{if .obj}}{{if .obj.IdleScreensaver}}{{if eq (print .obj.IdleScreensaver) "plasma"}}selected{{end}}{{end}}{{end}}>Plasma</option></select><div class="form-text small text-muted">Additive: only when resolved list empty (fresh DB). Screensavers are ordinary sources; this is last-resort fallback. TRMNL unaffected.</div></div>
+                <div class="card mb-3 p-3">
+                    <h5>Brightness <small class="text-muted">WS LED only — server-side linear multiplier after blending, before PNG encode; server timezone: local. Future protocol extension `{brightness:int}` reserved.</small></h5>
+                    <div class="form-check mb-2"><input type="checkbox" class="form-check-input" id="brightness_enabled" name="brightness_enabled" {{if .obj}}{{if .obj.BrightnessEnabled}}checked{{end}}{{end}}><label class="form-check-label" for="brightness_enabled">Enable brightness scheduling</label></div>
+                    <input type="hidden" name="brightness_schedules" id="brightness_schedules" value="{{if .obj}}{{.obj.BrightnessSchedules}}{{else}}[]{{end}}">
+                    <div id="brightness-editor" class="mb-2"></div>
+                    <div class="mb-2"><label class="form-label">Override (0-100, empty=auto)</label><div class="d-flex gap-2"><input type="number" class="form-control" id="brightness_override" name="brightness_override" min="0" max="100" value="{{if .obj}}{{if .obj.BrightnessOverride}}{{.obj.BrightnessOverride}}{{end}}{{end}}" style="max-width:120px"><button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('brightness_override').value=''">Auto</button></div></div>
+                    <div class="mb-2"><label class="form-label">Sensor config (JSON, optional)</label><textarea class="form-control" id="brightness_sensor_config" name="brightness_sensor_config" rows="2" placeholder='{"entity_id":"sensor.illuminance","lux_levels":[{"maxLux":100,"level":30}]}'>{{if .obj}}{{if .obj.BrightnessSensorConfig}}{{.obj.BrightnessSensorConfig}}{{end}}{{end}}</textarea></div>
                 </div>
                 <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
                 <a href="/admin/devices" class="btn btn-secondary">Cancel</a>
             </form>
         </div>
     </div>
+<script>
+(function(){
+    var modeSel = document.getElementById('content_mode');
+    var playlistSection = document.getElementById('playlist-section');
+    var scheduledSection = document.getElementById('scheduled-section');
+    var hidden = document.getElementById('scheduled_playlist_ids');
+    var picker = document.getElementById('candidate-picker');
+    var addBtn = document.getElementById('add-candidate');
+    var listEl = document.getElementById('candidates-list');
+    var form = document.getElementById('device-form');
+
+    var candidates = [];
+    try {
+        var raw = hidden.value || '[]';
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) candidates = parsed.map(function(v){ return parseInt(v,10); }).filter(function(v){ return !isNaN(v); });
+    } catch(e){ candidates = []; }
+
+    var playlistNames = {};
+    {{if .playlists}} {{range .playlists}} playlistNames[{{.ID}}] = {{printf "%q" .Name}}; {{end}} {{end}}
+
+    function labelFor(id){
+        return playlistNames[id] ? playlistNames[id] + ' (#'+id+')' : 'Playlist #'+id;
+    }
+
+    function syncHidden(){
+        hidden.value = JSON.stringify(candidates);
+    }
+
+    function render(){
+        listEl.innerHTML = '';
+        if (candidates.length === 0){
+            var empty = document.createElement('li');
+            empty.className = 'list-group-item text-muted small fst-italic';
+            empty.textContent = 'No candidates — add enabled playlists above.';
+            listEl.appendChild(empty);
+        }
+        candidates.forEach(function(pid, idx){
+            var li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center py-2';
+            var span = document.createElement('span');
+            span.textContent = (idx+1)+'. ' + labelFor(pid);
+            span.className = 'small';
+            var ctr = document.createElement('div');
+            ctr.className = 'd-flex gap-1';
+            var up = document.createElement('button'); up.type='button'; up.className='btn btn-sm btn-secondary'; up.textContent='▲'; up.title='Move up';
+            up.disabled = idx===0;
+            up.onclick = function(){ if(idx>0){ var tmp=candidates[idx-1]; candidates[idx-1]=candidates[idx]; candidates[idx]=tmp; syncHidden(); render(); }};
+            var down = document.createElement('button'); down.type='button'; down.className='btn btn-sm btn-secondary'; down.textContent='▼'; down.title='Move down';
+            down.disabled = idx===candidates.length-1;
+            down.onclick = function(){ if(idx<candidates.length-1){ var tmp=candidates[idx+1]; candidates[idx+1]=candidates[idx]; candidates[idx]=tmp; syncHidden(); render(); }};
+            var rm = document.createElement('button'); rm.type='button'; rm.className='btn btn-sm btn-outline-danger'; rm.textContent='✕'; rm.title='Remove';
+            rm.onclick = function(){ candidates.splice(idx,1); syncHidden(); render(); };
+            ctr.appendChild(up); ctr.appendChild(down); ctr.appendChild(rm);
+            li.appendChild(span); li.appendChild(ctr);
+            listEl.appendChild(li);
+        });
+        syncHidden();
+    }
+
+    function toggleVisibility(){
+        var mode = modeSel.value;
+        if (mode === 'scheduled'){
+            playlistSection.style.display = 'none';
+            scheduledSection.style.display = 'block';
+        } else if (mode === 'playlist'){
+            playlistSection.style.display = 'block';
+            scheduledSection.style.display = 'none';
+        } else {
+            playlistSection.style.display = 'none';
+            scheduledSection.style.display = 'none';
+        }
+    }
+
+    addBtn.addEventListener('click', function(){
+        var val = picker.value;
+        if(!val) return;
+        var pid = parseInt(val,10);
+        if(candidates.indexOf(pid) !== -1) return;
+        if(candidates.length >= 16){
+            alert('Max 16 candidates reached');
+            return;
+        }
+        candidates.push(pid);
+        picker.value = '';
+        syncHidden();
+        render();
+    });
+
+    modeSel.addEventListener('change', toggleVisibility);
+    if(form){
+        form.addEventListener('submit', function(){ syncHidden(); });
+    }
+
+    toggleVisibility();
+    render();
+})();
+</script>
 </body><script type="module" src="/static/assets/app.js"></script>
 </html>

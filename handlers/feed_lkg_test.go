@@ -24,7 +24,7 @@ func TestFeedStaleFlag(t *testing.T) {
 		}
 		defer conn.Close()
 		sources := []sourceWithName{{Name: "Toggle", Source: ds, cacheKey: "toggle:1"}}
-		serveFeed(conn, feedConn{}, sources, false, 50*time.Millisecond, 64, 64, &FeedController{}, "none", 500)
+		serveFeed(conn, feedConn{}, sources, false, 50*time.Millisecond, 64, 64, &FeedController{}, "none", 500, nil)
 	}))
 	defer srv.Close()
 

@@ -29,6 +29,21 @@ func (GeneralSettings) Fields() []ent.Field {
 			}
 		}),
 		field.Int("transition_ms").Default(500).Min(100).Max(2000),
+		field.Int("chart_retention_hours").Default(48),
+		field.Int("chart_max_points_per_source").Default(576),
+		field.String("now_playing_provider").Default("disabled"),
+		field.String("ordering_mode").Default("random").Validate(func(s string) error {
+			switch s {
+			case "sequential", "random", "adaptive":
+				return nil
+			default:
+				return errors.New("ordering_mode must be one of sequential, random, adaptive")
+			}
+		}),
+		field.Float("adaptive_floor").Default(0.05),
+		field.Int("adaptive_half_life_days").Default(7),
+		field.Int("adaptive_window_days").Default(14),
+		field.Float("adaptive_epsilon").Default(0.15),
 	}
 }
 
@@ -72,5 +87,7 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("sports", Sports.Type),
 		edge.To("sunmoons", SunMoon.Type),
 		edge.To("jellyfins", Jellyfin.Type),
+		edge.To("mpds", MPD.Type),
+		edge.To("qrcodes", Qrcode.Type),
 	}
 }

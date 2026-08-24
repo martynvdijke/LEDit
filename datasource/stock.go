@@ -53,6 +53,15 @@ func (s *StockDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 		}
 	} else {
 		slog.Info("stock data fetched successfully", "source", "stock", "symbols_found", len(data))
+		for _, v := range data {
+			var f float64
+			s := strings.TrimPrefix(v, "$")
+			s = strings.Fields(s)[0]
+			if _, err := fmt.Sscanf(s, "%f", &f); err == nil {
+				RecordChartValue(f)
+				break
+			}
+		}
 	}
 
 	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")

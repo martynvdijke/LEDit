@@ -26,6 +26,7 @@ var pathToActive = map[string]string{
 	"/admin/settings":        "settings",
 	"/admin/schedules":       "schedules",
 	"/admin/devices":         "devices",
+	"/admin/groups":          "groups",
 	"/admin/theme":           "theme",
 	"/admin/logs":            "logs",
 	"/admin/settings/logs":   "log-settings",
@@ -76,6 +77,15 @@ func (s *Server) renderPage(c *gin.Context, httpCode int, name string, obj gin.H
 	// Inject e-ink mode state from middleware
 	if em, ok := c.Get("eink_mode"); ok {
 		obj["eink_mode"] = em
+	}
+	if r, ok := c.Get("user_role"); ok {
+		obj["user_role"] = r
+	} else if r := getSessionRole(c); r != "" {
+		obj["user_role"] = r
+	}
+	// isViewer flag for templates
+	if obj["user_role"] == "viewer" {
+		obj["isViewer"] = true
 	}
 	c.HTML(httpCode, name, obj)
 }
@@ -232,7 +242,7 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 			sources = append(sources, sourceEntry{ID: ad.ID, Type: "AI Digest", Endpoint: "aidigests", Name: ad.Name})
 		}
 		for _, pa := range pixelArtItems {
-			if !pa.Enabled {
+			if !pa.Enabled || pa.IsDraft {
 				continue
 			}
 			sources = append(sources, sourceEntry{ID: pa.ID, Type: "Pixel Art", Endpoint: "pixelart", Name: pa.Name})
@@ -359,8 +369,28 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 			transitionMs = v
 		}
 	}
+	orderingMode := c.PostForm("ordering_mode")
+	if orderingMode == "" {
+		orderingMode = "random"
+	}
+	halfLife, _ := strconv.Atoi(c.PostForm("adaptive_half_life_days"))
+	if halfLife == 0 {
+		halfLife = 7
+	}
+	windowDays, _ := strconv.Atoi(c.PostForm("adaptive_window_days"))
+	if windowDays == 0 {
+		windowDays = 14
+	}
+	floor, _ := strconv.ParseFloat(c.PostForm("adaptive_floor"), 64)
+	if c.PostForm("adaptive_floor") == "" {
+		floor = 0.05
+	}
+	epsilon, _ := strconv.ParseFloat(c.PostForm("adaptive_epsilon"), 64)
+	if c.PostForm("adaptive_epsilon") == "" {
+		epsilon = 0.15
+	}
 
-	v := NewValidator().RangeFloat("Timeout", timeout, 0.1, 3600).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512).OneOf("Transition style", transitionStyle, "none", "fade", "wipe", "dissolve").RangeInt("Transition duration", transitionMs, 100, 2000)
+	v := NewValidator().RangeFloat("Timeout", timeout, 0.1, 3600).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512).OneOf("Transition style", transitionStyle, "none", "fade", "wipe", "dissolve").RangeInt("Transition duration", transitionMs, 100, 2000).OneOf("Ordering mode", orderingMode, "sequential", "random", "adaptive").RangeInt("Half-life", halfLife, 1, 30).RangeInt("Window", windowDays, 1, 90).RangeFloat("Floor", floor, 0, 0.2).RangeFloat("Epsilon", epsilon, 0, 0.5)
 	if !v.Valid() {
 		SetFlash(c, "danger", v.Error())
 		c.Redirect(http.StatusFound, "/admin/settings")
@@ -377,6 +407,11 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 			SetEinkMode(einkMode).
 			SetTransitionStyle(transitionStyle).
 			SetTransitionMs(transitionMs).
+			SetOrderingMode(orderingMode).
+			SetAdaptiveHalfLifeDays(halfLife).
+			SetAdaptiveWindowDays(windowDays).
+			SetAdaptiveFloor(floor).
+			SetAdaptiveEpsilon(epsilon).
 			Save(s.Ctx)
 	} else {
 		s.DB.GeneralSettings.UpdateOneID(1).
@@ -387,8 +422,15 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 			SetEinkMode(einkMode).
 			SetTransitionStyle(transitionStyle).
 			SetTransitionMs(transitionMs).
+			SetOrderingMode(orderingMode).
+			SetAdaptiveHalfLifeDays(halfLife).
+			SetAdaptiveWindowDays(windowDays).
+			SetAdaptiveFloor(floor).
+			SetAdaptiveEpsilon(epsilon).
 			Exec(s.Ctx)
 	}
+	SetOrderingMode(orderingMode)
+	globalWeightsCache.RecomputeFromAnalytics(AdaptiveConfig{WindowDays: windowDays, HalfLifeDays: halfLife, Floor: floor, Epsilon: epsilon, Beta: 1.0, MinDisplaysForSkipTrust: 10})
 	SetFlash(c, "success", "Settings saved")
 	c.Redirect(http.StatusFound, "/admin/")
 }
@@ -497,15 +539,29 @@ func (s *Server) AdminStockDelete(c *gin.Context) { s.deleteTokenURLDS(c, "stock
 // ---------------------------------------------------------------------------
 
 func (s *Server) AdminDeviceSettingsList(c *gin.Context) {
-	settings, err := s.DB.GeneralSettings.Query().WithDeviceSettings().Only(s.Ctx)
-	if err != nil {
-		s.renderPage(c, http.StatusOK, "devices.html", gin.H{"devices": []any{}})
-		return
+	// Eager load groups for grouping.
+	devices, _ := s.DB.DeviceSettings.Query().WithGroup().Order(ent.Asc(devicesettings.FieldID)).All(s.Ctx)
+	// optional filter ?group=:id
+	groupFilter := c.Query("group")
+	if groupFilter != "" {
+		if gid, err := strconv.Atoi(groupFilter); err == nil {
+			var filtered []*ent.DeviceSettings
+			for _, d := range devices {
+				if d.GroupID != nil && *d.GroupID == gid {
+					filtered = append(filtered, d)
+				}
+			}
+			devices = filtered
+		} else if groupFilter == "ungrouped" {
+			var filtered []*ent.DeviceSettings
+			for _, d := range devices {
+				if d.GroupID == nil {
+					filtered = append(filtered, d)
+				}
+			}
+			devices = filtered
+		}
 	}
-	devices, _ := settings.Edges.DeviceSettingsOrErr()
-
-	// Derive fleet liveness from last_seen_at vs 3x refresh interval, and
-	// surface any recorded device errors from the health registry.
 	liveness := map[int]string{}
 	lastErrors := map[int]string{}
 	snap := Health.Snapshot()
@@ -515,7 +571,6 @@ func (s *Server) AdminDeviceSettingsList(c *gin.Context) {
 			lastErrors[d.ID] = sh.LastError
 		}
 	}
-	// Batch-load playlist names for badge rendering.
 	playlists, _ := s.DB.Playlist.Query().All(s.Ctx)
 	playlistNames := map[int]string{}
 	for _, pl := range playlists {
@@ -524,6 +579,38 @@ func (s *Server) AdminDeviceSettingsList(c *gin.Context) {
 	type deviceRow struct {
 		*ent.DeviceSettings
 		PlaylistName string
+		ScheduledIDs []int
+		FallbackName string
+		GroupName    string
+	}
+	// Build grouped slices for template
+	groups, _ := s.DB.DeviceGroup.Query().WithDevices().All(s.Ctx)
+	groupNames := map[int]string{}
+	for _, g := range groups {
+		groupNames[g.ID] = g.Name
+	}
+	// aggregate liveness per group
+	groupAgg := map[int]string{}
+	// count per group
+	groupCounts := map[int]int{}
+	groupAlive := map[int]int{}
+	for _, d := range devices {
+		if d.GroupID != nil {
+			groupCounts[*d.GroupID]++
+			if liveness[d.ID] == "alive" {
+				groupAlive[*d.GroupID]++
+			}
+		}
+	}
+	for gid, total := range groupCounts {
+		alive := groupAlive[gid]
+		groupAgg[gid] = fmt.Sprintf("%d/%d online", alive, total)
+	}
+	// also ensure empty groups show 0/0
+	for _, g := range groups {
+		if _, ok := groupAgg[g.ID]; !ok {
+			groupAgg[g.ID] = "0/0 online"
+		}
 	}
 	rows := make([]deviceRow, len(devices))
 	for i, d := range devices {
@@ -531,10 +618,36 @@ func (s *Server) AdminDeviceSettingsList(c *gin.Context) {
 		if d.ContentMode == "playlist" && d.PlaylistID != nil {
 			pn = playlistNames[*d.PlaylistID]
 		}
-		rows[i] = deviceRow{DeviceSettings: d, PlaylistName: pn}
+		var sids []int
+		if d.ScheduledPlaylistIds != "" {
+			_ = json.Unmarshal([]byte(d.ScheduledPlaylistIds), &sids)
+		}
+		fn := ""
+		if d.FallbackPlaylistID != nil {
+			fn = playlistNames[*d.FallbackPlaylistID]
+		}
+		gn := ""
+		if d.GroupID != nil {
+			gn = groupNames[*d.GroupID]
+		}
+		rows[i] = deviceRow{DeviceSettings: d, PlaylistName: pn, ScheduledIDs: sids, FallbackName: fn, GroupName: gn}
+	}
+	// partition
+	var ungrouped []deviceRow
+	grouped := map[int][]deviceRow{}
+	for _, r := range rows {
+		if r.DeviceSettings.GroupID == nil {
+			ungrouped = append(ungrouped, r)
+		} else {
+			grouped[*r.DeviceSettings.GroupID] = append(grouped[*r.DeviceSettings.GroupID], r)
+		}
 	}
 	s.renderPage(c, http.StatusOK, "devices.html", gin.H{
 		"devices":       rows,
+		"ungrouped":     ungrouped,
+		"grouped":       grouped,
+		"groups":        groups,
+		"groupAgg":      groupAgg,
 		"host":          c.Request.Host,
 		"liveness":      liveness,
 		"lastErrors":    lastErrors,
@@ -565,7 +678,7 @@ func (s *Server) AdminDevicePreview(c *gin.Context) {
 
 func (s *Server) AdminDeviceSettingsNew(c *gin.Context) {
 	playlists, _ := s.DB.Playlist.Query().Where(playlist.EnabledEQ(true)).Order(playlist.ByName()).All(s.Ctx)
-	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"playlists": playlists, "selectedPlaylistID": 0})
+	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"playlists": playlists, "selectedPlaylistID": 0, "selectedScheduledIDs": []int{}, "selectedFallbackID": 0})
 }
 
 func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
@@ -605,8 +718,91 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		}
 		playlistID = &pid
 	}
+	// Scheduled mode fields
+	scheduledRaw := strings.TrimSpace(c.PostForm("scheduled_playlist_ids"))
+	if scheduledRaw == "" {
+		scheduledRaw = "[]"
+	}
+	var scheduledIDs []int
+	if err := json.Unmarshal([]byte(scheduledRaw), &scheduledIDs); err != nil {
+		SetFlash(c, "danger", "scheduled_playlist_ids: invalid JSON")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	if err := ValidateScheduledCandidates(scheduledIDs); err != nil {
+		SetFlash(c, "danger", err.Error())
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	fallbackRaw := strings.TrimSpace(c.PostForm("fallback_playlist_id"))
+	var fallbackID *int
+	if fallbackRaw != "" {
+		fid, err := strconv.Atoi(fallbackRaw)
+		if err != nil {
+			SetFlash(c, "danger", "fallback_playlist_id: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		fallbackID = &fid
+		if _, err := s.DB.Playlist.Get(s.Ctx, fid); err != nil {
+			slog.Warn("dangling fallback playlist id", "fallback_id", fid)
+		}
+	}
+	// Brightness fields
+	brightnessEnabled := c.PostForm("brightness_enabled") == "on"
+	brightnessSchedulesRaw := strings.TrimSpace(c.PostForm("brightness_schedules"))
+	if brightnessSchedulesRaw == "" {
+		brightnessSchedulesRaw = "[]"
+	}
+	bWindows, err := ParseBrightnessWindows(brightnessSchedulesRaw)
+	if err != nil {
+		SetFlash(c, "danger", "brightness_schedules: "+err.Error())
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	if err := ValidateBrightnessWindows(bWindows); err != nil {
+		SetFlash(c, "danger", err.Error())
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	brightnessOverrideRaw := strings.TrimSpace(c.PostForm("brightness_override"))
+	var brightnessOverride *int
+	if brightnessOverrideRaw != "" && brightnessOverrideRaw != "auto" {
+		vv, err := strconv.Atoi(brightnessOverrideRaw)
+		if err != nil || vv < 0 || vv > 100 {
+			SetFlash(c, "danger", "brightness_override: must be 0-100 or auto")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		brightnessOverride = &vv
+	}
+	brightnessSensorRaw := strings.TrimSpace(c.PostForm("brightness_sensor_config"))
+	var brightnessSensorCfg *string
+	if brightnessSensorRaw != "" && brightnessSensorRaw != "{}" && brightnessSensorRaw != "null" {
+		var cfg SensorConfig
+		if err := json.Unmarshal([]byte(brightnessSensorRaw), &cfg); err != nil {
+			SetFlash(c, "danger", "brightness_sensor_config: invalid JSON")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if err := ValidateSensorConfig(&cfg); err != nil {
+			SetFlash(c, "danger", err.Error())
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		brightnessSensorCfg = &brightnessSensorRaw
+	}
 
-	v := NewValidator().Required("Name", name).Port("Port", port).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512).OneOf("Content mode", contentMode, "global", "playlist")
+	idleRaw := strings.TrimSpace(c.PostForm("idle_screensaver"))
+	if idleRaw != "" {
+		if _, ok := map[string]bool{"starfield": true, "dvd": true, "matrix": true, "plasma": true}[idleRaw]; !ok {
+			SetFlash(c, "danger", "idle_screensaver: invalid variant")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+	}
+
+	v := NewValidator().Required("Name", name).Port("Port", port).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512).OneOf("Content mode", contentMode, "global", "playlist", "scheduled")
 	if !v.Valid() {
 		SetFlash(c, "danger", v.Error())
 		c.Redirect(http.StatusFound, "/admin/devices")
@@ -618,9 +814,32 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		SetUsername(username).SetPassword(password).
 		SetWidth(width).SetHeight(height).SetEnabled(enabled).
 		SetToken(generateDeviceToken()).SetRefreshInterval(refreshInterval).
-		SetContentMode(contentMode)
-	if playlistID != nil {
-		builder.SetPlaylistID(*playlistID)
+		SetContentMode(contentMode).
+		SetBrightnessEnabled(brightnessEnabled).
+		SetBrightnessSchedules(brightnessSchedulesRaw)
+	if idleRaw != "" {
+		builder.SetIdleScreensaver(idleRaw)
+	}
+	if brightnessOverride != nil {
+		builder.SetBrightnessOverride(*brightnessOverride)
+	}
+	if brightnessSensorCfg != nil {
+		builder.SetBrightnessSensorConfig(*brightnessSensorCfg)
+	}
+	if contentMode == "scheduled" {
+		builder.SetScheduledPlaylistIds(scheduledRaw)
+		if fallbackID != nil {
+			builder.SetFallbackPlaylistID(*fallbackID)
+		} else {
+			// fallback optional; leave nil (Clear not needed on create)
+		}
+		// Do not set single playlist_id when scheduled
+	} else {
+		builder.SetScheduledPlaylistIds("[]")
+		// Clear fallback is implicit (not set) on create
+		if playlistID != nil {
+			builder.SetPlaylistID(*playlistID)
+		}
 	}
 	obj := builder.SaveX(s.Ctx)
 	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
@@ -642,7 +861,15 @@ func (s *Server) AdminDeviceSettingsEdit(c *gin.Context) {
 	if obj.PlaylistID != nil {
 		selectedID = *obj.PlaylistID
 	}
-	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"obj": obj, "edit": true, "playlists": playlists, "selectedPlaylistID": selectedID})
+	var selectedScheduledIDs []int
+	if obj.ScheduledPlaylistIds != "" {
+		_ = json.Unmarshal([]byte(obj.ScheduledPlaylistIds), &selectedScheduledIDs)
+	}
+	selectedFallbackID := 0
+	if obj.FallbackPlaylistID != nil {
+		selectedFallbackID = *obj.FallbackPlaylistID
+	}
+	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"obj": obj, "edit": true, "playlists": playlists, "selectedPlaylistID": selectedID, "selectedScheduledIDs": selectedScheduledIDs, "selectedFallbackID": selectedFallbackID})
 }
 
 func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
@@ -674,7 +901,96 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		}
 		playlistID = &pid
 	}
-	v := NewValidator().Required("Name", name).Port("Port", port).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512).OneOf("Content mode", contentMode, "global", "playlist")
+	scheduledRaw := strings.TrimSpace(c.PostForm("scheduled_playlist_ids"))
+	if scheduledRaw == "" {
+		scheduledRaw = "[]"
+	}
+	var scheduledIDs []int
+	if err := json.Unmarshal([]byte(scheduledRaw), &scheduledIDs); err != nil {
+		SetFlash(c, "danger", "scheduled_playlist_ids: invalid JSON")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	if err := ValidateScheduledCandidates(scheduledIDs); err != nil {
+		SetFlash(c, "danger", err.Error())
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	fallbackRaw := strings.TrimSpace(c.PostForm("fallback_playlist_id"))
+	var fallbackID *int
+	if fallbackRaw != "" {
+		fid, err := strconv.Atoi(fallbackRaw)
+		if err != nil {
+			SetFlash(c, "danger", "fallback_playlist_id: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		fallbackID = &fid
+		if _, err := s.DB.Playlist.Get(s.Ctx, fid); err != nil {
+			slog.Warn("dangling fallback playlist id", "fallback_id", fid)
+		}
+	}
+	// Brightness fields (update)
+	brightnessEnabled := c.PostForm("brightness_enabled") == "on"
+	brightnessSchedulesRaw := strings.TrimSpace(c.PostForm("brightness_schedules"))
+	if brightnessSchedulesRaw == "" {
+		brightnessSchedulesRaw = "[]"
+	}
+	bWindows2, err2 := ParseBrightnessWindows(brightnessSchedulesRaw)
+	if err2 != nil {
+		SetFlash(c, "danger", "brightness_schedules: "+err2.Error())
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	if err := ValidateBrightnessWindows(bWindows2); err != nil {
+		SetFlash(c, "danger", err.Error())
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	brightnessOverrideRaw := strings.TrimSpace(c.PostForm("brightness_override"))
+	var brightnessOverride *int
+	hasOverride := false
+	if brightnessOverrideRaw != "" && brightnessOverrideRaw != "auto" {
+		vv, err := strconv.Atoi(brightnessOverrideRaw)
+		if err != nil || vv < 0 || vv > 100 {
+			SetFlash(c, "danger", "brightness_override: must be 0-100 or auto")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		brightnessOverride = &vv
+		hasOverride = true
+	} else if brightnessOverrideRaw == "auto" || brightnessOverrideRaw == "" {
+		hasOverride = false
+	}
+	brightnessSensorRaw := strings.TrimSpace(c.PostForm("brightness_sensor_config"))
+	var brightnessSensorCfg *string
+	hasSensor := false
+	if brightnessSensorRaw != "" && brightnessSensorRaw != "{}" && brightnessSensorRaw != "null" {
+		var cfg SensorConfig
+		if err := json.Unmarshal([]byte(brightnessSensorRaw), &cfg); err != nil {
+			SetFlash(c, "danger", "brightness_sensor_config: invalid JSON")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if err := ValidateSensorConfig(&cfg); err != nil {
+			SetFlash(c, "danger", err.Error())
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		brightnessSensorCfg = &brightnessSensorRaw
+		hasSensor = true
+	}
+
+	idleRaw2 := strings.TrimSpace(c.PostForm("idle_screensaver"))
+	if idleRaw2 != "" {
+		if _, ok := map[string]bool{"starfield": true, "dvd": true, "matrix": true, "plasma": true}[idleRaw2]; !ok {
+			SetFlash(c, "danger", "idle_screensaver: invalid variant")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+	}
+
+	v := NewValidator().Required("Name", name).Port("Port", port).RangeInt("Width", width, 1, 512).RangeInt("Height", height, 1, 512).OneOf("Content mode", contentMode, "global", "playlist", "scheduled")
 	if !v.Valid() {
 		SetFlash(c, "danger", v.Error())
 		c.Redirect(http.StatusFound, "/admin/devices")
@@ -686,11 +1002,40 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		SetUsername(username).SetPassword(password).
 		SetWidth(width).SetHeight(height).SetEnabled(enabled).
 		SetRefreshInterval(refreshInterval).
-		SetContentMode(contentMode)
-	if playlistID != nil {
-		upd.SetPlaylistID(*playlistID)
+		SetContentMode(contentMode).
+		SetBrightnessEnabled(brightnessEnabled).
+		SetBrightnessSchedules(brightnessSchedulesRaw)
+	if idleRaw2 != "" {
+		upd.SetIdleScreensaver(idleRaw2)
 	} else {
+		upd.ClearIdleScreensaver()
+	}
+	if hasOverride {
+		upd.SetBrightnessOverride(*brightnessOverride)
+	} else {
+		upd.ClearBrightnessOverride()
+	}
+	if hasSensor {
+		upd.SetBrightnessSensorConfig(*brightnessSensorCfg)
+	} else {
+		upd.ClearBrightnessSensorConfig()
+	}
+	if contentMode == "scheduled" {
+		upd.SetScheduledPlaylistIds(scheduledRaw)
+		if fallbackID != nil {
+			upd.SetFallbackPlaylistID(*fallbackID)
+		} else {
+			upd.ClearFallbackPlaylistID()
+		}
 		upd.ClearPlaylistID()
+	} else {
+		upd.SetScheduledPlaylistIds("[]")
+		upd.ClearFallbackPlaylistID()
+		if playlistID != nil {
+			upd.SetPlaylistID(*playlistID)
+		} else {
+			upd.ClearPlaylistID()
+		}
 	}
 	upd.Exec(s.Ctx)
 	SetFlash(c, "success", "Device updated")
@@ -700,6 +1045,7 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 func (s *Server) AdminDeviceSettingsDelete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	s.DB.DeviceSettings.DeleteOneID(id).Exec(s.Ctx)
+	ClearDeviceMqtt(id)
 	SetFlash(c, "success", "Device deleted")
 	c.Redirect(http.StatusFound, "/admin/devices")
 }

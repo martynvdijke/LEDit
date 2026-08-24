@@ -519,6 +519,26 @@ func LastUsedAtNotNil() predicate.ApiToken {
 	return predicate.ApiToken(sql.FieldNotNull(FieldLastUsedAt))
 }
 
+// RoleEQ applies the EQ predicate on the "role" field.
+func RoleEQ(v Role) predicate.ApiToken {
+	return predicate.ApiToken(sql.FieldEQ(FieldRole, v))
+}
+
+// RoleNEQ applies the NEQ predicate on the "role" field.
+func RoleNEQ(v Role) predicate.ApiToken {
+	return predicate.ApiToken(sql.FieldNEQ(FieldRole, v))
+}
+
+// RoleIn applies the In predicate on the "role" field.
+func RoleIn(vs ...Role) predicate.ApiToken {
+	return predicate.ApiToken(sql.FieldIn(FieldRole, vs...))
+}
+
+// RoleNotIn applies the NotIn predicate on the "role" field.
+func RoleNotIn(vs ...Role) predicate.ApiToken {
+	return predicate.ApiToken(sql.FieldNotIn(FieldRole, vs...))
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.ApiToken) predicate.ApiToken {
 	return predicate.ApiToken(sql.AndPredicates(predicates...))

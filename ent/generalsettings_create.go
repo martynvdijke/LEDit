@@ -24,11 +24,13 @@ import (
 	"ledit/ent/image"
 	"ledit/ent/jellyfin"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mpd"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
+	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -149,6 +151,118 @@ func (_c *GeneralSettingsCreate) SetTransitionMs(v int) *GeneralSettingsCreate {
 func (_c *GeneralSettingsCreate) SetNillableTransitionMs(v *int) *GeneralSettingsCreate {
 	if v != nil {
 		_c.SetTransitionMs(*v)
+	}
+	return _c
+}
+
+// SetChartRetentionHours sets the "chart_retention_hours" field.
+func (_c *GeneralSettingsCreate) SetChartRetentionHours(v int) *GeneralSettingsCreate {
+	_c.mutation.SetChartRetentionHours(v)
+	return _c
+}
+
+// SetNillableChartRetentionHours sets the "chart_retention_hours" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableChartRetentionHours(v *int) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetChartRetentionHours(*v)
+	}
+	return _c
+}
+
+// SetChartMaxPointsPerSource sets the "chart_max_points_per_source" field.
+func (_c *GeneralSettingsCreate) SetChartMaxPointsPerSource(v int) *GeneralSettingsCreate {
+	_c.mutation.SetChartMaxPointsPerSource(v)
+	return _c
+}
+
+// SetNillableChartMaxPointsPerSource sets the "chart_max_points_per_source" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableChartMaxPointsPerSource(v *int) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetChartMaxPointsPerSource(*v)
+	}
+	return _c
+}
+
+// SetNowPlayingProvider sets the "now_playing_provider" field.
+func (_c *GeneralSettingsCreate) SetNowPlayingProvider(v string) *GeneralSettingsCreate {
+	_c.mutation.SetNowPlayingProvider(v)
+	return _c
+}
+
+// SetNillableNowPlayingProvider sets the "now_playing_provider" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableNowPlayingProvider(v *string) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetNowPlayingProvider(*v)
+	}
+	return _c
+}
+
+// SetOrderingMode sets the "ordering_mode" field.
+func (_c *GeneralSettingsCreate) SetOrderingMode(v string) *GeneralSettingsCreate {
+	_c.mutation.SetOrderingMode(v)
+	return _c
+}
+
+// SetNillableOrderingMode sets the "ordering_mode" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableOrderingMode(v *string) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetOrderingMode(*v)
+	}
+	return _c
+}
+
+// SetAdaptiveFloor sets the "adaptive_floor" field.
+func (_c *GeneralSettingsCreate) SetAdaptiveFloor(v float64) *GeneralSettingsCreate {
+	_c.mutation.SetAdaptiveFloor(v)
+	return _c
+}
+
+// SetNillableAdaptiveFloor sets the "adaptive_floor" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableAdaptiveFloor(v *float64) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetAdaptiveFloor(*v)
+	}
+	return _c
+}
+
+// SetAdaptiveHalfLifeDays sets the "adaptive_half_life_days" field.
+func (_c *GeneralSettingsCreate) SetAdaptiveHalfLifeDays(v int) *GeneralSettingsCreate {
+	_c.mutation.SetAdaptiveHalfLifeDays(v)
+	return _c
+}
+
+// SetNillableAdaptiveHalfLifeDays sets the "adaptive_half_life_days" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableAdaptiveHalfLifeDays(v *int) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetAdaptiveHalfLifeDays(*v)
+	}
+	return _c
+}
+
+// SetAdaptiveWindowDays sets the "adaptive_window_days" field.
+func (_c *GeneralSettingsCreate) SetAdaptiveWindowDays(v int) *GeneralSettingsCreate {
+	_c.mutation.SetAdaptiveWindowDays(v)
+	return _c
+}
+
+// SetNillableAdaptiveWindowDays sets the "adaptive_window_days" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableAdaptiveWindowDays(v *int) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetAdaptiveWindowDays(*v)
+	}
+	return _c
+}
+
+// SetAdaptiveEpsilon sets the "adaptive_epsilon" field.
+func (_c *GeneralSettingsCreate) SetAdaptiveEpsilon(v float64) *GeneralSettingsCreate {
+	_c.mutation.SetAdaptiveEpsilon(v)
+	return _c
+}
+
+// SetNillableAdaptiveEpsilon sets the "adaptive_epsilon" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableAdaptiveEpsilon(v *float64) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetAdaptiveEpsilon(*v)
 	}
 	return _c
 }
@@ -723,6 +837,36 @@ func (_c *GeneralSettingsCreate) AddJellyfins(v ...*Jellyfin) *GeneralSettingsCr
 	return _c.AddJellyfinIDs(ids...)
 }
 
+// AddMpdIDs adds the "mpds" edge to the MPD entity by IDs.
+func (_c *GeneralSettingsCreate) AddMpdIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddMpdIDs(ids...)
+	return _c
+}
+
+// AddMpds adds the "mpds" edges to the MPD entity.
+func (_c *GeneralSettingsCreate) AddMpds(v ...*MPD) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddMpdIDs(ids...)
+}
+
+// AddQrcodeIDs adds the "qrcodes" edge to the Qrcode entity by IDs.
+func (_c *GeneralSettingsCreate) AddQrcodeIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddQrcodeIDs(ids...)
+	return _c
+}
+
+// AddQrcodes adds the "qrcodes" edges to the Qrcode entity.
+func (_c *GeneralSettingsCreate) AddQrcodes(v ...*Qrcode) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddQrcodeIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_c *GeneralSettingsCreate) Mutation() *GeneralSettingsMutation {
 	return _c.mutation
@@ -782,6 +926,38 @@ func (_c *GeneralSettingsCreate) defaults() {
 		v := generalsettings.DefaultTransitionMs
 		_c.mutation.SetTransitionMs(v)
 	}
+	if _, ok := _c.mutation.ChartRetentionHours(); !ok {
+		v := generalsettings.DefaultChartRetentionHours
+		_c.mutation.SetChartRetentionHours(v)
+	}
+	if _, ok := _c.mutation.ChartMaxPointsPerSource(); !ok {
+		v := generalsettings.DefaultChartMaxPointsPerSource
+		_c.mutation.SetChartMaxPointsPerSource(v)
+	}
+	if _, ok := _c.mutation.NowPlayingProvider(); !ok {
+		v := generalsettings.DefaultNowPlayingProvider
+		_c.mutation.SetNowPlayingProvider(v)
+	}
+	if _, ok := _c.mutation.OrderingMode(); !ok {
+		v := generalsettings.DefaultOrderingMode
+		_c.mutation.SetOrderingMode(v)
+	}
+	if _, ok := _c.mutation.AdaptiveFloor(); !ok {
+		v := generalsettings.DefaultAdaptiveFloor
+		_c.mutation.SetAdaptiveFloor(v)
+	}
+	if _, ok := _c.mutation.AdaptiveHalfLifeDays(); !ok {
+		v := generalsettings.DefaultAdaptiveHalfLifeDays
+		_c.mutation.SetAdaptiveHalfLifeDays(v)
+	}
+	if _, ok := _c.mutation.AdaptiveWindowDays(); !ok {
+		v := generalsettings.DefaultAdaptiveWindowDays
+		_c.mutation.SetAdaptiveWindowDays(v)
+	}
+	if _, ok := _c.mutation.AdaptiveEpsilon(); !ok {
+		v := generalsettings.DefaultAdaptiveEpsilon
+		_c.mutation.SetAdaptiveEpsilon(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -813,6 +989,35 @@ func (_c *GeneralSettingsCreate) check() error {
 		if err := generalsettings.TransitionMsValidator(v); err != nil {
 			return &ValidationError{Name: "transition_ms", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.transition_ms": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.ChartRetentionHours(); !ok {
+		return &ValidationError{Name: "chart_retention_hours", err: errors.New(`ent: missing required field "GeneralSettings.chart_retention_hours"`)}
+	}
+	if _, ok := _c.mutation.ChartMaxPointsPerSource(); !ok {
+		return &ValidationError{Name: "chart_max_points_per_source", err: errors.New(`ent: missing required field "GeneralSettings.chart_max_points_per_source"`)}
+	}
+	if _, ok := _c.mutation.NowPlayingProvider(); !ok {
+		return &ValidationError{Name: "now_playing_provider", err: errors.New(`ent: missing required field "GeneralSettings.now_playing_provider"`)}
+	}
+	if _, ok := _c.mutation.OrderingMode(); !ok {
+		return &ValidationError{Name: "ordering_mode", err: errors.New(`ent: missing required field "GeneralSettings.ordering_mode"`)}
+	}
+	if v, ok := _c.mutation.OrderingMode(); ok {
+		if err := generalsettings.OrderingModeValidator(v); err != nil {
+			return &ValidationError{Name: "ordering_mode", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.ordering_mode": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.AdaptiveFloor(); !ok {
+		return &ValidationError{Name: "adaptive_floor", err: errors.New(`ent: missing required field "GeneralSettings.adaptive_floor"`)}
+	}
+	if _, ok := _c.mutation.AdaptiveHalfLifeDays(); !ok {
+		return &ValidationError{Name: "adaptive_half_life_days", err: errors.New(`ent: missing required field "GeneralSettings.adaptive_half_life_days"`)}
+	}
+	if _, ok := _c.mutation.AdaptiveWindowDays(); !ok {
+		return &ValidationError{Name: "adaptive_window_days", err: errors.New(`ent: missing required field "GeneralSettings.adaptive_window_days"`)}
+	}
+	if _, ok := _c.mutation.AdaptiveEpsilon(); !ok {
+		return &ValidationError{Name: "adaptive_epsilon", err: errors.New(`ent: missing required field "GeneralSettings.adaptive_epsilon"`)}
 	}
 	return nil
 }
@@ -871,6 +1076,38 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 	if value, ok := _c.mutation.TransitionMs(); ok {
 		_spec.SetField(generalsettings.FieldTransitionMs, field.TypeInt, value)
 		_node.TransitionMs = value
+	}
+	if value, ok := _c.mutation.ChartRetentionHours(); ok {
+		_spec.SetField(generalsettings.FieldChartRetentionHours, field.TypeInt, value)
+		_node.ChartRetentionHours = value
+	}
+	if value, ok := _c.mutation.ChartMaxPointsPerSource(); ok {
+		_spec.SetField(generalsettings.FieldChartMaxPointsPerSource, field.TypeInt, value)
+		_node.ChartMaxPointsPerSource = value
+	}
+	if value, ok := _c.mutation.NowPlayingProvider(); ok {
+		_spec.SetField(generalsettings.FieldNowPlayingProvider, field.TypeString, value)
+		_node.NowPlayingProvider = value
+	}
+	if value, ok := _c.mutation.OrderingMode(); ok {
+		_spec.SetField(generalsettings.FieldOrderingMode, field.TypeString, value)
+		_node.OrderingMode = value
+	}
+	if value, ok := _c.mutation.AdaptiveFloor(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveFloor, field.TypeFloat64, value)
+		_node.AdaptiveFloor = value
+	}
+	if value, ok := _c.mutation.AdaptiveHalfLifeDays(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveHalfLifeDays, field.TypeInt, value)
+		_node.AdaptiveHalfLifeDays = value
+	}
+	if value, ok := _c.mutation.AdaptiveWindowDays(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveWindowDays, field.TypeInt, value)
+		_node.AdaptiveWindowDays = value
+	}
+	if value, ok := _c.mutation.AdaptiveEpsilon(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveEpsilon, field.TypeFloat64, value)
+		_node.AdaptiveEpsilon = value
 	}
 	if nodes := _c.mutation.SonarrIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -1473,6 +1710,38 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(jellyfin.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.MpdsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MpdsTable,
+			Columns: []string{generalsettings.MpdsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mpd.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.QrcodesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QrcodesTable,
+			Columns: []string{generalsettings.QrcodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qrcode.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

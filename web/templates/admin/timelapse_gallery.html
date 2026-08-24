@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Timelapse</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+    <style>
+        .filmstrip { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+        .filmstrip img { width: 100%; height: auto; border-radius: 6px; background: #111; }
+        .film-card { border: 1px solid #ddd; border-radius: 8px; padding: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="d-flex">
+    {{template "sidebar" .}}
+    <div class="container-fluid p-4">
+        <h1>Timelapse Gallery</h1>
+        <p class="text-muted small">Captures may include personal content — admin only. Thumbnails are stored at ~160px wide.</p>
+
+        <form id="timelapse-filter" class="row g-3 mt-2 mb-3">
+            <div class="col-md-3">
+                <label for="tl-date" class="form-label">Date</label>
+                <input type="date" class="form-control" id="tl-date">
+            </div>
+            <div class="col-md-3">
+                <label for="tl-device" class="form-label">Device ID</label>
+                <input type="number" class="form-control" id="tl-device" placeholder="e.g. 1">
+            </div>
+            <div class="col-md-3 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary">Load</button>
+                <button type="button" id="tl-export" class="btn btn-outline-secondary">Export day</button>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <span id="tl-hint" class="small text-muted"></span>
+            </div>
+        </form>
+
+        <div id="tl-empty" class="alert alert-info d-none">No captures for this device/date.</div>
+        <div id="filmstrip" class="filmstrip"></div>
+
+        <!-- detail modal -->
+        <div id="tl-modal" class="d-none" style="position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999">
+            <div style="background:#fff;padding:16px;border-radius:8px;max-width:600px;width:90%">
+                <img id="tl-modal-img" src="" style="width:100%;height:auto">
+                <div id="tl-modal-meta" class="small text-muted mt-2"></div>
+                <button class="btn btn-sm btn-secondary mt-2" onclick="document.getElementById('tl-modal').classList.add('d-none')">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="module" src="/static/assets/timelapse.js"></script>
+<script type="module" src="/static/assets/app.js"></script>
+</body>
+</html>

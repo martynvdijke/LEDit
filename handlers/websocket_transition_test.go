@@ -49,7 +49,7 @@ func transitionTestServer(t *testing.T, sources []sourceWithName, timeout time.D
 			return
 		}
 		defer conn.Close()
-		serveFeed(conn, feedConn{}, sources, false, timeout, 32, 32, fc, style, ms)
+		serveFeed(conn, feedConn{}, sources, false, timeout, 32, 32, fc, style, ms, nil)
 	})
 	srv := httptest.NewServer(r)
 	t.Cleanup(srv.Close)

@@ -61,6 +61,20 @@ func (_c *PlaylistCreate) SetNillableItems(v *string) *PlaylistCreate {
 	return _c
 }
 
+// SetScheduleWindows sets the "schedule_windows" field.
+func (_c *PlaylistCreate) SetScheduleWindows(v string) *PlaylistCreate {
+	_c.mutation.SetScheduleWindows(v)
+	return _c
+}
+
+// SetNillableScheduleWindows sets the "schedule_windows" field if the given value is not nil.
+func (_c *PlaylistCreate) SetNillableScheduleWindows(v *string) *PlaylistCreate {
+	if v != nil {
+		_c.SetScheduleWindows(*v)
+	}
+	return _c
+}
+
 // Mutation returns the PlaylistMutation object of the builder.
 func (_c *PlaylistCreate) Mutation() *PlaylistMutation {
 	return _c.mutation
@@ -108,6 +122,10 @@ func (_c *PlaylistCreate) defaults() {
 		v := playlist.DefaultItems
 		_c.mutation.SetItems(v)
 	}
+	if _, ok := _c.mutation.ScheduleWindows(); !ok {
+		v := playlist.DefaultScheduleWindows
+		_c.mutation.SetScheduleWindows(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -120,6 +138,9 @@ func (_c *PlaylistCreate) check() error {
 	}
 	if _, ok := _c.mutation.Items(); !ok {
 		return &ValidationError{Name: "items", err: errors.New(`ent: missing required field "Playlist.items"`)}
+	}
+	if _, ok := _c.mutation.ScheduleWindows(); !ok {
+		return &ValidationError{Name: "schedule_windows", err: errors.New(`ent: missing required field "Playlist.schedule_windows"`)}
 	}
 	return nil
 }
@@ -158,6 +179,10 @@ func (_c *PlaylistCreate) createSpec() (*Playlist, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Items(); ok {
 		_spec.SetField(playlist.FieldItems, field.TypeString, value)
 		_node.Items = value
+	}
+	if value, ok := _c.mutation.ScheduleWindows(); ok {
+		_spec.SetField(playlist.FieldScheduleWindows, field.TypeString, value)
+		_node.ScheduleWindows = value
 	}
 	return _node, _spec
 }

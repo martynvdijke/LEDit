@@ -12,6 +12,7 @@
         <div class="container-fluid p-4">
             <h1>Devices</h1>
             <a href="/admin/devices/new" class="btn btn-primary mb-3">New Device</a>
+            {{range .groups}}<div class="card mb-3"><div class="card-header">{{.Name}} — {{index $.groupAgg .ID}}</div></div>{{end}}
             <table class="table table-striped">
                 <thead>
                     <tr><th>ID</th><th>Name</th><th>IP</th><th>Port</th><th>Matrix</th><th>Enabled</th><th>Status</th><th>Frames</th><th>Token</th><th>Connection URL</th><th>Actions</th></tr>
@@ -19,7 +20,7 @@
                 <tbody>
                     {{range .devices}}
                     <tr>
-                        <td>{{.ID}}</td><td>{{.Name}}{{if eq .ContentMode "playlist"}}{{if .PlaylistName}}<span class="badge bg-info ms-1">{{.PlaylistName}}</span>{{else if .PlaylistID}}<span class="badge bg-secondary ms-1">#{{.PlaylistID}}</span>{{end}}{{end}}</td><td>{{.IP}}</td><td>{{.Port}}</td>
+                        <td>{{.ID}}</td><td>{{.Name}}{{if eq .ContentMode "playlist"}}{{if .PlaylistName}}<span class="badge bg-info ms-1">{{.PlaylistName}}</span>{{else if .PlaylistID}}<span class="badge bg-secondary ms-1">#{{.PlaylistID}}</span>{{end}}{{end}}{{if eq .ContentMode "scheduled"}}<span class="badge bg-warning text-dark ms-1">Scheduled {{len .ScheduledIDs}} candidates{{if .FallbackName}} → {{.FallbackName}}{{end}}</span>{{end}}{{if .BrightnessEnabled}}<span class="badge bg-dark ms-1">Brightness {{if .BrightnessOverride}}{{.BrightnessOverride}}% (manual){{else}}on{{end}}</span>{{end}}</td><td>{{.IP}}</td><td>{{.Port}}</td>
                         <td>{{.Width}}x{{.Height}}</td>
                         <td>{{if .Enabled}}Yes{{else}}No{{end}}</td>
                         <td>

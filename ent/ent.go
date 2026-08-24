@@ -12,8 +12,11 @@ import (
 	"ledit/ent/alertsettings"
 	"ledit/ent/apitoken"
 	"ledit/ent/calendar"
+	"ledit/ent/chartsample"
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
+	"ledit/ent/datasourceplugin"
+	"ledit/ent/devicegroup"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
@@ -22,18 +25,23 @@ import (
 	"ledit/ent/genericapi"
 	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
+	"ledit/ent/greetingrule"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mpd"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/outboundsettings"
+	"ledit/ent/outboundwebhook"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
+	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -43,10 +51,12 @@ import (
 	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/timelapseframe"
 	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
+	"ledit/ent/user"
 	"ledit/ent/video"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
@@ -122,8 +132,11 @@ func checkColumn(t, c string) error {
 			alertsettings.Table:    alertsettings.ValidColumn,
 			apitoken.Table:         apitoken.ValidColumn,
 			calendar.Table:         calendar.ValidColumn,
+			chartsample.Table:      chartsample.ValidColumn,
 			countdown.Table:        countdown.ValidColumn,
 			crypto.Table:           crypto.ValidColumn,
+			datasourceplugin.Table: datasourceplugin.ValidColumn,
+			devicegroup.Table:      devicegroup.ValidColumn,
 			devicesettings.Table:   devicesettings.ValidColumn,
 			displayrule.Table:      displayrule.ValidColumn,
 			emailsettings.Table:    emailsettings.ValidColumn,
@@ -132,18 +145,23 @@ func checkColumn(t, c string) error {
 			genericapi.Table:       genericapi.ValidColumn,
 			github.Table:           github.ValidColumn,
 			googlecalendar.Table:   googlecalendar.ValidColumn,
+			greetingrule.Table:     greetingrule.ValidColumn,
 			homeassistant.Table:    homeassistant.ValidColumn,
 			image.Table:            image.ValidColumn,
 			jellyfin.Table:         jellyfin.ValidColumn,
 			logentry.Table:         logentry.ValidColumn,
 			logsettings.Table:      logsettings.ValidColumn,
+			mpd.Table:              mpd.ValidColumn,
 			mqttsettings.Table:     mqttsettings.ValidColumn,
 			matrixlayout.Table:     matrixlayout.ValidColumn,
 			newsfeed.Table:         newsfeed.ValidColumn,
 			notification.Table:     notification.ValidColumn,
+			outboundsettings.Table: outboundsettings.ValidColumn,
+			outboundwebhook.Table:  outboundwebhook.ValidColumn,
 			pihole.Table:           pihole.ValidColumn,
 			pixelart.Table:         pixelart.ValidColumn,
 			playlist.Table:         playlist.ValidColumn,
+			qrcode.Table:           qrcode.ValidColumn,
 			radarr.Table:           radarr.ValidColumn,
 			rssfeed.Table:          rssfeed.ValidColumn,
 			schedule.Table:         schedule.ValidColumn,
@@ -153,10 +171,12 @@ func checkColumn(t, c string) error {
 			sunmoon.Table:          sunmoon.ValidColumn,
 			telegramsettings.Table: telegramsettings.ValidColumn,
 			textslide.Table:        textslide.ValidColumn,
+			timelapseframe.Table:   timelapseframe.ValidColumn,
 			transit.Table:          transit.ValidColumn,
 			umamisettings.Table:    umamisettings.ValidColumn,
 			untappd.Table:          untappd.ValidColumn,
 			uptime.Table:           uptime.ValidColumn,
+			user.Table:             user.ValidColumn,
 			video.Table:            video.ValidColumn,
 			weather.Table:          weather.ValidColumn,
 			webhooksettings.Table:  webhooksettings.ValidColumn,

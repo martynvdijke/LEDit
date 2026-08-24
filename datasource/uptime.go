@@ -216,6 +216,19 @@ func (u *UptimeDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	uptimeCache.Unlock()
 
 	rows := BuildUptimeRows(targets, probeUptimeTarget)
+	// record average response time
+	var sum, cnt int
+	for _, r := range rows {
+		if strings.HasPrefix(r[1], "UP ") {
+			var ms int
+			fmt.Sscanf(r[1], "UP %dms", &ms)
+			sum += ms
+			cnt++
+		}
+	}
+	if cnt > 0 {
+		RecordChartValue(float64(sum) / float64(cnt))
+	}
 
 	// Cache the rows
 	uptimeCache.Lock()

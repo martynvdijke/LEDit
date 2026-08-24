@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/devicegroup"
 	"ledit/ent/devicesettings"
 	"time"
 
@@ -216,6 +217,123 @@ func (_c *DeviceSettingsCreate) SetNillablePlaylistID(v *int) *DeviceSettingsCre
 	return _c
 }
 
+// SetScheduledPlaylistIds sets the "scheduled_playlist_ids" field.
+func (_c *DeviceSettingsCreate) SetScheduledPlaylistIds(v string) *DeviceSettingsCreate {
+	_c.mutation.SetScheduledPlaylistIds(v)
+	return _c
+}
+
+// SetNillableScheduledPlaylistIds sets the "scheduled_playlist_ids" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableScheduledPlaylistIds(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetScheduledPlaylistIds(*v)
+	}
+	return _c
+}
+
+// SetFallbackPlaylistID sets the "fallback_playlist_id" field.
+func (_c *DeviceSettingsCreate) SetFallbackPlaylistID(v int) *DeviceSettingsCreate {
+	_c.mutation.SetFallbackPlaylistID(v)
+	return _c
+}
+
+// SetNillableFallbackPlaylistID sets the "fallback_playlist_id" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableFallbackPlaylistID(v *int) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetFallbackPlaylistID(*v)
+	}
+	return _c
+}
+
+// SetBrightnessEnabled sets the "brightness_enabled" field.
+func (_c *DeviceSettingsCreate) SetBrightnessEnabled(v bool) *DeviceSettingsCreate {
+	_c.mutation.SetBrightnessEnabled(v)
+	return _c
+}
+
+// SetNillableBrightnessEnabled sets the "brightness_enabled" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableBrightnessEnabled(v *bool) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetBrightnessEnabled(*v)
+	}
+	return _c
+}
+
+// SetBrightnessSchedules sets the "brightness_schedules" field.
+func (_c *DeviceSettingsCreate) SetBrightnessSchedules(v string) *DeviceSettingsCreate {
+	_c.mutation.SetBrightnessSchedules(v)
+	return _c
+}
+
+// SetNillableBrightnessSchedules sets the "brightness_schedules" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableBrightnessSchedules(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetBrightnessSchedules(*v)
+	}
+	return _c
+}
+
+// SetBrightnessOverride sets the "brightness_override" field.
+func (_c *DeviceSettingsCreate) SetBrightnessOverride(v int) *DeviceSettingsCreate {
+	_c.mutation.SetBrightnessOverride(v)
+	return _c
+}
+
+// SetNillableBrightnessOverride sets the "brightness_override" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableBrightnessOverride(v *int) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetBrightnessOverride(*v)
+	}
+	return _c
+}
+
+// SetBrightnessSensorConfig sets the "brightness_sensor_config" field.
+func (_c *DeviceSettingsCreate) SetBrightnessSensorConfig(v string) *DeviceSettingsCreate {
+	_c.mutation.SetBrightnessSensorConfig(v)
+	return _c
+}
+
+// SetNillableBrightnessSensorConfig sets the "brightness_sensor_config" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableBrightnessSensorConfig(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetBrightnessSensorConfig(*v)
+	}
+	return _c
+}
+
+// SetIdleScreensaver sets the "idle_screensaver" field.
+func (_c *DeviceSettingsCreate) SetIdleScreensaver(v string) *DeviceSettingsCreate {
+	_c.mutation.SetIdleScreensaver(v)
+	return _c
+}
+
+// SetNillableIdleScreensaver sets the "idle_screensaver" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableIdleScreensaver(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetIdleScreensaver(*v)
+	}
+	return _c
+}
+
+// SetGroupID sets the "group_id" field.
+func (_c *DeviceSettingsCreate) SetGroupID(v int) *DeviceSettingsCreate {
+	_c.mutation.SetGroupID(v)
+	return _c
+}
+
+// SetNillableGroupID sets the "group_id" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableGroupID(v *int) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetGroupID(*v)
+	}
+	return _c
+}
+
+// SetGroup sets the "group" edge to the DeviceGroup entity.
+func (_c *DeviceSettingsCreate) SetGroup(v *DeviceGroup) *DeviceSettingsCreate {
+	return _c.SetGroupID(v.ID)
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_c *DeviceSettingsCreate) Mutation() *DeviceSettingsMutation {
 	return _c.mutation
@@ -299,6 +417,18 @@ func (_c *DeviceSettingsCreate) defaults() {
 		v := devicesettings.DefaultContentMode
 		_c.mutation.SetContentMode(v)
 	}
+	if _, ok := _c.mutation.ScheduledPlaylistIds(); !ok {
+		v := devicesettings.DefaultScheduledPlaylistIds
+		_c.mutation.SetScheduledPlaylistIds(v)
+	}
+	if _, ok := _c.mutation.BrightnessEnabled(); !ok {
+		v := devicesettings.DefaultBrightnessEnabled
+		_c.mutation.SetBrightnessEnabled(v)
+	}
+	if _, ok := _c.mutation.BrightnessSchedules(); !ok {
+		v := devicesettings.DefaultBrightnessSchedules
+		_c.mutation.SetBrightnessSchedules(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -342,6 +472,20 @@ func (_c *DeviceSettingsCreate) check() error {
 	if v, ok := _c.mutation.ContentMode(); ok {
 		if err := devicesettings.ContentModeValidator(v); err != nil {
 			return &ValidationError{Name: "content_mode", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.content_mode": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.ScheduledPlaylistIds(); !ok {
+		return &ValidationError{Name: "scheduled_playlist_ids", err: errors.New(`ent: missing required field "DeviceSettings.scheduled_playlist_ids"`)}
+	}
+	if _, ok := _c.mutation.BrightnessEnabled(); !ok {
+		return &ValidationError{Name: "brightness_enabled", err: errors.New(`ent: missing required field "DeviceSettings.brightness_enabled"`)}
+	}
+	if _, ok := _c.mutation.BrightnessSchedules(); !ok {
+		return &ValidationError{Name: "brightness_schedules", err: errors.New(`ent: missing required field "DeviceSettings.brightness_schedules"`)}
+	}
+	if v, ok := _c.mutation.IdleScreensaver(); ok {
+		if err := devicesettings.IdleScreensaverValidator(v); err != nil {
+			return &ValidationError{Name: "idle_screensaver", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.idle_screensaver": %w`, err)}
 		}
 	}
 	return nil
@@ -425,6 +569,51 @@ func (_c *DeviceSettingsCreate) createSpec() (*DeviceSettings, *sqlgraph.CreateS
 	if value, ok := _c.mutation.PlaylistID(); ok {
 		_spec.SetField(devicesettings.FieldPlaylistID, field.TypeInt, value)
 		_node.PlaylistID = &value
+	}
+	if value, ok := _c.mutation.ScheduledPlaylistIds(); ok {
+		_spec.SetField(devicesettings.FieldScheduledPlaylistIds, field.TypeString, value)
+		_node.ScheduledPlaylistIds = value
+	}
+	if value, ok := _c.mutation.FallbackPlaylistID(); ok {
+		_spec.SetField(devicesettings.FieldFallbackPlaylistID, field.TypeInt, value)
+		_node.FallbackPlaylistID = &value
+	}
+	if value, ok := _c.mutation.BrightnessEnabled(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessEnabled, field.TypeBool, value)
+		_node.BrightnessEnabled = value
+	}
+	if value, ok := _c.mutation.BrightnessSchedules(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessSchedules, field.TypeString, value)
+		_node.BrightnessSchedules = value
+	}
+	if value, ok := _c.mutation.BrightnessOverride(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessOverride, field.TypeInt, value)
+		_node.BrightnessOverride = &value
+	}
+	if value, ok := _c.mutation.BrightnessSensorConfig(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessSensorConfig, field.TypeString, value)
+		_node.BrightnessSensorConfig = &value
+	}
+	if value, ok := _c.mutation.IdleScreensaver(); ok {
+		_spec.SetField(devicesettings.FieldIdleScreensaver, field.TypeString, value)
+		_node.IdleScreensaver = &value
+	}
+	if nodes := _c.mutation.GroupIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   devicesettings.GroupTable,
+			Columns: []string{devicesettings.GroupColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicegroup.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.GroupID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

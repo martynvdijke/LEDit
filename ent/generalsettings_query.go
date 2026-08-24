@@ -24,12 +24,14 @@ import (
 	"ledit/ent/image"
 	"ledit/ent/jellyfin"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mpd"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/predicate"
+	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -99,6 +101,8 @@ type GeneralSettingsQuery struct {
 	withSports           *SportsQuery
 	withSunmoons         *SunMoonQuery
 	withJellyfins        *JellyfinQuery
+	withMpds             *MPDQuery
+	withQrcodes          *QrcodeQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -971,6 +975,50 @@ func (_q *GeneralSettingsQuery) QueryJellyfins() *JellyfinQuery {
 	return query
 }
 
+// QueryMpds chains the current query on the "mpds" edge.
+func (_q *GeneralSettingsQuery) QueryMpds() *MPDQuery {
+	query := (&MPDClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(mpd.Table, mpd.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.MpdsTable, generalsettings.MpdsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryQrcodes chains the current query on the "qrcodes" edge.
+func (_q *GeneralSettingsQuery) QueryQrcodes() *QrcodeQuery {
+	query := (&QrcodeClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(qrcode.Table, qrcode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.QrcodesTable, generalsettings.QrcodesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first GeneralSettings entity from the query.
 // Returns a *NotFoundError when no GeneralSettings was found.
 func (_q *GeneralSettingsQuery) First(ctx context.Context) (*GeneralSettings, error) {
@@ -1201,6 +1249,8 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		withSports:           _q.withSports.Clone(),
 		withSunmoons:         _q.withSunmoons.Clone(),
 		withJellyfins:        _q.withJellyfins.Clone(),
+		withMpds:             _q.withMpds.Clone(),
+		withQrcodes:          _q.withQrcodes.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -1625,6 +1675,28 @@ func (_q *GeneralSettingsQuery) WithJellyfins(opts ...func(*JellyfinQuery)) *Gen
 	return _q
 }
 
+// WithMpds tells the query-builder to eager-load the nodes that are connected to
+// the "mpds" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithMpds(opts ...func(*MPDQuery)) *GeneralSettingsQuery {
+	query := (&MPDClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withMpds = query
+	return _q
+}
+
+// WithQrcodes tells the query-builder to eager-load the nodes that are connected to
+// the "qrcodes" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithQrcodes(opts ...func(*QrcodeQuery)) *GeneralSettingsQuery {
+	query := (&QrcodeClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withQrcodes = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -1703,7 +1775,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [38]bool{
+		loadedTypes = [40]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -1742,6 +1814,8 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withSports != nil,
 			_q.withSunmoons != nil,
 			_q.withJellyfins != nil,
+			_q.withMpds != nil,
+			_q.withQrcodes != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -2033,6 +2107,20 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := _q.loadJellyfins(ctx, query, nodes,
 			func(n *GeneralSettings) { n.Edges.Jellyfins = []*Jellyfin{} },
 			func(n *GeneralSettings, e *Jellyfin) { n.Edges.Jellyfins = append(n.Edges.Jellyfins, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withMpds; query != nil {
+		if err := _q.loadMpds(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Mpds = []*MPD{} },
+			func(n *GeneralSettings, e *MPD) { n.Edges.Mpds = append(n.Edges.Mpds, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withQrcodes; query != nil {
+		if err := _q.loadQrcodes(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Qrcodes = []*Qrcode{} },
+			func(n *GeneralSettings, e *Qrcode) { n.Edges.Qrcodes = append(n.Edges.Qrcodes, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -3212,6 +3300,68 @@ func (_q *GeneralSettingsQuery) loadJellyfins(ctx context.Context, query *Jellyf
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_jellyfins" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadMpds(ctx context.Context, query *MPDQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *MPD)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.MPD(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.MpdsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_mpds
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_mpds" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_mpds" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadQrcodes(ctx context.Context, query *QrcodeQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Qrcode)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Qrcode(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.QrcodesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_qrcodes
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_qrcodes" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_qrcodes" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -315,6 +315,59 @@ func drawStringSimpleScrolling(img *image.RGBA, text string, x, y int, col color
 	}
 }
 
+// ApplyBrightness scales each RGB channel by level/100. Level 100 is a no-op,
+// level 0 yields black; alpha is preserved. Returns same pointer for 100.
+func ApplyBrightness(img *image.RGBA, level int) *image.RGBA {
+	if img == nil {
+		return nil
+	}
+	if level >= 100 {
+		return img
+	}
+	if level <= 0 {
+		b := img.Bounds()
+		for y := b.Min.Y; y < b.Max.Y; y++ {
+			for x := b.Min.X; x < b.Max.X; x++ {
+				i := img.PixOffset(x, y)
+				img.Pix[i+0] = 0
+				img.Pix[i+1] = 0
+				img.Pix[i+2] = 0
+			}
+		}
+		return img
+	}
+	for i := 0; i < len(img.Pix); i += 4 {
+		img.Pix[i+0] = uint8(int(img.Pix[i+0]) * level / 100)
+		img.Pix[i+1] = uint8(int(img.Pix[i+1]) * level / 100)
+		img.Pix[i+2] = uint8(int(img.Pix[i+2]) * level / 100)
+	}
+	return img
+}
+
+// ApplyBrightnessNRGBA is the NRGBA variant applied to transition blended frames.
+func ApplyBrightnessNRGBA(img *image.NRGBA, level int) *image.NRGBA {
+	if img == nil {
+		return nil
+	}
+	if level >= 100 {
+		return img
+	}
+	if level <= 0 {
+		for i := 0; i < len(img.Pix); i += 4 {
+			img.Pix[i+0] = 0
+			img.Pix[i+1] = 0
+			img.Pix[i+2] = 0
+		}
+		return img
+	}
+	for i := 0; i < len(img.Pix); i += 4 {
+		img.Pix[i+0] = uint8(int(img.Pix[i+0]) * level / 100)
+		img.Pix[i+1] = uint8(int(img.Pix[i+1]) * level / 100)
+		img.Pix[i+2] = uint8(int(img.Pix[i+2]) * level / 100)
+	}
+	return img
+}
+
 func ReadFileBytes(path string) ([]byte, error) {
 	return os.ReadFile(path)
 }
@@ -330,4 +383,15 @@ func GetExtension(path string) string {
 		return ext[1:]
 	}
 	return ""
+}
+
+func ChartRect(width, height int) image.Rectangle {
+	h := 16
+	if height < 32 {
+		h = height / 3
+		if h < 8 {
+			h = 8
+		}
+	}
+	return image.Rect(0, height-h, width, height)
 }

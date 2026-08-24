@@ -153,6 +153,20 @@ func (_u *PixelArtUpdate) SetNillableEnabled(v *bool) *PixelArtUpdate {
 	return _u
 }
 
+// SetIsDraft sets the "is_draft" field.
+func (_u *PixelArtUpdate) SetIsDraft(v bool) *PixelArtUpdate {
+	_u.mutation.SetIsDraft(v)
+	return _u
+}
+
+// SetNillableIsDraft sets the "is_draft" field if the given value is not nil.
+func (_u *PixelArtUpdate) SetNillableIsDraft(v *bool) *PixelArtUpdate {
+	if v != nil {
+		_u.SetIsDraft(*v)
+	}
+	return _u
+}
+
 // Mutation returns the PixelArtMutation object of the builder.
 func (_u *PixelArtUpdate) Mutation() *PixelArtMutation {
 	return _u.mutation
@@ -223,6 +237,9 @@ func (_u *PixelArtUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(pixelart.FieldEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.IsDraft(); ok {
+		_spec.SetField(pixelart.FieldIsDraft, field.TypeBool, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -370,6 +387,20 @@ func (_u *PixelArtUpdateOne) SetNillableEnabled(v *bool) *PixelArtUpdateOne {
 	return _u
 }
 
+// SetIsDraft sets the "is_draft" field.
+func (_u *PixelArtUpdateOne) SetIsDraft(v bool) *PixelArtUpdateOne {
+	_u.mutation.SetIsDraft(v)
+	return _u
+}
+
+// SetNillableIsDraft sets the "is_draft" field if the given value is not nil.
+func (_u *PixelArtUpdateOne) SetNillableIsDraft(v *bool) *PixelArtUpdateOne {
+	if v != nil {
+		_u.SetIsDraft(*v)
+	}
+	return _u
+}
+
 // Mutation returns the PixelArtMutation object of the builder.
 func (_u *PixelArtUpdateOne) Mutation() *PixelArtMutation {
 	return _u.mutation
@@ -470,6 +501,9 @@ func (_u *PixelArtUpdateOne) sqlSave(ctx context.Context) (_node *PixelArt, err 
 	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(pixelart.FieldEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.IsDraft(); ok {
+		_spec.SetField(pixelart.FieldIsDraft, field.TypeBool, value)
 	}
 	_node = &PixelArt{config: _u.config}
 	_spec.Assign = _node.assignValues

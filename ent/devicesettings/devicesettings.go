@@ -4,6 +4,7 @@ package devicesettings
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -39,8 +40,33 @@ const (
 	FieldContentMode = "content_mode"
 	// FieldPlaylistID holds the string denoting the playlist_id field in the database.
 	FieldPlaylistID = "playlist_id"
+	// FieldScheduledPlaylistIds holds the string denoting the scheduled_playlist_ids field in the database.
+	FieldScheduledPlaylistIds = "scheduled_playlist_ids"
+	// FieldFallbackPlaylistID holds the string denoting the fallback_playlist_id field in the database.
+	FieldFallbackPlaylistID = "fallback_playlist_id"
+	// FieldBrightnessEnabled holds the string denoting the brightness_enabled field in the database.
+	FieldBrightnessEnabled = "brightness_enabled"
+	// FieldBrightnessSchedules holds the string denoting the brightness_schedules field in the database.
+	FieldBrightnessSchedules = "brightness_schedules"
+	// FieldBrightnessOverride holds the string denoting the brightness_override field in the database.
+	FieldBrightnessOverride = "brightness_override"
+	// FieldBrightnessSensorConfig holds the string denoting the brightness_sensor_config field in the database.
+	FieldBrightnessSensorConfig = "brightness_sensor_config"
+	// FieldIdleScreensaver holds the string denoting the idle_screensaver field in the database.
+	FieldIdleScreensaver = "idle_screensaver"
+	// FieldGroupID holds the string denoting the group_id field in the database.
+	FieldGroupID = "group_id"
+	// EdgeGroup holds the string denoting the group edge name in mutations.
+	EdgeGroup = "group"
 	// Table holds the table name of the devicesettings in the database.
 	Table = "device_settings"
+	// GroupTable is the table that holds the group relation/edge.
+	GroupTable = "device_settings"
+	// GroupInverseTable is the table name for the DeviceGroup entity.
+	// It exists in this package in order to avoid circular dependency with the "devicegroup" package.
+	GroupInverseTable = "device_groups"
+	// GroupColumn is the table column denoting the group relation/edge.
+	GroupColumn = "group_id"
 )
 
 // Columns holds all SQL columns for devicesettings fields.
@@ -60,6 +86,14 @@ var Columns = []string{
 	FieldFramesServed,
 	FieldContentMode,
 	FieldPlaylistID,
+	FieldScheduledPlaylistIds,
+	FieldFallbackPlaylistID,
+	FieldBrightnessEnabled,
+	FieldBrightnessSchedules,
+	FieldBrightnessOverride,
+	FieldBrightnessSensorConfig,
+	FieldIdleScreensaver,
+	FieldGroupID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "device_settings"
@@ -110,6 +144,14 @@ var (
 	DefaultContentMode string
 	// ContentModeValidator is a validator for the "content_mode" field. It is called by the builders before save.
 	ContentModeValidator func(string) error
+	// DefaultScheduledPlaylistIds holds the default value on creation for the "scheduled_playlist_ids" field.
+	DefaultScheduledPlaylistIds string
+	// DefaultBrightnessEnabled holds the default value on creation for the "brightness_enabled" field.
+	DefaultBrightnessEnabled bool
+	// DefaultBrightnessSchedules holds the default value on creation for the "brightness_schedules" field.
+	DefaultBrightnessSchedules string
+	// IdleScreensaverValidator is a validator for the "idle_screensaver" field. It is called by the builders before save.
+	IdleScreensaverValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the DeviceSettings queries.
@@ -188,4 +230,58 @@ func ByContentMode(opts ...sql.OrderTermOption) OrderOption {
 // ByPlaylistID orders the results by the playlist_id field.
 func ByPlaylistID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPlaylistID, opts...).ToFunc()
+}
+
+// ByScheduledPlaylistIds orders the results by the scheduled_playlist_ids field.
+func ByScheduledPlaylistIds(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldScheduledPlaylistIds, opts...).ToFunc()
+}
+
+// ByFallbackPlaylistID orders the results by the fallback_playlist_id field.
+func ByFallbackPlaylistID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFallbackPlaylistID, opts...).ToFunc()
+}
+
+// ByBrightnessEnabled orders the results by the brightness_enabled field.
+func ByBrightnessEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBrightnessEnabled, opts...).ToFunc()
+}
+
+// ByBrightnessSchedules orders the results by the brightness_schedules field.
+func ByBrightnessSchedules(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBrightnessSchedules, opts...).ToFunc()
+}
+
+// ByBrightnessOverride orders the results by the brightness_override field.
+func ByBrightnessOverride(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBrightnessOverride, opts...).ToFunc()
+}
+
+// ByBrightnessSensorConfig orders the results by the brightness_sensor_config field.
+func ByBrightnessSensorConfig(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBrightnessSensorConfig, opts...).ToFunc()
+}
+
+// ByIdleScreensaver orders the results by the idle_screensaver field.
+func ByIdleScreensaver(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIdleScreensaver, opts...).ToFunc()
+}
+
+// ByGroupID orders the results by the group_id field.
+func ByGroupID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGroupID, opts...).ToFunc()
+}
+
+// ByGroupField orders the results by group field.
+func ByGroupField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGroupStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newGroupStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GroupInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, GroupTable, GroupColumn),
+	)
 }

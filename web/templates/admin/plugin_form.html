@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Plugin Form</title><link rel="stylesheet" href="/static/assets/styles.css"></head>
+<body>
+<div class="d-flex">{{template "sidebar" .}}
+<div class="container-fluid p-4">
+<h1>{{if .edit}}Edit Plugin{{else}}New Plugin{{end}}</h1>
+{{if .allowPrefix}}<div class="alert alert-info">Allowed exec prefix: {{.allowPrefix}}</div>{{end}}
+<p class="text-muted">No binary upload — exec target must already exist on host. HTTP must be localhost.</p>
+<form method="POST" action="{{if .edit}}/admin/plugins/{{.plugin.ID}}/edit{{else}}/admin/plugins/new{{end}}">
+<div class="mb-3"><label>Name</label><input name="name" class="form-control" value="{{if .plugin}}{{.plugin.Name}}{{end}}" required></div>
+<div class="mb-3"><label>Kind</label><select name="kind" class="form-control"><option value="exec" {{if .plugin}}{{if eq .plugin.Kind "exec"}}selected{{end}}{{end}}>exec</option><option value="http" {{if .plugin}}{{if eq .plugin.Kind "http"}}selected{{end}}{{end}}>http</option></select></div>
+<div class="mb-3"><label>Target (path or URL)</label><input name="target" class="form-control" value="{{if .plugin}}{{.plugin.Target}}{{end}}" required></div>
+<div class="mb-3"><label>Timeout ms</label><input name="timeout_ms" type="number" class="form-control" value="{{if .plugin}}{{.plugin.TimeoutMs}}{{else}}3000{{end}}"></div>
+<div class="mb-3 form-check"><input type="checkbox" name="enabled" class="form-check-input" {{if .plugin}}{{if .plugin.Enabled}}checked{{end}}{{end}}><label class="form-check-label">Enabled</label></div>
+<button class="btn btn-primary">Save</button> <a href="/admin/plugins" class="btn btn-secondary">Cancel</a>
+</form>
+{{if .health}}<hr><h5>Health</h5><pre>{{.health}}</pre>{{end}}
+</div></div></body></html>

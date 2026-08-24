@@ -21,6 +21,28 @@ type FeedController struct {
 
 var GlobalFeed = &FeedController{}
 
+var (
+	deviceFeedMu sync.RWMutex
+	deviceFeeds  = map[int]*FeedController{}
+)
+
+func registerDeviceFeed(deviceID int, fc *FeedController) {
+	deviceFeedMu.Lock()
+	defer deviceFeedMu.Unlock()
+	deviceFeeds[deviceID] = fc
+}
+func unregisterDeviceFeed(deviceID int) {
+	deviceFeedMu.Lock()
+	defer deviceFeedMu.Unlock()
+	delete(deviceFeeds, deviceID)
+}
+func getDeviceFeed(deviceID int) (*FeedController, bool) {
+	deviceFeedMu.RLock()
+	defer deviceFeedMu.RUnlock()
+	fc, ok := deviceFeeds[deviceID]
+	return fc, ok
+}
+
 func (fc *FeedController) IsPaused() bool {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
@@ -41,20 +63,30 @@ func (fc *FeedController) Pause() {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
 	fc.Paused = true
+	GlobalBus.Emit(Event{Type: EventFeedPaused, Timestamp: time.Now()})
 }
 
 func (fc *FeedController) Resume() {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
 	fc.Paused = false
+	GlobalBus.Emit(Event{Type: EventFeedResumed, Timestamp: time.Now()})
 }
 
 func (fc *FeedController) Next() {
 	fc.mu.Lock()
-	defer fc.mu.Unlock()
+	cur := fc.CurrentName
 	fc.Skip = true
 	fc.PinnedKey = ""
 	fc.PinnedBy = ""
+	fc.mu.Unlock()
+	// attribute skip
+	if cur != "" {
+		RecordSkip("", 0, cur)
+	} else {
+		RecordSkip("", 0, "")
+	}
+	triggerSkipRecompute()
 }
 
 func (fc *FeedController) Pin(key, by string) {
@@ -82,9 +114,14 @@ func (fc *FeedController) IsPinned() (string, string, bool) {
 
 func (fc *FeedController) SetCurrent(name, next string) {
 	fc.mu.Lock()
-	defer fc.mu.Unlock()
+	prev := fc.CurrentName
 	fc.CurrentName = name
 	fc.NextName = next
+	fc.mu.Unlock()
+	if prev != "" && prev != name {
+		GlobalBus.Emit(Event{Type: EventSourceChanged, Timestamp: time.Now(), Data: map[string]string{"from": prev, "to": name}})
+	}
+	return
 }
 
 func (fc *FeedController) Status() map[string]any {
@@ -285,6 +322,7 @@ func (s *Server) AddNotification(title, message string, opts ...NotifOption) {
 		s.DB.Notification.Create().SetTitle(title).SetMessage(message).SetCreatedAt(time.Now()).SaveX(s.Ctx)
 	}
 	addToMemoryQueueWithOptions(title, message, opts...)
+	GlobalBus.Emit(Event{Type: EventNotificationFired, Timestamp: time.Now(), Data: map[string]any{"title": title, "message": message}})
 }
 
 // GetNotificationHistory returns merged DB + in-memory notification history (up to 50).

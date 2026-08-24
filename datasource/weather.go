@@ -109,6 +109,7 @@ func (w *WeatherDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	slog.Info("weather data fetched successfully", "source", "weather", "location", resp.Name, "temp", resp.Main.Temp)
 	cond := normalizeCondition(resp.Weather[0].Main)
 	w.setCondition(cond)
+	RecordChartValue(resp.Main.Temp)
 
 	data := map[string]string{
 		"location":  resp.Name,

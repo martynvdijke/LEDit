@@ -94,6 +94,46 @@ func TransitionMs(v int) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldEQ(FieldTransitionMs, v))
 }
 
+// ChartRetentionHours applies equality check predicate on the "chart_retention_hours" field. It's identical to ChartRetentionHoursEQ.
+func ChartRetentionHours(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldChartRetentionHours, v))
+}
+
+// ChartMaxPointsPerSource applies equality check predicate on the "chart_max_points_per_source" field. It's identical to ChartMaxPointsPerSourceEQ.
+func ChartMaxPointsPerSource(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldChartMaxPointsPerSource, v))
+}
+
+// NowPlayingProvider applies equality check predicate on the "now_playing_provider" field. It's identical to NowPlayingProviderEQ.
+func NowPlayingProvider(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldNowPlayingProvider, v))
+}
+
+// OrderingMode applies equality check predicate on the "ordering_mode" field. It's identical to OrderingModeEQ.
+func OrderingMode(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldOrderingMode, v))
+}
+
+// AdaptiveFloor applies equality check predicate on the "adaptive_floor" field. It's identical to AdaptiveFloorEQ.
+func AdaptiveFloor(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldAdaptiveFloor, v))
+}
+
+// AdaptiveHalfLifeDays applies equality check predicate on the "adaptive_half_life_days" field. It's identical to AdaptiveHalfLifeDaysEQ.
+func AdaptiveHalfLifeDays(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldAdaptiveHalfLifeDays, v))
+}
+
+// AdaptiveWindowDays applies equality check predicate on the "adaptive_window_days" field. It's identical to AdaptiveWindowDaysEQ.
+func AdaptiveWindowDays(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldAdaptiveWindowDays, v))
+}
+
+// AdaptiveEpsilon applies equality check predicate on the "adaptive_epsilon" field. It's identical to AdaptiveEpsilonEQ.
+func AdaptiveEpsilon(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldAdaptiveEpsilon, v))
+}
+
 // TimeoutEQ applies the EQ predicate on the "timeout" field.
 func TimeoutEQ(v float64) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldEQ(FieldTimeout, v))
@@ -422,6 +462,376 @@ func TransitionMsLT(v int) predicate.GeneralSettings {
 // TransitionMsLTE applies the LTE predicate on the "transition_ms" field.
 func TransitionMsLTE(v int) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldLTE(FieldTransitionMs, v))
+}
+
+// ChartRetentionHoursEQ applies the EQ predicate on the "chart_retention_hours" field.
+func ChartRetentionHoursEQ(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldChartRetentionHours, v))
+}
+
+// ChartRetentionHoursNEQ applies the NEQ predicate on the "chart_retention_hours" field.
+func ChartRetentionHoursNEQ(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldChartRetentionHours, v))
+}
+
+// ChartRetentionHoursIn applies the In predicate on the "chart_retention_hours" field.
+func ChartRetentionHoursIn(vs ...int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldChartRetentionHours, vs...))
+}
+
+// ChartRetentionHoursNotIn applies the NotIn predicate on the "chart_retention_hours" field.
+func ChartRetentionHoursNotIn(vs ...int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldChartRetentionHours, vs...))
+}
+
+// ChartRetentionHoursGT applies the GT predicate on the "chart_retention_hours" field.
+func ChartRetentionHoursGT(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldChartRetentionHours, v))
+}
+
+// ChartRetentionHoursGTE applies the GTE predicate on the "chart_retention_hours" field.
+func ChartRetentionHoursGTE(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldChartRetentionHours, v))
+}
+
+// ChartRetentionHoursLT applies the LT predicate on the "chart_retention_hours" field.
+func ChartRetentionHoursLT(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldChartRetentionHours, v))
+}
+
+// ChartRetentionHoursLTE applies the LTE predicate on the "chart_retention_hours" field.
+func ChartRetentionHoursLTE(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldChartRetentionHours, v))
+}
+
+// ChartMaxPointsPerSourceEQ applies the EQ predicate on the "chart_max_points_per_source" field.
+func ChartMaxPointsPerSourceEQ(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldChartMaxPointsPerSource, v))
+}
+
+// ChartMaxPointsPerSourceNEQ applies the NEQ predicate on the "chart_max_points_per_source" field.
+func ChartMaxPointsPerSourceNEQ(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldChartMaxPointsPerSource, v))
+}
+
+// ChartMaxPointsPerSourceIn applies the In predicate on the "chart_max_points_per_source" field.
+func ChartMaxPointsPerSourceIn(vs ...int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldChartMaxPointsPerSource, vs...))
+}
+
+// ChartMaxPointsPerSourceNotIn applies the NotIn predicate on the "chart_max_points_per_source" field.
+func ChartMaxPointsPerSourceNotIn(vs ...int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldChartMaxPointsPerSource, vs...))
+}
+
+// ChartMaxPointsPerSourceGT applies the GT predicate on the "chart_max_points_per_source" field.
+func ChartMaxPointsPerSourceGT(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldChartMaxPointsPerSource, v))
+}
+
+// ChartMaxPointsPerSourceGTE applies the GTE predicate on the "chart_max_points_per_source" field.
+func ChartMaxPointsPerSourceGTE(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldChartMaxPointsPerSource, v))
+}
+
+// ChartMaxPointsPerSourceLT applies the LT predicate on the "chart_max_points_per_source" field.
+func ChartMaxPointsPerSourceLT(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldChartMaxPointsPerSource, v))
+}
+
+// ChartMaxPointsPerSourceLTE applies the LTE predicate on the "chart_max_points_per_source" field.
+func ChartMaxPointsPerSourceLTE(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldChartMaxPointsPerSource, v))
+}
+
+// NowPlayingProviderEQ applies the EQ predicate on the "now_playing_provider" field.
+func NowPlayingProviderEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldNowPlayingProvider, v))
+}
+
+// NowPlayingProviderNEQ applies the NEQ predicate on the "now_playing_provider" field.
+func NowPlayingProviderNEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldNowPlayingProvider, v))
+}
+
+// NowPlayingProviderIn applies the In predicate on the "now_playing_provider" field.
+func NowPlayingProviderIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldNowPlayingProvider, vs...))
+}
+
+// NowPlayingProviderNotIn applies the NotIn predicate on the "now_playing_provider" field.
+func NowPlayingProviderNotIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldNowPlayingProvider, vs...))
+}
+
+// NowPlayingProviderGT applies the GT predicate on the "now_playing_provider" field.
+func NowPlayingProviderGT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldNowPlayingProvider, v))
+}
+
+// NowPlayingProviderGTE applies the GTE predicate on the "now_playing_provider" field.
+func NowPlayingProviderGTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldNowPlayingProvider, v))
+}
+
+// NowPlayingProviderLT applies the LT predicate on the "now_playing_provider" field.
+func NowPlayingProviderLT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldNowPlayingProvider, v))
+}
+
+// NowPlayingProviderLTE applies the LTE predicate on the "now_playing_provider" field.
+func NowPlayingProviderLTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldNowPlayingProvider, v))
+}
+
+// NowPlayingProviderContains applies the Contains predicate on the "now_playing_provider" field.
+func NowPlayingProviderContains(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContains(FieldNowPlayingProvider, v))
+}
+
+// NowPlayingProviderHasPrefix applies the HasPrefix predicate on the "now_playing_provider" field.
+func NowPlayingProviderHasPrefix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasPrefix(FieldNowPlayingProvider, v))
+}
+
+// NowPlayingProviderHasSuffix applies the HasSuffix predicate on the "now_playing_provider" field.
+func NowPlayingProviderHasSuffix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasSuffix(FieldNowPlayingProvider, v))
+}
+
+// NowPlayingProviderEqualFold applies the EqualFold predicate on the "now_playing_provider" field.
+func NowPlayingProviderEqualFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEqualFold(FieldNowPlayingProvider, v))
+}
+
+// NowPlayingProviderContainsFold applies the ContainsFold predicate on the "now_playing_provider" field.
+func NowPlayingProviderContainsFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContainsFold(FieldNowPlayingProvider, v))
+}
+
+// OrderingModeEQ applies the EQ predicate on the "ordering_mode" field.
+func OrderingModeEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldOrderingMode, v))
+}
+
+// OrderingModeNEQ applies the NEQ predicate on the "ordering_mode" field.
+func OrderingModeNEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldOrderingMode, v))
+}
+
+// OrderingModeIn applies the In predicate on the "ordering_mode" field.
+func OrderingModeIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldOrderingMode, vs...))
+}
+
+// OrderingModeNotIn applies the NotIn predicate on the "ordering_mode" field.
+func OrderingModeNotIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldOrderingMode, vs...))
+}
+
+// OrderingModeGT applies the GT predicate on the "ordering_mode" field.
+func OrderingModeGT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldOrderingMode, v))
+}
+
+// OrderingModeGTE applies the GTE predicate on the "ordering_mode" field.
+func OrderingModeGTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldOrderingMode, v))
+}
+
+// OrderingModeLT applies the LT predicate on the "ordering_mode" field.
+func OrderingModeLT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldOrderingMode, v))
+}
+
+// OrderingModeLTE applies the LTE predicate on the "ordering_mode" field.
+func OrderingModeLTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldOrderingMode, v))
+}
+
+// OrderingModeContains applies the Contains predicate on the "ordering_mode" field.
+func OrderingModeContains(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContains(FieldOrderingMode, v))
+}
+
+// OrderingModeHasPrefix applies the HasPrefix predicate on the "ordering_mode" field.
+func OrderingModeHasPrefix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasPrefix(FieldOrderingMode, v))
+}
+
+// OrderingModeHasSuffix applies the HasSuffix predicate on the "ordering_mode" field.
+func OrderingModeHasSuffix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasSuffix(FieldOrderingMode, v))
+}
+
+// OrderingModeEqualFold applies the EqualFold predicate on the "ordering_mode" field.
+func OrderingModeEqualFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEqualFold(FieldOrderingMode, v))
+}
+
+// OrderingModeContainsFold applies the ContainsFold predicate on the "ordering_mode" field.
+func OrderingModeContainsFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContainsFold(FieldOrderingMode, v))
+}
+
+// AdaptiveFloorEQ applies the EQ predicate on the "adaptive_floor" field.
+func AdaptiveFloorEQ(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldAdaptiveFloor, v))
+}
+
+// AdaptiveFloorNEQ applies the NEQ predicate on the "adaptive_floor" field.
+func AdaptiveFloorNEQ(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldAdaptiveFloor, v))
+}
+
+// AdaptiveFloorIn applies the In predicate on the "adaptive_floor" field.
+func AdaptiveFloorIn(vs ...float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldAdaptiveFloor, vs...))
+}
+
+// AdaptiveFloorNotIn applies the NotIn predicate on the "adaptive_floor" field.
+func AdaptiveFloorNotIn(vs ...float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldAdaptiveFloor, vs...))
+}
+
+// AdaptiveFloorGT applies the GT predicate on the "adaptive_floor" field.
+func AdaptiveFloorGT(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldAdaptiveFloor, v))
+}
+
+// AdaptiveFloorGTE applies the GTE predicate on the "adaptive_floor" field.
+func AdaptiveFloorGTE(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldAdaptiveFloor, v))
+}
+
+// AdaptiveFloorLT applies the LT predicate on the "adaptive_floor" field.
+func AdaptiveFloorLT(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldAdaptiveFloor, v))
+}
+
+// AdaptiveFloorLTE applies the LTE predicate on the "adaptive_floor" field.
+func AdaptiveFloorLTE(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldAdaptiveFloor, v))
+}
+
+// AdaptiveHalfLifeDaysEQ applies the EQ predicate on the "adaptive_half_life_days" field.
+func AdaptiveHalfLifeDaysEQ(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldAdaptiveHalfLifeDays, v))
+}
+
+// AdaptiveHalfLifeDaysNEQ applies the NEQ predicate on the "adaptive_half_life_days" field.
+func AdaptiveHalfLifeDaysNEQ(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldAdaptiveHalfLifeDays, v))
+}
+
+// AdaptiveHalfLifeDaysIn applies the In predicate on the "adaptive_half_life_days" field.
+func AdaptiveHalfLifeDaysIn(vs ...int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldAdaptiveHalfLifeDays, vs...))
+}
+
+// AdaptiveHalfLifeDaysNotIn applies the NotIn predicate on the "adaptive_half_life_days" field.
+func AdaptiveHalfLifeDaysNotIn(vs ...int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldAdaptiveHalfLifeDays, vs...))
+}
+
+// AdaptiveHalfLifeDaysGT applies the GT predicate on the "adaptive_half_life_days" field.
+func AdaptiveHalfLifeDaysGT(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldAdaptiveHalfLifeDays, v))
+}
+
+// AdaptiveHalfLifeDaysGTE applies the GTE predicate on the "adaptive_half_life_days" field.
+func AdaptiveHalfLifeDaysGTE(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldAdaptiveHalfLifeDays, v))
+}
+
+// AdaptiveHalfLifeDaysLT applies the LT predicate on the "adaptive_half_life_days" field.
+func AdaptiveHalfLifeDaysLT(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldAdaptiveHalfLifeDays, v))
+}
+
+// AdaptiveHalfLifeDaysLTE applies the LTE predicate on the "adaptive_half_life_days" field.
+func AdaptiveHalfLifeDaysLTE(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldAdaptiveHalfLifeDays, v))
+}
+
+// AdaptiveWindowDaysEQ applies the EQ predicate on the "adaptive_window_days" field.
+func AdaptiveWindowDaysEQ(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldAdaptiveWindowDays, v))
+}
+
+// AdaptiveWindowDaysNEQ applies the NEQ predicate on the "adaptive_window_days" field.
+func AdaptiveWindowDaysNEQ(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldAdaptiveWindowDays, v))
+}
+
+// AdaptiveWindowDaysIn applies the In predicate on the "adaptive_window_days" field.
+func AdaptiveWindowDaysIn(vs ...int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldAdaptiveWindowDays, vs...))
+}
+
+// AdaptiveWindowDaysNotIn applies the NotIn predicate on the "adaptive_window_days" field.
+func AdaptiveWindowDaysNotIn(vs ...int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldAdaptiveWindowDays, vs...))
+}
+
+// AdaptiveWindowDaysGT applies the GT predicate on the "adaptive_window_days" field.
+func AdaptiveWindowDaysGT(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldAdaptiveWindowDays, v))
+}
+
+// AdaptiveWindowDaysGTE applies the GTE predicate on the "adaptive_window_days" field.
+func AdaptiveWindowDaysGTE(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldAdaptiveWindowDays, v))
+}
+
+// AdaptiveWindowDaysLT applies the LT predicate on the "adaptive_window_days" field.
+func AdaptiveWindowDaysLT(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldAdaptiveWindowDays, v))
+}
+
+// AdaptiveWindowDaysLTE applies the LTE predicate on the "adaptive_window_days" field.
+func AdaptiveWindowDaysLTE(v int) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldAdaptiveWindowDays, v))
+}
+
+// AdaptiveEpsilonEQ applies the EQ predicate on the "adaptive_epsilon" field.
+func AdaptiveEpsilonEQ(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldAdaptiveEpsilon, v))
+}
+
+// AdaptiveEpsilonNEQ applies the NEQ predicate on the "adaptive_epsilon" field.
+func AdaptiveEpsilonNEQ(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldAdaptiveEpsilon, v))
+}
+
+// AdaptiveEpsilonIn applies the In predicate on the "adaptive_epsilon" field.
+func AdaptiveEpsilonIn(vs ...float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldAdaptiveEpsilon, vs...))
+}
+
+// AdaptiveEpsilonNotIn applies the NotIn predicate on the "adaptive_epsilon" field.
+func AdaptiveEpsilonNotIn(vs ...float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldAdaptiveEpsilon, vs...))
+}
+
+// AdaptiveEpsilonGT applies the GT predicate on the "adaptive_epsilon" field.
+func AdaptiveEpsilonGT(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldAdaptiveEpsilon, v))
+}
+
+// AdaptiveEpsilonGTE applies the GTE predicate on the "adaptive_epsilon" field.
+func AdaptiveEpsilonGTE(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldAdaptiveEpsilon, v))
+}
+
+// AdaptiveEpsilonLT applies the LT predicate on the "adaptive_epsilon" field.
+func AdaptiveEpsilonLT(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldAdaptiveEpsilon, v))
+}
+
+// AdaptiveEpsilonLTE applies the LTE predicate on the "adaptive_epsilon" field.
+func AdaptiveEpsilonLTE(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldAdaptiveEpsilon, v))
 }
 
 // HasSonarr applies the HasEdge predicate on the "sonarr" edge.
@@ -1290,6 +1700,52 @@ func HasJellyfins() predicate.GeneralSettings {
 func HasJellyfinsWith(preds ...predicate.Jellyfin) predicate.GeneralSettings {
 	return predicate.GeneralSettings(func(s *sql.Selector) {
 		step := newJellyfinsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMpds applies the HasEdge predicate on the "mpds" edge.
+func HasMpds() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MpdsTable, MpdsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMpdsWith applies the HasEdge predicate on the "mpds" edge with a given conditions (other predicates).
+func HasMpdsWith(preds ...predicate.MPD) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newMpdsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasQrcodes applies the HasEdge predicate on the "qrcodes" edge.
+func HasQrcodes() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, QrcodesTable, QrcodesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasQrcodesWith applies the HasEdge predicate on the "qrcodes" edge with a given conditions (other predicates).
+func HasQrcodesWith(preds ...predicate.Qrcode) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newQrcodesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

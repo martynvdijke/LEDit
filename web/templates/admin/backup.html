@@ -1,0 +1,23 @@
+{{template "layout" .}}
+{{define "content"}}
+<div class="admin-page">
+<h1>Backup & Restore</h1>
+<div class="card" id="export-card">
+<h2>Export</h2>
+<label><input type="checkbox" id="include-secrets"> Include secrets <span style="color:red">(⚠️ contains API keys)</span></label>
+<div id="secrets-warning" style="display:none;color:red;border:1px solid red;padding:8px;margin:8px 0;">Warning: exported file will contain secrets. Handle with care.</div>
+<label><input type="checkbox" id="include-media"> Include media files (zip)</label>
+<button id="download-btn" class="btn btn-primary">Download backup</button>
+<div id="last-backup"></div>
+</div>
+<div class="card" id="import-card">
+<h2>Import</h2>
+<input type="file" id="backup-file" accept=".json,.zip">
+<button id="preview-btn" class="btn">Preview (dry-run)</button>
+<button id="confirm-btn" class="btn btn-primary" disabled>Confirm import</button>
+<div id="diff-table"></div>
+<div id="import-result"></div>
+</div>
+</div>
+<script type="module" src="/static/assets/backup.js"></script>
+{{end}}

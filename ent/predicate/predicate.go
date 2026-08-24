@@ -24,11 +24,20 @@ type ApiToken func(*sql.Selector)
 // Calendar is the predicate function for calendar builders.
 type Calendar func(*sql.Selector)
 
+// ChartSample is the predicate function for chartsample builders.
+type ChartSample func(*sql.Selector)
+
 // Countdown is the predicate function for countdown builders.
 type Countdown func(*sql.Selector)
 
 // Crypto is the predicate function for crypto builders.
 type Crypto func(*sql.Selector)
+
+// DatasourcePlugin is the predicate function for datasourceplugin builders.
+type DatasourcePlugin func(*sql.Selector)
+
+// DeviceGroup is the predicate function for devicegroup builders.
+type DeviceGroup func(*sql.Selector)
 
 // DeviceSettings is the predicate function for devicesettings builders.
 type DeviceSettings func(*sql.Selector)
@@ -54,6 +63,9 @@ type GitHub func(*sql.Selector)
 // GoogleCalendar is the predicate function for googlecalendar builders.
 type GoogleCalendar func(*sql.Selector)
 
+// GreetingRule is the predicate function for greetingrule builders.
+type GreetingRule func(*sql.Selector)
+
 // HomeAssistant is the predicate function for homeassistant builders.
 type HomeAssistant func(*sql.Selector)
 
@@ -69,6 +81,9 @@ type LogEntry func(*sql.Selector)
 // LogSettings is the predicate function for logsettings builders.
 type LogSettings func(*sql.Selector)
 
+// MPD is the predicate function for mpd builders.
+type MPD func(*sql.Selector)
+
 // MQTTSettings is the predicate function for mqttsettings builders.
 type MQTTSettings func(*sql.Selector)
 
@@ -81,6 +96,12 @@ type NewsFeed func(*sql.Selector)
 // Notification is the predicate function for notification builders.
 type Notification func(*sql.Selector)
 
+// OutboundSettings is the predicate function for outboundsettings builders.
+type OutboundSettings func(*sql.Selector)
+
+// OutboundWebhook is the predicate function for outboundwebhook builders.
+type OutboundWebhook func(*sql.Selector)
+
 // PiHole is the predicate function for pihole builders.
 type PiHole func(*sql.Selector)
 
@@ -89,6 +110,9 @@ type PixelArt func(*sql.Selector)
 
 // Playlist is the predicate function for playlist builders.
 type Playlist func(*sql.Selector)
+
+// Qrcode is the predicate function for qrcode builders.
+type Qrcode func(*sql.Selector)
 
 // Radarr is the predicate function for radarr builders.
 type Radarr func(*sql.Selector)
@@ -117,6 +141,9 @@ type TelegramSettings func(*sql.Selector)
 // TextSlide is the predicate function for textslide builders.
 type TextSlide func(*sql.Selector)
 
+// TimelapseFrame is the predicate function for timelapseframe builders.
+type TimelapseFrame func(*sql.Selector)
+
 // Transit is the predicate function for transit builders.
 type Transit func(*sql.Selector)
 
@@ -128,6 +155,9 @@ type Untappd func(*sql.Selector)
 
 // Uptime is the predicate function for uptime builders.
 type Uptime func(*sql.Selector)
+
+// User is the predicate function for user builders.
+type User func(*sql.Selector)
 
 // Video is the predicate function for video builders.
 type Video func(*sql.Selector)

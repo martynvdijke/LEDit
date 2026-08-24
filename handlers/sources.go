@@ -68,7 +68,7 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
 		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
 		WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
-		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().Only(c.Request.Context())
+		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithQrcodes().Only(c.Request.Context())
 	if err != nil || settings == nil {
 		return opts
 	}
@@ -86,6 +86,10 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	add("analog-clock", 0, "Analog Clock")
 	add("matrix-rain", 0, "Matrix Rain")
 	add("systemstats", 0, "System Stats")
+	add("screensaver", 0, "Starfield")
+	add("screensaver", 1, "DVD Bounce")
+	add("screensaver", 2, "Matrix")
+	add("screensaver", 3, "Plasma")
 
 	sonarr, _ := settings.Edges.SonarrOrErr()
 	for _, s := range sonarr {
@@ -187,6 +191,17 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	for _, jf := range jellyfins {
 		add("jellyfin", jf.ID, "Jellyfin #"+strconv.Itoa(jf.ID))
 	}
+	// Audio group — stylized visualizer, synced to tempo, not live FFT
+	add("audio", 0, "Now Playing — Stylized visualizer — synced to tempo, not live FFT")
+	add("audio", 1, "Audio Visualizer — Stylized visualizer — synced to tempo, not live FFT")
+	qrcodes, _ := settings.Edges.QrcodesOrErr()
+	for _, q := range qrcodes {
+		label := q.Caption
+		if label == "" {
+			label = q.Content
+		}
+		add("qrcode", q.ID, "QR: "+truncateLabel(label, 20))
+	}
 	return opts
 }
 
@@ -227,6 +242,10 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 	idx.names[key("matrix-rain", 0)] = "Matrix Rain"
 	idx.byKey[key("systemstats", 0)] = &datasource.SystemStatsDS{}
 	idx.names[key("systemstats", 0)] = "System Stats"
+	for i, v := range []string{"starfield", "dvd", "matrix", "plasma"} {
+		idx.byKey[key("screensaver", i)] = &datasource.ScreensaverDS{Variant: v}
+		idx.names[key("screensaver", i)] = "Screensaver: " + v
+	}
 
 	sonarr, _ := settings.Edges.SonarrOrErr()
 	for _, s := range sonarr {
@@ -367,6 +386,17 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 		idx.byKey[key("jellyfin", jf.ID)] = &datasource.JellyfinDS{Token: jf.Token, URL: jf.URL}
 		idx.names[key("jellyfin", jf.ID)] = "Jellyfin"
 	}
+	qrcodes, _ := settings.Edges.QrcodesOrErr()
+	for _, q := range qrcodes {
+		idx.byKey[key("qrcode", q.ID)] = &datasource.QRSource{
+			Content: q.Content, Mode: string(q.Mode), WifiSSID: q.WifiSsid, WifiPassword: q.WifiPassword, WifiAuth: string(q.WifiAuth), Caption: q.Caption, ErrorCorrection: string(q.ErrorCorrection), QuietZone: q.QuietZone,
+		}
+		idx.names[key("qrcode", q.ID)] = "QR Code"
+	}
+	idx.byKey[key("audio", 0)] = &datasource.AudioNowPlayingDS{}
+	idx.names[key("audio", 0)] = "Now Playing"
+	idx.byKey[key("audio", 1)] = &datasource.VisualizerDS{Mode: "bars"}
+	idx.names[key("audio", 1)] = "Audio Visualizer"
 	return idx
 }
 

@@ -1,0 +1,30 @@
+{{define "users.html"}}
+<div class="page">
+<h1>Users</h1>
+{{if .isViewer}}<span class="badge">read-only viewer</span>{{end}}
+<table class="table">
+<thead><tr><th>Username</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
+<tbody>
+{{range .users}}
+<tr>
+<td>{{.Username}}</td>
+<td>{{.Role}}</td>
+<td>{{.CreatedAt}}</td>
+<td>
+<form method="POST" action="/admin/api/users/{{.ID}}/role" style="display:inline"><select name="role"><option value="admin" {{if eq .Role "admin"}}selected{{end}}>admin</option><option value="viewer" {{if eq .Role "viewer"}}selected{{end}}>viewer</option></select><button type="submit">Change</button></form>
+<form method="POST" action="/admin/api/users/{{.ID}}/password" style="display:inline"><input name="password" placeholder="new pass" type="password"><button type="submit">Reset</button></form>
+{{if gt $.adminCount 1}}<form method="POST" action="/admin/api/users/{{.ID}}" style="display:inline"><input type="hidden" name="_method" value="DELETE"><button type="submit">Delete</button></form>{{else}}<button disabled title="cannot delete last admin">Delete</button>{{end}}
+</td>
+</tr>
+{{end}}
+</tbody>
+</table>
+<h2>Create User</h2>
+<form method="POST" action="/admin/api/users">
+<input name="username" placeholder="username" required>
+<input name="password" placeholder="password" type="password" required>
+<select name="role"><option value="viewer">viewer</option><option value="admin">admin</option></select>
+<button type="submit">Create</button>
+</form>
+</div>
+{{end}}

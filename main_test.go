@@ -14,6 +14,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -43,8 +44,15 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+var testDBSeq int64
+
 func openTestDB(t *testing.T) *sql.Driver {
-	drv, err := sql.Open(dialect.SQLite, "file:test.db?cache=shared&_fk=1&_busy_timeout=5000&mode=memory")
+	// Unique in-memory DB per test: a fixed shared-cache DSN lets rows (and
+	// briefly-live connections from feed/evaluator goroutines of finished
+	// tests) leak into later tests, flaking count assertions like
+	// "expected 1 device, got 2". A per-test name makes that impossible.
+	dsn := fmt.Sprintf("file:testdb_%d?_fk=1&_busy_timeout=5000&mode=memory", atomic.AddInt64(&testDBSeq, 1))
+	drv, err := sql.Open(dialect.SQLite, dsn)
 	if err != nil {
 		t.Fatalf("Failed to open test database: %v", err)
 	}

@@ -28,6 +28,15 @@
         <div class="container-fluid p-4">
             <h1>{{if .edit}}Edit{{else}}New{{end}} Pixel Art</h1>
             <p class="text-muted">Draw frames, manage palette slots, configure API bindings. Saving validates the document server-side.</p>
+            <div id="generate-panel" data-ai-configured="{{if .aiConfigured}}true{{else}}false{{end}}" {{if .edit}}data-draft-id="{{if .obj.ID}}{{.obj.ID}}{{end}}"{{end}} class="card mb-3">
+                <div class="card-body">
+                    <h5>AI Generate</h5>
+                    <div class="mb-2"><label class="form-label">Prompt</label><textarea id="gen-prompt" class="form-control" rows="2" placeholder="a rainy city at night"></textarea></div>
+                    <div class="row mb-2"><div class="col-3"><label class="form-label">Width</label><input id="gen-width" type="number" class="form-control" value="32" min="8" max="64"></div><div class="col-3"><label class="form-label">Height</label><input id="gen-height" type="number" class="form-control" value="32" min="8" max="64"></div><div class="col-3"><label class="form-label">Frames</label><select id="gen-frames" class="form-select"><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="8">8</option></select></div><div class="col-3"><label class="form-label">Palette hint</label><input id="gen-palette-hint" type="text" class="form-control" placeholder="optional"></div></div>
+                    <div class="d-flex gap-2 align-items-center"><button type="button" id="gen-btn" class="btn btn-primary">Generate</button><span id="gen-spinner" style="display:none" class="spinner-border spinner-border-sm"></span><span id="gen-error" class="text-danger small" style="display:none"></span></div>
+                    {{if .edit}}<div class="mt-3"><label class="form-label">Refine (follow-up)</label><div class="d-flex gap-2"><textarea id="gen-refine-prompt" class="form-control" rows="1" placeholder="more rain"></textarea><button type="button" id="gen-refine-btn" class="btn btn-secondary">Regenerate</button><button type="button" id="gen-publish-btn" class="btn btn-success">Publish</button></div></div>{{end}}
+                </div>
+            </div>
 
             <form method="POST" action="/admin/pixelarts{{if .edit}}/{{if .id}}{{.id}}{{else if .obj.ID}}{{.obj.ID}}{{end}}/edit{{else}}/new{{end}}" id="pixelart-form" class="mt-4">
                 <!-- top fields -->
@@ -191,7 +200,30 @@
                                 <button type="button" id="export-btn" class="btn btn-sm btn-secondary">Export JSON</button>
                                 <label for="import-file" class="btn btn-sm btn-secondary" style="cursor:pointer">Import JSON</label>
                                 <input type="file" id="import-file" accept=".json,application/json" style="display:none">
+                                <button type="button" id="media-import-btn" class="btn btn-sm btn-primary">Import image/GIF</button>
                                 <small class="text-muted">Exports {frames,bindings,grid}. Import validates before replacing.</small>
+                            </div>
+                        </div>
+                        <div id="media-import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+                            <div style="background:var(--panel, #fff);padding:20px;border-radius:8px;min-width:380px;max-width:90vw;color:var(--text, #000)">
+                                <h5>Import image/GIF</h5>
+                                <div class="mb-2"><input type="file" id="media-import-file" accept=".png,.jpg,.jpeg,.webp,.gif" class="form-control"></div>
+                                <div class="row mb-2">
+                                    <div class="col-6"><label class="form-label">Width</label><input type="number" id="media-import-w" class="form-control" value="32" min="1" max="128"></div>
+                                    <div class="col-6"><label class="form-label">Height</label><input type="number" id="media-import-h" class="form-control" value="32" min="1" max="128"></div>
+                                </div>
+                                <div class="mb-2"><label class="form-label">Aspect</label><select id="media-import-aspect" class="form-select"><option value="fit" selected>fit</option><option value="stretch">stretch</option><option value="crop">crop</option></select></div>
+                                <div class="mb-2"><label class="form-label">Palette</label>
+                                    <div class="d-flex gap-2"><label><input type="radio" name="media-palette-mode" value="auto" checked> Auto</label><label><input type="radio" name="media-palette-mode" value="custom"> Custom</label></div>
+                                    <input type="number" id="media-import-colors" class="form-control mt-1" value="16" min="4" max="64">
+                                    <input type="text" id="media-import-palette" class="form-control mt-1" placeholder='["#ff0000","#00ff00"]' style="display:none">
+                                </div>
+                                <div id="media-import-preview-wrap" class="mb-2" style="display:none"><img id="media-import-preview" style="max-width:256px;border:1px solid var(--line);image-rendering:pixelated"><div id="media-import-error" class="small text-danger"></div></div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" id="media-import-preview-btn" class="btn btn-sm btn-secondary">Preview</button>
+                                    <button type="button" id="media-import-submit" class="btn btn-sm btn-primary">Import</button>
+                                    <button type="button" id="media-import-cancel" class="btn btn-sm btn-ghost">Cancel</button>
+                                </div>
                             </div>
                         </div>
 
@@ -205,5 +237,5 @@
         </div>
     </div>
 </body>
-<script type="module" src="/static/assets/pixelart_editor.js"></script>
+<script type="module" src="/static/assets/pixelart_editor.js"></script><script type="module" src="/static/assets/media_import.js"></script><script type="module" src="/static/assets/pixelart_generate.js"></script>
 </html>

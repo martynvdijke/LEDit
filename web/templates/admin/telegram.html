@@ -30,6 +30,9 @@
                 {{end}}
                 <button type="submit" class="btn btn-primary">Save Settings</button>
             </form>
+            <div class="mt-4 alert alert-info">
+                <strong>Natural-language control:</strong> NL control uses your configured AI provider — send free text like 'pause' or 'show weather for 30 seconds'. When AI is not configured, use slash commands: /pause /resume /next /status /sources /display &lt;text&gt;. Invalid or ambiguous messages get a fallback reply listing those commands. MQTT topic <code>ledit/control/nl</code> accepts the same NL payloads.
+            </div>
         </div>
     </div>
 </body><script type="module" src="/static/assets/app.js"></script>

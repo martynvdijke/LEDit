@@ -31,7 +31,9 @@ type PixelArt struct {
 	// APIToken holds the value of the "api_token" field.
 	APIToken string `json:"api_token,omitempty"`
 	// Enabled holds the value of the "enabled" field.
-	Enabled                     bool `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled,omitempty"`
+	// IsDraft holds the value of the "is_draft" field.
+	IsDraft                     bool `json:"is_draft,omitempty"`
 	general_settings_pixel_arts *int
 	selectValues                sql.SelectValues
 }
@@ -41,7 +43,7 @@ func (*PixelArt) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case pixelart.FieldEnabled:
+		case pixelart.FieldEnabled, pixelart.FieldIsDraft:
 			values[i] = new(sql.NullBool)
 		case pixelart.FieldID, pixelart.FieldGridWidth, pixelart.FieldGridHeight:
 			values[i] = new(sql.NullInt64)
@@ -118,6 +120,12 @@ func (_m *PixelArt) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Enabled = value.Bool
 			}
+		case pixelart.FieldIsDraft:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_draft", values[i])
+			} else if value.Valid {
+				_m.IsDraft = value.Bool
+			}
 		case pixelart.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field general_settings_pixel_arts", value)
@@ -184,6 +192,9 @@ func (_m *PixelArt) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("enabled=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Enabled))
+	builder.WriteString(", ")
+	builder.WriteString("is_draft=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsDraft))
 	builder.WriteByte(')')
 	return builder.String()
 }

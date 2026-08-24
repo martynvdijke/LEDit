@@ -69,6 +69,20 @@ func (_u *PlaylistUpdate) SetNillableItems(v *string) *PlaylistUpdate {
 	return _u
 }
 
+// SetScheduleWindows sets the "schedule_windows" field.
+func (_u *PlaylistUpdate) SetScheduleWindows(v string) *PlaylistUpdate {
+	_u.mutation.SetScheduleWindows(v)
+	return _u
+}
+
+// SetNillableScheduleWindows sets the "schedule_windows" field if the given value is not nil.
+func (_u *PlaylistUpdate) SetNillableScheduleWindows(v *string) *PlaylistUpdate {
+	if v != nil {
+		_u.SetScheduleWindows(*v)
+	}
+	return _u
+}
+
 // Mutation returns the PlaylistMutation object of the builder.
 func (_u *PlaylistUpdate) Mutation() *PlaylistMutation {
 	return _u.mutation
@@ -118,6 +132,9 @@ func (_u *PlaylistUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Items(); ok {
 		_spec.SetField(playlist.FieldItems, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ScheduleWindows(); ok {
+		_spec.SetField(playlist.FieldScheduleWindows, field.TypeString, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -177,6 +194,20 @@ func (_u *PlaylistUpdateOne) SetItems(v string) *PlaylistUpdateOne {
 func (_u *PlaylistUpdateOne) SetNillableItems(v *string) *PlaylistUpdateOne {
 	if v != nil {
 		_u.SetItems(*v)
+	}
+	return _u
+}
+
+// SetScheduleWindows sets the "schedule_windows" field.
+func (_u *PlaylistUpdateOne) SetScheduleWindows(v string) *PlaylistUpdateOne {
+	_u.mutation.SetScheduleWindows(v)
+	return _u
+}
+
+// SetNillableScheduleWindows sets the "schedule_windows" field if the given value is not nil.
+func (_u *PlaylistUpdateOne) SetNillableScheduleWindows(v *string) *PlaylistUpdateOne {
+	if v != nil {
+		_u.SetScheduleWindows(*v)
 	}
 	return _u
 }
@@ -260,6 +291,9 @@ func (_u *PlaylistUpdateOne) sqlSave(ctx context.Context) (_node *Playlist, err 
 	}
 	if value, ok := _u.mutation.Items(); ok {
 		_spec.SetField(playlist.FieldItems, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ScheduleWindows(); ok {
+		_spec.SetField(playlist.FieldScheduleWindows, field.TypeString, value)
 	}
 	_node = &Playlist{config: _u.config}
 	_spec.Assign = _node.assignValues

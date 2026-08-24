@@ -17,8 +17,11 @@ import (
 	"ledit/ent/alertsettings"
 	"ledit/ent/apitoken"
 	"ledit/ent/calendar"
+	"ledit/ent/chartsample"
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
+	"ledit/ent/datasourceplugin"
+	"ledit/ent/devicegroup"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
@@ -27,18 +30,23 @@ import (
 	"ledit/ent/genericapi"
 	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
+	"ledit/ent/greetingrule"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mpd"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/outboundsettings"
+	"ledit/ent/outboundwebhook"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
+	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -48,10 +56,12 @@ import (
 	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/timelapseframe"
 	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
+	"ledit/ent/user"
 	"ledit/ent/video"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
@@ -79,10 +89,16 @@ type Client struct {
 	ApiToken *ApiTokenClient
 	// Calendar is the client for interacting with the Calendar builders.
 	Calendar *CalendarClient
+	// ChartSample is the client for interacting with the ChartSample builders.
+	ChartSample *ChartSampleClient
 	// Countdown is the client for interacting with the Countdown builders.
 	Countdown *CountdownClient
 	// Crypto is the client for interacting with the Crypto builders.
 	Crypto *CryptoClient
+	// DatasourcePlugin is the client for interacting with the DatasourcePlugin builders.
+	DatasourcePlugin *DatasourcePluginClient
+	// DeviceGroup is the client for interacting with the DeviceGroup builders.
+	DeviceGroup *DeviceGroupClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
 	DeviceSettings *DeviceSettingsClient
 	// DisplayRule is the client for interacting with the DisplayRule builders.
@@ -99,6 +115,8 @@ type Client struct {
 	GitHub *GitHubClient
 	// GoogleCalendar is the client for interacting with the GoogleCalendar builders.
 	GoogleCalendar *GoogleCalendarClient
+	// GreetingRule is the client for interacting with the GreetingRule builders.
+	GreetingRule *GreetingRuleClient
 	// HomeAssistant is the client for interacting with the HomeAssistant builders.
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
@@ -109,6 +127,8 @@ type Client struct {
 	LogEntry *LogEntryClient
 	// LogSettings is the client for interacting with the LogSettings builders.
 	LogSettings *LogSettingsClient
+	// MPD is the client for interacting with the MPD builders.
+	MPD *MPDClient
 	// MQTTSettings is the client for interacting with the MQTTSettings builders.
 	MQTTSettings *MQTTSettingsClient
 	// MatrixLayout is the client for interacting with the MatrixLayout builders.
@@ -117,12 +137,18 @@ type Client struct {
 	NewsFeed *NewsFeedClient
 	// Notification is the client for interacting with the Notification builders.
 	Notification *NotificationClient
+	// OutboundSettings is the client for interacting with the OutboundSettings builders.
+	OutboundSettings *OutboundSettingsClient
+	// OutboundWebhook is the client for interacting with the OutboundWebhook builders.
+	OutboundWebhook *OutboundWebhookClient
 	// PiHole is the client for interacting with the PiHole builders.
 	PiHole *PiHoleClient
 	// PixelArt is the client for interacting with the PixelArt builders.
 	PixelArt *PixelArtClient
 	// Playlist is the client for interacting with the Playlist builders.
 	Playlist *PlaylistClient
+	// Qrcode is the client for interacting with the Qrcode builders.
+	Qrcode *QrcodeClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
 	// RssFeed is the client for interacting with the RssFeed builders.
@@ -141,6 +167,8 @@ type Client struct {
 	TelegramSettings *TelegramSettingsClient
 	// TextSlide is the client for interacting with the TextSlide builders.
 	TextSlide *TextSlideClient
+	// TimelapseFrame is the client for interacting with the TimelapseFrame builders.
+	TimelapseFrame *TimelapseFrameClient
 	// Transit is the client for interacting with the Transit builders.
 	Transit *TransitClient
 	// UmamiSettings is the client for interacting with the UmamiSettings builders.
@@ -149,6 +177,8 @@ type Client struct {
 	Untappd *UntappdClient
 	// Uptime is the client for interacting with the Uptime builders.
 	Uptime *UptimeClient
+	// User is the client for interacting with the User builders.
+	User *UserClient
 	// Video is the client for interacting with the Video builders.
 	Video *VideoClient
 	// Weather is the client for interacting with the Weather builders.
@@ -172,8 +202,11 @@ func (c *Client) init() {
 	c.AlertSettings = NewAlertSettingsClient(c.config)
 	c.ApiToken = NewApiTokenClient(c.config)
 	c.Calendar = NewCalendarClient(c.config)
+	c.ChartSample = NewChartSampleClient(c.config)
 	c.Countdown = NewCountdownClient(c.config)
 	c.Crypto = NewCryptoClient(c.config)
+	c.DatasourcePlugin = NewDatasourcePluginClient(c.config)
+	c.DeviceGroup = NewDeviceGroupClient(c.config)
 	c.DeviceSettings = NewDeviceSettingsClient(c.config)
 	c.DisplayRule = NewDisplayRuleClient(c.config)
 	c.EmailSettings = NewEmailSettingsClient(c.config)
@@ -182,18 +215,23 @@ func (c *Client) init() {
 	c.GenericAPI = NewGenericAPIClient(c.config)
 	c.GitHub = NewGitHubClient(c.config)
 	c.GoogleCalendar = NewGoogleCalendarClient(c.config)
+	c.GreetingRule = NewGreetingRuleClient(c.config)
 	c.HomeAssistant = NewHomeAssistantClient(c.config)
 	c.Image = NewImageClient(c.config)
 	c.Jellyfin = NewJellyfinClient(c.config)
 	c.LogEntry = NewLogEntryClient(c.config)
 	c.LogSettings = NewLogSettingsClient(c.config)
+	c.MPD = NewMPDClient(c.config)
 	c.MQTTSettings = NewMQTTSettingsClient(c.config)
 	c.MatrixLayout = NewMatrixLayoutClient(c.config)
 	c.NewsFeed = NewNewsFeedClient(c.config)
 	c.Notification = NewNotificationClient(c.config)
+	c.OutboundSettings = NewOutboundSettingsClient(c.config)
+	c.OutboundWebhook = NewOutboundWebhookClient(c.config)
 	c.PiHole = NewPiHoleClient(c.config)
 	c.PixelArt = NewPixelArtClient(c.config)
 	c.Playlist = NewPlaylistClient(c.config)
+	c.Qrcode = NewQrcodeClient(c.config)
 	c.Radarr = NewRadarrClient(c.config)
 	c.RssFeed = NewRssFeedClient(c.config)
 	c.Schedule = NewScheduleClient(c.config)
@@ -203,10 +241,12 @@ func (c *Client) init() {
 	c.SunMoon = NewSunMoonClient(c.config)
 	c.TelegramSettings = NewTelegramSettingsClient(c.config)
 	c.TextSlide = NewTextSlideClient(c.config)
+	c.TimelapseFrame = NewTimelapseFrameClient(c.config)
 	c.Transit = NewTransitClient(c.config)
 	c.UmamiSettings = NewUmamiSettingsClient(c.config)
 	c.Untappd = NewUntappdClient(c.config)
 	c.Uptime = NewUptimeClient(c.config)
+	c.User = NewUserClient(c.config)
 	c.Video = NewVideoClient(c.config)
 	c.Weather = NewWeatherClient(c.config)
 	c.WebhookSettings = NewWebhookSettingsClient(c.config)
@@ -308,8 +348,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AlertSettings:    NewAlertSettingsClient(cfg),
 		ApiToken:         NewApiTokenClient(cfg),
 		Calendar:         NewCalendarClient(cfg),
+		ChartSample:      NewChartSampleClient(cfg),
 		Countdown:        NewCountdownClient(cfg),
 		Crypto:           NewCryptoClient(cfg),
+		DatasourcePlugin: NewDatasourcePluginClient(cfg),
+		DeviceGroup:      NewDeviceGroupClient(cfg),
 		DeviceSettings:   NewDeviceSettingsClient(cfg),
 		DisplayRule:      NewDisplayRuleClient(cfg),
 		EmailSettings:    NewEmailSettingsClient(cfg),
@@ -318,18 +361,23 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		GenericAPI:       NewGenericAPIClient(cfg),
 		GitHub:           NewGitHubClient(cfg),
 		GoogleCalendar:   NewGoogleCalendarClient(cfg),
+		GreetingRule:     NewGreetingRuleClient(cfg),
 		HomeAssistant:    NewHomeAssistantClient(cfg),
 		Image:            NewImageClient(cfg),
 		Jellyfin:         NewJellyfinClient(cfg),
 		LogEntry:         NewLogEntryClient(cfg),
 		LogSettings:      NewLogSettingsClient(cfg),
+		MPD:              NewMPDClient(cfg),
 		MQTTSettings:     NewMQTTSettingsClient(cfg),
 		MatrixLayout:     NewMatrixLayoutClient(cfg),
 		NewsFeed:         NewNewsFeedClient(cfg),
 		Notification:     NewNotificationClient(cfg),
+		OutboundSettings: NewOutboundSettingsClient(cfg),
+		OutboundWebhook:  NewOutboundWebhookClient(cfg),
 		PiHole:           NewPiHoleClient(cfg),
 		PixelArt:         NewPixelArtClient(cfg),
 		Playlist:         NewPlaylistClient(cfg),
+		Qrcode:           NewQrcodeClient(cfg),
 		Radarr:           NewRadarrClient(cfg),
 		RssFeed:          NewRssFeedClient(cfg),
 		Schedule:         NewScheduleClient(cfg),
@@ -339,10 +387,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		SunMoon:          NewSunMoonClient(cfg),
 		TelegramSettings: NewTelegramSettingsClient(cfg),
 		TextSlide:        NewTextSlideClient(cfg),
+		TimelapseFrame:   NewTimelapseFrameClient(cfg),
 		Transit:          NewTransitClient(cfg),
 		UmamiSettings:    NewUmamiSettingsClient(cfg),
 		Untappd:          NewUntappdClient(cfg),
 		Uptime:           NewUptimeClient(cfg),
+		User:             NewUserClient(cfg),
 		Video:            NewVideoClient(cfg),
 		Weather:          NewWeatherClient(cfg),
 		WebhookSettings:  NewWebhookSettingsClient(cfg),
@@ -371,8 +421,11 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AlertSettings:    NewAlertSettingsClient(cfg),
 		ApiToken:         NewApiTokenClient(cfg),
 		Calendar:         NewCalendarClient(cfg),
+		ChartSample:      NewChartSampleClient(cfg),
 		Countdown:        NewCountdownClient(cfg),
 		Crypto:           NewCryptoClient(cfg),
+		DatasourcePlugin: NewDatasourcePluginClient(cfg),
+		DeviceGroup:      NewDeviceGroupClient(cfg),
 		DeviceSettings:   NewDeviceSettingsClient(cfg),
 		DisplayRule:      NewDisplayRuleClient(cfg),
 		EmailSettings:    NewEmailSettingsClient(cfg),
@@ -381,18 +434,23 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		GenericAPI:       NewGenericAPIClient(cfg),
 		GitHub:           NewGitHubClient(cfg),
 		GoogleCalendar:   NewGoogleCalendarClient(cfg),
+		GreetingRule:     NewGreetingRuleClient(cfg),
 		HomeAssistant:    NewHomeAssistantClient(cfg),
 		Image:            NewImageClient(cfg),
 		Jellyfin:         NewJellyfinClient(cfg),
 		LogEntry:         NewLogEntryClient(cfg),
 		LogSettings:      NewLogSettingsClient(cfg),
+		MPD:              NewMPDClient(cfg),
 		MQTTSettings:     NewMQTTSettingsClient(cfg),
 		MatrixLayout:     NewMatrixLayoutClient(cfg),
 		NewsFeed:         NewNewsFeedClient(cfg),
 		Notification:     NewNotificationClient(cfg),
+		OutboundSettings: NewOutboundSettingsClient(cfg),
+		OutboundWebhook:  NewOutboundWebhookClient(cfg),
 		PiHole:           NewPiHoleClient(cfg),
 		PixelArt:         NewPixelArtClient(cfg),
 		Playlist:         NewPlaylistClient(cfg),
+		Qrcode:           NewQrcodeClient(cfg),
 		Radarr:           NewRadarrClient(cfg),
 		RssFeed:          NewRssFeedClient(cfg),
 		Schedule:         NewScheduleClient(cfg),
@@ -402,10 +460,12 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		SunMoon:          NewSunMoonClient(cfg),
 		TelegramSettings: NewTelegramSettingsClient(cfg),
 		TextSlide:        NewTextSlideClient(cfg),
+		TimelapseFrame:   NewTimelapseFrameClient(cfg),
 		Transit:          NewTransitClient(cfg),
 		UmamiSettings:    NewUmamiSettingsClient(cfg),
 		Untappd:          NewUntappdClient(cfg),
 		Uptime:           NewUptimeClient(cfg),
+		User:             NewUserClient(cfg),
 		Video:            NewVideoClient(cfg),
 		Weather:          NewWeatherClient(cfg),
 		WebhookSettings:  NewWebhookSettingsClient(cfg),
@@ -439,13 +499,15 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
-		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.DisplayRule,
-		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GitHub,
-		c.GoogleCalendar, c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry,
-		c.LogSettings, c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
-		c.PiHole, c.PixelArt, c.Playlist, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr,
-		c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide, c.Transit,
-		c.UmamiSettings, c.Untappd, c.Uptime, c.Video, c.Weather, c.WebhookSettings,
+		c.Calendar, c.ChartSample, c.Countdown, c.Crypto, c.DatasourcePlugin,
+		c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
+		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
+		c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD,
+		c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification, c.OutboundSettings,
+		c.OutboundWebhook, c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr,
+		c.RssFeed, c.Schedule, c.Sonarr, c.Sports, c.Stock, c.SunMoon,
+		c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit, c.UmamiSettings,
+		c.Untappd, c.Uptime, c.User, c.Video, c.Weather, c.WebhookSettings,
 	} {
 		n.Use(hooks...)
 	}
@@ -456,13 +518,15 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
-		c.Calendar, c.Countdown, c.Crypto, c.DeviceSettings, c.DisplayRule,
-		c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI, c.GitHub,
-		c.GoogleCalendar, c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry,
-		c.LogSettings, c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
-		c.PiHole, c.PixelArt, c.Playlist, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr,
-		c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide, c.Transit,
-		c.UmamiSettings, c.Untappd, c.Uptime, c.Video, c.Weather, c.WebhookSettings,
+		c.Calendar, c.ChartSample, c.Countdown, c.Crypto, c.DatasourcePlugin,
+		c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
+		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
+		c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD,
+		c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification, c.OutboundSettings,
+		c.OutboundWebhook, c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr,
+		c.RssFeed, c.Schedule, c.Sonarr, c.Sports, c.Stock, c.SunMoon,
+		c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit, c.UmamiSettings,
+		c.Untappd, c.Uptime, c.User, c.Video, c.Weather, c.WebhookSettings,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -483,10 +547,16 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ApiToken.mutate(ctx, m)
 	case *CalendarMutation:
 		return c.Calendar.mutate(ctx, m)
+	case *ChartSampleMutation:
+		return c.ChartSample.mutate(ctx, m)
 	case *CountdownMutation:
 		return c.Countdown.mutate(ctx, m)
 	case *CryptoMutation:
 		return c.Crypto.mutate(ctx, m)
+	case *DatasourcePluginMutation:
+		return c.DatasourcePlugin.mutate(ctx, m)
+	case *DeviceGroupMutation:
+		return c.DeviceGroup.mutate(ctx, m)
 	case *DeviceSettingsMutation:
 		return c.DeviceSettings.mutate(ctx, m)
 	case *DisplayRuleMutation:
@@ -503,6 +573,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.GitHub.mutate(ctx, m)
 	case *GoogleCalendarMutation:
 		return c.GoogleCalendar.mutate(ctx, m)
+	case *GreetingRuleMutation:
+		return c.GreetingRule.mutate(ctx, m)
 	case *HomeAssistantMutation:
 		return c.HomeAssistant.mutate(ctx, m)
 	case *ImageMutation:
@@ -513,6 +585,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.LogEntry.mutate(ctx, m)
 	case *LogSettingsMutation:
 		return c.LogSettings.mutate(ctx, m)
+	case *MPDMutation:
+		return c.MPD.mutate(ctx, m)
 	case *MQTTSettingsMutation:
 		return c.MQTTSettings.mutate(ctx, m)
 	case *MatrixLayoutMutation:
@@ -521,12 +595,18 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.NewsFeed.mutate(ctx, m)
 	case *NotificationMutation:
 		return c.Notification.mutate(ctx, m)
+	case *OutboundSettingsMutation:
+		return c.OutboundSettings.mutate(ctx, m)
+	case *OutboundWebhookMutation:
+		return c.OutboundWebhook.mutate(ctx, m)
 	case *PiHoleMutation:
 		return c.PiHole.mutate(ctx, m)
 	case *PixelArtMutation:
 		return c.PixelArt.mutate(ctx, m)
 	case *PlaylistMutation:
 		return c.Playlist.mutate(ctx, m)
+	case *QrcodeMutation:
+		return c.Qrcode.mutate(ctx, m)
 	case *RadarrMutation:
 		return c.Radarr.mutate(ctx, m)
 	case *RssFeedMutation:
@@ -545,6 +625,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.TelegramSettings.mutate(ctx, m)
 	case *TextSlideMutation:
 		return c.TextSlide.mutate(ctx, m)
+	case *TimelapseFrameMutation:
+		return c.TimelapseFrame.mutate(ctx, m)
 	case *TransitMutation:
 		return c.Transit.mutate(ctx, m)
 	case *UmamiSettingsMutation:
@@ -553,6 +635,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Untappd.mutate(ctx, m)
 	case *UptimeMutation:
 		return c.Uptime.mutate(ctx, m)
+	case *UserMutation:
+		return c.User.mutate(ctx, m)
 	case *VideoMutation:
 		return c.Video.mutate(ctx, m)
 	case *WeatherMutation:
@@ -1362,6 +1446,139 @@ func (c *CalendarClient) mutate(ctx context.Context, m *CalendarMutation) (Value
 	}
 }
 
+// ChartSampleClient is a client for the ChartSample schema.
+type ChartSampleClient struct {
+	config
+}
+
+// NewChartSampleClient returns a client for the ChartSample from the given config.
+func NewChartSampleClient(c config) *ChartSampleClient {
+	return &ChartSampleClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `chartsample.Hooks(f(g(h())))`.
+func (c *ChartSampleClient) Use(hooks ...Hook) {
+	c.hooks.ChartSample = append(c.hooks.ChartSample, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `chartsample.Intercept(f(g(h())))`.
+func (c *ChartSampleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ChartSample = append(c.inters.ChartSample, interceptors...)
+}
+
+// Create returns a builder for creating a ChartSample entity.
+func (c *ChartSampleClient) Create() *ChartSampleCreate {
+	mutation := newChartSampleMutation(c.config, OpCreate)
+	return &ChartSampleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ChartSample entities.
+func (c *ChartSampleClient) CreateBulk(builders ...*ChartSampleCreate) *ChartSampleCreateBulk {
+	return &ChartSampleCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ChartSampleClient) MapCreateBulk(slice any, setFunc func(*ChartSampleCreate, int)) *ChartSampleCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ChartSampleCreateBulk{err: fmt.Errorf("calling to ChartSampleClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ChartSampleCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ChartSampleCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ChartSample.
+func (c *ChartSampleClient) Update() *ChartSampleUpdate {
+	mutation := newChartSampleMutation(c.config, OpUpdate)
+	return &ChartSampleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ChartSampleClient) UpdateOne(_m *ChartSample) *ChartSampleUpdateOne {
+	mutation := newChartSampleMutation(c.config, OpUpdateOne, withChartSample(_m))
+	return &ChartSampleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ChartSampleClient) UpdateOneID(id int) *ChartSampleUpdateOne {
+	mutation := newChartSampleMutation(c.config, OpUpdateOne, withChartSampleID(id))
+	return &ChartSampleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ChartSample.
+func (c *ChartSampleClient) Delete() *ChartSampleDelete {
+	mutation := newChartSampleMutation(c.config, OpDelete)
+	return &ChartSampleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ChartSampleClient) DeleteOne(_m *ChartSample) *ChartSampleDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ChartSampleClient) DeleteOneID(id int) *ChartSampleDeleteOne {
+	builder := c.Delete().Where(chartsample.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ChartSampleDeleteOne{builder}
+}
+
+// Query returns a query builder for ChartSample.
+func (c *ChartSampleClient) Query() *ChartSampleQuery {
+	return &ChartSampleQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeChartSample},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ChartSample entity by its id.
+func (c *ChartSampleClient) Get(ctx context.Context, id int) (*ChartSample, error) {
+	return c.Query().Where(chartsample.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ChartSampleClient) GetX(ctx context.Context, id int) *ChartSample {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ChartSampleClient) Hooks() []Hook {
+	return c.hooks.ChartSample
+}
+
+// Interceptors returns the client interceptors.
+func (c *ChartSampleClient) Interceptors() []Interceptor {
+	return c.inters.ChartSample
+}
+
+func (c *ChartSampleClient) mutate(ctx context.Context, m *ChartSampleMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ChartSampleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ChartSampleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ChartSampleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ChartSampleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ChartSample mutation op: %q", m.Op())
+	}
+}
+
 // CountdownClient is a client for the Countdown schema.
 type CountdownClient struct {
 	config
@@ -1628,6 +1845,288 @@ func (c *CryptoClient) mutate(ctx context.Context, m *CryptoMutation) (Value, er
 	}
 }
 
+// DatasourcePluginClient is a client for the DatasourcePlugin schema.
+type DatasourcePluginClient struct {
+	config
+}
+
+// NewDatasourcePluginClient returns a client for the DatasourcePlugin from the given config.
+func NewDatasourcePluginClient(c config) *DatasourcePluginClient {
+	return &DatasourcePluginClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `datasourceplugin.Hooks(f(g(h())))`.
+func (c *DatasourcePluginClient) Use(hooks ...Hook) {
+	c.hooks.DatasourcePlugin = append(c.hooks.DatasourcePlugin, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `datasourceplugin.Intercept(f(g(h())))`.
+func (c *DatasourcePluginClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DatasourcePlugin = append(c.inters.DatasourcePlugin, interceptors...)
+}
+
+// Create returns a builder for creating a DatasourcePlugin entity.
+func (c *DatasourcePluginClient) Create() *DatasourcePluginCreate {
+	mutation := newDatasourcePluginMutation(c.config, OpCreate)
+	return &DatasourcePluginCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DatasourcePlugin entities.
+func (c *DatasourcePluginClient) CreateBulk(builders ...*DatasourcePluginCreate) *DatasourcePluginCreateBulk {
+	return &DatasourcePluginCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DatasourcePluginClient) MapCreateBulk(slice any, setFunc func(*DatasourcePluginCreate, int)) *DatasourcePluginCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DatasourcePluginCreateBulk{err: fmt.Errorf("calling to DatasourcePluginClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DatasourcePluginCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DatasourcePluginCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DatasourcePlugin.
+func (c *DatasourcePluginClient) Update() *DatasourcePluginUpdate {
+	mutation := newDatasourcePluginMutation(c.config, OpUpdate)
+	return &DatasourcePluginUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DatasourcePluginClient) UpdateOne(_m *DatasourcePlugin) *DatasourcePluginUpdateOne {
+	mutation := newDatasourcePluginMutation(c.config, OpUpdateOne, withDatasourcePlugin(_m))
+	return &DatasourcePluginUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DatasourcePluginClient) UpdateOneID(id int) *DatasourcePluginUpdateOne {
+	mutation := newDatasourcePluginMutation(c.config, OpUpdateOne, withDatasourcePluginID(id))
+	return &DatasourcePluginUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DatasourcePlugin.
+func (c *DatasourcePluginClient) Delete() *DatasourcePluginDelete {
+	mutation := newDatasourcePluginMutation(c.config, OpDelete)
+	return &DatasourcePluginDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DatasourcePluginClient) DeleteOne(_m *DatasourcePlugin) *DatasourcePluginDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DatasourcePluginClient) DeleteOneID(id int) *DatasourcePluginDeleteOne {
+	builder := c.Delete().Where(datasourceplugin.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DatasourcePluginDeleteOne{builder}
+}
+
+// Query returns a query builder for DatasourcePlugin.
+func (c *DatasourcePluginClient) Query() *DatasourcePluginQuery {
+	return &DatasourcePluginQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDatasourcePlugin},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DatasourcePlugin entity by its id.
+func (c *DatasourcePluginClient) Get(ctx context.Context, id int) (*DatasourcePlugin, error) {
+	return c.Query().Where(datasourceplugin.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DatasourcePluginClient) GetX(ctx context.Context, id int) *DatasourcePlugin {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DatasourcePluginClient) Hooks() []Hook {
+	return c.hooks.DatasourcePlugin
+}
+
+// Interceptors returns the client interceptors.
+func (c *DatasourcePluginClient) Interceptors() []Interceptor {
+	return c.inters.DatasourcePlugin
+}
+
+func (c *DatasourcePluginClient) mutate(ctx context.Context, m *DatasourcePluginMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DatasourcePluginCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DatasourcePluginUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DatasourcePluginUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DatasourcePluginDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DatasourcePlugin mutation op: %q", m.Op())
+	}
+}
+
+// DeviceGroupClient is a client for the DeviceGroup schema.
+type DeviceGroupClient struct {
+	config
+}
+
+// NewDeviceGroupClient returns a client for the DeviceGroup from the given config.
+func NewDeviceGroupClient(c config) *DeviceGroupClient {
+	return &DeviceGroupClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `devicegroup.Hooks(f(g(h())))`.
+func (c *DeviceGroupClient) Use(hooks ...Hook) {
+	c.hooks.DeviceGroup = append(c.hooks.DeviceGroup, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `devicegroup.Intercept(f(g(h())))`.
+func (c *DeviceGroupClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DeviceGroup = append(c.inters.DeviceGroup, interceptors...)
+}
+
+// Create returns a builder for creating a DeviceGroup entity.
+func (c *DeviceGroupClient) Create() *DeviceGroupCreate {
+	mutation := newDeviceGroupMutation(c.config, OpCreate)
+	return &DeviceGroupCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DeviceGroup entities.
+func (c *DeviceGroupClient) CreateBulk(builders ...*DeviceGroupCreate) *DeviceGroupCreateBulk {
+	return &DeviceGroupCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DeviceGroupClient) MapCreateBulk(slice any, setFunc func(*DeviceGroupCreate, int)) *DeviceGroupCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DeviceGroupCreateBulk{err: fmt.Errorf("calling to DeviceGroupClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DeviceGroupCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DeviceGroupCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DeviceGroup.
+func (c *DeviceGroupClient) Update() *DeviceGroupUpdate {
+	mutation := newDeviceGroupMutation(c.config, OpUpdate)
+	return &DeviceGroupUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DeviceGroupClient) UpdateOne(_m *DeviceGroup) *DeviceGroupUpdateOne {
+	mutation := newDeviceGroupMutation(c.config, OpUpdateOne, withDeviceGroup(_m))
+	return &DeviceGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DeviceGroupClient) UpdateOneID(id int) *DeviceGroupUpdateOne {
+	mutation := newDeviceGroupMutation(c.config, OpUpdateOne, withDeviceGroupID(id))
+	return &DeviceGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DeviceGroup.
+func (c *DeviceGroupClient) Delete() *DeviceGroupDelete {
+	mutation := newDeviceGroupMutation(c.config, OpDelete)
+	return &DeviceGroupDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DeviceGroupClient) DeleteOne(_m *DeviceGroup) *DeviceGroupDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DeviceGroupClient) DeleteOneID(id int) *DeviceGroupDeleteOne {
+	builder := c.Delete().Where(devicegroup.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DeviceGroupDeleteOne{builder}
+}
+
+// Query returns a query builder for DeviceGroup.
+func (c *DeviceGroupClient) Query() *DeviceGroupQuery {
+	return &DeviceGroupQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDeviceGroup},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DeviceGroup entity by its id.
+func (c *DeviceGroupClient) Get(ctx context.Context, id int) (*DeviceGroup, error) {
+	return c.Query().Where(devicegroup.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DeviceGroupClient) GetX(ctx context.Context, id int) *DeviceGroup {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryDevices queries the devices edge of a DeviceGroup.
+func (c *DeviceGroupClient) QueryDevices(_m *DeviceGroup) *DeviceSettingsQuery {
+	query := (&DeviceSettingsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(devicegroup.Table, devicegroup.FieldID, id),
+			sqlgraph.To(devicesettings.Table, devicesettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, devicegroup.DevicesTable, devicegroup.DevicesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DeviceGroupClient) Hooks() []Hook {
+	return c.hooks.DeviceGroup
+}
+
+// Interceptors returns the client interceptors.
+func (c *DeviceGroupClient) Interceptors() []Interceptor {
+	return c.inters.DeviceGroup
+}
+
+func (c *DeviceGroupClient) mutate(ctx context.Context, m *DeviceGroupMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DeviceGroupCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DeviceGroupUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DeviceGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DeviceGroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DeviceGroup mutation op: %q", m.Op())
+	}
+}
+
 // DeviceSettingsClient is a client for the DeviceSettings schema.
 type DeviceSettingsClient struct {
 	config
@@ -1734,6 +2233,22 @@ func (c *DeviceSettingsClient) GetX(ctx context.Context, id int) *DeviceSettings
 		panic(err)
 	}
 	return obj
+}
+
+// QueryGroup queries the group edge of a DeviceSettings.
+func (c *DeviceSettingsClient) QueryGroup(_m *DeviceSettings) *DeviceGroupQuery {
+	query := (&DeviceGroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(devicesettings.Table, devicesettings.FieldID, id),
+			sqlgraph.To(devicegroup.Table, devicegroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, devicesettings.GroupTable, devicesettings.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -2876,6 +3391,38 @@ func (c *GeneralSettingsClient) QueryJellyfins(_m *GeneralSettings) *JellyfinQue
 	return query
 }
 
+// QueryMpds queries the mpds edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryMpds(_m *GeneralSettings) *MPDQuery {
+	query := (&MPDClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(mpd.Table, mpd.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.MpdsTable, generalsettings.MpdsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryQrcodes queries the qrcodes edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryQrcodes(_m *GeneralSettings) *QrcodeQuery {
+	query := (&QrcodeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(qrcode.Table, qrcode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.QrcodesTable, generalsettings.QrcodesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GeneralSettingsClient) Hooks() []Hook {
 	return c.hooks.GeneralSettings
@@ -3297,6 +3844,139 @@ func (c *GoogleCalendarClient) mutate(ctx context.Context, m *GoogleCalendarMuta
 		return (&GoogleCalendarDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown GoogleCalendar mutation op: %q", m.Op())
+	}
+}
+
+// GreetingRuleClient is a client for the GreetingRule schema.
+type GreetingRuleClient struct {
+	config
+}
+
+// NewGreetingRuleClient returns a client for the GreetingRule from the given config.
+func NewGreetingRuleClient(c config) *GreetingRuleClient {
+	return &GreetingRuleClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `greetingrule.Hooks(f(g(h())))`.
+func (c *GreetingRuleClient) Use(hooks ...Hook) {
+	c.hooks.GreetingRule = append(c.hooks.GreetingRule, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `greetingrule.Intercept(f(g(h())))`.
+func (c *GreetingRuleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GreetingRule = append(c.inters.GreetingRule, interceptors...)
+}
+
+// Create returns a builder for creating a GreetingRule entity.
+func (c *GreetingRuleClient) Create() *GreetingRuleCreate {
+	mutation := newGreetingRuleMutation(c.config, OpCreate)
+	return &GreetingRuleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GreetingRule entities.
+func (c *GreetingRuleClient) CreateBulk(builders ...*GreetingRuleCreate) *GreetingRuleCreateBulk {
+	return &GreetingRuleCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GreetingRuleClient) MapCreateBulk(slice any, setFunc func(*GreetingRuleCreate, int)) *GreetingRuleCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GreetingRuleCreateBulk{err: fmt.Errorf("calling to GreetingRuleClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GreetingRuleCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GreetingRuleCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GreetingRule.
+func (c *GreetingRuleClient) Update() *GreetingRuleUpdate {
+	mutation := newGreetingRuleMutation(c.config, OpUpdate)
+	return &GreetingRuleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GreetingRuleClient) UpdateOne(_m *GreetingRule) *GreetingRuleUpdateOne {
+	mutation := newGreetingRuleMutation(c.config, OpUpdateOne, withGreetingRule(_m))
+	return &GreetingRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GreetingRuleClient) UpdateOneID(id int) *GreetingRuleUpdateOne {
+	mutation := newGreetingRuleMutation(c.config, OpUpdateOne, withGreetingRuleID(id))
+	return &GreetingRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GreetingRule.
+func (c *GreetingRuleClient) Delete() *GreetingRuleDelete {
+	mutation := newGreetingRuleMutation(c.config, OpDelete)
+	return &GreetingRuleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GreetingRuleClient) DeleteOne(_m *GreetingRule) *GreetingRuleDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GreetingRuleClient) DeleteOneID(id int) *GreetingRuleDeleteOne {
+	builder := c.Delete().Where(greetingrule.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GreetingRuleDeleteOne{builder}
+}
+
+// Query returns a query builder for GreetingRule.
+func (c *GreetingRuleClient) Query() *GreetingRuleQuery {
+	return &GreetingRuleQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGreetingRule},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GreetingRule entity by its id.
+func (c *GreetingRuleClient) Get(ctx context.Context, id int) (*GreetingRule, error) {
+	return c.Query().Where(greetingrule.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GreetingRuleClient) GetX(ctx context.Context, id int) *GreetingRule {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *GreetingRuleClient) Hooks() []Hook {
+	return c.hooks.GreetingRule
+}
+
+// Interceptors returns the client interceptors.
+func (c *GreetingRuleClient) Interceptors() []Interceptor {
+	return c.inters.GreetingRule
+}
+
+func (c *GreetingRuleClient) mutate(ctx context.Context, m *GreetingRuleMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GreetingRuleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GreetingRuleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GreetingRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GreetingRuleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GreetingRule mutation op: %q", m.Op())
 	}
 }
 
@@ -3965,6 +4645,139 @@ func (c *LogSettingsClient) mutate(ctx context.Context, m *LogSettingsMutation) 
 	}
 }
 
+// MPDClient is a client for the MPD schema.
+type MPDClient struct {
+	config
+}
+
+// NewMPDClient returns a client for the MPD from the given config.
+func NewMPDClient(c config) *MPDClient {
+	return &MPDClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `mpd.Hooks(f(g(h())))`.
+func (c *MPDClient) Use(hooks ...Hook) {
+	c.hooks.MPD = append(c.hooks.MPD, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `mpd.Intercept(f(g(h())))`.
+func (c *MPDClient) Intercept(interceptors ...Interceptor) {
+	c.inters.MPD = append(c.inters.MPD, interceptors...)
+}
+
+// Create returns a builder for creating a MPD entity.
+func (c *MPDClient) Create() *MPDCreate {
+	mutation := newMPDMutation(c.config, OpCreate)
+	return &MPDCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of MPD entities.
+func (c *MPDClient) CreateBulk(builders ...*MPDCreate) *MPDCreateBulk {
+	return &MPDCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MPDClient) MapCreateBulk(slice any, setFunc func(*MPDCreate, int)) *MPDCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MPDCreateBulk{err: fmt.Errorf("calling to MPDClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MPDCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MPDCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for MPD.
+func (c *MPDClient) Update() *MPDUpdate {
+	mutation := newMPDMutation(c.config, OpUpdate)
+	return &MPDUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MPDClient) UpdateOne(_m *MPD) *MPDUpdateOne {
+	mutation := newMPDMutation(c.config, OpUpdateOne, withMPD(_m))
+	return &MPDUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MPDClient) UpdateOneID(id int) *MPDUpdateOne {
+	mutation := newMPDMutation(c.config, OpUpdateOne, withMPDID(id))
+	return &MPDUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for MPD.
+func (c *MPDClient) Delete() *MPDDelete {
+	mutation := newMPDMutation(c.config, OpDelete)
+	return &MPDDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MPDClient) DeleteOne(_m *MPD) *MPDDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MPDClient) DeleteOneID(id int) *MPDDeleteOne {
+	builder := c.Delete().Where(mpd.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MPDDeleteOne{builder}
+}
+
+// Query returns a query builder for MPD.
+func (c *MPDClient) Query() *MPDQuery {
+	return &MPDQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMPD},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a MPD entity by its id.
+func (c *MPDClient) Get(ctx context.Context, id int) (*MPD, error) {
+	return c.Query().Where(mpd.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MPDClient) GetX(ctx context.Context, id int) *MPD {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *MPDClient) Hooks() []Hook {
+	return c.hooks.MPD
+}
+
+// Interceptors returns the client interceptors.
+func (c *MPDClient) Interceptors() []Interceptor {
+	return c.inters.MPD
+}
+
+func (c *MPDClient) mutate(ctx context.Context, m *MPDMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MPDCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MPDUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MPDUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MPDDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown MPD mutation op: %q", m.Op())
+	}
+}
+
 // MQTTSettingsClient is a client for the MQTTSettings schema.
 type MQTTSettingsClient struct {
 	config
@@ -4497,6 +5310,272 @@ func (c *NotificationClient) mutate(ctx context.Context, m *NotificationMutation
 	}
 }
 
+// OutboundSettingsClient is a client for the OutboundSettings schema.
+type OutboundSettingsClient struct {
+	config
+}
+
+// NewOutboundSettingsClient returns a client for the OutboundSettings from the given config.
+func NewOutboundSettingsClient(c config) *OutboundSettingsClient {
+	return &OutboundSettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `outboundsettings.Hooks(f(g(h())))`.
+func (c *OutboundSettingsClient) Use(hooks ...Hook) {
+	c.hooks.OutboundSettings = append(c.hooks.OutboundSettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `outboundsettings.Intercept(f(g(h())))`.
+func (c *OutboundSettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OutboundSettings = append(c.inters.OutboundSettings, interceptors...)
+}
+
+// Create returns a builder for creating a OutboundSettings entity.
+func (c *OutboundSettingsClient) Create() *OutboundSettingsCreate {
+	mutation := newOutboundSettingsMutation(c.config, OpCreate)
+	return &OutboundSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OutboundSettings entities.
+func (c *OutboundSettingsClient) CreateBulk(builders ...*OutboundSettingsCreate) *OutboundSettingsCreateBulk {
+	return &OutboundSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OutboundSettingsClient) MapCreateBulk(slice any, setFunc func(*OutboundSettingsCreate, int)) *OutboundSettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OutboundSettingsCreateBulk{err: fmt.Errorf("calling to OutboundSettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OutboundSettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OutboundSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OutboundSettings.
+func (c *OutboundSettingsClient) Update() *OutboundSettingsUpdate {
+	mutation := newOutboundSettingsMutation(c.config, OpUpdate)
+	return &OutboundSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OutboundSettingsClient) UpdateOne(_m *OutboundSettings) *OutboundSettingsUpdateOne {
+	mutation := newOutboundSettingsMutation(c.config, OpUpdateOne, withOutboundSettings(_m))
+	return &OutboundSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OutboundSettingsClient) UpdateOneID(id int) *OutboundSettingsUpdateOne {
+	mutation := newOutboundSettingsMutation(c.config, OpUpdateOne, withOutboundSettingsID(id))
+	return &OutboundSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OutboundSettings.
+func (c *OutboundSettingsClient) Delete() *OutboundSettingsDelete {
+	mutation := newOutboundSettingsMutation(c.config, OpDelete)
+	return &OutboundSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OutboundSettingsClient) DeleteOne(_m *OutboundSettings) *OutboundSettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OutboundSettingsClient) DeleteOneID(id int) *OutboundSettingsDeleteOne {
+	builder := c.Delete().Where(outboundsettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OutboundSettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for OutboundSettings.
+func (c *OutboundSettingsClient) Query() *OutboundSettingsQuery {
+	return &OutboundSettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOutboundSettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OutboundSettings entity by its id.
+func (c *OutboundSettingsClient) Get(ctx context.Context, id int) (*OutboundSettings, error) {
+	return c.Query().Where(outboundsettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OutboundSettingsClient) GetX(ctx context.Context, id int) *OutboundSettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *OutboundSettingsClient) Hooks() []Hook {
+	return c.hooks.OutboundSettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *OutboundSettingsClient) Interceptors() []Interceptor {
+	return c.inters.OutboundSettings
+}
+
+func (c *OutboundSettingsClient) mutate(ctx context.Context, m *OutboundSettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OutboundSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OutboundSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OutboundSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OutboundSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OutboundSettings mutation op: %q", m.Op())
+	}
+}
+
+// OutboundWebhookClient is a client for the OutboundWebhook schema.
+type OutboundWebhookClient struct {
+	config
+}
+
+// NewOutboundWebhookClient returns a client for the OutboundWebhook from the given config.
+func NewOutboundWebhookClient(c config) *OutboundWebhookClient {
+	return &OutboundWebhookClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `outboundwebhook.Hooks(f(g(h())))`.
+func (c *OutboundWebhookClient) Use(hooks ...Hook) {
+	c.hooks.OutboundWebhook = append(c.hooks.OutboundWebhook, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `outboundwebhook.Intercept(f(g(h())))`.
+func (c *OutboundWebhookClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OutboundWebhook = append(c.inters.OutboundWebhook, interceptors...)
+}
+
+// Create returns a builder for creating a OutboundWebhook entity.
+func (c *OutboundWebhookClient) Create() *OutboundWebhookCreate {
+	mutation := newOutboundWebhookMutation(c.config, OpCreate)
+	return &OutboundWebhookCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OutboundWebhook entities.
+func (c *OutboundWebhookClient) CreateBulk(builders ...*OutboundWebhookCreate) *OutboundWebhookCreateBulk {
+	return &OutboundWebhookCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OutboundWebhookClient) MapCreateBulk(slice any, setFunc func(*OutboundWebhookCreate, int)) *OutboundWebhookCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OutboundWebhookCreateBulk{err: fmt.Errorf("calling to OutboundWebhookClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OutboundWebhookCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OutboundWebhookCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OutboundWebhook.
+func (c *OutboundWebhookClient) Update() *OutboundWebhookUpdate {
+	mutation := newOutboundWebhookMutation(c.config, OpUpdate)
+	return &OutboundWebhookUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OutboundWebhookClient) UpdateOne(_m *OutboundWebhook) *OutboundWebhookUpdateOne {
+	mutation := newOutboundWebhookMutation(c.config, OpUpdateOne, withOutboundWebhook(_m))
+	return &OutboundWebhookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OutboundWebhookClient) UpdateOneID(id int) *OutboundWebhookUpdateOne {
+	mutation := newOutboundWebhookMutation(c.config, OpUpdateOne, withOutboundWebhookID(id))
+	return &OutboundWebhookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OutboundWebhook.
+func (c *OutboundWebhookClient) Delete() *OutboundWebhookDelete {
+	mutation := newOutboundWebhookMutation(c.config, OpDelete)
+	return &OutboundWebhookDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OutboundWebhookClient) DeleteOne(_m *OutboundWebhook) *OutboundWebhookDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OutboundWebhookClient) DeleteOneID(id int) *OutboundWebhookDeleteOne {
+	builder := c.Delete().Where(outboundwebhook.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OutboundWebhookDeleteOne{builder}
+}
+
+// Query returns a query builder for OutboundWebhook.
+func (c *OutboundWebhookClient) Query() *OutboundWebhookQuery {
+	return &OutboundWebhookQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOutboundWebhook},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OutboundWebhook entity by its id.
+func (c *OutboundWebhookClient) Get(ctx context.Context, id int) (*OutboundWebhook, error) {
+	return c.Query().Where(outboundwebhook.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OutboundWebhookClient) GetX(ctx context.Context, id int) *OutboundWebhook {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *OutboundWebhookClient) Hooks() []Hook {
+	return c.hooks.OutboundWebhook
+}
+
+// Interceptors returns the client interceptors.
+func (c *OutboundWebhookClient) Interceptors() []Interceptor {
+	return c.inters.OutboundWebhook
+}
+
+func (c *OutboundWebhookClient) mutate(ctx context.Context, m *OutboundWebhookMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OutboundWebhookCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OutboundWebhookUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OutboundWebhookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OutboundWebhookDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OutboundWebhook mutation op: %q", m.Op())
+	}
+}
+
 // PiHoleClient is a client for the PiHole schema.
 type PiHoleClient struct {
 	config
@@ -4893,6 +5972,139 @@ func (c *PlaylistClient) mutate(ctx context.Context, m *PlaylistMutation) (Value
 		return (&PlaylistDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Playlist mutation op: %q", m.Op())
+	}
+}
+
+// QrcodeClient is a client for the Qrcode schema.
+type QrcodeClient struct {
+	config
+}
+
+// NewQrcodeClient returns a client for the Qrcode from the given config.
+func NewQrcodeClient(c config) *QrcodeClient {
+	return &QrcodeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `qrcode.Hooks(f(g(h())))`.
+func (c *QrcodeClient) Use(hooks ...Hook) {
+	c.hooks.Qrcode = append(c.hooks.Qrcode, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `qrcode.Intercept(f(g(h())))`.
+func (c *QrcodeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Qrcode = append(c.inters.Qrcode, interceptors...)
+}
+
+// Create returns a builder for creating a Qrcode entity.
+func (c *QrcodeClient) Create() *QrcodeCreate {
+	mutation := newQrcodeMutation(c.config, OpCreate)
+	return &QrcodeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Qrcode entities.
+func (c *QrcodeClient) CreateBulk(builders ...*QrcodeCreate) *QrcodeCreateBulk {
+	return &QrcodeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *QrcodeClient) MapCreateBulk(slice any, setFunc func(*QrcodeCreate, int)) *QrcodeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &QrcodeCreateBulk{err: fmt.Errorf("calling to QrcodeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*QrcodeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &QrcodeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Qrcode.
+func (c *QrcodeClient) Update() *QrcodeUpdate {
+	mutation := newQrcodeMutation(c.config, OpUpdate)
+	return &QrcodeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *QrcodeClient) UpdateOne(_m *Qrcode) *QrcodeUpdateOne {
+	mutation := newQrcodeMutation(c.config, OpUpdateOne, withQrcode(_m))
+	return &QrcodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *QrcodeClient) UpdateOneID(id int) *QrcodeUpdateOne {
+	mutation := newQrcodeMutation(c.config, OpUpdateOne, withQrcodeID(id))
+	return &QrcodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Qrcode.
+func (c *QrcodeClient) Delete() *QrcodeDelete {
+	mutation := newQrcodeMutation(c.config, OpDelete)
+	return &QrcodeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *QrcodeClient) DeleteOne(_m *Qrcode) *QrcodeDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *QrcodeClient) DeleteOneID(id int) *QrcodeDeleteOne {
+	builder := c.Delete().Where(qrcode.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &QrcodeDeleteOne{builder}
+}
+
+// Query returns a query builder for Qrcode.
+func (c *QrcodeClient) Query() *QrcodeQuery {
+	return &QrcodeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeQrcode},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Qrcode entity by its id.
+func (c *QrcodeClient) Get(ctx context.Context, id int) (*Qrcode, error) {
+	return c.Query().Where(qrcode.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *QrcodeClient) GetX(ctx context.Context, id int) *Qrcode {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *QrcodeClient) Hooks() []Hook {
+	return c.hooks.Qrcode
+}
+
+// Interceptors returns the client interceptors.
+func (c *QrcodeClient) Interceptors() []Interceptor {
+	return c.inters.Qrcode
+}
+
+func (c *QrcodeClient) mutate(ctx context.Context, m *QrcodeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&QrcodeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&QrcodeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&QrcodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&QrcodeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Qrcode mutation op: %q", m.Op())
 	}
 }
 
@@ -6093,6 +7305,139 @@ func (c *TextSlideClient) mutate(ctx context.Context, m *TextSlideMutation) (Val
 	}
 }
 
+// TimelapseFrameClient is a client for the TimelapseFrame schema.
+type TimelapseFrameClient struct {
+	config
+}
+
+// NewTimelapseFrameClient returns a client for the TimelapseFrame from the given config.
+func NewTimelapseFrameClient(c config) *TimelapseFrameClient {
+	return &TimelapseFrameClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `timelapseframe.Hooks(f(g(h())))`.
+func (c *TimelapseFrameClient) Use(hooks ...Hook) {
+	c.hooks.TimelapseFrame = append(c.hooks.TimelapseFrame, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `timelapseframe.Intercept(f(g(h())))`.
+func (c *TimelapseFrameClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TimelapseFrame = append(c.inters.TimelapseFrame, interceptors...)
+}
+
+// Create returns a builder for creating a TimelapseFrame entity.
+func (c *TimelapseFrameClient) Create() *TimelapseFrameCreate {
+	mutation := newTimelapseFrameMutation(c.config, OpCreate)
+	return &TimelapseFrameCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TimelapseFrame entities.
+func (c *TimelapseFrameClient) CreateBulk(builders ...*TimelapseFrameCreate) *TimelapseFrameCreateBulk {
+	return &TimelapseFrameCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TimelapseFrameClient) MapCreateBulk(slice any, setFunc func(*TimelapseFrameCreate, int)) *TimelapseFrameCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TimelapseFrameCreateBulk{err: fmt.Errorf("calling to TimelapseFrameClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TimelapseFrameCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TimelapseFrameCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TimelapseFrame.
+func (c *TimelapseFrameClient) Update() *TimelapseFrameUpdate {
+	mutation := newTimelapseFrameMutation(c.config, OpUpdate)
+	return &TimelapseFrameUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TimelapseFrameClient) UpdateOne(_m *TimelapseFrame) *TimelapseFrameUpdateOne {
+	mutation := newTimelapseFrameMutation(c.config, OpUpdateOne, withTimelapseFrame(_m))
+	return &TimelapseFrameUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TimelapseFrameClient) UpdateOneID(id int) *TimelapseFrameUpdateOne {
+	mutation := newTimelapseFrameMutation(c.config, OpUpdateOne, withTimelapseFrameID(id))
+	return &TimelapseFrameUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TimelapseFrame.
+func (c *TimelapseFrameClient) Delete() *TimelapseFrameDelete {
+	mutation := newTimelapseFrameMutation(c.config, OpDelete)
+	return &TimelapseFrameDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TimelapseFrameClient) DeleteOne(_m *TimelapseFrame) *TimelapseFrameDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TimelapseFrameClient) DeleteOneID(id int) *TimelapseFrameDeleteOne {
+	builder := c.Delete().Where(timelapseframe.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TimelapseFrameDeleteOne{builder}
+}
+
+// Query returns a query builder for TimelapseFrame.
+func (c *TimelapseFrameClient) Query() *TimelapseFrameQuery {
+	return &TimelapseFrameQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTimelapseFrame},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TimelapseFrame entity by its id.
+func (c *TimelapseFrameClient) Get(ctx context.Context, id int) (*TimelapseFrame, error) {
+	return c.Query().Where(timelapseframe.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TimelapseFrameClient) GetX(ctx context.Context, id int) *TimelapseFrame {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TimelapseFrameClient) Hooks() []Hook {
+	return c.hooks.TimelapseFrame
+}
+
+// Interceptors returns the client interceptors.
+func (c *TimelapseFrameClient) Interceptors() []Interceptor {
+	return c.inters.TimelapseFrame
+}
+
+func (c *TimelapseFrameClient) mutate(ctx context.Context, m *TimelapseFrameMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TimelapseFrameCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TimelapseFrameUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TimelapseFrameUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TimelapseFrameDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TimelapseFrame mutation op: %q", m.Op())
+	}
+}
+
 // TransitClient is a client for the Transit schema.
 type TransitClient struct {
 	config
@@ -6625,6 +7970,139 @@ func (c *UptimeClient) mutate(ctx context.Context, m *UptimeMutation) (Value, er
 	}
 }
 
+// UserClient is a client for the User schema.
+type UserClient struct {
+	config
+}
+
+// NewUserClient returns a client for the User from the given config.
+func NewUserClient(c config) *UserClient {
+	return &UserClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `user.Hooks(f(g(h())))`.
+func (c *UserClient) Use(hooks ...Hook) {
+	c.hooks.User = append(c.hooks.User, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `user.Intercept(f(g(h())))`.
+func (c *UserClient) Intercept(interceptors ...Interceptor) {
+	c.inters.User = append(c.inters.User, interceptors...)
+}
+
+// Create returns a builder for creating a User entity.
+func (c *UserClient) Create() *UserCreate {
+	mutation := newUserMutation(c.config, OpCreate)
+	return &UserCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of User entities.
+func (c *UserClient) CreateBulk(builders ...*UserCreate) *UserCreateBulk {
+	return &UserCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserClient) MapCreateBulk(slice any, setFunc func(*UserCreate, int)) *UserCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserCreateBulk{err: fmt.Errorf("calling to UserClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for User.
+func (c *UserClient) Update() *UserUpdate {
+	mutation := newUserMutation(c.config, OpUpdate)
+	return &UserUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserClient) UpdateOne(_m *User) *UserUpdateOne {
+	mutation := newUserMutation(c.config, OpUpdateOne, withUser(_m))
+	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserClient) UpdateOneID(id int) *UserUpdateOne {
+	mutation := newUserMutation(c.config, OpUpdateOne, withUserID(id))
+	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for User.
+func (c *UserClient) Delete() *UserDelete {
+	mutation := newUserMutation(c.config, OpDelete)
+	return &UserDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserClient) DeleteOne(_m *User) *UserDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserClient) DeleteOneID(id int) *UserDeleteOne {
+	builder := c.Delete().Where(user.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserDeleteOne{builder}
+}
+
+// Query returns a query builder for User.
+func (c *UserClient) Query() *UserQuery {
+	return &UserQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUser},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a User entity by its id.
+func (c *UserClient) Get(ctx context.Context, id int) (*User, error) {
+	return c.Query().Where(user.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserClient) GetX(ctx context.Context, id int) *User {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *UserClient) Hooks() []Hook {
+	return c.hooks.User
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserClient) Interceptors() []Interceptor {
+	return c.inters.User
+}
+
+func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown User mutation op: %q", m.Op())
+	}
+}
+
 // VideoClient is a client for the Video schema.
 type VideoClient struct {
 	config
@@ -7028,20 +8506,24 @@ func (c *WebhookSettingsClient) mutate(ctx context.Context, m *WebhookSettingsMu
 type (
 	hooks struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
-		Countdown, Crypto, DeviceSettings, DisplayRule, EmailSettings, F1,
-		GeneralSettings, GenericAPI, GitHub, GoogleCalendar, HomeAssistant, Image,
-		Jellyfin, LogEntry, LogSettings, MQTTSettings, MatrixLayout, NewsFeed,
-		Notification, PiHole, PixelArt, Playlist, Radarr, RssFeed, Schedule, Sonarr,
-		Sports, Stock, SunMoon, TelegramSettings, TextSlide, Transit, UmamiSettings,
-		Untappd, Uptime, Video, Weather, WebhookSettings []ent.Hook
+		ChartSample, Countdown, Crypto, DatasourcePlugin, DeviceGroup, DeviceSettings,
+		DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI, GitHub,
+		GoogleCalendar, GreetingRule, HomeAssistant, Image, Jellyfin, LogEntry,
+		LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
+		OutboundSettings, OutboundWebhook, PiHole, PixelArt, Playlist, Qrcode, Radarr,
+		RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon, TelegramSettings, TextSlide,
+		TimelapseFrame, Transit, UmamiSettings, Untappd, Uptime, User, Video, Weather,
+		WebhookSettings []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
-		Countdown, Crypto, DeviceSettings, DisplayRule, EmailSettings, F1,
-		GeneralSettings, GenericAPI, GitHub, GoogleCalendar, HomeAssistant, Image,
-		Jellyfin, LogEntry, LogSettings, MQTTSettings, MatrixLayout, NewsFeed,
-		Notification, PiHole, PixelArt, Playlist, Radarr, RssFeed, Schedule, Sonarr,
-		Sports, Stock, SunMoon, TelegramSettings, TextSlide, Transit, UmamiSettings,
-		Untappd, Uptime, Video, Weather, WebhookSettings []ent.Interceptor
+		ChartSample, Countdown, Crypto, DatasourcePlugin, DeviceGroup, DeviceSettings,
+		DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI, GitHub,
+		GoogleCalendar, GreetingRule, HomeAssistant, Image, Jellyfin, LogEntry,
+		LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
+		OutboundSettings, OutboundWebhook, PiHole, PixelArt, Playlist, Qrcode, Radarr,
+		RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon, TelegramSettings, TextSlide,
+		TimelapseFrame, Transit, UmamiSettings, Untappd, Uptime, User, Video, Weather,
+		WebhookSettings []ent.Interceptor
 	}
 )

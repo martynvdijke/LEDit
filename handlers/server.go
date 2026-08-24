@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"time"
 
@@ -42,6 +43,9 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	// Bootstrap admin credentials on first run.
 	initAdminSettings(client, ctx)
 
+	// Seed user table from legacy admin if needed.
+	seedUsers(client, ctx)
+
 	// Backfill tokens for any legacy device rows that lack one.
 	backfillDeviceTokens(client, ctx)
 
@@ -71,9 +75,16 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 
 	srv.setupRoutes()
 	StartEventRuleEngine(client)
+	StartGreetingWatcher(ctx, client, defaultHAFetcher(srv), srv)
+	InitOutbound(srv)
 
 	mqttCtrl = StartMQTT(srv)
+	SetGlobalMqttCtrl(mqttCtrl)
 	tgBot = StartTelegram(srv)
+	InitChartRecording(client)
+	_ = PurgeOldSamples(ctx, client)
+	StartChartPurgeLoop(ctx, client)
+	StartTimelapseWriter(client)
 
 	return srv
 }
@@ -180,6 +191,52 @@ func (s *Server) setupRoutes() {
 			}
 			return false
 		},
+		"index": func(item any, key any) any {
+			if item == nil || key == nil {
+				return ""
+			}
+			rv := reflect.ValueOf(item)
+			if rv.Kind() == reflect.Ptr {
+				if rv.IsNil() {
+					return ""
+				}
+				rv = rv.Elem()
+			}
+			switch rv.Kind() {
+			case reflect.Map:
+				kv := reflect.ValueOf(key)
+				// try direct map lookup; if key type mismatch, try string conversion
+				mv := rv.MapIndex(kv)
+				if mv.IsValid() {
+					return mv.Interface()
+				}
+				// fallback: if key is int but map expects int, already handled; try string-key lookup for map[string]*
+				if kv.Kind() == reflect.String {
+					// already tried
+				}
+				return ""
+			case reflect.Array, reflect.Slice, reflect.String:
+				if idx, ok := key.(int); ok {
+					if idx >= 0 && idx < rv.Len() {
+						return rv.Index(idx).Interface()
+					}
+					return ""
+				}
+				if idx64, ok := key.(int64); ok {
+					i := int(idx64)
+					if i >= 0 && i < rv.Len() {
+						return rv.Index(i).Interface()
+					}
+					return ""
+				}
+				return ""
+			case reflect.Struct:
+				// safe fallback: don't panic, return empty for index on struct (playlist_form error handling)
+				return ""
+			default:
+				return ""
+			}
+		},
 	})
 	filepath.Walk(templatesDir(), func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -197,8 +254,31 @@ func (s *Server) setupRoutes() {
 	s.Router.Use(s.SetupMiddleware())
 
 	s.Router.Static("/static", "./web/static")
-	s.Router.Static("/media", "./web/media")
+	s.Router.GET("/media/*filepath", func(c *gin.Context) {
+		rel := c.Param("filepath")
+		// Timelapse path is admin-only.
+		if strings.HasPrefix(rel, "/timelapse") {
+			if authEnabled {
+				token := ""
+				if t, err := c.Cookie("session"); err == nil {
+					token = t
+				}
+				authMu.Lock()
+				_, valid := sessions[token]
+				authMu.Unlock()
+				if !valid {
+					// Also accept bearer token via IsAuthenticated when Server available
+					if !strings.HasPrefix(c.GetHeader("Authorization"), "Bearer ") {
+						c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+						return
+					}
+				}
+			}
+		}
+		c.File(filepath.Join("./web/media", filepath.FromSlash(rel)))
+	})
 
+	s.Router.GET("/metrics", s.MetricsHandler)
 	s.Router.GET("/", s.IndexHandler)
 	s.Router.GET("/ws/feed", s.WSHub.HandleWS)
 	s.Router.GET("/ws/device/:token", s.WSHub.HandleDeviceWS)
@@ -217,25 +297,43 @@ func (s *Server) setupRoutes() {
 
 		// Authenticated reads: feed and notifications require session or bearer token.
 		authReads := api.Group("")
-		authReads.Use(s.RequireAuthMiddleware())
+		authReads.Use(s.RequireViewer())
 		{
 			authReads.GET("/feed/current", s.APIFeedStatus)
+			authReads.GET("/analytics/weights", s.APIAnalyticsWeights)
 			authReads.GET("/notifications", s.APINotificationHistory)
+			authReads.GET("/playlists/resolve", s.HandlePlaylistResolve)
+			authReads.GET("/timelapse/frames", s.APITimelapseFrames)
+			authReads.POST("/timelapse/export", s.APITimelapseExport)
 		}
 
-		// Mutations: every write requires a valid bearer API token.
+		// Mutations: every write requires admin role.
 		apiMut := api.Group("")
-		apiMut.Use(s.APITokenMiddleware())
+		apiMut.Use(s.RequireAdmin())
 		{
 			apiMut.POST("/feed/next", s.APIFeedNext)
 			apiMut.POST("/feed/pause", s.APIFeedPause)
 			apiMut.POST("/feed/resume", s.APIFeedResume)
 		}
-		// Webhook/display routes: authenticated via WebhookAuthMiddleware only (no-op when key unset).
-		// Separate from apiMut bearer-token mutations to preserve unauthenticated webhook behavior when key unset.
-		api.POST("/feed/priority", s.WebhookAuthMiddleware(), s.APIFeedPriority)
-		api.POST("/webhook/notify", s.WebhookAuthMiddleware(), s.APIWebhookNotify)
+		// Webhook/display routes: require admin (was webhook key only)
+		api.POST("/feed/priority", s.RequireAdmin(), s.APIFeedPriority)
+		api.POST("/webhook/notify", s.RequireAdmin(), s.APIWebhookNotify)
+		// Test-only helpers (enabled when LEDIT_AUTH_DISABLE=true for Playwright).
+		if os.Getenv("LEDIT_AUTH_DISABLE") == "true" || os.Getenv("LEDIT_AUTH_DISABLE") == "1" {
+			api.POST("/test/seed-timelapse", s.TestSeedTimelapse)
+			api.POST("/test/enable-auth", s.TestEnableAuth)
+		}
 		api.GET("/display", s.WebhookAuthMiddleware(), s.APIDisplay)
+		// Pixel art import (admin only)
+		apiPixel := api.Group("/pixelart")
+		apiPixel.Use(s.RequireAdmin())
+		{
+			apiPixel.POST("/import", s.PixelArtImport)
+			apiPixel.POST("/import/preview", s.PixelArtImportPreview)
+			apiPixel.POST("/generate", s.PixelArtGenerate)
+			apiPixel.POST("/:id/refine", s.PixelArtRefine)
+			apiPixel.POST("/:id/publish", s.PixelArtPublish)
+		}
 	}
 
 	s.Router.GET("/setup", s.SetupPage)
@@ -252,7 +350,7 @@ func (s *Server) setupRoutes() {
 	s.Router.POST("/reset-password", s.ResetPasswordAction)
 
 	admin := s.Router.Group("/admin")
-	admin.Use(AuthMiddleware(), FlashMiddleware())
+	admin.Use(AuthMiddleware(), FlashMiddleware(), s.AdminRoleMiddleware())
 	{
 		admin.GET("/", s.AdminDashboard)
 		admin.GET("/settings", s.AdminSettings)
@@ -338,6 +436,22 @@ func (s *Server) setupRoutes() {
 		admin.POST("/devices/:id/edit", s.AdminDeviceSettingsUpdate)
 		admin.GET("/devices/:id/preview", s.AdminDevicePreview)
 		admin.POST("/devices/:id/delete", s.AdminDeviceSettingsDelete)
+
+		// Groups
+		admin.GET("/groups", s.AdminGroupList)
+		admin.GET("/groups/new", s.AdminGroupNew)
+		admin.POST("/groups/new", s.AdminGroupCreate)
+		admin.GET("/groups/:id", s.AdminGroupDetail)
+		admin.POST("/groups/:id", s.AdminGroupUpdate)
+		admin.GET("/api/groups", s.APIGroupList)
+		admin.POST("/api/groups", s.APIGroupCreate)
+		admin.DELETE("/api/groups/:id", s.APIGroupDelete)
+		admin.POST("/api/groups/:id/members", s.APIGroupAddMember)
+		admin.DELETE("/api/groups/:id/members/:deviceId", s.APIGroupRemoveMember)
+		admin.POST("/api/groups/:id/feed/pause", s.APIGroupFeedPause)
+		admin.POST("/api/groups/:id/feed/resume", s.APIGroupFeedResume)
+		admin.POST("/api/groups/:id/feed/next", s.APIGroupFeedNext)
+		admin.POST("/api/groups/:id/feed/priority", s.APIGroupFeedPriority)
 
 		// Theme (Phase 8)
 		admin.GET("/theme", s.AdminThemeEditor)
@@ -437,6 +551,20 @@ func (s *Server) setupRoutes() {
 		admin.POST("/datasources/jellyfin/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "jellyfin") })
 		admin.POST("/datasources/genericapi/test", s.AdminGenericAPITest)
 
+		// QR Code
+		admin.GET("/qrcodes", s.AdminQrcodeList)
+		admin.GET("/qrcodes/new", s.AdminQrcodeNew)
+		admin.POST("/qrcodes/new", s.AdminQrcodeCreate)
+		admin.GET("/qrcodes/:id/edit", s.AdminQrcodeEdit)
+		admin.POST("/qrcodes/:id/edit", s.AdminQrcodeUpdate)
+		admin.POST("/qrcodes/:id/delete", s.AdminQrcodeDelete)
+		// JSON API (session auth)
+		admin.GET("/api/qrcodes", s.APIQrcodeList)
+		admin.GET("/api/qrcodes/:id", s.APIQrcodeGet)
+		admin.POST("/api/qrcodes", s.APIQrcodeCreate)
+		admin.PUT("/api/qrcodes/:id", s.APIQrcodeUpdate)
+		admin.DELETE("/api/qrcodes/:id", s.APIQrcodeDelete)
+
 		// Pixel Art
 		admin.GET("/pixelarts", s.PixelArtList)
 		admin.GET("/pixelarts/new", s.PixelArtNew)
@@ -445,6 +573,8 @@ func (s *Server) setupRoutes() {
 		admin.POST("/pixelarts/:id/edit", s.PixelArtUpdate)
 		admin.POST("/pixelarts/:id/delete", s.PixelArtDelete)
 		admin.POST("/pixelarts/preview", s.PixelArtPreview)
+		admin.POST("/pixelarts/import", s.PixelArtImport)
+		admin.POST("/pixelarts/import/preview", s.PixelArtImportPreview)
 
 		// Playlists
 		admin.GET("/playlists", s.AdminPlaylistList)
@@ -461,6 +591,14 @@ func (s *Server) setupRoutes() {
 		admin.GET("/eventrules/:id/edit", s.AdminEventRuleEdit)
 		admin.POST("/eventrules/:id/edit", s.AdminEventRuleUpdate)
 		admin.POST("/eventrules/:id/delete", s.AdminEventRuleDelete)
+
+		// Greetings
+		admin.GET("/greetings", s.AdminGreetings)
+		admin.GET("/api/greetings", s.APIGreetingList)
+		admin.POST("/api/greetings", s.APIGreetingCreate)
+		admin.PUT("/api/greetings/:id", s.APIGreetingUpdate)
+		admin.DELETE("/api/greetings/:id", s.APIGreetingDelete)
+		admin.POST("/api/greetings/:id/test", s.APIGreetingTest)
 
 		// Matrix layouts
 		admin.GET("/matrixlayouts", s.AdminMatrixLayoutList)
@@ -545,10 +683,51 @@ func (s *Server) setupRoutes() {
 		// Analytics (Phase 10)
 		admin.GET("/analytics", s.AdminAnalytics)
 
+		// Timelapse gallery + API
+		admin.GET("/timelapse", s.TimelapseGallery)
+		admin.GET("/api/timelapse/frames", s.APITimelapseFrames)
+		admin.POST("/api/timelapse/export", s.APITimelapseExport)
+
 		// API tokens (secure-api-mutations): owner-only lifecycle management.
 		admin.GET("/api-tokens", s.AdminAPITokens)
 		admin.POST("/api-tokens", s.AdminAPITokenCreate)
 		admin.POST("/api-tokens/:id/revoke", s.AdminAPITokenRevoke)
 		admin.POST("/api-tokens/:id/rotate", s.AdminAPITokenRotate)
+
+		// Datasource Plugins
+		admin.GET("/plugins", s.AdminPlugins)
+		admin.GET("/plugins/new", s.AdminPluginNew)
+		admin.POST("/plugins/new", s.AdminPluginCreate)
+		admin.GET("/plugins/:id/edit", s.AdminPluginEdit)
+		admin.POST("/plugins/:id/edit", s.AdminPluginUpdate)
+		admin.POST("/plugins/:id/delete", s.AdminPluginDelete)
+		admin.GET("/api/plugins", s.APIPluginList)
+		admin.GET("/api/plugins/:id", s.APIPluginGet)
+		admin.POST("/api/plugins", s.APIPluginCreate)
+		admin.PUT("/api/plugins/:id", s.APIPluginUpdate)
+		admin.DELETE("/api/plugins/:id", s.APIPluginDelete)
+		admin.GET("/api/plugins/:id/health", s.APIPluginHealth)
+
+		// Outbound events
+		admin.GET("/events", s.AdminEventsPage)
+		admin.GET("/api/outbound/webhooks", s.OutboundWebhooksList)
+		admin.POST("/api/outbound/webhooks", s.OutboundWebhooksCreate)
+		admin.DELETE("/api/outbound/webhooks/:id", s.OutboundWebhooksDelete)
+		admin.POST("/api/outbound/webhooks/:id/test", s.OutboundWebhooksTest)
+		admin.GET("/api/outbound/settings", s.OutboundSettingsGet)
+		admin.PUT("/api/outbound/settings", s.OutboundSettingsPut)
+
+		// Backup & Restore
+		admin.GET("/backup", s.AdminBackupPage)
+		admin.GET("/api/backup/export", s.BackupExportHandler)
+		admin.POST("/api/backup/import", s.BackupImportHandler)
+
+		// Users management (admin-only)
+		admin.GET("/users", s.AdminUsersPage)
+		admin.GET("/api/users", s.APIUsersList)
+		admin.POST("/api/users", s.APIUsersCreate)
+		admin.DELETE("/api/users/:id", s.APIUsersDelete)
+		admin.POST("/api/users/:id/role", s.APIUsersChangeRole)
+		admin.POST("/api/users/:id/password", s.APIUsersResetPassword)
 	}
 }

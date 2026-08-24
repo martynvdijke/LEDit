@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"fmt"
+	"ledit/ent/devicegroup"
 	"ledit/ent/devicesettings"
 	"ledit/ent/predicate"
 	"math"
@@ -22,6 +23,7 @@ type DeviceSettingsQuery struct {
 	order      []devicesettings.OrderOption
 	inters     []Interceptor
 	predicates []predicate.DeviceSettings
+	withGroup  *DeviceGroupQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -57,6 +59,28 @@ func (_q *DeviceSettingsQuery) Unique(unique bool) *DeviceSettingsQuery {
 func (_q *DeviceSettingsQuery) Order(o ...devicesettings.OrderOption) *DeviceSettingsQuery {
 	_q.order = append(_q.order, o...)
 	return _q
+}
+
+// QueryGroup chains the current query on the "group" edge.
+func (_q *DeviceSettingsQuery) QueryGroup() *DeviceGroupQuery {
+	query := (&DeviceGroupClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(devicesettings.Table, devicesettings.FieldID, selector),
+			sqlgraph.To(devicegroup.Table, devicegroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, devicesettings.GroupTable, devicesettings.GroupColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first DeviceSettings entity from the query.
@@ -251,10 +275,22 @@ func (_q *DeviceSettingsQuery) Clone() *DeviceSettingsQuery {
 		order:      append([]devicesettings.OrderOption{}, _q.order...),
 		inters:     append([]Interceptor{}, _q.inters...),
 		predicates: append([]predicate.DeviceSettings{}, _q.predicates...),
+		withGroup:  _q.withGroup.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
+}
+
+// WithGroup tells the query-builder to eager-load the nodes that are connected to
+// the "group" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *DeviceSettingsQuery) WithGroup(opts ...func(*DeviceGroupQuery)) *DeviceSettingsQuery {
+	query := (&DeviceGroupClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGroup = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -333,9 +369,12 @@ func (_q *DeviceSettingsQuery) prepareQuery(ctx context.Context) error {
 
 func (_q *DeviceSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*DeviceSettings, error) {
 	var (
-		nodes   = []*DeviceSettings{}
-		withFKs = _q.withFKs
-		_spec   = _q.querySpec()
+		nodes       = []*DeviceSettings{}
+		withFKs     = _q.withFKs
+		_spec       = _q.querySpec()
+		loadedTypes = [1]bool{
+			_q.withGroup != nil,
+		}
 	)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, devicesettings.ForeignKeys...)
@@ -346,6 +385,7 @@ func (_q *DeviceSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &DeviceSettings{config: _q.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -357,7 +397,46 @@ func (_q *DeviceSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := _q.withGroup; query != nil {
+		if err := _q.loadGroup(ctx, query, nodes, nil,
+			func(n *DeviceSettings, e *DeviceGroup) { n.Edges.Group = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (_q *DeviceSettingsQuery) loadGroup(ctx context.Context, query *DeviceGroupQuery, nodes []*DeviceSettings, init func(*DeviceSettings), assign func(*DeviceSettings, *DeviceGroup)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*DeviceSettings)
+	for i := range nodes {
+		if nodes[i].GroupID == nil {
+			continue
+		}
+		fk := *nodes[i].GroupID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(devicegroup.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "group_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (_q *DeviceSettingsQuery) sqlCount(ctx context.Context) (int, error) {
@@ -384,6 +463,9 @@ func (_q *DeviceSettingsQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != devicesettings.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withGroup != nil {
+			_spec.Node.AddColumnOnce(devicesettings.FieldGroupID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

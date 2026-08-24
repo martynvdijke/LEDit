@@ -339,6 +339,18 @@ func init() {
 					Exec(ctx)
 			},
 		},
+		"qrcode": {
+			TypeName: "QR Code",
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) {
+				return db.Qrcode.Get(ctx, id)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error {
+				return db.Qrcode.DeleteOneID(id).Exec(ctx)
+			},
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddQrcodes(obj.(*ent.Qrcode))
+			},
+		},
 	}
 }
 

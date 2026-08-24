@@ -116,6 +116,20 @@ func (_c *ApiTokenCreate) SetNillableLastUsedAt(v *time.Time) *ApiTokenCreate {
 	return _c
 }
 
+// SetRole sets the "role" field.
+func (_c *ApiTokenCreate) SetRole(v apitoken.Role) *ApiTokenCreate {
+	_c.mutation.SetRole(v)
+	return _c
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_c *ApiTokenCreate) SetNillableRole(v *apitoken.Role) *ApiTokenCreate {
+	if v != nil {
+		_c.SetRole(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ApiTokenCreate) SetID(v int) *ApiTokenCreate {
 	_c.mutation.SetID(v)
@@ -169,6 +183,10 @@ func (_c *ApiTokenCreate) defaults() {
 		v := apitoken.DefaultOwnerID
 		_c.mutation.SetOwnerID(v)
 	}
+	if _, ok := _c.mutation.Role(); !ok {
+		v := apitoken.DefaultRole
+		_c.mutation.SetRole(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -187,6 +205,14 @@ func (_c *ApiTokenCreate) check() error {
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "ApiToken.created_at"`)}
+	}
+	if _, ok := _c.mutation.Role(); !ok {
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "ApiToken.role"`)}
+	}
+	if v, ok := _c.mutation.Role(); ok {
+		if err := apitoken.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "ApiToken.role": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -251,6 +277,10 @@ func (_c *ApiTokenCreate) createSpec() (*ApiToken, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.LastUsedAt(); ok {
 		_spec.SetField(apitoken.FieldLastUsedAt, field.TypeTime, value)
 		_node.LastUsedAt = &value
+	}
+	if value, ok := _c.mutation.Role(); ok {
+		_spec.SetField(apitoken.FieldRole, field.TypeEnum, value)
+		_node.Role = value
 	}
 	return _node, _spec
 }

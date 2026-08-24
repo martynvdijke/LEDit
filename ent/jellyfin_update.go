@@ -55,6 +55,20 @@ func (_u *JellyfinUpdate) SetNillableURL(v *string) *JellyfinUpdate {
 	return _u
 }
 
+// SetNowPlayingEnabled sets the "now_playing_enabled" field.
+func (_u *JellyfinUpdate) SetNowPlayingEnabled(v bool) *JellyfinUpdate {
+	_u.mutation.SetNowPlayingEnabled(v)
+	return _u
+}
+
+// SetNillableNowPlayingEnabled sets the "now_playing_enabled" field if the given value is not nil.
+func (_u *JellyfinUpdate) SetNillableNowPlayingEnabled(v *bool) *JellyfinUpdate {
+	if v != nil {
+		_u.SetNowPlayingEnabled(*v)
+	}
+	return _u
+}
+
 // Mutation returns the JellyfinMutation object of the builder.
 func (_u *JellyfinUpdate) Mutation() *JellyfinMutation {
 	return _u.mutation
@@ -102,6 +116,9 @@ func (_u *JellyfinUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(jellyfin.FieldURL, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.NowPlayingEnabled(); ok {
+		_spec.SetField(jellyfin.FieldNowPlayingEnabled, field.TypeBool, value)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{jellyfin.Label}
@@ -146,6 +163,20 @@ func (_u *JellyfinUpdateOne) SetURL(v string) *JellyfinUpdateOne {
 func (_u *JellyfinUpdateOne) SetNillableURL(v *string) *JellyfinUpdateOne {
 	if v != nil {
 		_u.SetURL(*v)
+	}
+	return _u
+}
+
+// SetNowPlayingEnabled sets the "now_playing_enabled" field.
+func (_u *JellyfinUpdateOne) SetNowPlayingEnabled(v bool) *JellyfinUpdateOne {
+	_u.mutation.SetNowPlayingEnabled(v)
+	return _u
+}
+
+// SetNillableNowPlayingEnabled sets the "now_playing_enabled" field if the given value is not nil.
+func (_u *JellyfinUpdateOne) SetNillableNowPlayingEnabled(v *bool) *JellyfinUpdateOne {
+	if v != nil {
+		_u.SetNowPlayingEnabled(*v)
 	}
 	return _u
 }
@@ -226,6 +257,9 @@ func (_u *JellyfinUpdateOne) sqlSave(ctx context.Context) (_node *Jellyfin, err 
 	}
 	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(jellyfin.FieldURL, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.NowPlayingEnabled(); ok {
+		_spec.SetField(jellyfin.FieldNowPlayingEnabled, field.TypeBool, value)
 	}
 	_node = &Jellyfin{config: _u.config}
 	_spec.Assign = _node.assignValues

@@ -106,6 +106,7 @@ var (
 		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
 		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "viewer"}, Default: "admin"},
 	}
 	// APITokensTable holds the schema information for the "api_tokens" table.
 	APITokensTable = &schema.Table{
@@ -138,6 +139,32 @@ var (
 				Columns:    []*schema.Column{CalendarsColumns[3]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// ChartSamplesColumns holds the columns for the "chart_samples" table.
+	ChartSamplesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "source_type", Type: field.TypeString},
+		{Name: "source_id", Type: field.TypeString},
+		{Name: "sampled_at", Type: field.TypeTime},
+		{Name: "value", Type: field.TypeFloat64},
+		{Name: "open", Type: field.TypeFloat64, Nullable: true},
+		{Name: "high", Type: field.TypeFloat64, Nullable: true},
+		{Name: "low", Type: field.TypeFloat64, Nullable: true},
+		{Name: "close", Type: field.TypeFloat64, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// ChartSamplesTable holds the schema information for the "chart_samples" table.
+	ChartSamplesTable = &schema.Table{
+		Name:       "chart_samples",
+		Columns:    ChartSamplesColumns,
+		PrimaryKey: []*schema.Column{ChartSamplesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "chartsample_source_type_source_id_sampled_at",
+				Unique:  false,
+				Columns: []*schema.Column{ChartSamplesColumns[1], ChartSamplesColumns[2], ChartSamplesColumns[3]},
 			},
 		},
 	}
@@ -185,6 +212,46 @@ var (
 			},
 		},
 	}
+	// DatasourcePluginsColumns holds the columns for the "datasource_plugins" table.
+	DatasourcePluginsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"exec", "http"}},
+		{Name: "target", Type: field.TypeString},
+		{Name: "enabled", Type: field.TypeBool, Default: false},
+		{Name: "timeout_ms", Type: field.TypeInt, Default: 3000},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// DatasourcePluginsTable holds the schema information for the "datasource_plugins" table.
+	DatasourcePluginsTable = &schema.Table{
+		Name:       "datasource_plugins",
+		Columns:    DatasourcePluginsColumns,
+		PrimaryKey: []*schema.Column{DatasourcePluginsColumns[0]},
+	}
+	// DeviceGroupsColumns holds the columns for the "device_groups" table.
+	DeviceGroupsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Size: 256, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "content_mode", Type: field.TypeString, Default: "global"},
+		{Name: "playlist_id", Type: field.TypeInt, Nullable: true},
+		{Name: "scheduled_playlist_ids", Type: field.TypeString, Size: 2147483647, Default: "[]"},
+		{Name: "fallback_playlist_id", Type: field.TypeInt, Nullable: true},
+	}
+	// DeviceGroupsTable holds the schema information for the "device_groups" table.
+	DeviceGroupsTable = &schema.Table{
+		Name:       "device_groups",
+		Columns:    DeviceGroupsColumns,
+		PrimaryKey: []*schema.Column{DeviceGroupsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "devicegroup_name",
+				Unique:  true,
+				Columns: []*schema.Column{DeviceGroupsColumns[1]},
+			},
+		},
+	}
 	// DeviceSettingsColumns holds the columns for the "device_settings" table.
 	DeviceSettingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -202,6 +269,14 @@ var (
 		{Name: "frames_served", Type: field.TypeInt, Default: 0},
 		{Name: "content_mode", Type: field.TypeString, Default: "global"},
 		{Name: "playlist_id", Type: field.TypeInt, Nullable: true},
+		{Name: "scheduled_playlist_ids", Type: field.TypeString, Size: 2147483647, Default: "[]"},
+		{Name: "fallback_playlist_id", Type: field.TypeInt, Nullable: true},
+		{Name: "brightness_enabled", Type: field.TypeBool, Default: false},
+		{Name: "brightness_schedules", Type: field.TypeString, Size: 2147483647, Default: "[]"},
+		{Name: "brightness_override", Type: field.TypeInt, Nullable: true},
+		{Name: "brightness_sensor_config", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "idle_screensaver", Type: field.TypeString, Nullable: true},
+		{Name: "group_id", Type: field.TypeInt, Nullable: true},
 		{Name: "general_settings_device_settings", Type: field.TypeInt, Nullable: true},
 	}
 	// DeviceSettingsTable holds the schema information for the "device_settings" table.
@@ -211,8 +286,14 @@ var (
 		PrimaryKey: []*schema.Column{DeviceSettingsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
+				Symbol:     "device_settings_device_groups_devices",
+				Columns:    []*schema.Column{DeviceSettingsColumns[22]},
+				RefColumns: []*schema.Column{DeviceGroupsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
 				Symbol:     "device_settings_general_settings_device_settings",
-				Columns:    []*schema.Column{DeviceSettingsColumns[15]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[23]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -301,6 +382,14 @@ var (
 		{Name: "eink_mode", Type: field.TypeBool, Nullable: true, Default: false},
 		{Name: "transition_style", Type: field.TypeString, Default: "none"},
 		{Name: "transition_ms", Type: field.TypeInt, Default: 500},
+		{Name: "chart_retention_hours", Type: field.TypeInt, Default: 48},
+		{Name: "chart_max_points_per_source", Type: field.TypeInt, Default: 576},
+		{Name: "now_playing_provider", Type: field.TypeString, Default: "disabled"},
+		{Name: "ordering_mode", Type: field.TypeString, Default: "random"},
+		{Name: "adaptive_floor", Type: field.TypeFloat64, Default: 0.05},
+		{Name: "adaptive_half_life_days", Type: field.TypeInt, Default: 7},
+		{Name: "adaptive_window_days", Type: field.TypeInt, Default: 14},
+		{Name: "adaptive_epsilon", Type: field.TypeFloat64, Default: 0.15},
 	}
 	// GeneralSettingsTable holds the schema information for the "general_settings" table.
 	GeneralSettingsTable = &schema.Table{
@@ -372,6 +461,29 @@ var (
 			},
 		},
 	}
+	// GreetingRulesColumns holds the columns for the "greeting_rules" table.
+	GreetingRulesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "entity_path", Type: field.TypeString},
+		{Name: "match_value", Type: field.TypeString, Default: "home"},
+		{Name: "match_operator", Type: field.TypeString, Default: "eq"},
+		{Name: "message_template", Type: field.TypeString},
+		{Name: "ttl_seconds", Type: field.TypeInt, Default: 30},
+		{Name: "cooldown_minutes", Type: field.TypeInt, Default: 30},
+		{Name: "quiet_hours_start", Type: field.TypeString, Nullable: true},
+		{Name: "quiet_hours_end", Type: field.TypeString, Nullable: true},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "last_triggered_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// GreetingRulesTable holds the schema information for the "greeting_rules" table.
+	GreetingRulesTable = &schema.Table{
+		Name:       "greeting_rules",
+		Columns:    GreetingRulesColumns,
+		PrimaryKey: []*schema.Column{GreetingRulesColumns[0]},
+	}
 	// HomeAssistantsColumns holds the columns for the "home_assistants" table.
 	HomeAssistantsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -418,6 +530,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "token", Type: field.TypeString, Default: ""},
 		{Name: "url", Type: field.TypeString},
+		{Name: "now_playing_enabled", Type: field.TypeBool, Default: false},
 		{Name: "general_settings_jellyfins", Type: field.TypeInt, Nullable: true},
 	}
 	// JellyfinsTable holds the schema information for the "jellyfins" table.
@@ -428,7 +541,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "jellyfins_general_settings_jellyfins",
-				Columns:    []*schema.Column{JellyfinsColumns[3]},
+				Columns:    []*schema.Column{JellyfinsColumns[4]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -470,6 +583,29 @@ var (
 		Name:       "log_settings",
 		Columns:    LogSettingsColumns,
 		PrimaryKey: []*schema.Column{LogSettingsColumns[0]},
+	}
+	// MpDsColumns holds the columns for the "mp_ds" table.
+	MpDsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "host", Type: field.TypeString, Default: ""},
+		{Name: "port", Type: field.TypeInt, Default: 6600},
+		{Name: "password", Type: field.TypeString, Default: ""},
+		{Name: "enabled", Type: field.TypeBool, Default: false},
+		{Name: "general_settings_mpds", Type: field.TypeInt, Nullable: true},
+	}
+	// MpDsTable holds the schema information for the "mp_ds" table.
+	MpDsTable = &schema.Table{
+		Name:       "mp_ds",
+		Columns:    MpDsColumns,
+		PrimaryKey: []*schema.Column{MpDsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "mp_ds_general_settings_mpds",
+				Columns:    []*schema.Column{MpDsColumns[5]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// MqttSettingsColumns holds the columns for the "mqtt_settings" table.
 	MqttSettingsColumns = []*schema.Column{
@@ -556,6 +692,34 @@ var (
 		Columns:    NotificationsColumns,
 		PrimaryKey: []*schema.Column{NotificationsColumns[0]},
 	}
+	// OutboundSettingsColumns holds the columns for the "outbound_settings" table.
+	OutboundSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "mqtt_publish_enabled", Type: field.TypeBool, Default: false},
+		{Name: "metrics_enabled", Type: field.TypeBool, Default: false},
+		{Name: "webhooks_enabled", Type: field.TypeBool, Default: false},
+		{Name: "ha_discovery_enabled", Type: field.TypeBool, Default: false},
+	}
+	// OutboundSettingsTable holds the schema information for the "outbound_settings" table.
+	OutboundSettingsTable = &schema.Table{
+		Name:       "outbound_settings",
+		Columns:    OutboundSettingsColumns,
+		PrimaryKey: []*schema.Column{OutboundSettingsColumns[0]},
+	}
+	// OutboundWebhooksColumns holds the columns for the "outbound_webhooks" table.
+	OutboundWebhooksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "url", Type: field.TypeString},
+		{Name: "secret", Type: field.TypeString, Default: ""},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// OutboundWebhooksTable holds the schema information for the "outbound_webhooks" table.
+	OutboundWebhooksTable = &schema.Table{
+		Name:       "outbound_webhooks",
+		Columns:    OutboundWebhooksColumns,
+		PrimaryKey: []*schema.Column{OutboundWebhooksColumns[0]},
+	}
 	// PiHolesColumns holds the columns for the "pi_holes" table.
 	PiHolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -588,6 +752,7 @@ var (
 		{Name: "api_url", Type: field.TypeString, Default: ""},
 		{Name: "api_token", Type: field.TypeString, Default: ""},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "is_draft", Type: field.TypeBool, Default: false},
 		{Name: "general_settings_pixel_arts", Type: field.TypeInt, Nullable: true},
 	}
 	// PixelArtsTable holds the schema information for the "pixel_arts" table.
@@ -598,7 +763,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "pixel_arts_general_settings_pixel_arts",
-				Columns:    []*schema.Column{PixelArtsColumns[9]},
+				Columns:    []*schema.Column{PixelArtsColumns[10]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -610,6 +775,7 @@ var (
 		{Name: "name", Type: field.TypeString, Default: ""},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
 		{Name: "items", Type: field.TypeString, Size: 2147483647, Default: "[]"},
+		{Name: "schedule_windows", Type: field.TypeString, Size: 2147483647, Default: "[]"},
 		{Name: "general_settings_playlists", Type: field.TypeInt, Nullable: true},
 	}
 	// PlaylistsTable holds the schema information for the "playlists" table.
@@ -620,7 +786,34 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "playlists_general_settings_playlists",
-				Columns:    []*schema.Column{PlaylistsColumns[4]},
+				Columns:    []*schema.Column{PlaylistsColumns[5]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// QrcodesColumns holds the columns for the "qrcodes" table.
+	QrcodesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "content", Type: field.TypeString, Size: 512},
+		{Name: "mode", Type: field.TypeEnum, Enums: []string{"text", "url", "wifi"}, Default: "text"},
+		{Name: "wifi_ssid", Type: field.TypeString, Size: 32, Default: ""},
+		{Name: "wifi_password", Type: field.TypeString, Default: ""},
+		{Name: "wifi_auth", Type: field.TypeEnum, Enums: []string{"WPA", "WEP", "nopass"}, Default: "WPA"},
+		{Name: "caption", Type: field.TypeString, Size: 64, Default: ""},
+		{Name: "error_correction", Type: field.TypeEnum, Enums: []string{"L", "M", "Q", "H"}, Default: "M"},
+		{Name: "quiet_zone", Type: field.TypeInt, Default: 4},
+		{Name: "general_settings_qrcodes", Type: field.TypeInt, Nullable: true},
+	}
+	// QrcodesTable holds the schema information for the "qrcodes" table.
+	QrcodesTable = &schema.Table{
+		Name:       "qrcodes",
+		Columns:    QrcodesColumns,
+		PrimaryKey: []*schema.Column{QrcodesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "qrcodes_general_settings_qrcodes",
+				Columns:    []*schema.Column{QrcodesColumns[9]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -819,6 +1012,32 @@ var (
 			},
 		},
 	}
+	// TimelapseFramesColumns holds the columns for the "timelapse_frames" table.
+	TimelapseFramesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "device_id", Type: field.TypeInt},
+		{Name: "captured_at", Type: field.TypeTime},
+		{Name: "source_type", Type: field.TypeString},
+		{Name: "source_id", Type: field.TypeInt},
+		{Name: "source_label", Type: field.TypeString},
+		{Name: "file_path", Type: field.TypeString},
+		{Name: "width", Type: field.TypeInt},
+		{Name: "height", Type: field.TypeInt},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// TimelapseFramesTable holds the schema information for the "timelapse_frames" table.
+	TimelapseFramesTable = &schema.Table{
+		Name:       "timelapse_frames",
+		Columns:    TimelapseFramesColumns,
+		PrimaryKey: []*schema.Column{TimelapseFramesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "timelapseframe_device_id_captured_at",
+				Unique:  false,
+				Columns: []*schema.Column{TimelapseFramesColumns[1], TimelapseFramesColumns[2]},
+			},
+		},
+	}
 	// TransitsColumns holds the columns for the "transits" table.
 	TransitsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -904,6 +1123,28 @@ var (
 			},
 		},
 	}
+	// UsersColumns holds the columns for the "users" table.
+	UsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "username", Type: field.TypeString, Size: 64},
+		{Name: "password_hash", Type: field.TypeString},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "viewer"}, Default: "viewer"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "last_login_at", Type: field.TypeTime, Nullable: true},
+	}
+	// UsersTable holds the schema information for the "users" table.
+	UsersTable = &schema.Table{
+		Name:       "users",
+		Columns:    UsersColumns,
+		PrimaryKey: []*schema.Column{UsersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "user_username",
+				Unique:  true,
+				Columns: []*schema.Column{UsersColumns[1]},
+			},
+		},
+	}
 	// VideosColumns holds the columns for the "videos" table.
 	VideosColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -974,8 +1215,11 @@ var (
 		AlertSettingsTable,
 		APITokensTable,
 		CalendarsTable,
+		ChartSamplesTable,
 		CountdownsTable,
 		CryptosTable,
+		DatasourcePluginsTable,
+		DeviceGroupsTable,
 		DeviceSettingsTable,
 		DisplayRulesTable,
 		EmailSettingsTable,
@@ -984,18 +1228,23 @@ var (
 		GenericApIsTable,
 		GitHubsTable,
 		GoogleCalendarsTable,
+		GreetingRulesTable,
 		HomeAssistantsTable,
 		ImagesTable,
 		JellyfinsTable,
 		LogEntriesTable,
 		LogSettingsTable,
+		MpDsTable,
 		MqttSettingsTable,
 		MatrixLayoutsTable,
 		NewsFeedsTable,
 		NotificationsTable,
+		OutboundSettingsTable,
+		OutboundWebhooksTable,
 		PiHolesTable,
 		PixelArtsTable,
 		PlaylistsTable,
+		QrcodesTable,
 		RadarrsTable,
 		RssFeedsTable,
 		SchedulesTable,
@@ -1005,10 +1254,12 @@ var (
 		SunMoonsTable,
 		TelegramSettingsTable,
 		TextSlidesTable,
+		TimelapseFramesTable,
 		TransitsTable,
 		UmamiSettingsTable,
 		UntappdsTable,
 		UptimesTable,
+		UsersTable,
 		VideosTable,
 		WeathersTable,
 		WebhookSettingsTable,
@@ -1022,7 +1273,8 @@ func init() {
 	CalendarsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	CountdownsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	CryptosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
-	DeviceSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	DeviceSettingsTable.ForeignKeys[0].RefTable = DeviceGroupsTable
+	DeviceSettingsTable.ForeignKeys[1].RefTable = GeneralSettingsTable
 	DisplayRulesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	EmailSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	F1sTable.ForeignKeys[0].RefTable = GeneralSettingsTable
@@ -1032,12 +1284,14 @@ func init() {
 	HomeAssistantsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	ImagesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	JellyfinsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	MpDsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	MqttSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	MatrixLayoutsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	NewsFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PiHolesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PixelArtsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PlaylistsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	QrcodesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RadarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RssFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SchedulesTable.ForeignKeys[0].RefTable = GeneralSettingsTable

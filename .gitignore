@@ -15,6 +15,7 @@ playwright-report/*
 playwright-report.zip
 tmp/*
 media/backups/
+web/media/timelapse/
 backups/
 air_errors.log
 PLANS.md

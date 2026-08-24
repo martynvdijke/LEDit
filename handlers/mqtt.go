@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -127,6 +128,17 @@ func (c *MQTTController) subscribeAll() error {
 			return tok.Error()
 		}
 	}
+	// NL control topic (optional, when AI configured)
+	if c.s != nil {
+		if _, ok := LoadAIConfig(c.s); ok {
+			tok := c.client.Subscribe("ledit/control/nl", 1, func(_ mqtt.Client, msg mqtt.Message) {
+				c.handleNLPayload(string(msg.Payload()))
+			})
+			if tok.WaitTimeout(5*time.Second) && tok.Error() != nil {
+				return tok.Error()
+			}
+		}
+	}
 	return nil
 }
 
@@ -165,6 +177,47 @@ func (c *MQTTController) reconnect(opts *mqtt.ClientOptions) {
 // handleControlPayload is internal; exported wrapper below for tests.
 func (c *MQTTController) handleControlPayload(payload string) {
 	HandleControlPayload(payload)
+}
+
+func (c *MQTTController) handleNLPayload(payload string) {
+	text := strings.TrimSpace(payload)
+	if text == "" {
+		return
+	}
+	cfg, ok := LoadAIConfig(c.s)
+	if !ok {
+		slog.Debug("mqtt nl ignored: AI not configured")
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	intent, err := ParseIntent(ctx, text, cfg)
+	if err != nil {
+		slog.Warn("mqtt nl parse failed", "payload", text, "error", err)
+		return
+	}
+	reply := ExecuteIntent(c.s, intent)
+	slog.Info("mqtt nl executed", "payload", text, "action", intent.Action, "reply", reply)
+}
+
+// HandleNLPayload is exported for tests: executes NL payload via same parser, no reply publish.
+func HandleNLPayload(s *Server, payload string) {
+	text := strings.TrimSpace(payload)
+	if text == "" {
+		return
+	}
+	cfg, ok := LoadAIConfig(s)
+	if !ok {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	intent, err := ParseIntent(ctx, text, cfg)
+	if err != nil {
+		slog.Debug("mqtt nl parse failed", "error", err)
+		return
+	}
+	ExecuteIntent(s, intent)
 }
 
 // HandleControlPayload maps control payloads to GlobalFeed actions.
@@ -217,6 +270,28 @@ func (c *MQTTController) RestartWithSettings(s *Server) *MQTTController {
 		c.Stop()
 	}
 	return StartMQTT(s)
+}
+
+var mqttCtrlGlobal *MQTTController
+
+func SetGlobalMqttCtrl(c *MQTTController) { mqttCtrlGlobal = c }
+
+func PublishOutbound(topic, payload string, retained bool) {
+	if mqttCtrlGlobal == nil || mqttCtrlGlobal.client == nil || !mqttCtrlGlobal.client.IsConnected() {
+		return
+	}
+	mqttCtrlGlobal.client.Publish(topic, 0, retained, payload)
+}
+
+func PublishHASSDiscovery(deviceID int) {
+	topic := fmt.Sprintf("homeassistant/sensor/ledit_%d_online/config", deviceID)
+	payload := fmt.Sprintf(`{"name":"LEDit %d online","state_topic":"ledit/device/%d/online","device":{"identifiers":["ledit_%d"]}}`, deviceID, deviceID, deviceID)
+	PublishOutbound(topic, payload, true)
+}
+
+func ClearDeviceMqtt(deviceID int) {
+	topic := fmt.Sprintf("ledit/device/%d/online", deviceID)
+	PublishOutbound(topic, "", true)
 }
 
 // RestartMQTT is a package-level helper for admin settings-change path when no controller is retained.

@@ -23,5 +23,6 @@ func (PixelArt) Fields() []ent.Field {
 		field.String("api_url").Default(""),
 		field.String("api_token").Default(""),
 		field.Bool("enabled").Default(true),
+		field.Bool("is_draft").Default(false),
 	}
 }

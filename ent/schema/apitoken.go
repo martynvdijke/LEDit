@@ -32,6 +32,7 @@ func (ApiToken) Fields() []ent.Field {
 		field.Time("expires_at").Optional().Nillable(),
 		field.Time("revoked_at").Optional().Nillable(),
 		field.Time("last_used_at").Optional().Nillable(),
+		field.Enum("role").Values("admin", "viewer").Default("admin"),
 	}
 }
 

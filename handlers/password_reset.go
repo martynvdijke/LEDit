@@ -187,12 +187,21 @@ func (s *Server) ResetPasswordAction(c *gin.Context) {
 		c.HTML(http.StatusOK, "reset_password.html", gin.H{"token": token, "error": "Failed to save new password"})
 		return
 	}
+	// Also update user table if exists.
+	if users, err := s.DB.User.Query().All(s.Ctx); err == nil {
+		for _, u := range users {
+			if u.Role == "admin" {
+				_, _ = s.DB.User.UpdateOneID(u.ID).SetPasswordHash(string(hash)).Save(s.Ctx)
+				break
+			}
+		}
+	}
 
 	// Password updated: the token is now single-use and all existing sessions
 	// are invalidated so the old password is fully dead.
 	consumeResetToken(token)
 	authMu.Lock()
-	sessions = map[string]time.Time{}
+	sessions = map[string]sessionData{}
 	authMu.Unlock()
 
 	c.Redirect(http.StatusFound, "/login?reset=1")

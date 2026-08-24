@@ -27,6 +27,8 @@ const (
 	FieldAPIToken = "api_token"
 	// FieldEnabled holds the string denoting the enabled field in the database.
 	FieldEnabled = "enabled"
+	// FieldIsDraft holds the string denoting the is_draft field in the database.
+	FieldIsDraft = "is_draft"
 	// Table holds the table name of the pixelart in the database.
 	Table = "pixel_arts"
 )
@@ -42,6 +44,7 @@ var Columns = []string{
 	FieldAPIURL,
 	FieldAPIToken,
 	FieldEnabled,
+	FieldIsDraft,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "pixel_arts"
@@ -80,6 +83,8 @@ var (
 	DefaultAPIToken string
 	// DefaultEnabled holds the default value on creation for the "enabled" field.
 	DefaultEnabled bool
+	// DefaultIsDraft holds the default value on creation for the "is_draft" field.
+	DefaultIsDraft bool
 )
 
 // OrderOption defines the ordering options for the PixelArt queries.
@@ -128,4 +133,9 @@ func ByAPIToken(opts ...sql.OrderTermOption) OrderOption {
 // ByEnabled orders the results by the enabled field.
 func ByEnabled(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEnabled, opts...).ToFunc()
+}
+
+// ByIsDraft orders the results by the is_draft field.
+func ByIsDraft(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsDraft, opts...).ToFunc()
 }

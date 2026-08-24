@@ -1,3 +1,11 @@
+// Package handlers implements the WebSocket feed for LED devices.
+//
+// Brightness is WS-only and applied server-side as a linear RGB multiplier
+// before PNG encode (after transition blending via ApplyBrightnessNRGBA /
+// dimPNGBytes). TRMNL devices are unaffected. A future protocol extension
+// reserving a `{brightness:int}` message for client-side dimming is
+// contemplated but not yet implemented; the server-side multiplier remains
+// the source of truth.
 package handlers
 
 import (
@@ -7,11 +15,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
+	"image/draw"
 	"image/png"
 	"log/slog"
 	"math/rand"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -19,9 +29,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"ledit/datasource"
+	"ledit/datasource/nowplaying"
 	"ledit/ent"
 	"ledit/ent/devicesettings"
 	"ledit/ent/generalsettings"
+	"ledit/ent/playlist"
 	"ledit/render"
 )
 
@@ -71,6 +83,8 @@ type feedConn struct {
 	deviceID       int
 	frames         func() // optional per-frame hook (device frame counter); nil for browser/preview
 }
+
+func splitCacheKey(k string) []string { return strings.SplitN(k, ":", 2) }
 
 type WSHub struct {
 	Client *ent.Client
@@ -144,6 +158,9 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 	// Built-in: ambience modes (always available, no config)
 	sources = append(sources, sourceWithName{Name: "Analog Clock", Source: &datasource.AnalogClockDS{}, cacheKey: "analog-clock:0"})
 	sources = append(sources, sourceWithName{Name: "Matrix Rain", Source: &datasource.MatrixRainDS{}, cacheKey: "matrix-rain:0"})
+	for i, v := range []string{"starfield", "dvd", "matrix", "plasma"} {
+		sources = append(sources, sourceWithName{Name: "Screensaver: " + v, Source: &datasource.ScreensaverDS{Variant: v}, cacheKey: fmt.Sprintf("screensaver:%d", i)})
+	}
 
 	rssFeeds, _ := settings.Edges.RssFeedsOrErr()
 	for _, rs := range rssFeeds {
@@ -208,6 +225,10 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 		sources = append(sources, sourceWithName{Name: "Jellyfin", Source: &datasource.JellyfinDS{Token: jf.Token, URL: jf.URL}, cacheKey: fmt.Sprintf("jellyfin:%d", jf.ID)})
 	}
 
+	// Audio: Now Playing + Visualizer (stylized, metadata-driven)
+	sources = append(sources, sourceWithName{Name: "Now Playing", Source: &datasource.AudioNowPlayingDS{}, cacheKey: "audio:0"})
+	sources = append(sources, sourceWithName{Name: "Audio Visualizer", Source: &datasource.VisualizerDS{Mode: "bars"}, cacheKey: "audio:1"})
+
 	// Enabled countdown timers stream as "Countdown: <name>".
 	countdowns, _ := settings.Edges.CountdownsOrErr()
 	for _, cd := range countdowns {
@@ -260,11 +281,30 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 // composeDeviceSources returns the ordered feed sources for a device. In
 // global mode (or empty content_mode) it returns the global list unchanged.
 // In playlist mode it loads the playlist by device.PlaylistID and resolves
-// each item via buildSourceIndex. Dangling refs are skipped and logged once
-// per composition. Any fallback condition (nil id, not found, disabled, parse
-// error, zero resolvable) falls back to the global list with a single warn.
+// each item via buildSourceIndex. In scheduled mode it delegates to
+// composeScheduledSources. Dangling refs are skipped and logged once per
+// composition. Any fallback condition falls back to the global list.
+// Precedence: device explicit > group > global.
 func (h *WSHub) composeDeviceSources(device *ent.DeviceSettings, settings *ent.GeneralSettings) []sourceWithName {
-	if device == nil || device.ContentMode != "playlist" {
+	if device == nil {
+		return h.loadSources(settings)
+	}
+	// Group inheritance: if device has no explicit assignment and belongs to a group with assignment, use group's assignment.
+	if !isDeviceContentExplicit(device) {
+		if grp, err := device.Edges.GroupOrErr(); err == nil && grp != nil && isGroupContentSet(grp) {
+			// Build synthetic device with group's content for resolution.
+			effective := *device
+			effective.ContentMode = grp.ContentMode
+			effective.PlaylistID = grp.PlaylistID
+			effective.ScheduledPlaylistIds = grp.ScheduledPlaylistIds
+			effective.FallbackPlaylistID = grp.FallbackPlaylistID
+			device = &effective
+		}
+	}
+	if device.ContentMode == "scheduled" {
+		return h.composeScheduledSources(device, settings)
+	}
+	if device.ContentMode != "playlist" {
 		return h.loadSources(settings)
 	}
 	if device.PlaylistID == nil {
@@ -314,6 +354,244 @@ func (h *WSHub) composeDeviceSources(device *ent.DeviceSettings, settings *ent.G
 	return composed
 }
 
+// tryComposePlaylist attempts to resolve a single playlist into sources.
+// Returns nil if disabled, parse error, or zero resolvable items.
+func (h *WSHub) tryComposePlaylist(pl *ent.Playlist, device *ent.DeviceSettings, settings *ent.GeneralSettings) []sourceWithName {
+	if pl == nil || !pl.Enabled {
+		return nil
+	}
+	items, err := datasource.ParsePlaylistItems(pl.Items)
+	if err != nil {
+		slog.Warn("scheduled playlist items parse error, skipping", "device", device.Name, "playlist_id", pl.ID, "error", err)
+		return nil
+	}
+	if len(items) == 0 {
+		slog.Warn("scheduled playlist has no items, skipping", "device", device.Name, "playlist_id", pl.ID)
+		return nil
+	}
+	idx := buildSourceIndex(settings, h.aiConfig(context.Background()))
+	var composed []sourceWithName
+	skipped := 0
+	for _, it := range items {
+		src, name, err := idx.Resolve(it.SourceType, it.SourceID)
+		if err != nil {
+			skipped++
+			continue
+		}
+		composed = append(composed, sourceWithName{
+			Name:     name,
+			Source:   src,
+			cacheKey: fmt.Sprintf("%s:%d", it.SourceType, it.SourceID),
+		})
+	}
+	if skipped > 0 {
+		slog.Warn("scheduled playlist had dangling refs skipped", "device", device.Name, "playlist_id", pl.ID, "skipped", skipped)
+	}
+	if len(composed) == 0 {
+		slog.Warn("scheduled playlist had zero resolvable items, skipping", "device", device.Name, "playlist_id", pl.ID)
+		return nil
+	}
+	return composed
+}
+
+// resolveScheduledPlaylist resolves the best scheduled playlist for device at
+// ScheduleNow(). It parses device.ScheduledPlaylistIds, loads playlists by IDs,
+// builds PlaylistSchedule candidates (Order = candidate index), and calls
+// ResolveScheduledPlaylist. Dangling IDs are warned once per call.
+// Returns the matched *ent.Playlist and its matching window, or nil if none.
+func (h *WSHub) resolveScheduledPlaylist(device *ent.DeviceSettings) (*ent.Playlist, *ScheduleWindow) {
+	var ids []int
+	if err := json.Unmarshal([]byte(device.ScheduledPlaylistIds), &ids); err != nil {
+		slog.Warn("scheduled playlist ids parse error", "device", device.Name, "error", err)
+		return nil, nil
+	}
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	pls, err := h.Client.Playlist.Query().Where(playlist.IDIn(ids...)).All(context.Background())
+	if err != nil {
+		slog.Warn("failed to load scheduled playlists", "device", device.Name, "error", err)
+		return nil, nil
+	}
+	byID := make(map[int]*ent.Playlist, len(pls))
+	for _, p := range pls {
+		byID[p.ID] = p
+	}
+	for _, id := range ids {
+		if _, ok := byID[id]; !ok {
+			slog.Warn("scheduled playlist id not found, skipping", "device", device.Name, "playlist_id", id)
+		}
+	}
+	var candidates []PlaylistSchedule
+	for idx, id := range ids {
+		pl, ok := byID[id]
+		if !ok {
+			continue
+		}
+		windows, err := ParseScheduleWindows(pl.ScheduleWindows)
+		if err != nil {
+			slog.Warn("scheduled playlist windows parse error, treating as always", "device", device.Name, "playlist_id", pl.ID, "error", err)
+			windows = []ScheduleWindow{}
+		}
+		candidates = append(candidates, PlaylistSchedule{
+			ID:      pl.ID,
+			Name:    pl.Name,
+			Enabled: pl.Enabled,
+			Windows: windows,
+			Order:   idx,
+		})
+	}
+	best := ResolveScheduledPlaylist(ScheduleNow(), candidates)
+	if best == nil {
+		return nil, nil
+	}
+	pl, ok := byID[best.ID]
+	if !ok {
+		return nil, nil
+	}
+	// Find the matching window for the best candidate (highest priority matching window).
+	var matched *ScheduleWindow
+	bestPrio := -1 << 30
+	now := ScheduleNow()
+	if len(best.Windows) == 0 {
+		// Always-eligible: no window, return nil window.
+		return pl, nil
+	}
+	for i := range best.Windows {
+		w := best.Windows[i]
+		if !WindowMatches(now, w) {
+			continue
+		}
+		if matched == nil || w.Priority > bestPrio {
+			cp := w
+			matched = &cp
+			bestPrio = w.Priority
+		}
+	}
+	return pl, matched
+}
+
+// composeScheduledSources implements the fallback ladder for scheduled mode:
+// matching scheduled w/ resolvable -> next matching candidate -> fallback playlist -> global.
+func (h *WSHub) composeScheduledSources(device *ent.DeviceSettings, settings *ent.GeneralSettings) []sourceWithName {
+	var ids []int
+	if err := json.Unmarshal([]byte(device.ScheduledPlaylistIds), &ids); err != nil {
+		slog.Warn("scheduled playlist ids parse error, falling back to global", "device", device.Name, "error", err)
+		// Try fallback ladder directly.
+	} else if len(ids) > 0 {
+		pls, err := h.Client.Playlist.Query().Where(playlist.IDIn(ids...)).All(context.Background())
+		if err == nil {
+			byID := make(map[int]*ent.Playlist, len(pls))
+			for _, p := range pls {
+				byID[p.ID] = p
+			}
+			for _, id := range ids {
+				if _, ok := byID[id]; !ok {
+					slog.Warn("scheduled playlist id not found, skipping", "device", device.Name, "playlist_id", id)
+				}
+			}
+			var candidates []PlaylistSchedule
+			for idx, id := range ids {
+				pl, ok := byID[id]
+				if !ok {
+					continue
+				}
+				windows, perr := ParseScheduleWindows(pl.ScheduleWindows)
+				if perr != nil {
+					slog.Warn("scheduled playlist windows parse error, treating as always", "device", device.Name, "playlist_id", pl.ID, "error", perr)
+					windows = []ScheduleWindow{}
+				}
+				candidates = append(candidates, PlaylistSchedule{
+					ID:      pl.ID,
+					Name:    pl.Name,
+					Enabled: pl.Enabled,
+					Windows: windows,
+					Order:   idx,
+				})
+			}
+			now := ScheduleNow()
+			// Filter to matching candidates and sort by priority desc then order.
+			type ranked struct {
+				ps       PlaylistSchedule
+				bestPrio int
+			}
+			var matching []ranked
+			for _, c := range candidates {
+				if !c.Enabled {
+					continue
+				}
+				if len(c.Windows) == 0 {
+					matching = append(matching, ranked{ps: c, bestPrio: 0})
+					continue
+				}
+				bestPrio := -1 << 30
+				matched := false
+				for _, w := range c.Windows {
+					if WindowMatches(now, w) {
+						matched = true
+						if w.Priority > bestPrio {
+							bestPrio = w.Priority
+						}
+					}
+				}
+				if matched {
+					matching = append(matching, ranked{ps: c, bestPrio: bestPrio})
+				}
+			}
+			sort.Slice(matching, func(i, j int) bool {
+				if matching[i].bestPrio != matching[j].bestPrio {
+					return matching[i].bestPrio > matching[j].bestPrio
+				}
+				return matching[i].ps.Order < matching[j].ps.Order
+			})
+			for _, r := range matching {
+				pl := byID[r.ps.ID]
+				if composed := h.tryComposePlaylist(pl, device, settings); len(composed) > 0 {
+					return composed
+				}
+			}
+		} else {
+			slog.Warn("failed to load scheduled playlists, falling back", "device", device.Name, "error", err)
+		}
+	}
+
+	// Fallback playlist.
+	if device.FallbackPlaylistID != nil {
+		fpl, err := h.Client.Playlist.Get(context.Background(), *device.FallbackPlaylistID)
+		if err != nil {
+			slog.Warn("fallback playlist not found, falling back to global", "device", device.Name, "fallback_playlist_id", *device.FallbackPlaylistID, "error", err)
+		} else if !fpl.Enabled {
+			slog.Warn("fallback playlist disabled, falling back to global", "device", device.Name, "fallback_playlist_id", fpl.ID)
+		} else if composed := h.tryComposePlaylist(fpl, device, settings); len(composed) > 0 {
+			return composed
+		} else {
+			slog.Warn("fallback playlist had no resolvable items, falling back to global", "device", device.Name, "fallback_playlist_id", fpl.ID)
+		}
+	}
+
+	slog.Warn("no scheduled playlist matched, falling back to global", "device", device.Name)
+	srcs := h.loadSources(settings)
+	if len(srcs) == 0 {
+		if idle := h.idleFallback(device); len(idle) > 0 {
+			return idle
+		}
+	}
+	return srcs
+}
+
+func (h *WSHub) idleFallback(device *ent.DeviceSettings) []sourceWithName {
+	if device == nil || device.IdleScreensaver == nil || *device.IdleScreensaver == "" {
+		return nil
+	}
+	variant := *device.IdleScreensaver
+	if !datasource.ValidScreensaverVariants[variant] {
+		return nil
+	}
+	m := map[string]int{"starfield": 0, "dvd": 1, "matrix": 2, "plasma": 3}
+	id := m[variant]
+	return []sourceWithName{{Name: "Screensaver: " + variant, Source: &datasource.ScreensaverDS{Variant: variant}, cacheKey: fmt.Sprintf("screensaver:%d", id)}}
+}
+
 // HandleWS serves the browser preview feed at a fixed 400x400 resolution,
 // controlled by the shared GlobalFeed controller.
 func (h *WSHub) HandleWS(c *gin.Context) {
@@ -338,7 +616,7 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 	}
 
 	timeout := time.Duration(settings.Timeout * float64(time.Second))
-	serveFeed(conn, feedConn{}, sources, settings.Random, timeout, 400, 400, GlobalFeed, settings.TransitionStyle, settings.TransitionMs)
+	serveFeed(conn, feedConn{}, sources, settings.Random, timeout, 400, 400, GlobalFeed, settings.TransitionStyle, settings.TransitionMs, nil)
 }
 
 // HandleDeviceWS serves a device feed at the device's configured resolution
@@ -350,7 +628,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		return
 	}
 
-	device, err := h.Client.DeviceSettings.Query().Where(devicesettings.TokenEQ(token)).Only(c.Request.Context())
+	device, err := h.Client.DeviceSettings.Query().Where(devicesettings.TokenEQ(token)).WithGroup().Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 		return
@@ -405,14 +683,89 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 	}
 	timeout := time.Duration(interval) * time.Second
 
-	playlistActive := device.ContentMode == "playlist"
+	playlistActive := device.ContentMode == "playlist" || device.ContentMode == "scheduled"
 	randomFlag := settings.Random
 	if playlistActive {
 		randomFlag = false
 	}
 
+	// Brightness: parse device config once, ramp and sensor state per connection.
+	bSchedules, _ := ParseBrightnessWindows(device.BrightnessSchedules)
+	var sensorCfg *SensorConfig
+	if device.BrightnessSensorConfig != nil {
+		sensorCfg, _ = ParseSensorConfig(device.BrightnessSensorConfig)
+	}
+	ramp := NewBrightnessRamp(100)
+	// initial target
+	{
+		var sensorLevel *int
+		if device.BrightnessEnabled && sensorCfg != nil {
+			if lux, err := FetchSensorLux(sensorCfg.EntityID); err == nil {
+				sensorLevel = SensorLevelForLux(lux, sensorCfg)
+			}
+		}
+		target := ResolveBrightness(time.Now(), bSchedules, sensorLevel, device.BrightnessOverride)
+		if !device.BrightnessEnabled {
+			target = 100
+		}
+		ramp.Current = float64(target)
+		ramp.Target = target
+	}
+	var sensorState SensorFetchState
+	var lastSensorFetch time.Time
+	var sensorCache *int
+	var sensorCacheTime time.Time
+	bFn := func() int {
+		if brightnessProviderForTest != nil {
+			return brightnessProviderForTest()
+		}
+		if !device.BrightnessEnabled {
+			return 100
+		}
+		now := time.Now()
+		// Sensor polling with jitter ≥5s
+		if sensorCfg != nil && now.Sub(lastSensorFetch) >= 5*time.Second {
+			// jitter check via ShouldFetch
+			if sensorState.ShouldFetch(now, lastSensorFetch) {
+				lastSensorFetch = now
+				if lux, err := FetchSensorLux(sensorCfg.EntityID); err == nil {
+					sensorState.LastValue = lux
+					sensorState.LastTime = now
+					sensorState.Warned = false
+					sensorCache = SensorLevelForLux(lux, sensorCfg)
+					sensorCacheTime = now
+				} else {
+					if !sensorState.Warned {
+						slog.Warn("brightness sensor fetch failed, degrading to schedule", "device", device.Name, "error", err)
+						sensorState.Warned = true
+					}
+				}
+			}
+		}
+		var sensorLevel *int
+		if sensorCfg != nil && !sensorState.IsStale(now) && sensorCache != nil && now.Sub(sensorCacheTime) <= 60*time.Second {
+			sensorLevel = sensorCache
+		} else if sensorCfg != nil && sensorCache != nil && now.Sub(sensorCacheTime) > 60*time.Second {
+			sensorCache = nil
+		}
+		target := ResolveBrightness(now, bSchedules, sensorLevel, device.BrightnessOverride)
+		ramp.SetTarget(target)
+		return ramp.Advance()
+	}
+
 	// Each device gets its own feed controller so pause/skip/next are
 	// independent of the shared preview feed.
+	// TODO(slot re-eval): scheduled resolution is done at connection setup via
+	// composeScheduledSources. Per-slot re-evaluation (at each refresh_interval
+	// boundary before selecting nextSource) requires device-aware
+	// re-resolution inside serveFeed. Current design keeps sources fixed for
+	// the connection lifetime to avoid DB per-tick; future work can extend
+	// serveFeed to accept a device-aware re-resolve callback and swap sources
+	// at the top of its outer loop. Precedence remains:
+	// notification > event pin > scheduled playlist > static playlist/global fallback.
+	fc := &FeedController{}
+	registerDeviceFeed(device.ID, fc)
+	defer unregisterDeviceFeed(device.ID)
 	serveFeed(conn, feedConn{
 		deviceID: device.ID,
 		frames: func() {
@@ -420,7 +773,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 				slog.Warn("failed to increment device frames_served", "device", device.Name, "error", err)
 			}
 		},
-	}, sources, randomFlag, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs)
+	}, sources, randomFlag, timeout, width, height, fc, settings.TransitionStyle, settings.TransitionMs, bFn)
 }
 
 // HandleDevicePreviewWS serves an admin-authenticated, device-accurate preview
@@ -463,7 +816,7 @@ func (h *WSHub) HandleDevicePreviewWS(c *gin.Context) {
 		return
 	}
 
-	sources := h.loadSources(settings)
+	sources := h.composeDeviceSources(device, settings)
 	if len(sources) == 0 {
 		msg, _ := json.Marshal(map[string]string{"error": "no datasources configured"})
 		conn.WriteMessage(websocket.TextMessage, msg)
@@ -484,15 +837,49 @@ func (h *WSHub) HandleDevicePreviewWS(c *gin.Context) {
 	}
 	timeout := time.Duration(interval) * time.Second
 
+	playlistActive := device.ContentMode == "playlist" || device.ContentMode == "scheduled"
+	randomFlag := settings.Random
+	if playlistActive {
+		randomFlag = false
+	}
+
 	// Each preview gets its own feed controller: pause/skip/next in the
 	// preview tab only affects that tab, never the physical device.
-	serveFeed(conn, feedConn{cacheKeyPrefix: fmt.Sprintf("device:%d:", id), deviceID: id}, sources, settings.Random, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs)
+	serveFeed(conn, feedConn{cacheKeyPrefix: fmt.Sprintf("device:%d:", id), deviceID: id}, sources, randomFlag, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs, nil)
 }
+
+// brightnessProvider seam for tests.
+var brightnessProviderForTest func() int
+
+func dimPNGBytes(data []byte, level int) []byte {
+	if level >= 100 || level < 0 {
+		return data
+	}
+	if level == 100 {
+		return data
+	}
+	img, err := png.Decode(bytes.NewReader(data))
+	if err != nil {
+		return data
+	}
+	b := img.Bounds()
+	rgba := image.NewRGBA(b)
+	draw.Draw(rgba, b, img, b.Min, draw.Src)
+	render.ApplyBrightness(rgba, level)
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, rgba); err != nil {
+		return data
+	}
+	return buf.Bytes()
+}
+
+// brightnessFn returns effective level 0-100; nil means 100.
+type brightnessFn func() int
 
 // serveFeed runs the source-cycle loop for a single WebSocket connection,
 // rendering each datasource at the given resolution and advancing on the given
 // timeout. Notifications are broadcast to every connection exactly once.
-func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, random bool, timeout time.Duration, width, height int, feed *FeedController, transitionStyle string, transitionMs int) {
+func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, random bool, timeout time.Duration, width, height int, feed *FeedController, transitionStyle string, transitionMs int, bFn brightnessFn) {
 	joinController(feed)
 	defer leaveController(feed)
 	cursor := CurrentNotifSeq()
@@ -534,10 +921,28 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				feed.Pause()
 			case "resume":
 				feed.Resume()
+				// Future protocol v2: client-side audio tap
+				// Device would send {type:"spectrum", bins:[...]} at ~20Hz for server re-render.
+				// Reserved here; not parsed in v1 (metadata-driven visualizer only).
+				// case "spectrum":
+				//      handleSpectrumBins(cmd["bins"])
 			}
 		}
 	}()
 
+	getLevel := func() int {
+		if bFn != nil {
+			return bFn()
+		}
+		if brightnessProviderForTest != nil {
+			return brightnessProviderForTest()
+		}
+		return 100
+	}
+	// Timelapse per-connection rate-limit state.
+	var tlLastCapture time.Time
+	var tlLastSourceID string
+	tlInterval := TimelapseInterval()
 	for {
 		for i, sw := range sources {
 			// Broadcast any new notifications to this connection.
@@ -573,11 +978,25 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 
 			// Compute next source name
 			nextName := ""
-			if random {
+			if GetOrderingMode() == "adaptive" {
+				w := globalWeightsCache.GetWeights()
+				if w != nil && len(w) > 0 {
+					nextName = WeightedRandom(w, sources).Name
+				} else {
+					nextName = sources[rand.Intn(len(sources))].Name
+				}
+			} else if random {
 				nextName = sources[rand.Intn(len(sources))].Name
 			} else {
 				nextIdx := (i + 1) % len(sources)
 				nextName = sources[nextIdx].Name
+			}
+
+			// skip_when_idle: if visualizer and not playing, skip slot
+			if vds, ok := sw.Source.(*datasource.VisualizerDS); ok && vds.SkipWhenIdle {
+				if nowplaying.CurrentNowPlaying().State != "play" {
+					continue
+				}
 			}
 
 			feed.SetCurrent(sw.Name, nextName)
@@ -591,6 +1010,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			// cached, failures serve the cached frame marked stale. Health is
 			// recorded per source (and per device for device feeds).
 			cacheKey := lkgCacheKey(fc.cacheKeyPrefix+sw.cacheKey, width, height)
+			// set chart context for sampler (type:id)
+			if parts := splitCacheKey(sw.cacheKey); len(parts) == 2 {
+				datasource.SetChartContext(parts[0], parts[1])
+			}
 			img, stale, err := defaultLKG.GetPNG(cacheKey, datasourceConfigSig(sw.Source), func() (*render.RenderedImage, error) {
 				start := time.Now()
 				img, err := sw.Source.GetPNG(width, height)
@@ -609,6 +1032,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				slog.Error("Error rendering datasource for WebSocket", "source_name", sw.Name, "error", err, "source", "websocket")
 				continue
 			}
+			lvl := getLevel()
 
 			// Slide transition ramp: before sending the canonical new frame,
 			// emit intermediate blended frames (prev -> cur). Skipped when
@@ -643,6 +1067,9 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 						}
 						if blendedNRGBA == nil {
 							break
+						}
+						if lvl != 100 {
+							render.ApplyBrightnessNRGBA(blendedNRGBA, lvl)
 						}
 						var buf bytes.Buffer
 						if err := png.Encode(&buf, blendedNRGBA); err != nil {
@@ -683,9 +1110,13 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				}
 			}
 
+			finalData := img.Data
+			if lvl != 100 {
+				finalData = dimPNGBytes(finalData, lvl)
+			}
 			msg := map[string]any{
 				"format": img.Format,
-				"image":  base64.StdEncoding.EncodeToString(img.Data),
+				"image":  base64.StdEncoding.EncodeToString(finalData),
 				"source": sw.Name,
 				"next":   nextName,
 			}
@@ -708,8 +1139,39 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				}
 			}
 			TrackDisplay(sw.Name, timeout.Seconds())
-			prevPNG = make([]byte, len(img.Data))
-			copy(prevPNG, img.Data)
+			// Timelapse capture piggyback after final composition (post-brightness).
+			if fc.deviceID > 0 && TimelapseEnabled() {
+				now := time.Now()
+				curID := sw.cacheKey
+				if ShouldCapture(now, tlLastCapture, tlInterval, tlLastSourceID, curID) {
+					parts := splitCacheKey(curID)
+					srcType := parts[0]
+					if len(parts) > 0 {
+						srcType = parts[0]
+					}
+					srcID := 0
+					if len(parts) == 2 {
+						srcID, _ = strconv.Atoi(parts[1])
+					}
+					// Copy bytes to avoid mutation after send.
+					cp := make([]byte, len(finalData))
+					copy(cp, finalData)
+					EnqueueTimelapseCapture(captureJob{
+						DeviceID:    fc.deviceID,
+						CapturedAt:  now,
+						SourceType:  srcType,
+						SourceID:    srcID,
+						SourceLabel: sw.Name,
+						PNGBytes:    cp,
+						Width:       width,
+						Height:      height,
+					})
+					tlLastCapture = now
+					tlLastSourceID = curID
+				}
+			}
+			prevPNG = make([]byte, len(finalData))
+			copy(prevPNG, finalData)
 			prevOK = true
 
 			// 4.1/4.2: animated sources re-render within the slot.
@@ -739,9 +1201,14 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 							if fc.deviceID > 0 {
 								Health.RecordSuccess(fmt.Sprintf("device:%d", fc.deviceID), 0)
 							}
+							lvl2 := getLevel()
+							d2 := rendered.Data
+							if lvl2 != 100 {
+								d2 = dimPNGBytes(d2, lvl2)
+							}
 							msg2 := map[string]any{
 								"format": rendered.Format,
-								"image":  base64.StdEncoding.EncodeToString(rendered.Data),
+								"image":  base64.StdEncoding.EncodeToString(d2),
 								"source": sw.Name,
 								"next":   nextName,
 							}

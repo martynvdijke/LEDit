@@ -39,6 +39,20 @@ func (_c *JellyfinCreate) SetURL(v string) *JellyfinCreate {
 	return _c
 }
 
+// SetNowPlayingEnabled sets the "now_playing_enabled" field.
+func (_c *JellyfinCreate) SetNowPlayingEnabled(v bool) *JellyfinCreate {
+	_c.mutation.SetNowPlayingEnabled(v)
+	return _c
+}
+
+// SetNillableNowPlayingEnabled sets the "now_playing_enabled" field if the given value is not nil.
+func (_c *JellyfinCreate) SetNillableNowPlayingEnabled(v *bool) *JellyfinCreate {
+	if v != nil {
+		_c.SetNowPlayingEnabled(*v)
+	}
+	return _c
+}
+
 // Mutation returns the JellyfinMutation object of the builder.
 func (_c *JellyfinCreate) Mutation() *JellyfinMutation {
 	return _c.mutation
@@ -78,6 +92,10 @@ func (_c *JellyfinCreate) defaults() {
 		v := jellyfin.DefaultToken
 		_c.mutation.SetToken(v)
 	}
+	if _, ok := _c.mutation.NowPlayingEnabled(); !ok {
+		v := jellyfin.DefaultNowPlayingEnabled
+		_c.mutation.SetNowPlayingEnabled(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -87,6 +105,9 @@ func (_c *JellyfinCreate) check() error {
 	}
 	if _, ok := _c.mutation.URL(); !ok {
 		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Jellyfin.url"`)}
+	}
+	if _, ok := _c.mutation.NowPlayingEnabled(); !ok {
+		return &ValidationError{Name: "now_playing_enabled", err: errors.New(`ent: missing required field "Jellyfin.now_playing_enabled"`)}
 	}
 	return nil
 }
@@ -121,6 +142,10 @@ func (_c *JellyfinCreate) createSpec() (*Jellyfin, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.URL(); ok {
 		_spec.SetField(jellyfin.FieldURL, field.TypeString, value)
 		_node.URL = value
+	}
+	if value, ok := _c.mutation.NowPlayingEnabled(); ok {
+		_spec.SetField(jellyfin.FieldNowPlayingEnabled, field.TypeBool, value)
+		_node.NowPlayingEnabled = value
 	}
 	return _node, _spec
 }

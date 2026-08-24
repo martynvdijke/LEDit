@@ -30,6 +30,7 @@
                 </div>
             </div>
 
+            <div id="weights-strip" class="card mt-4"><div class="card-body"><h5>Current weights</h5><div id="weights-subtitle" class="small text-muted"></div><div id="collecting-notice" class="alert alert-info mt-2" style="display:none;">collecting data — equal weights</div><table class="table table-sm mt-2"><thead><tr><th>source</th><th>displays(14d)</th><th>skips</th><th>skipRate</th><th>weight</th><th>bar</th></tr></thead><tbody id="weights-body"><tr><td colspan="6" class="text-muted">loading...</td></tr></tbody></table></div></div>
             <h2 class="mt-4">Displays by Source</h2>
             <ul class="list-group mt-3">
                 {{range $source, $count := .stats.BySource}}
@@ -81,5 +82,5 @@
             </table>
         </div>
     </div>
-</body><script type="module" src="/static/assets/app.js"></script>
+</body><script type="module" src="/static/assets/app.js"></script><script type="module" src="/static/assets/analytics.js"></script>
 </html>

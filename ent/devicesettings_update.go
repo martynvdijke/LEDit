@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/devicegroup"
 	"ledit/ent/devicesettings"
 	"ledit/ent/predicate"
 	"time"
@@ -278,9 +279,176 @@ func (_u *DeviceSettingsUpdate) ClearPlaylistID() *DeviceSettingsUpdate {
 	return _u
 }
 
+// SetScheduledPlaylistIds sets the "scheduled_playlist_ids" field.
+func (_u *DeviceSettingsUpdate) SetScheduledPlaylistIds(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetScheduledPlaylistIds(v)
+	return _u
+}
+
+// SetNillableScheduledPlaylistIds sets the "scheduled_playlist_ids" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableScheduledPlaylistIds(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetScheduledPlaylistIds(*v)
+	}
+	return _u
+}
+
+// SetFallbackPlaylistID sets the "fallback_playlist_id" field.
+func (_u *DeviceSettingsUpdate) SetFallbackPlaylistID(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetFallbackPlaylistID()
+	_u.mutation.SetFallbackPlaylistID(v)
+	return _u
+}
+
+// SetNillableFallbackPlaylistID sets the "fallback_playlist_id" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableFallbackPlaylistID(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetFallbackPlaylistID(*v)
+	}
+	return _u
+}
+
+// AddFallbackPlaylistID adds value to the "fallback_playlist_id" field.
+func (_u *DeviceSettingsUpdate) AddFallbackPlaylistID(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddFallbackPlaylistID(v)
+	return _u
+}
+
+// ClearFallbackPlaylistID clears the value of the "fallback_playlist_id" field.
+func (_u *DeviceSettingsUpdate) ClearFallbackPlaylistID() *DeviceSettingsUpdate {
+	_u.mutation.ClearFallbackPlaylistID()
+	return _u
+}
+
+// SetBrightnessEnabled sets the "brightness_enabled" field.
+func (_u *DeviceSettingsUpdate) SetBrightnessEnabled(v bool) *DeviceSettingsUpdate {
+	_u.mutation.SetBrightnessEnabled(v)
+	return _u
+}
+
+// SetNillableBrightnessEnabled sets the "brightness_enabled" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableBrightnessEnabled(v *bool) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetBrightnessEnabled(*v)
+	}
+	return _u
+}
+
+// SetBrightnessSchedules sets the "brightness_schedules" field.
+func (_u *DeviceSettingsUpdate) SetBrightnessSchedules(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetBrightnessSchedules(v)
+	return _u
+}
+
+// SetNillableBrightnessSchedules sets the "brightness_schedules" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableBrightnessSchedules(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetBrightnessSchedules(*v)
+	}
+	return _u
+}
+
+// SetBrightnessOverride sets the "brightness_override" field.
+func (_u *DeviceSettingsUpdate) SetBrightnessOverride(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetBrightnessOverride()
+	_u.mutation.SetBrightnessOverride(v)
+	return _u
+}
+
+// SetNillableBrightnessOverride sets the "brightness_override" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableBrightnessOverride(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetBrightnessOverride(*v)
+	}
+	return _u
+}
+
+// AddBrightnessOverride adds value to the "brightness_override" field.
+func (_u *DeviceSettingsUpdate) AddBrightnessOverride(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddBrightnessOverride(v)
+	return _u
+}
+
+// ClearBrightnessOverride clears the value of the "brightness_override" field.
+func (_u *DeviceSettingsUpdate) ClearBrightnessOverride() *DeviceSettingsUpdate {
+	_u.mutation.ClearBrightnessOverride()
+	return _u
+}
+
+// SetBrightnessSensorConfig sets the "brightness_sensor_config" field.
+func (_u *DeviceSettingsUpdate) SetBrightnessSensorConfig(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetBrightnessSensorConfig(v)
+	return _u
+}
+
+// SetNillableBrightnessSensorConfig sets the "brightness_sensor_config" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableBrightnessSensorConfig(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetBrightnessSensorConfig(*v)
+	}
+	return _u
+}
+
+// ClearBrightnessSensorConfig clears the value of the "brightness_sensor_config" field.
+func (_u *DeviceSettingsUpdate) ClearBrightnessSensorConfig() *DeviceSettingsUpdate {
+	_u.mutation.ClearBrightnessSensorConfig()
+	return _u
+}
+
+// SetIdleScreensaver sets the "idle_screensaver" field.
+func (_u *DeviceSettingsUpdate) SetIdleScreensaver(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetIdleScreensaver(v)
+	return _u
+}
+
+// SetNillableIdleScreensaver sets the "idle_screensaver" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableIdleScreensaver(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetIdleScreensaver(*v)
+	}
+	return _u
+}
+
+// ClearIdleScreensaver clears the value of the "idle_screensaver" field.
+func (_u *DeviceSettingsUpdate) ClearIdleScreensaver() *DeviceSettingsUpdate {
+	_u.mutation.ClearIdleScreensaver()
+	return _u
+}
+
+// SetGroupID sets the "group_id" field.
+func (_u *DeviceSettingsUpdate) SetGroupID(v int) *DeviceSettingsUpdate {
+	_u.mutation.SetGroupID(v)
+	return _u
+}
+
+// SetNillableGroupID sets the "group_id" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableGroupID(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetGroupID(*v)
+	}
+	return _u
+}
+
+// ClearGroupID clears the value of the "group_id" field.
+func (_u *DeviceSettingsUpdate) ClearGroupID() *DeviceSettingsUpdate {
+	_u.mutation.ClearGroupID()
+	return _u
+}
+
+// SetGroup sets the "group" edge to the DeviceGroup entity.
+func (_u *DeviceSettingsUpdate) SetGroup(v *DeviceGroup) *DeviceSettingsUpdate {
+	return _u.SetGroupID(v.ID)
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_u *DeviceSettingsUpdate) Mutation() *DeviceSettingsMutation {
 	return _u.mutation
+}
+
+// ClearGroup clears the "group" edge to the DeviceGroup entity.
+func (_u *DeviceSettingsUpdate) ClearGroup() *DeviceSettingsUpdate {
+	_u.mutation.ClearGroup()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -315,6 +483,11 @@ func (_u *DeviceSettingsUpdate) check() error {
 	if v, ok := _u.mutation.ContentMode(); ok {
 		if err := devicesettings.ContentModeValidator(v); err != nil {
 			return &ValidationError{Name: "content_mode", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.content_mode": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.IdleScreensaver(); ok {
+		if err := devicesettings.IdleScreensaverValidator(v); err != nil {
+			return &ValidationError{Name: "idle_screensaver", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.idle_screensaver": %w`, err)}
 		}
 	}
 	return nil
@@ -397,6 +570,74 @@ func (_u *DeviceSettingsUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if _u.mutation.PlaylistIDCleared() {
 		_spec.ClearField(devicesettings.FieldPlaylistID, field.TypeInt)
+	}
+	if value, ok := _u.mutation.ScheduledPlaylistIds(); ok {
+		_spec.SetField(devicesettings.FieldScheduledPlaylistIds, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.FallbackPlaylistID(); ok {
+		_spec.SetField(devicesettings.FieldFallbackPlaylistID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedFallbackPlaylistID(); ok {
+		_spec.AddField(devicesettings.FieldFallbackPlaylistID, field.TypeInt, value)
+	}
+	if _u.mutation.FallbackPlaylistIDCleared() {
+		_spec.ClearField(devicesettings.FieldFallbackPlaylistID, field.TypeInt)
+	}
+	if value, ok := _u.mutation.BrightnessEnabled(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.BrightnessSchedules(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessSchedules, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.BrightnessOverride(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessOverride, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedBrightnessOverride(); ok {
+		_spec.AddField(devicesettings.FieldBrightnessOverride, field.TypeInt, value)
+	}
+	if _u.mutation.BrightnessOverrideCleared() {
+		_spec.ClearField(devicesettings.FieldBrightnessOverride, field.TypeInt)
+	}
+	if value, ok := _u.mutation.BrightnessSensorConfig(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessSensorConfig, field.TypeString, value)
+	}
+	if _u.mutation.BrightnessSensorConfigCleared() {
+		_spec.ClearField(devicesettings.FieldBrightnessSensorConfig, field.TypeString)
+	}
+	if value, ok := _u.mutation.IdleScreensaver(); ok {
+		_spec.SetField(devicesettings.FieldIdleScreensaver, field.TypeString, value)
+	}
+	if _u.mutation.IdleScreensaverCleared() {
+		_spec.ClearField(devicesettings.FieldIdleScreensaver, field.TypeString)
+	}
+	if _u.mutation.GroupCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   devicesettings.GroupTable,
+			Columns: []string{devicesettings.GroupColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicegroup.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GroupIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   devicesettings.GroupTable,
+			Columns: []string{devicesettings.GroupColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicegroup.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -668,9 +909,176 @@ func (_u *DeviceSettingsUpdateOne) ClearPlaylistID() *DeviceSettingsUpdateOne {
 	return _u
 }
 
+// SetScheduledPlaylistIds sets the "scheduled_playlist_ids" field.
+func (_u *DeviceSettingsUpdateOne) SetScheduledPlaylistIds(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetScheduledPlaylistIds(v)
+	return _u
+}
+
+// SetNillableScheduledPlaylistIds sets the "scheduled_playlist_ids" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableScheduledPlaylistIds(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetScheduledPlaylistIds(*v)
+	}
+	return _u
+}
+
+// SetFallbackPlaylistID sets the "fallback_playlist_id" field.
+func (_u *DeviceSettingsUpdateOne) SetFallbackPlaylistID(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetFallbackPlaylistID()
+	_u.mutation.SetFallbackPlaylistID(v)
+	return _u
+}
+
+// SetNillableFallbackPlaylistID sets the "fallback_playlist_id" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableFallbackPlaylistID(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetFallbackPlaylistID(*v)
+	}
+	return _u
+}
+
+// AddFallbackPlaylistID adds value to the "fallback_playlist_id" field.
+func (_u *DeviceSettingsUpdateOne) AddFallbackPlaylistID(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddFallbackPlaylistID(v)
+	return _u
+}
+
+// ClearFallbackPlaylistID clears the value of the "fallback_playlist_id" field.
+func (_u *DeviceSettingsUpdateOne) ClearFallbackPlaylistID() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearFallbackPlaylistID()
+	return _u
+}
+
+// SetBrightnessEnabled sets the "brightness_enabled" field.
+func (_u *DeviceSettingsUpdateOne) SetBrightnessEnabled(v bool) *DeviceSettingsUpdateOne {
+	_u.mutation.SetBrightnessEnabled(v)
+	return _u
+}
+
+// SetNillableBrightnessEnabled sets the "brightness_enabled" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableBrightnessEnabled(v *bool) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetBrightnessEnabled(*v)
+	}
+	return _u
+}
+
+// SetBrightnessSchedules sets the "brightness_schedules" field.
+func (_u *DeviceSettingsUpdateOne) SetBrightnessSchedules(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetBrightnessSchedules(v)
+	return _u
+}
+
+// SetNillableBrightnessSchedules sets the "brightness_schedules" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableBrightnessSchedules(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetBrightnessSchedules(*v)
+	}
+	return _u
+}
+
+// SetBrightnessOverride sets the "brightness_override" field.
+func (_u *DeviceSettingsUpdateOne) SetBrightnessOverride(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetBrightnessOverride()
+	_u.mutation.SetBrightnessOverride(v)
+	return _u
+}
+
+// SetNillableBrightnessOverride sets the "brightness_override" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableBrightnessOverride(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetBrightnessOverride(*v)
+	}
+	return _u
+}
+
+// AddBrightnessOverride adds value to the "brightness_override" field.
+func (_u *DeviceSettingsUpdateOne) AddBrightnessOverride(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddBrightnessOverride(v)
+	return _u
+}
+
+// ClearBrightnessOverride clears the value of the "brightness_override" field.
+func (_u *DeviceSettingsUpdateOne) ClearBrightnessOverride() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearBrightnessOverride()
+	return _u
+}
+
+// SetBrightnessSensorConfig sets the "brightness_sensor_config" field.
+func (_u *DeviceSettingsUpdateOne) SetBrightnessSensorConfig(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetBrightnessSensorConfig(v)
+	return _u
+}
+
+// SetNillableBrightnessSensorConfig sets the "brightness_sensor_config" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableBrightnessSensorConfig(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetBrightnessSensorConfig(*v)
+	}
+	return _u
+}
+
+// ClearBrightnessSensorConfig clears the value of the "brightness_sensor_config" field.
+func (_u *DeviceSettingsUpdateOne) ClearBrightnessSensorConfig() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearBrightnessSensorConfig()
+	return _u
+}
+
+// SetIdleScreensaver sets the "idle_screensaver" field.
+func (_u *DeviceSettingsUpdateOne) SetIdleScreensaver(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetIdleScreensaver(v)
+	return _u
+}
+
+// SetNillableIdleScreensaver sets the "idle_screensaver" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableIdleScreensaver(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetIdleScreensaver(*v)
+	}
+	return _u
+}
+
+// ClearIdleScreensaver clears the value of the "idle_screensaver" field.
+func (_u *DeviceSettingsUpdateOne) ClearIdleScreensaver() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearIdleScreensaver()
+	return _u
+}
+
+// SetGroupID sets the "group_id" field.
+func (_u *DeviceSettingsUpdateOne) SetGroupID(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.SetGroupID(v)
+	return _u
+}
+
+// SetNillableGroupID sets the "group_id" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableGroupID(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetGroupID(*v)
+	}
+	return _u
+}
+
+// ClearGroupID clears the value of the "group_id" field.
+func (_u *DeviceSettingsUpdateOne) ClearGroupID() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearGroupID()
+	return _u
+}
+
+// SetGroup sets the "group" edge to the DeviceGroup entity.
+func (_u *DeviceSettingsUpdateOne) SetGroup(v *DeviceGroup) *DeviceSettingsUpdateOne {
+	return _u.SetGroupID(v.ID)
+}
+
 // Mutation returns the DeviceSettingsMutation object of the builder.
 func (_u *DeviceSettingsUpdateOne) Mutation() *DeviceSettingsMutation {
 	return _u.mutation
+}
+
+// ClearGroup clears the "group" edge to the DeviceGroup entity.
+func (_u *DeviceSettingsUpdateOne) ClearGroup() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearGroup()
+	return _u
 }
 
 // Where appends a list predicates to the DeviceSettingsUpdate builder.
@@ -718,6 +1126,11 @@ func (_u *DeviceSettingsUpdateOne) check() error {
 	if v, ok := _u.mutation.ContentMode(); ok {
 		if err := devicesettings.ContentModeValidator(v); err != nil {
 			return &ValidationError{Name: "content_mode", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.content_mode": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.IdleScreensaver(); ok {
+		if err := devicesettings.IdleScreensaverValidator(v); err != nil {
+			return &ValidationError{Name: "idle_screensaver", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.idle_screensaver": %w`, err)}
 		}
 	}
 	return nil
@@ -817,6 +1230,74 @@ func (_u *DeviceSettingsUpdateOne) sqlSave(ctx context.Context) (_node *DeviceSe
 	}
 	if _u.mutation.PlaylistIDCleared() {
 		_spec.ClearField(devicesettings.FieldPlaylistID, field.TypeInt)
+	}
+	if value, ok := _u.mutation.ScheduledPlaylistIds(); ok {
+		_spec.SetField(devicesettings.FieldScheduledPlaylistIds, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.FallbackPlaylistID(); ok {
+		_spec.SetField(devicesettings.FieldFallbackPlaylistID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedFallbackPlaylistID(); ok {
+		_spec.AddField(devicesettings.FieldFallbackPlaylistID, field.TypeInt, value)
+	}
+	if _u.mutation.FallbackPlaylistIDCleared() {
+		_spec.ClearField(devicesettings.FieldFallbackPlaylistID, field.TypeInt)
+	}
+	if value, ok := _u.mutation.BrightnessEnabled(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.BrightnessSchedules(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessSchedules, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.BrightnessOverride(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessOverride, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedBrightnessOverride(); ok {
+		_spec.AddField(devicesettings.FieldBrightnessOverride, field.TypeInt, value)
+	}
+	if _u.mutation.BrightnessOverrideCleared() {
+		_spec.ClearField(devicesettings.FieldBrightnessOverride, field.TypeInt)
+	}
+	if value, ok := _u.mutation.BrightnessSensorConfig(); ok {
+		_spec.SetField(devicesettings.FieldBrightnessSensorConfig, field.TypeString, value)
+	}
+	if _u.mutation.BrightnessSensorConfigCleared() {
+		_spec.ClearField(devicesettings.FieldBrightnessSensorConfig, field.TypeString)
+	}
+	if value, ok := _u.mutation.IdleScreensaver(); ok {
+		_spec.SetField(devicesettings.FieldIdleScreensaver, field.TypeString, value)
+	}
+	if _u.mutation.IdleScreensaverCleared() {
+		_spec.ClearField(devicesettings.FieldIdleScreensaver, field.TypeString)
+	}
+	if _u.mutation.GroupCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   devicesettings.GroupTable,
+			Columns: []string{devicesettings.GroupColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicegroup.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GroupIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   devicesettings.GroupTable,
+			Columns: []string{devicesettings.GroupColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicegroup.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &DeviceSettings{config: _u.config}
 	_spec.Assign = _node.assignValues

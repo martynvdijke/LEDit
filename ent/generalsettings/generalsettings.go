@@ -28,6 +28,22 @@ const (
 	FieldTransitionStyle = "transition_style"
 	// FieldTransitionMs holds the string denoting the transition_ms field in the database.
 	FieldTransitionMs = "transition_ms"
+	// FieldChartRetentionHours holds the string denoting the chart_retention_hours field in the database.
+	FieldChartRetentionHours = "chart_retention_hours"
+	// FieldChartMaxPointsPerSource holds the string denoting the chart_max_points_per_source field in the database.
+	FieldChartMaxPointsPerSource = "chart_max_points_per_source"
+	// FieldNowPlayingProvider holds the string denoting the now_playing_provider field in the database.
+	FieldNowPlayingProvider = "now_playing_provider"
+	// FieldOrderingMode holds the string denoting the ordering_mode field in the database.
+	FieldOrderingMode = "ordering_mode"
+	// FieldAdaptiveFloor holds the string denoting the adaptive_floor field in the database.
+	FieldAdaptiveFloor = "adaptive_floor"
+	// FieldAdaptiveHalfLifeDays holds the string denoting the adaptive_half_life_days field in the database.
+	FieldAdaptiveHalfLifeDays = "adaptive_half_life_days"
+	// FieldAdaptiveWindowDays holds the string denoting the adaptive_window_days field in the database.
+	FieldAdaptiveWindowDays = "adaptive_window_days"
+	// FieldAdaptiveEpsilon holds the string denoting the adaptive_epsilon field in the database.
+	FieldAdaptiveEpsilon = "adaptive_epsilon"
 	// EdgeSonarr holds the string denoting the sonarr edge name in mutations.
 	EdgeSonarr = "sonarr"
 	// EdgeRadarr holds the string denoting the radarr edge name in mutations.
@@ -104,6 +120,10 @@ const (
 	EdgeSunmoons = "sunmoons"
 	// EdgeJellyfins holds the string denoting the jellyfins edge name in mutations.
 	EdgeJellyfins = "jellyfins"
+	// EdgeMpds holds the string denoting the mpds edge name in mutations.
+	EdgeMpds = "mpds"
+	// EdgeQrcodes holds the string denoting the qrcodes edge name in mutations.
+	EdgeQrcodes = "qrcodes"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -372,6 +392,20 @@ const (
 	JellyfinsInverseTable = "jellyfins"
 	// JellyfinsColumn is the table column denoting the jellyfins relation/edge.
 	JellyfinsColumn = "general_settings_jellyfins"
+	// MpdsTable is the table that holds the mpds relation/edge.
+	MpdsTable = "mp_ds"
+	// MpdsInverseTable is the table name for the MPD entity.
+	// It exists in this package in order to avoid circular dependency with the "mpd" package.
+	MpdsInverseTable = "mp_ds"
+	// MpdsColumn is the table column denoting the mpds relation/edge.
+	MpdsColumn = "general_settings_mpds"
+	// QrcodesTable is the table that holds the qrcodes relation/edge.
+	QrcodesTable = "qrcodes"
+	// QrcodesInverseTable is the table name for the Qrcode entity.
+	// It exists in this package in order to avoid circular dependency with the "qrcode" package.
+	QrcodesInverseTable = "qrcodes"
+	// QrcodesColumn is the table column denoting the qrcodes relation/edge.
+	QrcodesColumn = "general_settings_qrcodes"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -385,6 +419,14 @@ var Columns = []string{
 	FieldEinkMode,
 	FieldTransitionStyle,
 	FieldTransitionMs,
+	FieldChartRetentionHours,
+	FieldChartMaxPointsPerSource,
+	FieldNowPlayingProvider,
+	FieldOrderingMode,
+	FieldAdaptiveFloor,
+	FieldAdaptiveHalfLifeDays,
+	FieldAdaptiveWindowDays,
+	FieldAdaptiveEpsilon,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -414,6 +456,24 @@ var (
 	DefaultTransitionMs int
 	// TransitionMsValidator is a validator for the "transition_ms" field. It is called by the builders before save.
 	TransitionMsValidator func(int) error
+	// DefaultChartRetentionHours holds the default value on creation for the "chart_retention_hours" field.
+	DefaultChartRetentionHours int
+	// DefaultChartMaxPointsPerSource holds the default value on creation for the "chart_max_points_per_source" field.
+	DefaultChartMaxPointsPerSource int
+	// DefaultNowPlayingProvider holds the default value on creation for the "now_playing_provider" field.
+	DefaultNowPlayingProvider string
+	// DefaultOrderingMode holds the default value on creation for the "ordering_mode" field.
+	DefaultOrderingMode string
+	// OrderingModeValidator is a validator for the "ordering_mode" field. It is called by the builders before save.
+	OrderingModeValidator func(string) error
+	// DefaultAdaptiveFloor holds the default value on creation for the "adaptive_floor" field.
+	DefaultAdaptiveFloor float64
+	// DefaultAdaptiveHalfLifeDays holds the default value on creation for the "adaptive_half_life_days" field.
+	DefaultAdaptiveHalfLifeDays int
+	// DefaultAdaptiveWindowDays holds the default value on creation for the "adaptive_window_days" field.
+	DefaultAdaptiveWindowDays int
+	// DefaultAdaptiveEpsilon holds the default value on creation for the "adaptive_epsilon" field.
+	DefaultAdaptiveEpsilon float64
 )
 
 // OrderOption defines the ordering options for the GeneralSettings queries.
@@ -462,6 +522,46 @@ func ByTransitionStyle(opts ...sql.OrderTermOption) OrderOption {
 // ByTransitionMs orders the results by the transition_ms field.
 func ByTransitionMs(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTransitionMs, opts...).ToFunc()
+}
+
+// ByChartRetentionHours orders the results by the chart_retention_hours field.
+func ByChartRetentionHours(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChartRetentionHours, opts...).ToFunc()
+}
+
+// ByChartMaxPointsPerSource orders the results by the chart_max_points_per_source field.
+func ByChartMaxPointsPerSource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChartMaxPointsPerSource, opts...).ToFunc()
+}
+
+// ByNowPlayingProvider orders the results by the now_playing_provider field.
+func ByNowPlayingProvider(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNowPlayingProvider, opts...).ToFunc()
+}
+
+// ByOrderingMode orders the results by the ordering_mode field.
+func ByOrderingMode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOrderingMode, opts...).ToFunc()
+}
+
+// ByAdaptiveFloor orders the results by the adaptive_floor field.
+func ByAdaptiveFloor(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAdaptiveFloor, opts...).ToFunc()
+}
+
+// ByAdaptiveHalfLifeDays orders the results by the adaptive_half_life_days field.
+func ByAdaptiveHalfLifeDays(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAdaptiveHalfLifeDays, opts...).ToFunc()
+}
+
+// ByAdaptiveWindowDays orders the results by the adaptive_window_days field.
+func ByAdaptiveWindowDays(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAdaptiveWindowDays, opts...).ToFunc()
+}
+
+// ByAdaptiveEpsilon orders the results by the adaptive_epsilon field.
+func ByAdaptiveEpsilon(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAdaptiveEpsilon, opts...).ToFunc()
 }
 
 // BySonarrCount orders the results by sonarr count.
@@ -995,6 +1095,34 @@ func ByJellyfins(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newJellyfinsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByMpdsCount orders the results by mpds count.
+func ByMpdsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMpdsStep(), opts...)
+	}
+}
+
+// ByMpds orders the results by mpds terms.
+func ByMpds(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMpdsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByQrcodesCount orders the results by qrcodes count.
+func ByQrcodesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newQrcodesStep(), opts...)
+	}
+}
+
+// ByQrcodes orders the results by qrcodes terms.
+func ByQrcodes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newQrcodesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -1259,5 +1387,19 @@ func newJellyfinsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(JellyfinsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, JellyfinsTable, JellyfinsColumn),
+	)
+}
+func newMpdsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MpdsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MpdsTable, MpdsColumn),
+	)
+}
+func newQrcodesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(QrcodesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, QrcodesTable, QrcodesColumn),
 	)
 }

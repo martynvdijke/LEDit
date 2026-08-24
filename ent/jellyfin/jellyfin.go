@@ -15,6 +15,8 @@ const (
 	FieldToken = "token"
 	// FieldURL holds the string denoting the url field in the database.
 	FieldURL = "url"
+	// FieldNowPlayingEnabled holds the string denoting the now_playing_enabled field in the database.
+	FieldNowPlayingEnabled = "now_playing_enabled"
 	// Table holds the table name of the jellyfin in the database.
 	Table = "jellyfins"
 )
@@ -24,6 +26,7 @@ var Columns = []string{
 	FieldID,
 	FieldToken,
 	FieldURL,
+	FieldNowPlayingEnabled,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "jellyfins"
@@ -50,6 +53,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultToken holds the default value on creation for the "token" field.
 	DefaultToken string
+	// DefaultNowPlayingEnabled holds the default value on creation for the "now_playing_enabled" field.
+	DefaultNowPlayingEnabled bool
 )
 
 // OrderOption defines the ordering options for the Jellyfin queries.
@@ -68,4 +73,9 @@ func ByToken(opts ...sql.OrderTermOption) OrderOption {
 // ByURL orders the results by the url field.
 func ByURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldURL, opts...).ToFunc()
+}
+
+// ByNowPlayingEnabled orders the results by the now_playing_enabled field.
+func ByNowPlayingEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNowPlayingEnabled, opts...).ToFunc()
 }

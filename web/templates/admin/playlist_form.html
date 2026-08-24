@@ -26,6 +26,7 @@
                 </div>
 
                 <input type="hidden" name="items" id="items" value="{{if .obj}}{{if .obj.Items}}{{.obj.Items}}{{else}}{{index .obj "items"}}{{end}}{{else}}[]{{end}}">
+                <input type="hidden" name="schedule_windows" id="schedule_windows" value="{{if .obj}}{{if .obj.ScheduleWindows}}{{.obj.ScheduleWindows}}{{else if index .obj "schedule_windows"}}{{index .obj "schedule_windows"}}{{else}}[]{{end}}{{else}}[]{{end}}">
 
                 <div class="mb-3">
                     <label class="form-label">Add source</label>
@@ -45,6 +46,19 @@
                     <label class="form-label">Ordered items</label>
                     <ul id="items-list" class="list-group"></ul>
                     <small class="text-muted">Use ▲ ▼ to reorder, ✕ to remove.</small>
+                </div>
+
+                <div id="schedule-section" class="mb-4 p-3 border rounded bg-light-subtle">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                        <h5 class="mb-0">Schedule</h5>
+                        <span class="badge bg-secondary fw-normal">Server time: {{if .serverZone}}{{.serverZone}}{{else}}local{{end}}</span>
+                    </div>
+                    <p class="small text-muted mb-3">Optional. Leave empty = always eligible. Time in server wall time, priority higher wins.</p>
+                    <div id="windows-list" class="d-flex flex-column gap-2"></div>
+                    <div class="d-flex align-items-center gap-2 mt-3">
+                        <button type="button" id="add-window" class="btn btn-sm btn-outline-primary">Add window</button>
+                        <small class="text-muted">Max 32 windows. Wrap 22:00-06:00 works across midnight.</small>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
@@ -116,10 +130,168 @@
         items.push({source_type:t, source_id: parseInt(sid,10)});
         renderList();
     });
-    document.getElementById('playlist-form').addEventListener('submit', function(){ syncHidden(); });
     renderTypeOptions();
     renderIdOptions();
     renderList();
+})();
+</script>
+<script>
+(function(){
+    var hidden = document.getElementById('schedule_windows');
+    var listEl = document.getElementById('windows-list');
+    var addBtn = document.getElementById('add-window');
+    var form = document.getElementById('playlist-form');
+    var windows = [];
+    try {
+        var raw = hidden.value || '[]';
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) windows = parsed;
+    } catch(e){ windows = []; }
+
+    var DAY_MAP = [
+        {label:'Mon', value:1},
+        {label:'Tue', value:2},
+        {label:'Wed', value:3},
+        {label:'Thu', value:4},
+        {label:'Fri', value:5},
+        {label:'Sat', value:6},
+        {label:'Sun', value:0}
+    ];
+
+    function syncHidden(){ hidden.value = JSON.stringify(windows); }
+
+    function updateAddState(){
+        if (windows.length >= 32){
+            addBtn.disabled = true;
+            addBtn.classList.add('disabled');
+            addBtn.title = 'Max 32 windows reached';
+        } else {
+            addBtn.disabled = false;
+            addBtn.classList.remove('disabled');
+            addBtn.title = '';
+        }
+    }
+
+    function render(){
+        listEl.innerHTML = '';
+        if (windows.length === 0){
+            var empty = document.createElement('div');
+            empty.className = 'text-muted small fst-italic py-1';
+            empty.textContent = 'No windows — playlist is always eligible.';
+            listEl.appendChild(empty);
+        }
+        windows.forEach(function(w, idx){
+            var row = document.createElement('div');
+            row.className = 'list-group-item d-flex flex-wrap gap-2 align-items-center p-2';
+
+            var daysWrap = document.createElement('div');
+            daysWrap.className = 'd-flex flex-wrap gap-1 align-items-center';
+            DAY_MAP.forEach(function(d){
+                var label = document.createElement('label');
+                label.className = 'form-check form-check-inline me-1 mb-0';
+                var cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'form-check-input';
+                cb.value = String(d.value);
+                cb.checked = Array.isArray(w.days) && w.days.indexOf(d.value) !== -1;
+                cb.addEventListener('change', function(){
+                    var vals = [];
+                    daysWrap.querySelectorAll('input[type=checkbox]').forEach(function(c){
+                        if(c.checked) vals.push(parseInt(c.value,10));
+                    });
+                    w.days = vals;
+                    syncHidden();
+                });
+                var txt = document.createElement('span');
+                txt.className = 'form-check-label small';
+                txt.textContent = d.label;
+                label.appendChild(cb);
+                label.appendChild(txt);
+                daysWrap.appendChild(label);
+            });
+
+            var timeWrap = document.createElement('div');
+            timeWrap.className = 'd-flex align-items-center gap-1';
+            var startInput = document.createElement('input');
+            startInput.type = 'time';
+            startInput.className = 'form-control form-control-sm';
+            startInput.style.width = '130px';
+            startInput.required = true;
+            startInput.value = w.start || '07:00';
+            startInput.addEventListener('change', function(){ w.start = startInput.value; syncHidden(); });
+            startInput.addEventListener('input', function(){ w.start = startInput.value; syncHidden(); });
+
+            var dash = document.createElement('span');
+            dash.className = 'small text-muted';
+            dash.textContent = '—';
+
+            var endInput = document.createElement('input');
+            endInput.type = 'time';
+            endInput.className = 'form-control form-control-sm';
+            endInput.style.width = '130px';
+            endInput.required = true;
+            endInput.value = w.end || '09:00';
+            endInput.addEventListener('change', function(){ w.end = endInput.value; syncHidden(); });
+            endInput.addEventListener('input', function(){ w.end = endInput.value; syncHidden(); });
+
+            timeWrap.appendChild(startInput);
+            timeWrap.appendChild(dash);
+            timeWrap.appendChild(endInput);
+
+            var prioWrap = document.createElement('div');
+            prioWrap.className = 'd-flex align-items-center gap-1';
+            var prioLabel = document.createElement('span');
+            prioLabel.className = 'small text-muted';
+            prioLabel.textContent = 'Prio';
+            var prioInput = document.createElement('input');
+            prioInput.type = 'number';
+            prioInput.min = '0';
+            prioInput.step = '1';
+            prioInput.className = 'form-control form-control-sm';
+            prioInput.style.width = '72px';
+            prioInput.value = (w.priority != null ? w.priority : 0);
+            prioInput.addEventListener('change', function(){ w.priority = parseInt(prioInput.value,10)||0; syncHidden(); });
+            prioInput.addEventListener('input', function(){ w.priority = parseInt(prioInput.value,10)||0; syncHidden(); });
+            prioWrap.appendChild(prioLabel);
+            prioWrap.appendChild(prioInput);
+
+            var rm = document.createElement('button');
+            rm.type = 'button';
+            rm.className = 'btn btn-sm btn-outline-danger ms-auto';
+            rm.textContent = '✕';
+            rm.title = 'Remove window';
+            rm.addEventListener('click', function(){
+                windows.splice(idx,1);
+                syncHidden();
+                render();
+                updateAddState();
+            });
+
+            row.appendChild(daysWrap);
+            row.appendChild(timeWrap);
+            row.appendChild(prioWrap);
+            row.appendChild(rm);
+            listEl.appendChild(row);
+        });
+        syncHidden();
+        updateAddState();
+    }
+
+    addBtn.addEventListener('click', function(){
+        if (windows.length >= 32){
+            alert('Max 32 windows reached');
+            return;
+        }
+        windows.push({days:[1,2,3,4,5], start:"07:00", end:"09:00", priority:0});
+        syncHidden();
+        render();
+    });
+
+    if (form){
+        form.addEventListener('submit', function(){ syncHidden(); });
+    }
+
+    render();
 })();
 </script>
 </body><script type="module" src="/static/assets/app.js"></script>

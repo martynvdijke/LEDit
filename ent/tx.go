@@ -24,10 +24,16 @@ type Tx struct {
 	ApiToken *ApiTokenClient
 	// Calendar is the client for interacting with the Calendar builders.
 	Calendar *CalendarClient
+	// ChartSample is the client for interacting with the ChartSample builders.
+	ChartSample *ChartSampleClient
 	// Countdown is the client for interacting with the Countdown builders.
 	Countdown *CountdownClient
 	// Crypto is the client for interacting with the Crypto builders.
 	Crypto *CryptoClient
+	// DatasourcePlugin is the client for interacting with the DatasourcePlugin builders.
+	DatasourcePlugin *DatasourcePluginClient
+	// DeviceGroup is the client for interacting with the DeviceGroup builders.
+	DeviceGroup *DeviceGroupClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
 	DeviceSettings *DeviceSettingsClient
 	// DisplayRule is the client for interacting with the DisplayRule builders.
@@ -44,6 +50,8 @@ type Tx struct {
 	GitHub *GitHubClient
 	// GoogleCalendar is the client for interacting with the GoogleCalendar builders.
 	GoogleCalendar *GoogleCalendarClient
+	// GreetingRule is the client for interacting with the GreetingRule builders.
+	GreetingRule *GreetingRuleClient
 	// HomeAssistant is the client for interacting with the HomeAssistant builders.
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
@@ -54,6 +62,8 @@ type Tx struct {
 	LogEntry *LogEntryClient
 	// LogSettings is the client for interacting with the LogSettings builders.
 	LogSettings *LogSettingsClient
+	// MPD is the client for interacting with the MPD builders.
+	MPD *MPDClient
 	// MQTTSettings is the client for interacting with the MQTTSettings builders.
 	MQTTSettings *MQTTSettingsClient
 	// MatrixLayout is the client for interacting with the MatrixLayout builders.
@@ -62,12 +72,18 @@ type Tx struct {
 	NewsFeed *NewsFeedClient
 	// Notification is the client for interacting with the Notification builders.
 	Notification *NotificationClient
+	// OutboundSettings is the client for interacting with the OutboundSettings builders.
+	OutboundSettings *OutboundSettingsClient
+	// OutboundWebhook is the client for interacting with the OutboundWebhook builders.
+	OutboundWebhook *OutboundWebhookClient
 	// PiHole is the client for interacting with the PiHole builders.
 	PiHole *PiHoleClient
 	// PixelArt is the client for interacting with the PixelArt builders.
 	PixelArt *PixelArtClient
 	// Playlist is the client for interacting with the Playlist builders.
 	Playlist *PlaylistClient
+	// Qrcode is the client for interacting with the Qrcode builders.
+	Qrcode *QrcodeClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
 	// RssFeed is the client for interacting with the RssFeed builders.
@@ -86,6 +102,8 @@ type Tx struct {
 	TelegramSettings *TelegramSettingsClient
 	// TextSlide is the client for interacting with the TextSlide builders.
 	TextSlide *TextSlideClient
+	// TimelapseFrame is the client for interacting with the TimelapseFrame builders.
+	TimelapseFrame *TimelapseFrameClient
 	// Transit is the client for interacting with the Transit builders.
 	Transit *TransitClient
 	// UmamiSettings is the client for interacting with the UmamiSettings builders.
@@ -94,6 +112,8 @@ type Tx struct {
 	Untappd *UntappdClient
 	// Uptime is the client for interacting with the Uptime builders.
 	Uptime *UptimeClient
+	// User is the client for interacting with the User builders.
+	User *UserClient
 	// Video is the client for interacting with the Video builders.
 	Video *VideoClient
 	// Weather is the client for interacting with the Weather builders.
@@ -237,8 +257,11 @@ func (tx *Tx) init() {
 	tx.AlertSettings = NewAlertSettingsClient(tx.config)
 	tx.ApiToken = NewApiTokenClient(tx.config)
 	tx.Calendar = NewCalendarClient(tx.config)
+	tx.ChartSample = NewChartSampleClient(tx.config)
 	tx.Countdown = NewCountdownClient(tx.config)
 	tx.Crypto = NewCryptoClient(tx.config)
+	tx.DatasourcePlugin = NewDatasourcePluginClient(tx.config)
+	tx.DeviceGroup = NewDeviceGroupClient(tx.config)
 	tx.DeviceSettings = NewDeviceSettingsClient(tx.config)
 	tx.DisplayRule = NewDisplayRuleClient(tx.config)
 	tx.EmailSettings = NewEmailSettingsClient(tx.config)
@@ -247,18 +270,23 @@ func (tx *Tx) init() {
 	tx.GenericAPI = NewGenericAPIClient(tx.config)
 	tx.GitHub = NewGitHubClient(tx.config)
 	tx.GoogleCalendar = NewGoogleCalendarClient(tx.config)
+	tx.GreetingRule = NewGreetingRuleClient(tx.config)
 	tx.HomeAssistant = NewHomeAssistantClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
 	tx.Jellyfin = NewJellyfinClient(tx.config)
 	tx.LogEntry = NewLogEntryClient(tx.config)
 	tx.LogSettings = NewLogSettingsClient(tx.config)
+	tx.MPD = NewMPDClient(tx.config)
 	tx.MQTTSettings = NewMQTTSettingsClient(tx.config)
 	tx.MatrixLayout = NewMatrixLayoutClient(tx.config)
 	tx.NewsFeed = NewNewsFeedClient(tx.config)
 	tx.Notification = NewNotificationClient(tx.config)
+	tx.OutboundSettings = NewOutboundSettingsClient(tx.config)
+	tx.OutboundWebhook = NewOutboundWebhookClient(tx.config)
 	tx.PiHole = NewPiHoleClient(tx.config)
 	tx.PixelArt = NewPixelArtClient(tx.config)
 	tx.Playlist = NewPlaylistClient(tx.config)
+	tx.Qrcode = NewQrcodeClient(tx.config)
 	tx.Radarr = NewRadarrClient(tx.config)
 	tx.RssFeed = NewRssFeedClient(tx.config)
 	tx.Schedule = NewScheduleClient(tx.config)
@@ -268,10 +296,12 @@ func (tx *Tx) init() {
 	tx.SunMoon = NewSunMoonClient(tx.config)
 	tx.TelegramSettings = NewTelegramSettingsClient(tx.config)
 	tx.TextSlide = NewTextSlideClient(tx.config)
+	tx.TimelapseFrame = NewTimelapseFrameClient(tx.config)
 	tx.Transit = NewTransitClient(tx.config)
 	tx.UmamiSettings = NewUmamiSettingsClient(tx.config)
 	tx.Untappd = NewUntappdClient(tx.config)
 	tx.Uptime = NewUptimeClient(tx.config)
+	tx.User = NewUserClient(tx.config)
 	tx.Video = NewVideoClient(tx.config)
 	tx.Weather = NewWeatherClient(tx.config)
 	tx.WebhookSettings = NewWebhookSettingsClient(tx.config)

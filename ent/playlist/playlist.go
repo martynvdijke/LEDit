@@ -17,6 +17,8 @@ const (
 	FieldEnabled = "enabled"
 	// FieldItems holds the string denoting the items field in the database.
 	FieldItems = "items"
+	// FieldScheduleWindows holds the string denoting the schedule_windows field in the database.
+	FieldScheduleWindows = "schedule_windows"
 	// Table holds the table name of the playlist in the database.
 	Table = "playlists"
 )
@@ -27,6 +29,7 @@ var Columns = []string{
 	FieldName,
 	FieldEnabled,
 	FieldItems,
+	FieldScheduleWindows,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "playlists"
@@ -57,6 +60,8 @@ var (
 	DefaultEnabled bool
 	// DefaultItems holds the default value on creation for the "items" field.
 	DefaultItems string
+	// DefaultScheduleWindows holds the default value on creation for the "schedule_windows" field.
+	DefaultScheduleWindows string
 )
 
 // OrderOption defines the ordering options for the Playlist queries.
@@ -80,4 +85,9 @@ func ByEnabled(opts ...sql.OrderTermOption) OrderOption {
 // ByItems orders the results by the items field.
 func ByItems(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldItems, opts...).ToFunc()
+}
+
+// ByScheduleWindows orders the results by the schedule_windows field.
+func ByScheduleWindows(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldScheduleWindows, opts...).ToFunc()
 }

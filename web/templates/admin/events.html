@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LEDit - Events</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+<div class="d-flex">
+    {{template "sidebar" .}}
+    <div class="container-fluid p-4">
+        <h1>Outbound Events</h1>
+        <div class="mt-4">
+            <h3>Settings</h3>
+            <div id="outbound-settings"></div>
+        </div>
+        <div class="mt-4">
+            <h3>Webhooks</h3>
+            <div id="webhooks-table"></div>
+        </div>
+        <div class="mt-4">
+            <h3>Deliveries</h3>
+            <ul>{{range .deliveries}}<li>{{.Event}} -> {{.Status}} {{.Error}}</li>{{end}}</ul>
+        </div>
+    </div>
+</div>
+<script type="module" src="/static/assets/events.js"></script>
+</body>
+</html>

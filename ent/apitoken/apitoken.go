@@ -3,6 +3,8 @@
 package apitoken
 
 import (
+	"fmt"
+
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -27,6 +29,8 @@ const (
 	FieldRevokedAt = "revoked_at"
 	// FieldLastUsedAt holds the string denoting the last_used_at field in the database.
 	FieldLastUsedAt = "last_used_at"
+	// FieldRole holds the string denoting the role field in the database.
+	FieldRole = "role"
 	// Table holds the table name of the apitoken in the database.
 	Table = "api_tokens"
 )
@@ -42,6 +46,7 @@ var Columns = []string{
 	FieldExpiresAt,
 	FieldRevokedAt,
 	FieldLastUsedAt,
+	FieldRole,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -62,6 +67,32 @@ var (
 	// DefaultOwnerID holds the default value on creation for the "owner_id" field.
 	DefaultOwnerID int
 )
+
+// Role defines the type for the "role" enum field.
+type Role string
+
+// RoleAdmin is the default value of the Role enum.
+const DefaultRole = RoleAdmin
+
+// Role values.
+const (
+	RoleAdmin  Role = "admin"
+	RoleViewer Role = "viewer"
+)
+
+func (r Role) String() string {
+	return string(r)
+}
+
+// RoleValidator is a validator for the "role" field enum values. It is called by the builders before save.
+func RoleValidator(r Role) error {
+	switch r {
+	case RoleAdmin, RoleViewer:
+		return nil
+	default:
+		return fmt.Errorf("apitoken: invalid enum value for role field: %q", r)
+	}
+}
 
 // OrderOption defines the ordering options for the ApiToken queries.
 type OrderOption func(*sql.Selector)
@@ -109,4 +140,9 @@ func ByRevokedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByLastUsedAt orders the results by the last_used_at field.
 func ByLastUsedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastUsedAt, opts...).ToFunc()
+}
+
+// ByRole orders the results by the role field.
+func ByRole(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRole, opts...).ToFunc()
 }

@@ -189,6 +189,8 @@ func (b *TelegramBot) handleMessage(msg *tgMessage) {
 	text := strings.TrimSpace(msg.Text)
 	lower := strings.ToLower(text)
 
+	// Slash commands bypass NL entirely
+	isSlash := strings.HasPrefix(lower, "/")
 	var reply string
 
 	switch {
@@ -238,7 +240,19 @@ func (b *TelegramBot) handleMessage(msg *tgMessage) {
 	case lower == "/sources" || strings.HasPrefix(lower, "/sources ") || strings.HasPrefix(lower, "/sources@"):
 		reply = b.buildSourcesReply()
 	default:
-		reply = helpText()
+		if isSlash {
+			reply = helpText()
+		} else if text == "" {
+			reply = helpText()
+		} else {
+			// Free-text: allowlist still gates before LLM cost
+			if b.allowedChatID != 0 && msg.Chat.ID != b.allowedChatID {
+				// already filtered in pollOnce, but keep safe
+				reply = helpText()
+			} else {
+				reply = HandleNLText(context.Background(), b.s, msg.Chat.ID, text)
+			}
+		}
 	}
 
 	b.sendReply(msg.Chat.ID, reply)

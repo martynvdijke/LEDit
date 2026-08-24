@@ -24,6 +24,7 @@ func (s *Server) AdminPlaylistNew(c *gin.Context) {
 	s.renderPage(c, http.StatusOK, "playlist_form.html", gin.H{
 		"options":      opts,
 		"options_json": bindingOptionsJSON(opts),
+		"serverZone":   serverZoneLabel(),
 	})
 }
 
@@ -33,13 +34,17 @@ func (s *Server) AdminPlaylistCreate(c *gin.Context) {
 	if items == "" {
 		items = "[]"
 	}
+	scheduleWindows := c.PostForm("schedule_windows")
+	if scheduleWindows == "" {
+		scheduleWindows = "[]"
+	}
 	enabled := c.PostForm("enabled") == "on"
 
 	if name == "" {
 		SetFlash(c, "danger", "name is required")
 		opts := s.bindingOptions(c)
 		s.renderPage(c, http.StatusOK, "playlist_form.html", gin.H{
-			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled")},
+			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled"), "schedule_windows": scheduleWindows},
 			"error":        "name is required",
 			"options":      opts,
 			"options_json": bindingOptionsJSON(opts),
@@ -50,7 +55,30 @@ func (s *Server) AdminPlaylistCreate(c *gin.Context) {
 		SetFlash(c, "danger", err.Error())
 		opts := s.bindingOptions(c)
 		s.renderPage(c, http.StatusOK, "playlist_form.html", gin.H{
-			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled")},
+			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled"), "schedule_windows": scheduleWindows},
+			"error":        err.Error(),
+			"options":      opts,
+			"options_json": bindingOptionsJSON(opts),
+		})
+		return
+	}
+	windows, err := ParseScheduleWindows(scheduleWindows)
+	if err != nil {
+		SetFlash(c, "danger", err.Error())
+		opts := s.bindingOptions(c)
+		s.renderPage(c, http.StatusOK, "playlist_form.html", gin.H{
+			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled"), "schedule_windows": scheduleWindows},
+			"error":        err.Error(),
+			"options":      opts,
+			"options_json": bindingOptionsJSON(opts),
+		})
+		return
+	}
+	if err := ValidateWindows(windows); err != nil {
+		SetFlash(c, "danger", err.Error())
+		opts := s.bindingOptions(c)
+		s.renderPage(c, http.StatusOK, "playlist_form.html", gin.H{
+			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled"), "schedule_windows": scheduleWindows},
 			"error":        err.Error(),
 			"options":      opts,
 			"options_json": bindingOptionsJSON(opts),
@@ -58,12 +86,12 @@ func (s *Server) AdminPlaylistCreate(c *gin.Context) {
 		return
 	}
 
-	obj, err := s.DB.Playlist.Create().SetName(name).SetItems(items).SetEnabled(enabled).Save(s.Ctx)
+	obj, err := s.DB.Playlist.Create().SetName(name).SetItems(items).SetScheduleWindows(scheduleWindows).SetEnabled(enabled).Save(s.Ctx)
 	if err != nil {
 		SetFlash(c, "danger", "Failed to create: "+err.Error())
 		opts := s.bindingOptions(c)
 		s.renderPage(c, http.StatusOK, "playlist_form.html", gin.H{
-			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled")},
+			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled"), "schedule_windows": scheduleWindows},
 			"options":      opts,
 			"options_json": bindingOptionsJSON(opts),
 		})
@@ -90,6 +118,7 @@ func (s *Server) AdminPlaylistEdit(c *gin.Context) {
 		"edit":         true,
 		"options":      opts,
 		"options_json": bindingOptionsJSON(opts),
+		"serverZone":   serverZoneLabel(),
 	})
 }
 
@@ -100,13 +129,17 @@ func (s *Server) AdminPlaylistUpdate(c *gin.Context) {
 	if items == "" {
 		items = "[]"
 	}
+	scheduleWindows := c.PostForm("schedule_windows")
+	if scheduleWindows == "" {
+		scheduleWindows = "[]"
+	}
 	enabled := c.PostForm("enabled") == "on"
 
 	if name == "" {
 		SetFlash(c, "danger", "name is required")
 		opts := s.bindingOptions(c)
 		s.renderPage(c, http.StatusOK, "playlist_form.html", gin.H{
-			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled")},
+			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled"), "schedule_windows": scheduleWindows},
 			"edit":         true,
 			"id":           id,
 			"error":        "name is required",
@@ -119,7 +152,34 @@ func (s *Server) AdminPlaylistUpdate(c *gin.Context) {
 		SetFlash(c, "danger", err.Error())
 		opts := s.bindingOptions(c)
 		s.renderPage(c, http.StatusOK, "playlist_form.html", gin.H{
-			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled")},
+			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled"), "schedule_windows": scheduleWindows},
+			"edit":         true,
+			"id":           id,
+			"error":        err.Error(),
+			"options":      opts,
+			"options_json": bindingOptionsJSON(opts),
+		})
+		return
+	}
+	windows, err := ParseScheduleWindows(scheduleWindows)
+	if err != nil {
+		SetFlash(c, "danger", err.Error())
+		opts := s.bindingOptions(c)
+		s.renderPage(c, http.StatusOK, "playlist_form.html", gin.H{
+			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled"), "schedule_windows": scheduleWindows},
+			"edit":         true,
+			"id":           id,
+			"error":        err.Error(),
+			"options":      opts,
+			"options_json": bindingOptionsJSON(opts),
+		})
+		return
+	}
+	if err := ValidateWindows(windows); err != nil {
+		SetFlash(c, "danger", err.Error())
+		opts := s.bindingOptions(c)
+		s.renderPage(c, http.StatusOK, "playlist_form.html", gin.H{
+			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled"), "schedule_windows": scheduleWindows},
 			"edit":         true,
 			"id":           id,
 			"error":        err.Error(),
@@ -129,11 +189,11 @@ func (s *Server) AdminPlaylistUpdate(c *gin.Context) {
 		return
 	}
 
-	if err := s.DB.Playlist.UpdateOneID(id).SetName(name).SetItems(items).SetEnabled(enabled).Exec(s.Ctx); err != nil {
+	if err := s.DB.Playlist.UpdateOneID(id).SetName(name).SetItems(items).SetScheduleWindows(scheduleWindows).SetEnabled(enabled).Exec(s.Ctx); err != nil {
 		SetFlash(c, "danger", "Failed to update: "+err.Error())
 		opts := s.bindingOptions(c)
 		s.renderPage(c, http.StatusOK, "playlist_form.html", gin.H{
-			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled")},
+			"obj":          map[string]string{"name": name, "items": items, "enabled": c.PostForm("enabled"), "schedule_windows": scheduleWindows},
 			"edit":         true,
 			"options":      opts,
 			"options_json": bindingOptionsJSON(opts),

@@ -115,6 +115,15 @@ func (p *PiHoleDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	for _, r := range rows {
 		data[r[0]] = r[1]
 	}
+	// record blocked count
+	for _, r := range rows {
+		if r[0] == "BLOCKED" {
+			var v float64
+			fmt.Sscanf(r[1], "%f", &v)
+			RecordChartValue(v)
+			break
+		}
+	}
 	theme := DefaultTheme()
 	theme.Title = "PIHOLE"
 	img, err := render.RenderDict(data, width, height, theme, "fonts/PixelifySans.ttf")

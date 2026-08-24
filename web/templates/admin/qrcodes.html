@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - QR Codes</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>QR Codes</h1>
+            <a href="/admin/qrcodes/new" class="btn btn-primary mb-3">New QR Code</a>
+            <table class="table">
+                <thead><tr><th>ID</th><th>Mode</th><th>Content</th><th>Caption</th><th>Actions</th></tr></thead>
+                <tbody>
+                {{range .qrcodes}}
+                <tr>
+                    <td>{{.ID}}</td>
+                    <td>{{.Mode}}</td>
+                    <td>{{.Content}}</td>
+                    <td>{{.Caption}}</td>
+                    <td>
+                        <a href="/admin/qrcodes/{{.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
+                        <form method="POST" action="/admin/qrcodes/{{.ID}}/delete" style="display:inline"><button class="btn btn-sm btn-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {{else}}<tr><td colspan="5">No QR codes</td></tr>{{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

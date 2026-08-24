@@ -19,7 +19,9 @@ type Jellyfin struct {
 	// Jellyfin API token (X-Emby-Token)
 	Token string `json:"token,omitempty"`
 	// Jellyfin server base URL
-	URL                        string `json:"url,omitempty"`
+	URL string `json:"url,omitempty"`
+	// NowPlayingEnabled holds the value of the "now_playing_enabled" field.
+	NowPlayingEnabled          bool `json:"now_playing_enabled,omitempty"`
 	general_settings_jellyfins *int
 	selectValues               sql.SelectValues
 }
@@ -29,6 +31,8 @@ func (*Jellyfin) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case jellyfin.FieldNowPlayingEnabled:
+			values[i] = new(sql.NullBool)
 		case jellyfin.FieldID:
 			values[i] = new(sql.NullInt64)
 		case jellyfin.FieldToken, jellyfin.FieldURL:
@@ -67,6 +71,12 @@ func (_m *Jellyfin) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field url", values[i])
 			} else if value.Valid {
 				_m.URL = value.String
+			}
+		case jellyfin.FieldNowPlayingEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field now_playing_enabled", values[i])
+			} else if value.Valid {
+				_m.NowPlayingEnabled = value.Bool
 			}
 		case jellyfin.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -116,6 +126,9 @@ func (_m *Jellyfin) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("url=")
 	builder.WriteString(_m.URL)
+	builder.WriteString(", ")
+	builder.WriteString("now_playing_enabled=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NowPlayingEnabled))
 	builder.WriteByte(')')
 	return builder.String()
 }

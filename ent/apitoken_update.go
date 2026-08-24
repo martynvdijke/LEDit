@@ -165,6 +165,20 @@ func (_u *ApiTokenUpdate) ClearLastUsedAt() *ApiTokenUpdate {
 	return _u
 }
 
+// SetRole sets the "role" field.
+func (_u *ApiTokenUpdate) SetRole(v apitoken.Role) *ApiTokenUpdate {
+	_u.mutation.SetRole(v)
+	return _u
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *ApiTokenUpdate) SetNillableRole(v *apitoken.Role) *ApiTokenUpdate {
+	if v != nil {
+		_u.SetRole(*v)
+	}
+	return _u
+}
+
 // Mutation returns the ApiTokenMutation object of the builder.
 func (_u *ApiTokenUpdate) Mutation() *ApiTokenMutation {
 	return _u.mutation
@@ -197,7 +211,20 @@ func (_u *ApiTokenUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *ApiTokenUpdate) check() error {
+	if v, ok := _u.mutation.Role(); ok {
+		if err := apitoken.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "ApiToken.role": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *ApiTokenUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(apitoken.Table, apitoken.Columns, sqlgraph.NewFieldSpec(apitoken.FieldID, field.TypeInt))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -241,6 +268,9 @@ func (_u *ApiTokenUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.LastUsedAtCleared() {
 		_spec.ClearField(apitoken.FieldLastUsedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(apitoken.FieldRole, field.TypeEnum, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -399,6 +429,20 @@ func (_u *ApiTokenUpdateOne) ClearLastUsedAt() *ApiTokenUpdateOne {
 	return _u
 }
 
+// SetRole sets the "role" field.
+func (_u *ApiTokenUpdateOne) SetRole(v apitoken.Role) *ApiTokenUpdateOne {
+	_u.mutation.SetRole(v)
+	return _u
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *ApiTokenUpdateOne) SetNillableRole(v *apitoken.Role) *ApiTokenUpdateOne {
+	if v != nil {
+		_u.SetRole(*v)
+	}
+	return _u
+}
+
 // Mutation returns the ApiTokenMutation object of the builder.
 func (_u *ApiTokenUpdateOne) Mutation() *ApiTokenMutation {
 	return _u.mutation
@@ -444,7 +488,20 @@ func (_u *ApiTokenUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *ApiTokenUpdateOne) check() error {
+	if v, ok := _u.mutation.Role(); ok {
+		if err := apitoken.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "ApiToken.role": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *ApiTokenUpdateOne) sqlSave(ctx context.Context) (_node *ApiToken, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(apitoken.Table, apitoken.Columns, sqlgraph.NewFieldSpec(apitoken.FieldID, field.TypeInt))
 	id, ok := _u.mutation.ID()
 	if !ok {
@@ -505,6 +562,9 @@ func (_u *ApiTokenUpdateOne) sqlSave(ctx context.Context) (_node *ApiToken, err 
 	}
 	if _u.mutation.LastUsedAtCleared() {
 		_spec.ClearField(apitoken.FieldLastUsedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(apitoken.FieldRole, field.TypeEnum, value)
 	}
 	_node = &ApiToken{config: _u.config}
 	_spec.Assign = _node.assignValues

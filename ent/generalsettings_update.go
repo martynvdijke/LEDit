@@ -24,12 +24,14 @@ import (
 	"ledit/ent/image"
 	"ledit/ent/jellyfin"
 	"ledit/ent/matrixlayout"
+	"ledit/ent/mpd"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/predicate"
+	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
 	"ledit/ent/schedule"
@@ -214,6 +216,160 @@ func (_u *GeneralSettingsUpdate) SetNillableTransitionMs(v *int) *GeneralSetting
 // AddTransitionMs adds value to the "transition_ms" field.
 func (_u *GeneralSettingsUpdate) AddTransitionMs(v int) *GeneralSettingsUpdate {
 	_u.mutation.AddTransitionMs(v)
+	return _u
+}
+
+// SetChartRetentionHours sets the "chart_retention_hours" field.
+func (_u *GeneralSettingsUpdate) SetChartRetentionHours(v int) *GeneralSettingsUpdate {
+	_u.mutation.ResetChartRetentionHours()
+	_u.mutation.SetChartRetentionHours(v)
+	return _u
+}
+
+// SetNillableChartRetentionHours sets the "chart_retention_hours" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableChartRetentionHours(v *int) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetChartRetentionHours(*v)
+	}
+	return _u
+}
+
+// AddChartRetentionHours adds value to the "chart_retention_hours" field.
+func (_u *GeneralSettingsUpdate) AddChartRetentionHours(v int) *GeneralSettingsUpdate {
+	_u.mutation.AddChartRetentionHours(v)
+	return _u
+}
+
+// SetChartMaxPointsPerSource sets the "chart_max_points_per_source" field.
+func (_u *GeneralSettingsUpdate) SetChartMaxPointsPerSource(v int) *GeneralSettingsUpdate {
+	_u.mutation.ResetChartMaxPointsPerSource()
+	_u.mutation.SetChartMaxPointsPerSource(v)
+	return _u
+}
+
+// SetNillableChartMaxPointsPerSource sets the "chart_max_points_per_source" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableChartMaxPointsPerSource(v *int) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetChartMaxPointsPerSource(*v)
+	}
+	return _u
+}
+
+// AddChartMaxPointsPerSource adds value to the "chart_max_points_per_source" field.
+func (_u *GeneralSettingsUpdate) AddChartMaxPointsPerSource(v int) *GeneralSettingsUpdate {
+	_u.mutation.AddChartMaxPointsPerSource(v)
+	return _u
+}
+
+// SetNowPlayingProvider sets the "now_playing_provider" field.
+func (_u *GeneralSettingsUpdate) SetNowPlayingProvider(v string) *GeneralSettingsUpdate {
+	_u.mutation.SetNowPlayingProvider(v)
+	return _u
+}
+
+// SetNillableNowPlayingProvider sets the "now_playing_provider" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableNowPlayingProvider(v *string) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetNowPlayingProvider(*v)
+	}
+	return _u
+}
+
+// SetOrderingMode sets the "ordering_mode" field.
+func (_u *GeneralSettingsUpdate) SetOrderingMode(v string) *GeneralSettingsUpdate {
+	_u.mutation.SetOrderingMode(v)
+	return _u
+}
+
+// SetNillableOrderingMode sets the "ordering_mode" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableOrderingMode(v *string) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetOrderingMode(*v)
+	}
+	return _u
+}
+
+// SetAdaptiveFloor sets the "adaptive_floor" field.
+func (_u *GeneralSettingsUpdate) SetAdaptiveFloor(v float64) *GeneralSettingsUpdate {
+	_u.mutation.ResetAdaptiveFloor()
+	_u.mutation.SetAdaptiveFloor(v)
+	return _u
+}
+
+// SetNillableAdaptiveFloor sets the "adaptive_floor" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableAdaptiveFloor(v *float64) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetAdaptiveFloor(*v)
+	}
+	return _u
+}
+
+// AddAdaptiveFloor adds value to the "adaptive_floor" field.
+func (_u *GeneralSettingsUpdate) AddAdaptiveFloor(v float64) *GeneralSettingsUpdate {
+	_u.mutation.AddAdaptiveFloor(v)
+	return _u
+}
+
+// SetAdaptiveHalfLifeDays sets the "adaptive_half_life_days" field.
+func (_u *GeneralSettingsUpdate) SetAdaptiveHalfLifeDays(v int) *GeneralSettingsUpdate {
+	_u.mutation.ResetAdaptiveHalfLifeDays()
+	_u.mutation.SetAdaptiveHalfLifeDays(v)
+	return _u
+}
+
+// SetNillableAdaptiveHalfLifeDays sets the "adaptive_half_life_days" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableAdaptiveHalfLifeDays(v *int) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetAdaptiveHalfLifeDays(*v)
+	}
+	return _u
+}
+
+// AddAdaptiveHalfLifeDays adds value to the "adaptive_half_life_days" field.
+func (_u *GeneralSettingsUpdate) AddAdaptiveHalfLifeDays(v int) *GeneralSettingsUpdate {
+	_u.mutation.AddAdaptiveHalfLifeDays(v)
+	return _u
+}
+
+// SetAdaptiveWindowDays sets the "adaptive_window_days" field.
+func (_u *GeneralSettingsUpdate) SetAdaptiveWindowDays(v int) *GeneralSettingsUpdate {
+	_u.mutation.ResetAdaptiveWindowDays()
+	_u.mutation.SetAdaptiveWindowDays(v)
+	return _u
+}
+
+// SetNillableAdaptiveWindowDays sets the "adaptive_window_days" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableAdaptiveWindowDays(v *int) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetAdaptiveWindowDays(*v)
+	}
+	return _u
+}
+
+// AddAdaptiveWindowDays adds value to the "adaptive_window_days" field.
+func (_u *GeneralSettingsUpdate) AddAdaptiveWindowDays(v int) *GeneralSettingsUpdate {
+	_u.mutation.AddAdaptiveWindowDays(v)
+	return _u
+}
+
+// SetAdaptiveEpsilon sets the "adaptive_epsilon" field.
+func (_u *GeneralSettingsUpdate) SetAdaptiveEpsilon(v float64) *GeneralSettingsUpdate {
+	_u.mutation.ResetAdaptiveEpsilon()
+	_u.mutation.SetAdaptiveEpsilon(v)
+	return _u
+}
+
+// SetNillableAdaptiveEpsilon sets the "adaptive_epsilon" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableAdaptiveEpsilon(v *float64) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetAdaptiveEpsilon(*v)
+	}
+	return _u
+}
+
+// AddAdaptiveEpsilon adds value to the "adaptive_epsilon" field.
+func (_u *GeneralSettingsUpdate) AddAdaptiveEpsilon(v float64) *GeneralSettingsUpdate {
+	_u.mutation.AddAdaptiveEpsilon(v)
 	return _u
 }
 
@@ -785,6 +941,36 @@ func (_u *GeneralSettingsUpdate) AddJellyfins(v ...*Jellyfin) *GeneralSettingsUp
 		ids[i] = v[i].ID
 	}
 	return _u.AddJellyfinIDs(ids...)
+}
+
+// AddMpdIDs adds the "mpds" edge to the MPD entity by IDs.
+func (_u *GeneralSettingsUpdate) AddMpdIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddMpdIDs(ids...)
+	return _u
+}
+
+// AddMpds adds the "mpds" edges to the MPD entity.
+func (_u *GeneralSettingsUpdate) AddMpds(v ...*MPD) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddMpdIDs(ids...)
+}
+
+// AddQrcodeIDs adds the "qrcodes" edge to the Qrcode entity by IDs.
+func (_u *GeneralSettingsUpdate) AddQrcodeIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddQrcodeIDs(ids...)
+	return _u
+}
+
+// AddQrcodes adds the "qrcodes" edges to the Qrcode entity.
+func (_u *GeneralSettingsUpdate) AddQrcodes(v ...*Qrcode) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddQrcodeIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -1590,6 +1776,48 @@ func (_u *GeneralSettingsUpdate) RemoveJellyfins(v ...*Jellyfin) *GeneralSetting
 	return _u.RemoveJellyfinIDs(ids...)
 }
 
+// ClearMpds clears all "mpds" edges to the MPD entity.
+func (_u *GeneralSettingsUpdate) ClearMpds() *GeneralSettingsUpdate {
+	_u.mutation.ClearMpds()
+	return _u
+}
+
+// RemoveMpdIDs removes the "mpds" edge to MPD entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveMpdIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveMpdIDs(ids...)
+	return _u
+}
+
+// RemoveMpds removes "mpds" edges to MPD entities.
+func (_u *GeneralSettingsUpdate) RemoveMpds(v ...*MPD) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveMpdIDs(ids...)
+}
+
+// ClearQrcodes clears all "qrcodes" edges to the Qrcode entity.
+func (_u *GeneralSettingsUpdate) ClearQrcodes() *GeneralSettingsUpdate {
+	_u.mutation.ClearQrcodes()
+	return _u
+}
+
+// RemoveQrcodeIDs removes the "qrcodes" edge to Qrcode entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveQrcodeIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveQrcodeIDs(ids...)
+	return _u
+}
+
+// RemoveQrcodes removes "qrcodes" edges to Qrcode entities.
+func (_u *GeneralSettingsUpdate) RemoveQrcodes(v ...*Qrcode) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveQrcodeIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *GeneralSettingsUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
@@ -1627,6 +1855,11 @@ func (_u *GeneralSettingsUpdate) check() error {
 	if v, ok := _u.mutation.TransitionMs(); ok {
 		if err := generalsettings.TransitionMsValidator(v); err != nil {
 			return &ValidationError{Name: "transition_ms", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.transition_ms": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.OrderingMode(); ok {
+		if err := generalsettings.OrderingModeValidator(v); err != nil {
+			return &ValidationError{Name: "ordering_mode", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.ordering_mode": %w`, err)}
 		}
 	}
 	return nil
@@ -1685,6 +1918,48 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if value, ok := _u.mutation.AddedTransitionMs(); ok {
 		_spec.AddField(generalsettings.FieldTransitionMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ChartRetentionHours(); ok {
+		_spec.SetField(generalsettings.FieldChartRetentionHours, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChartRetentionHours(); ok {
+		_spec.AddField(generalsettings.FieldChartRetentionHours, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ChartMaxPointsPerSource(); ok {
+		_spec.SetField(generalsettings.FieldChartMaxPointsPerSource, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChartMaxPointsPerSource(); ok {
+		_spec.AddField(generalsettings.FieldChartMaxPointsPerSource, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.NowPlayingProvider(); ok {
+		_spec.SetField(generalsettings.FieldNowPlayingProvider, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OrderingMode(); ok {
+		_spec.SetField(generalsettings.FieldOrderingMode, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.AdaptiveFloor(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveFloor, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedAdaptiveFloor(); ok {
+		_spec.AddField(generalsettings.FieldAdaptiveFloor, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AdaptiveHalfLifeDays(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveHalfLifeDays, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAdaptiveHalfLifeDays(); ok {
+		_spec.AddField(generalsettings.FieldAdaptiveHalfLifeDays, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AdaptiveWindowDays(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveWindowDays, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAdaptiveWindowDays(); ok {
+		_spec.AddField(generalsettings.FieldAdaptiveWindowDays, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AdaptiveEpsilon(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveEpsilon, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedAdaptiveEpsilon(); ok {
+		_spec.AddField(generalsettings.FieldAdaptiveEpsilon, field.TypeFloat64, value)
 	}
 	if _u.mutation.SonarrCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -3396,6 +3671,96 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.MpdsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MpdsTable,
+			Columns: []string{generalsettings.MpdsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mpd.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedMpdsIDs(); len(nodes) > 0 && !_u.mutation.MpdsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MpdsTable,
+			Columns: []string{generalsettings.MpdsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mpd.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MpdsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MpdsTable,
+			Columns: []string{generalsettings.MpdsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mpd.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.QrcodesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QrcodesTable,
+			Columns: []string{generalsettings.QrcodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qrcode.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedQrcodesIDs(); len(nodes) > 0 && !_u.mutation.QrcodesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QrcodesTable,
+			Columns: []string{generalsettings.QrcodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qrcode.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.QrcodesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QrcodesTable,
+			Columns: []string{generalsettings.QrcodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qrcode.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -3565,6 +3930,160 @@ func (_u *GeneralSettingsUpdateOne) SetNillableTransitionMs(v *int) *GeneralSett
 // AddTransitionMs adds value to the "transition_ms" field.
 func (_u *GeneralSettingsUpdateOne) AddTransitionMs(v int) *GeneralSettingsUpdateOne {
 	_u.mutation.AddTransitionMs(v)
+	return _u
+}
+
+// SetChartRetentionHours sets the "chart_retention_hours" field.
+func (_u *GeneralSettingsUpdateOne) SetChartRetentionHours(v int) *GeneralSettingsUpdateOne {
+	_u.mutation.ResetChartRetentionHours()
+	_u.mutation.SetChartRetentionHours(v)
+	return _u
+}
+
+// SetNillableChartRetentionHours sets the "chart_retention_hours" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableChartRetentionHours(v *int) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetChartRetentionHours(*v)
+	}
+	return _u
+}
+
+// AddChartRetentionHours adds value to the "chart_retention_hours" field.
+func (_u *GeneralSettingsUpdateOne) AddChartRetentionHours(v int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddChartRetentionHours(v)
+	return _u
+}
+
+// SetChartMaxPointsPerSource sets the "chart_max_points_per_source" field.
+func (_u *GeneralSettingsUpdateOne) SetChartMaxPointsPerSource(v int) *GeneralSettingsUpdateOne {
+	_u.mutation.ResetChartMaxPointsPerSource()
+	_u.mutation.SetChartMaxPointsPerSource(v)
+	return _u
+}
+
+// SetNillableChartMaxPointsPerSource sets the "chart_max_points_per_source" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableChartMaxPointsPerSource(v *int) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetChartMaxPointsPerSource(*v)
+	}
+	return _u
+}
+
+// AddChartMaxPointsPerSource adds value to the "chart_max_points_per_source" field.
+func (_u *GeneralSettingsUpdateOne) AddChartMaxPointsPerSource(v int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddChartMaxPointsPerSource(v)
+	return _u
+}
+
+// SetNowPlayingProvider sets the "now_playing_provider" field.
+func (_u *GeneralSettingsUpdateOne) SetNowPlayingProvider(v string) *GeneralSettingsUpdateOne {
+	_u.mutation.SetNowPlayingProvider(v)
+	return _u
+}
+
+// SetNillableNowPlayingProvider sets the "now_playing_provider" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableNowPlayingProvider(v *string) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetNowPlayingProvider(*v)
+	}
+	return _u
+}
+
+// SetOrderingMode sets the "ordering_mode" field.
+func (_u *GeneralSettingsUpdateOne) SetOrderingMode(v string) *GeneralSettingsUpdateOne {
+	_u.mutation.SetOrderingMode(v)
+	return _u
+}
+
+// SetNillableOrderingMode sets the "ordering_mode" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableOrderingMode(v *string) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetOrderingMode(*v)
+	}
+	return _u
+}
+
+// SetAdaptiveFloor sets the "adaptive_floor" field.
+func (_u *GeneralSettingsUpdateOne) SetAdaptiveFloor(v float64) *GeneralSettingsUpdateOne {
+	_u.mutation.ResetAdaptiveFloor()
+	_u.mutation.SetAdaptiveFloor(v)
+	return _u
+}
+
+// SetNillableAdaptiveFloor sets the "adaptive_floor" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableAdaptiveFloor(v *float64) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetAdaptiveFloor(*v)
+	}
+	return _u
+}
+
+// AddAdaptiveFloor adds value to the "adaptive_floor" field.
+func (_u *GeneralSettingsUpdateOne) AddAdaptiveFloor(v float64) *GeneralSettingsUpdateOne {
+	_u.mutation.AddAdaptiveFloor(v)
+	return _u
+}
+
+// SetAdaptiveHalfLifeDays sets the "adaptive_half_life_days" field.
+func (_u *GeneralSettingsUpdateOne) SetAdaptiveHalfLifeDays(v int) *GeneralSettingsUpdateOne {
+	_u.mutation.ResetAdaptiveHalfLifeDays()
+	_u.mutation.SetAdaptiveHalfLifeDays(v)
+	return _u
+}
+
+// SetNillableAdaptiveHalfLifeDays sets the "adaptive_half_life_days" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableAdaptiveHalfLifeDays(v *int) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetAdaptiveHalfLifeDays(*v)
+	}
+	return _u
+}
+
+// AddAdaptiveHalfLifeDays adds value to the "adaptive_half_life_days" field.
+func (_u *GeneralSettingsUpdateOne) AddAdaptiveHalfLifeDays(v int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddAdaptiveHalfLifeDays(v)
+	return _u
+}
+
+// SetAdaptiveWindowDays sets the "adaptive_window_days" field.
+func (_u *GeneralSettingsUpdateOne) SetAdaptiveWindowDays(v int) *GeneralSettingsUpdateOne {
+	_u.mutation.ResetAdaptiveWindowDays()
+	_u.mutation.SetAdaptiveWindowDays(v)
+	return _u
+}
+
+// SetNillableAdaptiveWindowDays sets the "adaptive_window_days" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableAdaptiveWindowDays(v *int) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetAdaptiveWindowDays(*v)
+	}
+	return _u
+}
+
+// AddAdaptiveWindowDays adds value to the "adaptive_window_days" field.
+func (_u *GeneralSettingsUpdateOne) AddAdaptiveWindowDays(v int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddAdaptiveWindowDays(v)
+	return _u
+}
+
+// SetAdaptiveEpsilon sets the "adaptive_epsilon" field.
+func (_u *GeneralSettingsUpdateOne) SetAdaptiveEpsilon(v float64) *GeneralSettingsUpdateOne {
+	_u.mutation.ResetAdaptiveEpsilon()
+	_u.mutation.SetAdaptiveEpsilon(v)
+	return _u
+}
+
+// SetNillableAdaptiveEpsilon sets the "adaptive_epsilon" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableAdaptiveEpsilon(v *float64) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetAdaptiveEpsilon(*v)
+	}
+	return _u
+}
+
+// AddAdaptiveEpsilon adds value to the "adaptive_epsilon" field.
+func (_u *GeneralSettingsUpdateOne) AddAdaptiveEpsilon(v float64) *GeneralSettingsUpdateOne {
+	_u.mutation.AddAdaptiveEpsilon(v)
 	return _u
 }
 
@@ -4136,6 +4655,36 @@ func (_u *GeneralSettingsUpdateOne) AddJellyfins(v ...*Jellyfin) *GeneralSetting
 		ids[i] = v[i].ID
 	}
 	return _u.AddJellyfinIDs(ids...)
+}
+
+// AddMpdIDs adds the "mpds" edge to the MPD entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddMpdIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddMpdIDs(ids...)
+	return _u
+}
+
+// AddMpds adds the "mpds" edges to the MPD entity.
+func (_u *GeneralSettingsUpdateOne) AddMpds(v ...*MPD) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddMpdIDs(ids...)
+}
+
+// AddQrcodeIDs adds the "qrcodes" edge to the Qrcode entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddQrcodeIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddQrcodeIDs(ids...)
+	return _u
+}
+
+// AddQrcodes adds the "qrcodes" edges to the Qrcode entity.
+func (_u *GeneralSettingsUpdateOne) AddQrcodes(v ...*Qrcode) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddQrcodeIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -4941,6 +5490,48 @@ func (_u *GeneralSettingsUpdateOne) RemoveJellyfins(v ...*Jellyfin) *GeneralSett
 	return _u.RemoveJellyfinIDs(ids...)
 }
 
+// ClearMpds clears all "mpds" edges to the MPD entity.
+func (_u *GeneralSettingsUpdateOne) ClearMpds() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearMpds()
+	return _u
+}
+
+// RemoveMpdIDs removes the "mpds" edge to MPD entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveMpdIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveMpdIDs(ids...)
+	return _u
+}
+
+// RemoveMpds removes "mpds" edges to MPD entities.
+func (_u *GeneralSettingsUpdateOne) RemoveMpds(v ...*MPD) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveMpdIDs(ids...)
+}
+
+// ClearQrcodes clears all "qrcodes" edges to the Qrcode entity.
+func (_u *GeneralSettingsUpdateOne) ClearQrcodes() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearQrcodes()
+	return _u
+}
+
+// RemoveQrcodeIDs removes the "qrcodes" edge to Qrcode entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveQrcodeIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveQrcodeIDs(ids...)
+	return _u
+}
+
+// RemoveQrcodes removes "qrcodes" edges to Qrcode entities.
+func (_u *GeneralSettingsUpdateOne) RemoveQrcodes(v ...*Qrcode) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveQrcodeIDs(ids...)
+}
+
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
 func (_u *GeneralSettingsUpdateOne) Where(ps ...predicate.GeneralSettings) *GeneralSettingsUpdateOne {
 	_u.mutation.Where(ps...)
@@ -4991,6 +5582,11 @@ func (_u *GeneralSettingsUpdateOne) check() error {
 	if v, ok := _u.mutation.TransitionMs(); ok {
 		if err := generalsettings.TransitionMsValidator(v); err != nil {
 			return &ValidationError{Name: "transition_ms", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.transition_ms": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.OrderingMode(); ok {
+		if err := generalsettings.OrderingModeValidator(v); err != nil {
+			return &ValidationError{Name: "ordering_mode", err: fmt.Errorf(`ent: validator failed for field "GeneralSettings.ordering_mode": %w`, err)}
 		}
 	}
 	return nil
@@ -5066,6 +5662,48 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 	}
 	if value, ok := _u.mutation.AddedTransitionMs(); ok {
 		_spec.AddField(generalsettings.FieldTransitionMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ChartRetentionHours(); ok {
+		_spec.SetField(generalsettings.FieldChartRetentionHours, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChartRetentionHours(); ok {
+		_spec.AddField(generalsettings.FieldChartRetentionHours, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ChartMaxPointsPerSource(); ok {
+		_spec.SetField(generalsettings.FieldChartMaxPointsPerSource, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChartMaxPointsPerSource(); ok {
+		_spec.AddField(generalsettings.FieldChartMaxPointsPerSource, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.NowPlayingProvider(); ok {
+		_spec.SetField(generalsettings.FieldNowPlayingProvider, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OrderingMode(); ok {
+		_spec.SetField(generalsettings.FieldOrderingMode, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.AdaptiveFloor(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveFloor, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedAdaptiveFloor(); ok {
+		_spec.AddField(generalsettings.FieldAdaptiveFloor, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AdaptiveHalfLifeDays(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveHalfLifeDays, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAdaptiveHalfLifeDays(); ok {
+		_spec.AddField(generalsettings.FieldAdaptiveHalfLifeDays, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AdaptiveWindowDays(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveWindowDays, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAdaptiveWindowDays(); ok {
+		_spec.AddField(generalsettings.FieldAdaptiveWindowDays, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AdaptiveEpsilon(); ok {
+		_spec.SetField(generalsettings.FieldAdaptiveEpsilon, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedAdaptiveEpsilon(); ok {
+		_spec.AddField(generalsettings.FieldAdaptiveEpsilon, field.TypeFloat64, value)
 	}
 	if _u.mutation.SonarrCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -6770,6 +7408,96 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(jellyfin.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.MpdsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MpdsTable,
+			Columns: []string{generalsettings.MpdsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mpd.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedMpdsIDs(); len(nodes) > 0 && !_u.mutation.MpdsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MpdsTable,
+			Columns: []string{generalsettings.MpdsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mpd.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MpdsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.MpdsTable,
+			Columns: []string{generalsettings.MpdsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mpd.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.QrcodesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QrcodesTable,
+			Columns: []string{generalsettings.QrcodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qrcode.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedQrcodesIDs(); len(nodes) > 0 && !_u.mutation.QrcodesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QrcodesTable,
+			Columns: []string{generalsettings.QrcodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qrcode.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.QrcodesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QrcodesTable,
+			Columns: []string{generalsettings.QrcodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qrcode.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

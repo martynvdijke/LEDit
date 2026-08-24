@@ -31,6 +31,7 @@ var KnownSourceTypes = map[string]bool{
 	"analog-clock":   true,
 	"matrix-rain":    true,
 	"systemstats":    true,
+	"screensaver":    true,
 	"sonarr":         true,
 	"radarr":         true,
 	"f1":             true,
@@ -58,6 +59,7 @@ var KnownSourceTypes = map[string]bool{
 	"sports":         true,
 	"sunmoon":        true,
 	"jellyfin":       true,
+	"qrcode":         true,
 }
 
 // IsValidSourceType reports whether sourceType is a known endpoint key.

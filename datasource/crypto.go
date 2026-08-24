@@ -59,6 +59,12 @@ func (c *CryptoDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	if len(data) == 0 {
 		return fallbackCrypto(ids, width, height), nil
 	}
+	for _, prices := range resp {
+		if v, ok := prices["usd"]; ok {
+			RecordChartValue(v)
+			break
+		}
+	}
 
 	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }

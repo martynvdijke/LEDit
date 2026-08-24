@@ -172,7 +172,7 @@ func TestFeedRecordsSourceHealth(t *testing.T) {
 			{Name: "OK", Source: &okDS{}, cacheKey: "ok:1"},
 			{Name: "Bad", Source: &failingDS{}, cacheKey: "bad:1"},
 		}
-		serveFeed(conn, feedConn{}, sources, false, 30*time.Millisecond, 64, 64, &FeedController{}, "none", 500)
+		serveFeed(conn, feedConn{}, sources, false, 30*time.Millisecond, 64, 64, &FeedController{}, "none", 500, nil)
 	}))
 	defer srv.Close()
 

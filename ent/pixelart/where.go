@@ -93,6 +93,11 @@ func Enabled(v bool) predicate.PixelArt {
 	return predicate.PixelArt(sql.FieldEQ(FieldEnabled, v))
 }
 
+// IsDraft applies equality check predicate on the "is_draft" field. It's identical to IsDraftEQ.
+func IsDraft(v bool) predicate.PixelArt {
+	return predicate.PixelArt(sql.FieldEQ(FieldIsDraft, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.PixelArt {
 	return predicate.PixelArt(sql.FieldEQ(FieldName, v))
@@ -506,6 +511,16 @@ func EnabledEQ(v bool) predicate.PixelArt {
 // EnabledNEQ applies the NEQ predicate on the "enabled" field.
 func EnabledNEQ(v bool) predicate.PixelArt {
 	return predicate.PixelArt(sql.FieldNEQ(FieldEnabled, v))
+}
+
+// IsDraftEQ applies the EQ predicate on the "is_draft" field.
+func IsDraftEQ(v bool) predicate.PixelArt {
+	return predicate.PixelArt(sql.FieldEQ(FieldIsDraft, v))
+}
+
+// IsDraftNEQ applies the NEQ predicate on the "is_draft" field.
+func IsDraftNEQ(v bool) predicate.PixelArt {
+	return predicate.PixelArt(sql.FieldNEQ(FieldIsDraft, v))
 }
 
 // And groups predicates with the AND operator between them.

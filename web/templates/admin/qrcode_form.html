@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} QR Code</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} QR Code</h1>
+            {{if .error}}<div class="alert alert-danger">{{.error}}</div>{{end}}
+            <form method="POST" action="{{if .edit}}/admin/qrcodes/{{.obj.ID}}/edit{{else}}/admin/qrcodes/new{{end}}" class="mt-4" id="qrcode-form">
+                <div class="mb-3">
+                    <label class="form-label">Mode</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="mode" id="mode_text" value="text" {{if .obj}}{{if eq .obj.Mode "text"}}checked{{end}}{{else}}checked{{end}}>
+                            <label class="form-check-label" for="mode_text">Text</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="mode" id="mode_url" value="url" {{if .obj}}{{if eq .obj.Mode "url"}}checked{{end}}{{end}}>
+                            <label class="form-check-label" for="mode_url">URL</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="mode" id="mode_wifi" value="wifi" {{if .obj}}{{if eq .obj.Mode "wifi"}}checked{{end}}{{end}}>
+                            <label class="form-check-label" for="mode_wifi">WiFi</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="content" class="form-label">Content</label>
+                    <textarea class="form-control" id="content" name="content" rows="3" maxlength="512" required>{{if .obj}}{{if .obj.Content}}{{.obj.Content}}{{end}}{{end}}</textarea>
+                    <small class="text-muted">1-512 chars. For wifi mode this is still stored but payload uses wifi fields.</small>
+                </div>
+                <div id="wifi-fields" style="display:none">
+                    <div class="mb-3">
+                        <label for="wifi_ssid" class="form-label">WiFi SSID</label>
+                        <input type="text" class="form-control" id="wifi_ssid" name="wifi_ssid" maxlength="32" value="{{if .obj}}{{.obj.WifiSsid}}{{end}}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="wifi_password" class="form-label">WiFi Password</label>
+                        <input type="text" class="form-control" id="wifi_password" name="wifi_password" value="{{if .obj}}{{.obj.WifiPassword}}{{end}}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="wifi_auth" class="form-label">Auth</label>
+                        <select class="form-control" id="wifi_auth" name="wifi_auth">
+                            <option value="WPA" {{if .obj}}{{if eq .obj.WifiAuth "WPA"}}selected{{end}}{{end}}>WPA</option>
+                            <option value="WEP" {{if .obj}}{{if eq .obj.WifiAuth "WEP"}}selected{{end}}{{end}}>WEP</option>
+                            <option value="nopass" {{if .obj}}{{if eq .obj.WifiAuth "nopass"}}selected{{end}}{{end}}>nopass</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="caption" class="form-label">Caption (optional)</label>
+                    <input type="text" class="form-control" id="caption" name="caption" maxlength="64" value="{{if .obj}}{{.obj.Caption}}{{end}}">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="error_correction" class="form-label">Error Correction</label>
+                        <select class="form-control" id="error_correction" name="error_correction">
+                            <option value="L" {{if .obj}}{{if eq .obj.ErrorCorrection "L"}}selected{{end}}{{end}}>L (7%)</option>
+                            <option value="M" {{if .obj}}{{if eq .obj.ErrorCorrection "M"}}selected{{end}}{{end}}>M (15%)</option>
+                            <option value="Q" {{if .obj}}{{if eq .obj.ErrorCorrection "Q"}}selected{{end}}{{end}}>Q (25%)</option>
+                            <option value="H" {{if .obj}}{{if eq .obj.ErrorCorrection "H"}}selected{{end}}{{end}}>H (30%)</option>
+                        </select>
+                        <small class="text-muted">If content too long for H, try M or L.</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="quiet_zone" class="form-label">Quiet Zone (modules)</label>
+                        <input type="number" class="form-control" id="quiet_zone" name="quiet_zone" min="0" max="8" value="{{if .obj}}{{.obj.QuietZone}}{{else}}4{{end}}">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                <a href="/admin/qrcodes" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const wifiFields=document.getElementById('wifi-fields');
+  const radios=document.querySelectorAll('input[name="mode"]');
+  function update(){
+    const v=document.querySelector('input[name="mode"]:checked')?.value;
+    wifiFields.style.display=v==='wifi'?'block':'none';
+    document.getElementById('wifi_ssid').required=v==='wifi';
+  }
+  radios.forEach(r=>r.addEventListener('change',update));
+  update();
+});
+</script>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

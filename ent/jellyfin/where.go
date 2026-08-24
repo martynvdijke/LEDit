@@ -63,6 +63,11 @@ func URL(v string) predicate.Jellyfin {
 	return predicate.Jellyfin(sql.FieldEQ(FieldURL, v))
 }
 
+// NowPlayingEnabled applies equality check predicate on the "now_playing_enabled" field. It's identical to NowPlayingEnabledEQ.
+func NowPlayingEnabled(v bool) predicate.Jellyfin {
+	return predicate.Jellyfin(sql.FieldEQ(FieldNowPlayingEnabled, v))
+}
+
 // TokenEQ applies the EQ predicate on the "token" field.
 func TokenEQ(v string) predicate.Jellyfin {
 	return predicate.Jellyfin(sql.FieldEQ(FieldToken, v))
@@ -191,6 +196,16 @@ func URLEqualFold(v string) predicate.Jellyfin {
 // URLContainsFold applies the ContainsFold predicate on the "url" field.
 func URLContainsFold(v string) predicate.Jellyfin {
 	return predicate.Jellyfin(sql.FieldContainsFold(FieldURL, v))
+}
+
+// NowPlayingEnabledEQ applies the EQ predicate on the "now_playing_enabled" field.
+func NowPlayingEnabledEQ(v bool) predicate.Jellyfin {
+	return predicate.Jellyfin(sql.FieldEQ(FieldNowPlayingEnabled, v))
+}
+
+// NowPlayingEnabledNEQ applies the NEQ predicate on the "now_playing_enabled" field.
+func NowPlayingEnabledNEQ(v bool) predicate.Jellyfin {
+	return predicate.Jellyfin(sql.FieldNEQ(FieldNowPlayingEnabled, v))
 }
 
 // And groups predicates with the AND operator between them.

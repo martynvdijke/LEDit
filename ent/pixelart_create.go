@@ -123,6 +123,20 @@ func (_c *PixelArtCreate) SetNillableEnabled(v *bool) *PixelArtCreate {
 	return _c
 }
 
+// SetIsDraft sets the "is_draft" field.
+func (_c *PixelArtCreate) SetIsDraft(v bool) *PixelArtCreate {
+	_c.mutation.SetIsDraft(v)
+	return _c
+}
+
+// SetNillableIsDraft sets the "is_draft" field if the given value is not nil.
+func (_c *PixelArtCreate) SetNillableIsDraft(v *bool) *PixelArtCreate {
+	if v != nil {
+		_c.SetIsDraft(*v)
+	}
+	return _c
+}
+
 // Mutation returns the PixelArtMutation object of the builder.
 func (_c *PixelArtCreate) Mutation() *PixelArtMutation {
 	return _c.mutation
@@ -186,6 +200,10 @@ func (_c *PixelArtCreate) defaults() {
 		v := pixelart.DefaultEnabled
 		_c.mutation.SetEnabled(v)
 	}
+	if _, ok := _c.mutation.IsDraft(); !ok {
+		v := pixelart.DefaultIsDraft
+		_c.mutation.SetIsDraft(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -213,6 +231,9 @@ func (_c *PixelArtCreate) check() error {
 	}
 	if _, ok := _c.mutation.Enabled(); !ok {
 		return &ValidationError{Name: "enabled", err: errors.New(`ent: missing required field "PixelArt.enabled"`)}
+	}
+	if _, ok := _c.mutation.IsDraft(); !ok {
+		return &ValidationError{Name: "is_draft", err: errors.New(`ent: missing required field "PixelArt.is_draft"`)}
 	}
 	return nil
 }
@@ -271,6 +292,10 @@ func (_c *PixelArtCreate) createSpec() (*PixelArt, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Enabled(); ok {
 		_spec.SetField(pixelart.FieldEnabled, field.TypeBool, value)
 		_node.Enabled = value
+	}
+	if value, ok := _c.mutation.IsDraft(); ok {
+		_spec.SetField(pixelart.FieldIsDraft, field.TypeBool, value)
+		_node.IsDraft = value
 	}
 	return _node, _spec
 }

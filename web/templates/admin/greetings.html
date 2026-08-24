@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Greetings</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Greetings</h1>
+                <div>
+                    <button class="btn btn-outline-primary" id="btn-add-person">Add person</button>
+                    <button class="btn btn-outline-secondary" id="btn-add-room">Add meeting room</button>
+                    <button class="btn btn-primary" id="btn-add">New Rule</button>
+                </div>
+            </div>
+            <table class="table table-striped mt-3" id="greetings-table">
+                <thead><tr><th>Name</th><th>Entity</th><th>Template</th><th>TTL</th><th>Cooldown</th><th>Enabled</th><th>Actions</th></tr></thead>
+                <tbody id="greetings-body">
+                    {{range .greetings}}
+                    <tr data-id="{{.ID}}">
+                        <td>{{.Name}}</td>
+                        <td>{{.EntityPath}}</td>
+                        <td><code>{{.MessageTemplate}}</code></td>
+                        <td>{{.TTLSeconds}}s</td>
+                        <td>{{.CooldownMinutes}}m</td>
+                        <td>{{if .Enabled}}<span class="badge bg-success">on</span>{{else}}<span class="badge bg-secondary">off</span>{{end}}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary btn-edit">Edit</button>
+                            <button class="btn btn-sm btn-outline-secondary btn-test">Test</button>
+                            <button class="btn btn-sm btn-danger btn-delete">Delete</button>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            <div id="greeting-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); align-items:center; justify-content:center;">
+                <div style="background:#fff; padding:20px; border-radius:8px; min-width:400px;">
+                    <h3 id="modal-title">New Greeting</h3>
+                    <form id="greeting-form">
+                        <input type="hidden" id="f-id">
+                        <div><label>Name <input id="f-name" required></label></div>
+                        <div><label>Entity path <input id="f-entity" placeholder="person.maria" required></label></div>
+                        <div><label>Match value <input id="f-match" value="home"></label></div>
+                        <div><label>Operator <select id="f-operator"><option value="eq">eq</option><option value="ne">ne</option></select></label></div>
+                        <div><label>Message template <input id="f-template" placeholder="Welcome home, {name}!" required></label></div>
+                        <div><label>TTL seconds <input id="f-ttl" type="number" min="5" max="300" value="30"></label></div>
+                        <div><label>Cooldown minutes <input id="f-cooldown" type="number" min="1" max="1440" value="30"></label></div>
+                        <div><label>Quiet start <input id="f-qs" placeholder="22:00"></label> <label>Quiet end <input id="f-qe" placeholder="07:00"></label></div>
+                        <div><label>Enabled <input id="f-enabled" type="checkbox" checked></label></div>
+                        <div style="margin-top:12px;">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" class="btn btn-secondary" id="modal-close">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<script type="module" src="/static/assets/greetings.js"></script>
+</body>
+</html>
