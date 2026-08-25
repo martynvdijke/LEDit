@@ -1,3 +1,15 @@
+# [1.32.0](https://github.com/martynvdijke/LEDit/compare/v1.31.0...v1.32.0) (2026-08-25)
+
+
+### Bug Fixes
+
+* repair release-blocking e2e failures from feature campaign ([868b16f](https://github.com/martynvdijke/LEDit/commit/868b16f2fc97f68a777af0ae00bd3fea791a708c))
+
+
+### Features
+
+* feature campaign — 16 new capabilities across display, content, integrations, and platform ([cecc03a](https://github.com/martynvdijke/LEDit/commit/cecc03a8f31320f400d75054dacdbacd8f8833ce))
+
 # [1.31.0](https://github.com/martynvdijke/LEDit/compare/v1.30.1...v1.31.0) (2026-08-24)
 
 
