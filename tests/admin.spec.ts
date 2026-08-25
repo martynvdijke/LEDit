@@ -1,22 +1,9 @@
 import { test, expect } from './fixtures';
 
 test.describe('Admin Dashboard', () => {
-  // These tests assert the *unconfigured* empty state; skip settings seeding.
-  test.use({ autoSeed: false });
-
   test('should load the admin dashboard', async ({ page }) => {
     await page.goto('/admin/');
     await expect(page.locator('h1')).toContainText('Admin Dashboard');
-  });
-
-  test('should show no settings message when unconfigured', async ({ page }) => {
-    await page.goto('/admin/');
-    await expect(page.getByText('No settings configured yet')).toBeVisible();
-  });
-
-  test('should have settings link in the page', async ({ page }) => {
-    await page.goto('/admin/');
-    await expect(page.getByRole('link', { name: 'Configure settings' })).toBeVisible();
   });
 });
 

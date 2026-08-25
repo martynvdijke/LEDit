@@ -315,9 +315,10 @@ func (s *Server) setupRoutes() {
 			apiMut.POST("/feed/pause", s.APIFeedPause)
 			apiMut.POST("/feed/resume", s.APIFeedResume)
 		}
-		// Webhook/display routes: require admin (was webhook key only)
-		api.POST("/feed/priority", s.RequireAdmin(), s.APIFeedPriority)
-		api.POST("/webhook/notify", s.RequireAdmin(), s.APIWebhookNotify)
+		// Webhook routes: machine integrations authenticate via webhook key
+		// (X-API-Key header or ?token=), not admin sessions.
+		api.POST("/feed/priority", s.WebhookAuthMiddleware(), s.APIFeedPriority)
+		api.POST("/webhook/notify", s.WebhookAuthMiddleware(), s.APIWebhookNotify)
 		// Test-only helpers (enabled when LEDIT_AUTH_DISABLE=true for Playwright).
 		if os.Getenv("LEDIT_AUTH_DISABLE") == "true" || os.Getenv("LEDIT_AUTH_DISABLE") == "1" {
 			api.POST("/test/seed-timelapse", s.TestSeedTimelapse)

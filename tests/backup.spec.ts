@@ -1,10 +1,7 @@
 import { test, expect } from '@playwright/test';
 test('admin backup export and import round-trip', async ({ page }) => {
-  await page.goto('/login');
-  await page.fill('input[name="username"]','admin');
-  await page.fill('input[name="password"]','ledit');
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/\/admin\//);
+  // E2E runs with LEDIT_AUTH_DISABLE=true: no credentials exist and admin
+  // routes are reachable without login.
   await page.goto('/admin/backup');
   await expect(page.locator('h1')).toContainText('Backup');
   // export download
