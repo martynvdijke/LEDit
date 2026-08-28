@@ -1,3 +1,12 @@
+## [1.32.1](https://github.com/martynvdijke/LEDit/compare/v1.32.0...v1.32.1) (2026-08-28)
+
+
+### Bug Fixes
+
+* **ci:** make pinact check non-blocking ([2d34bc2](https://github.com/martynvdijke/LEDit/commit/2d34bc2530552668f57cc091e40411ba709d8a07))
+* **ci:** remove unsupported --diff flag from pinact ([6e65b36](https://github.com/martynvdijke/LEDit/commit/6e65b365818c2bde7546f5a053ca83ffd93ddafd))
+* **ci:** update actionlint to v1.7.12 (v1 tag removed upstream) ([e09fa8a](https://github.com/martynvdijke/LEDit/commit/e09fa8a5b4b2ddbe88dcb0c06d0e30af24ea9c06))
+
 # [1.32.0](https://github.com/martynvdijke/LEDit/compare/v1.31.0...v1.32.0) (2026-08-25)
 
 
