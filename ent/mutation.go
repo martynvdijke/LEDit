@@ -32636,6 +32636,9 @@ type UserMutation struct {
 	username      *string
 	password_hash *string
 	role          *user.Role
+	email         *string
+	oidc_sub      *string
+	auth_method   *user.AuthMethod
 	created_at    *time.Time
 	last_login_at *time.Time
 	clearedFields map[string]struct{}
@@ -32850,6 +32853,140 @@ func (m *UserMutation) ResetRole() {
 	m.role = nil
 }
 
+// SetEmail sets the "email" field.
+func (m *UserMutation) SetEmail(s string) {
+	m.email = &s
+}
+
+// Email returns the value of the "email" field in the mutation.
+func (m *UserMutation) Email() (r string, exists bool) {
+	v := m.email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmail returns the old "email" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldEmail(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmail: %w", err)
+	}
+	return oldValue.Email, nil
+}
+
+// ClearEmail clears the value of the "email" field.
+func (m *UserMutation) ClearEmail() {
+	m.email = nil
+	m.clearedFields[user.FieldEmail] = struct{}{}
+}
+
+// EmailCleared returns if the "email" field was cleared in this mutation.
+func (m *UserMutation) EmailCleared() bool {
+	_, ok := m.clearedFields[user.FieldEmail]
+	return ok
+}
+
+// ResetEmail resets all changes to the "email" field.
+func (m *UserMutation) ResetEmail() {
+	m.email = nil
+	delete(m.clearedFields, user.FieldEmail)
+}
+
+// SetOidcSub sets the "oidc_sub" field.
+func (m *UserMutation) SetOidcSub(s string) {
+	m.oidc_sub = &s
+}
+
+// OidcSub returns the value of the "oidc_sub" field in the mutation.
+func (m *UserMutation) OidcSub() (r string, exists bool) {
+	v := m.oidc_sub
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOidcSub returns the old "oidc_sub" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldOidcSub(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOidcSub is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOidcSub requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOidcSub: %w", err)
+	}
+	return oldValue.OidcSub, nil
+}
+
+// ClearOidcSub clears the value of the "oidc_sub" field.
+func (m *UserMutation) ClearOidcSub() {
+	m.oidc_sub = nil
+	m.clearedFields[user.FieldOidcSub] = struct{}{}
+}
+
+// OidcSubCleared returns if the "oidc_sub" field was cleared in this mutation.
+func (m *UserMutation) OidcSubCleared() bool {
+	_, ok := m.clearedFields[user.FieldOidcSub]
+	return ok
+}
+
+// ResetOidcSub resets all changes to the "oidc_sub" field.
+func (m *UserMutation) ResetOidcSub() {
+	m.oidc_sub = nil
+	delete(m.clearedFields, user.FieldOidcSub)
+}
+
+// SetAuthMethod sets the "auth_method" field.
+func (m *UserMutation) SetAuthMethod(um user.AuthMethod) {
+	m.auth_method = &um
+}
+
+// AuthMethod returns the value of the "auth_method" field in the mutation.
+func (m *UserMutation) AuthMethod() (r user.AuthMethod, exists bool) {
+	v := m.auth_method
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthMethod returns the old "auth_method" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAuthMethod(ctx context.Context) (v user.AuthMethod, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthMethod is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthMethod requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthMethod: %w", err)
+	}
+	return oldValue.AuthMethod, nil
+}
+
+// ResetAuthMethod resets all changes to the "auth_method" field.
+func (m *UserMutation) ResetAuthMethod() {
+	m.auth_method = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *UserMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -32969,7 +33106,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 8)
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
 	}
@@ -32978,6 +33115,15 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.role != nil {
 		fields = append(fields, user.FieldRole)
+	}
+	if m.email != nil {
+		fields = append(fields, user.FieldEmail)
+	}
+	if m.oidc_sub != nil {
+		fields = append(fields, user.FieldOidcSub)
+	}
+	if m.auth_method != nil {
+		fields = append(fields, user.FieldAuthMethod)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -32999,6 +33145,12 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.PasswordHash()
 	case user.FieldRole:
 		return m.Role()
+	case user.FieldEmail:
+		return m.Email()
+	case user.FieldOidcSub:
+		return m.OidcSub()
+	case user.FieldAuthMethod:
+		return m.AuthMethod()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	case user.FieldLastLoginAt:
@@ -33018,6 +33170,12 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPasswordHash(ctx)
 	case user.FieldRole:
 		return m.OldRole(ctx)
+	case user.FieldEmail:
+		return m.OldEmail(ctx)
+	case user.FieldOidcSub:
+		return m.OldOidcSub(ctx)
+	case user.FieldAuthMethod:
+		return m.OldAuthMethod(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case user.FieldLastLoginAt:
@@ -33051,6 +33209,27 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRole(v)
+		return nil
+	case user.FieldEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmail(v)
+		return nil
+	case user.FieldOidcSub:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOidcSub(v)
+		return nil
+	case user.FieldAuthMethod:
+		v, ok := value.(user.AuthMethod)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthMethod(v)
 		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -33096,6 +33275,12 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(user.FieldEmail) {
+		fields = append(fields, user.FieldEmail)
+	}
+	if m.FieldCleared(user.FieldOidcSub) {
+		fields = append(fields, user.FieldOidcSub)
+	}
 	if m.FieldCleared(user.FieldLastLoginAt) {
 		fields = append(fields, user.FieldLastLoginAt)
 	}
@@ -33113,6 +33298,12 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
 	switch name {
+	case user.FieldEmail:
+		m.ClearEmail()
+		return nil
+	case user.FieldOidcSub:
+		m.ClearOidcSub()
+		return nil
 	case user.FieldLastLoginAt:
 		m.ClearLastLoginAt()
 		return nil
@@ -33132,6 +33323,15 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldRole:
 		m.ResetRole()
+		return nil
+	case user.FieldEmail:
+		m.ResetEmail()
+		return nil
+	case user.FieldOidcSub:
+		m.ResetOidcSub()
+		return nil
+	case user.FieldAuthMethod:
+		m.ResetAuthMethod()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()

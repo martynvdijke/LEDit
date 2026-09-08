@@ -15,6 +15,13 @@ services:
       - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-ledit}
       - OTEL_TRACES_SAMPLER=${OTEL_TRACES_SAMPLER:-parentbased_always_on}
       - OTEL_RESOURCE_ATTRIBUTES=${OTEL_RESOURCE_ATTRIBUTES:-}
+      # OIDC SSO via Authelia (see .env.example). Secret via file, never in git.
+      - OIDC_ENABLED=${OIDC_ENABLED:-false}
+      - OIDC_ISSUER_URL=${OIDC_ISSUER_URL:-https://authelia.vandijke.xyz}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-ledit}
+      - OIDC_CLIENT_SECRET_FILE=${OIDC_CLIENT_SECRET_FILE:-}
+      - OIDC_REDIRECT_URL=${OIDC_REDIRECT_URL:-https://ledit.vandijke.xyz/api/auth/oidc/callback}
+      - OIDC_SCOPES=${OIDC_SCOPES:-openid email profile groups}
 
 volumes:
   ledit-data:

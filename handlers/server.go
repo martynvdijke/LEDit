@@ -344,6 +344,11 @@ func (s *Server) setupRoutes() {
 	s.Router.POST("/login", s.LoginAction)
 	s.Router.GET("/logout", s.LogoutAction)
 
+	// OIDC SSO via Authelia (no-op 404 when OIDC_ENABLED=false).
+	s.Router.GET("/api/auth/oidc/login", s.OIDCLogin)
+	s.Router.GET("/api/auth/oidc/callback", s.OIDCCallback)
+	s.Router.GET("/api/auth/oidc/logout", s.OIDCLogout)
+
 	// Password recovery (public: no auth required)
 	s.Router.GET("/forgot-password", s.ForgotPasswordPage)
 	s.Router.POST("/forgot-password", s.ForgotPasswordAction)

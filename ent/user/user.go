@@ -19,6 +19,12 @@ const (
 	FieldPasswordHash = "password_hash"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// FieldEmail holds the string denoting the email field in the database.
+	FieldEmail = "email"
+	// FieldOidcSub holds the string denoting the oidc_sub field in the database.
+	FieldOidcSub = "oidc_sub"
+	// FieldAuthMethod holds the string denoting the auth_method field in the database.
+	FieldAuthMethod = "auth_method"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldLastLoginAt holds the string denoting the last_login_at field in the database.
@@ -33,6 +39,9 @@ var Columns = []string{
 	FieldUsername,
 	FieldPasswordHash,
 	FieldRole,
+	FieldEmail,
+	FieldOidcSub,
+	FieldAuthMethod,
 	FieldCreatedAt,
 	FieldLastLoginAt,
 }
@@ -78,6 +87,32 @@ func RoleValidator(r Role) error {
 	}
 }
 
+// AuthMethod defines the type for the "auth_method" enum field.
+type AuthMethod string
+
+// AuthMethodPassword is the default value of the AuthMethod enum.
+const DefaultAuthMethod = AuthMethodPassword
+
+// AuthMethod values.
+const (
+	AuthMethodPassword AuthMethod = "password"
+	AuthMethodOidc     AuthMethod = "oidc"
+)
+
+func (am AuthMethod) String() string {
+	return string(am)
+}
+
+// AuthMethodValidator is a validator for the "auth_method" field enum values. It is called by the builders before save.
+func AuthMethodValidator(am AuthMethod) error {
+	switch am {
+	case AuthMethodPassword, AuthMethodOidc:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for auth_method field: %q", am)
+	}
+}
+
 // OrderOption defines the ordering options for the User queries.
 type OrderOption func(*sql.Selector)
 
@@ -99,6 +134,21 @@ func ByPasswordHash(opts ...sql.OrderTermOption) OrderOption {
 // ByRole orders the results by the role field.
 func ByRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
+// ByEmail orders the results by the email field.
+func ByEmail(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEmail, opts...).ToFunc()
+}
+
+// ByOidcSub orders the results by the oidc_sub field.
+func ByOidcSub(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOidcSub, opts...).ToFunc()
+}
+
+// ByAuthMethod orders the results by the auth_method field.
+func ByAuthMethod(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthMethod, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
