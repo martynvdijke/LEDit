@@ -23,6 +23,12 @@ type User struct {
 	PasswordHash string `json:"password_hash,omitempty"`
 	// Role holds the value of the "role" field.
 	Role user.Role `json:"role,omitempty"`
+	// Email holds the value of the "email" field.
+	Email *string `json:"email,omitempty"`
+	// OidcSub holds the value of the "oidc_sub" field.
+	OidcSub *string `json:"oidc_sub,omitempty"`
+	// AuthMethod holds the value of the "auth_method" field.
+	AuthMethod user.AuthMethod `json:"auth_method,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// LastLoginAt holds the value of the "last_login_at" field.
@@ -37,7 +43,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldPasswordHash, user.FieldRole:
+		case user.FieldUsername, user.FieldPasswordHash, user.FieldRole, user.FieldEmail, user.FieldOidcSub, user.FieldAuthMethod:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldLastLoginAt:
 			values[i] = new(sql.NullTime)
@@ -79,6 +85,26 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
 				_m.Role = user.Role(value.String)
+			}
+		case user.FieldEmail:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field email", values[i])
+			} else if value.Valid {
+				_m.Email = new(string)
+				*_m.Email = value.String
+			}
+		case user.FieldOidcSub:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field oidc_sub", values[i])
+			} else if value.Valid {
+				_m.OidcSub = new(string)
+				*_m.OidcSub = value.String
+			}
+		case user.FieldAuthMethod:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field auth_method", values[i])
+			} else if value.Valid {
+				_m.AuthMethod = user.AuthMethod(value.String)
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -137,6 +163,19 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Role))
+	builder.WriteString(", ")
+	if v := _m.Email; v != nil {
+		builder.WriteString("email=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.OidcSub; v != nil {
+		builder.WriteString("oidc_sub=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("auth_method=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AuthMethod))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

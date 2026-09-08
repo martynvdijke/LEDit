@@ -70,6 +70,60 @@ func (_u *UserUpdate) SetNillableRole(v *user.Role) *UserUpdate {
 	return _u
 }
 
+// SetEmail sets the "email" field.
+func (_u *UserUpdate) SetEmail(v string) *UserUpdate {
+	_u.mutation.SetEmail(v)
+	return _u
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableEmail(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetEmail(*v)
+	}
+	return _u
+}
+
+// ClearEmail clears the value of the "email" field.
+func (_u *UserUpdate) ClearEmail() *UserUpdate {
+	_u.mutation.ClearEmail()
+	return _u
+}
+
+// SetOidcSub sets the "oidc_sub" field.
+func (_u *UserUpdate) SetOidcSub(v string) *UserUpdate {
+	_u.mutation.SetOidcSub(v)
+	return _u
+}
+
+// SetNillableOidcSub sets the "oidc_sub" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableOidcSub(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetOidcSub(*v)
+	}
+	return _u
+}
+
+// ClearOidcSub clears the value of the "oidc_sub" field.
+func (_u *UserUpdate) ClearOidcSub() *UserUpdate {
+	_u.mutation.ClearOidcSub()
+	return _u
+}
+
+// SetAuthMethod sets the "auth_method" field.
+func (_u *UserUpdate) SetAuthMethod(v user.AuthMethod) *UserUpdate {
+	_u.mutation.SetAuthMethod(v)
+	return _u
+}
+
+// SetNillableAuthMethod sets the "auth_method" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableAuthMethod(v *user.AuthMethod) *UserUpdate {
+	if v != nil {
+		_u.SetAuthMethod(*v)
+	}
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *UserUpdate) SetCreatedAt(v time.Time) *UserUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -148,6 +202,11 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.AuthMethod(); ok {
+		if err := user.AuthMethodValidator(v); err != nil {
+			return &ValidationError{Name: "auth_method", err: fmt.Errorf(`ent: validator failed for field "User.auth_method": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -171,6 +230,21 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	}
+	if _u.mutation.EmailCleared() {
+		_spec.ClearField(user.FieldEmail, field.TypeString)
+	}
+	if value, ok := _u.mutation.OidcSub(); ok {
+		_spec.SetField(user.FieldOidcSub, field.TypeString, value)
+	}
+	if _u.mutation.OidcSubCleared() {
+		_spec.ClearField(user.FieldOidcSub, field.TypeString)
+	}
+	if value, ok := _u.mutation.AuthMethod(); ok {
+		_spec.SetField(user.FieldAuthMethod, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
@@ -239,6 +313,60 @@ func (_u *UserUpdateOne) SetRole(v user.Role) *UserUpdateOne {
 func (_u *UserUpdateOne) SetNillableRole(v *user.Role) *UserUpdateOne {
 	if v != nil {
 		_u.SetRole(*v)
+	}
+	return _u
+}
+
+// SetEmail sets the "email" field.
+func (_u *UserUpdateOne) SetEmail(v string) *UserUpdateOne {
+	_u.mutation.SetEmail(v)
+	return _u
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableEmail(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetEmail(*v)
+	}
+	return _u
+}
+
+// ClearEmail clears the value of the "email" field.
+func (_u *UserUpdateOne) ClearEmail() *UserUpdateOne {
+	_u.mutation.ClearEmail()
+	return _u
+}
+
+// SetOidcSub sets the "oidc_sub" field.
+func (_u *UserUpdateOne) SetOidcSub(v string) *UserUpdateOne {
+	_u.mutation.SetOidcSub(v)
+	return _u
+}
+
+// SetNillableOidcSub sets the "oidc_sub" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableOidcSub(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetOidcSub(*v)
+	}
+	return _u
+}
+
+// ClearOidcSub clears the value of the "oidc_sub" field.
+func (_u *UserUpdateOne) ClearOidcSub() *UserUpdateOne {
+	_u.mutation.ClearOidcSub()
+	return _u
+}
+
+// SetAuthMethod sets the "auth_method" field.
+func (_u *UserUpdateOne) SetAuthMethod(v user.AuthMethod) *UserUpdateOne {
+	_u.mutation.SetAuthMethod(v)
+	return _u
+}
+
+// SetNillableAuthMethod sets the "auth_method" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableAuthMethod(v *user.AuthMethod) *UserUpdateOne {
+	if v != nil {
+		_u.SetAuthMethod(*v)
 	}
 	return _u
 }
@@ -334,6 +462,11 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.AuthMethod(); ok {
+		if err := user.AuthMethodValidator(v); err != nil {
+			return &ValidationError{Name: "auth_method", err: fmt.Errorf(`ent: validator failed for field "User.auth_method": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -374,6 +507,21 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	}
+	if _u.mutation.EmailCleared() {
+		_spec.ClearField(user.FieldEmail, field.TypeString)
+	}
+	if value, ok := _u.mutation.OidcSub(); ok {
+		_spec.SetField(user.FieldOidcSub, field.TypeString, value)
+	}
+	if _u.mutation.OidcSubCleared() {
+		_spec.ClearField(user.FieldOidcSub, field.TypeString)
+	}
+	if value, ok := _u.mutation.AuthMethod(); ok {
+		_spec.SetField(user.FieldAuthMethod, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

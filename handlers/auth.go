@@ -72,6 +72,7 @@ func (s *Server) LoginPage(c *gin.Context) {
 	if c.Query("setup") == "1" {
 		data["info"] = "Setup complete. Please log in with your new credentials."
 	}
+	data["OIDCEnabled"] = oidcEnabled()
 	c.HTML(http.StatusOK, "login.html", data)
 }
 

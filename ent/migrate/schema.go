@@ -1129,6 +1129,9 @@ var (
 		{Name: "username", Type: field.TypeString, Size: 64},
 		{Name: "password_hash", Type: field.TypeString},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "viewer"}, Default: "viewer"},
+		{Name: "email", Type: field.TypeString, Nullable: true},
+		{Name: "oidc_sub", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "auth_method", Type: field.TypeEnum, Enums: []string{"password", "oidc"}, Default: "password"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "last_login_at", Type: field.TypeTime, Nullable: true},
 	}
@@ -1142,6 +1145,11 @@ var (
 				Name:    "user_username",
 				Unique:  true,
 				Columns: []*schema.Column{UsersColumns[1]},
+			},
+			{
+				Name:    "user_email",
+				Unique:  true,
+				Columns: []*schema.Column{UsersColumns[4]},
 			},
 		},
 	}

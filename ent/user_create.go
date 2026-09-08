@@ -46,6 +46,48 @@ func (_c *UserCreate) SetNillableRole(v *user.Role) *UserCreate {
 	return _c
 }
 
+// SetEmail sets the "email" field.
+func (_c *UserCreate) SetEmail(v string) *UserCreate {
+	_c.mutation.SetEmail(v)
+	return _c
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (_c *UserCreate) SetNillableEmail(v *string) *UserCreate {
+	if v != nil {
+		_c.SetEmail(*v)
+	}
+	return _c
+}
+
+// SetOidcSub sets the "oidc_sub" field.
+func (_c *UserCreate) SetOidcSub(v string) *UserCreate {
+	_c.mutation.SetOidcSub(v)
+	return _c
+}
+
+// SetNillableOidcSub sets the "oidc_sub" field if the given value is not nil.
+func (_c *UserCreate) SetNillableOidcSub(v *string) *UserCreate {
+	if v != nil {
+		_c.SetOidcSub(*v)
+	}
+	return _c
+}
+
+// SetAuthMethod sets the "auth_method" field.
+func (_c *UserCreate) SetAuthMethod(v user.AuthMethod) *UserCreate {
+	_c.mutation.SetAuthMethod(v)
+	return _c
+}
+
+// SetNillableAuthMethod sets the "auth_method" field if the given value is not nil.
+func (_c *UserCreate) SetNillableAuthMethod(v *user.AuthMethod) *UserCreate {
+	if v != nil {
+		_c.SetAuthMethod(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *UserCreate) SetCreatedAt(v time.Time) *UserCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -105,6 +147,10 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultRole
 		_c.mutation.SetRole(v)
 	}
+	if _, ok := _c.mutation.AuthMethod(); !ok {
+		v := user.DefaultAuthMethod
+		_c.mutation.SetAuthMethod(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -126,6 +172,14 @@ func (_c *UserCreate) check() error {
 	if v, ok := _c.mutation.Role(); ok {
 		if err := user.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.AuthMethod(); !ok {
+		return &ValidationError{Name: "auth_method", err: errors.New(`ent: missing required field "User.auth_method"`)}
+	}
+	if v, ok := _c.mutation.AuthMethod(); ok {
+		if err := user.AuthMethodValidator(v); err != nil {
+			return &ValidationError{Name: "auth_method", err: fmt.Errorf(`ent: validator failed for field "User.auth_method": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
@@ -168,6 +222,18 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 		_node.Role = value
+	}
+	if value, ok := _c.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+		_node.Email = &value
+	}
+	if value, ok := _c.mutation.OidcSub(); ok {
+		_spec.SetField(user.FieldOidcSub, field.TypeString, value)
+		_node.OidcSub = &value
+	}
+	if value, ok := _c.mutation.AuthMethod(); ok {
+		_spec.SetField(user.FieldAuthMethod, field.TypeEnum, value)
+		_node.AuthMethod = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
