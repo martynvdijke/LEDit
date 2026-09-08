@@ -1,3 +1,10 @@
+# [1.33.0](https://github.com/martynvdijke/LEDit/compare/v1.32.5...v1.33.0) (2026-09-08)
+
+
+### Features
+
+* add OIDC login via Authelia ([344990e](https://github.com/martynvdijke/LEDit/commit/344990e11d9e161c021fe9c50e392485e9ede31b))
+
 ## [1.32.5](https://github.com/martynvdijke/LEDit/compare/v1.32.4...v1.32.5) (2026-09-05)
 
 
