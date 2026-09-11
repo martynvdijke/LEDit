@@ -171,15 +171,21 @@ func (s *Server) AdminPreviewDatasource(c *gin.Context) {
 			FontSize: mustAtoi(c.DefaultPostForm("font_size", "32")),
 		}
 	case "countdown":
-		target, err := time.ParseInLocation("2006-01-02T15:04", c.PostForm("target_time"), time.Local)
+		tz := strings.TrimSpace(c.PostForm("timezone"))
+		target, err := parseCountdownTime(countdownTimeLayout, c.PostForm("target_time"), tz)
 		if err != nil {
 			c.Status(http.StatusBadRequest)
 			return
 		}
 		src = &datasource.CountdownDS{
-			Name:   c.PostForm("name"),
-			Label:  c.PostForm("label"),
-			Target: target,
+			Name:              c.PostForm("name"),
+			Label:             c.PostForm("label"),
+			Target:            target,
+			Granularity:       c.DefaultPostForm("granularity", "seconds"),
+			Direction:         c.DefaultPostForm("direction", "down"),
+			Completion:        c.DefaultPostForm("completion", "now"),
+			CompletionMessage: c.PostForm("completion_message"),
+			Timezone:          tz,
 		}
 	case "aidigest":
 		ttl := mustAtoi(c.DefaultPostForm("ttl_minutes", "30"))

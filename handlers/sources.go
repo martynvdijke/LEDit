@@ -333,7 +333,16 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 	}
 	countdowns, _ := settings.Edges.CountdownsOrErr()
 	for _, cd := range countdowns {
-		idx.byKey[key("countdown", cd.ID)] = &datasource.CountdownDS{Name: cd.Name, Label: cd.Label, Target: cd.TargetTime}
+		idx.byKey[key("countdown", cd.ID)] = &datasource.CountdownDS{
+			Name:              cd.Name,
+			Label:             cd.Label,
+			Target:            cd.TargetTime,
+			Granularity:       string(cd.Granularity),
+			Direction:         string(cd.Direction),
+			Completion:        string(cd.Completion),
+			CompletionMessage: cd.CompletionMessage,
+			Timezone:          cd.Timezone,
+		}
 		idx.names[key("countdown", cd.ID)] = "Countdown: " + cd.Name
 	}
 	digests, _ := settings.Edges.AiDigestsOrErr()

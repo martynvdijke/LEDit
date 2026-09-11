@@ -77,6 +77,14 @@ func (v *Validator) Port(field string, value int) *Validator {
 	return v.RangeInt(field, value, 1, 65535)
 }
 
+// MaxLen checks that a string is at most max bytes long.
+func (v *Validator) MaxLen(field, value string, max int) *Validator {
+	if len(value) > max {
+		v.Errors = append(v.Errors, ValidationError{Field: field, Message: "must be at most " + strconv.Itoa(max) + " characters"})
+	}
+	return v
+}
+
 // OneOf checks that value is one of the allowed strings.
 func (v *Validator) OneOf(field, value string, allowed ...string) *Validator {
 	for _, a := range allowed {

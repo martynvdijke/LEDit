@@ -235,7 +235,16 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 		if !cd.Enabled {
 			continue
 		}
-		sources = append(sources, sourceWithName{Name: "Countdown: " + cd.Name, Source: &datasource.CountdownDS{Name: cd.Name, Label: cd.Label, Target: cd.TargetTime}, cacheKey: fmt.Sprintf("countdown:%d", cd.ID)})
+		sources = append(sources, sourceWithName{Name: "Countdown: " + cd.Name, Source: &datasource.CountdownDS{
+			Name:              cd.Name,
+			Label:             cd.Label,
+			Target:            cd.TargetTime,
+			Granularity:       string(cd.Granularity),
+			Direction:         string(cd.Direction),
+			Completion:        string(cd.Completion),
+			CompletionMessage: cd.CompletionMessage,
+			Timezone:          cd.Timezone,
+		}, cacheKey: fmt.Sprintf("countdown:%d", cd.ID)})
 	}
 
 	// Enabled AI digests stream as "AI: <name>".
