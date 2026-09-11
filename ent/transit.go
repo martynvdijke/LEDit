@@ -20,8 +20,8 @@ type Transit struct {
 	Token string `json:"token,omitempty"`
 	// Departures API URL; may contain %s for the stop ID; empty uses the provider default
 	URL string `json:"url,omitempty"`
-	// Provider API key; never logged
-	APIKey string `json:"-"`
+	// Provider API key; stored in the DB and never logged
+	APIKey string `json:"api_key,omitempty"`
 	// Provider holds the value of the "provider" field.
 	Provider transit.Provider `json:"provider,omitempty"`
 	// MaxDepartures holds the value of the "max_departures" field.
@@ -173,7 +173,8 @@ func (_m *Transit) String() string {
 	builder.WriteString("url=")
 	builder.WriteString(_m.URL)
 	builder.WriteString(", ")
-	builder.WriteString("api_key=<sensitive>")
+	builder.WriteString("api_key=")
+	builder.WriteString(_m.APIKey)
 	builder.WriteString(", ")
 	builder.WriteString("provider=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Provider))

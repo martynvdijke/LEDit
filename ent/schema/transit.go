@@ -18,7 +18,7 @@ func (Transit) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("token").Default("").Comment("Transit stop ID (legacy field name)"),
 		field.String("url").Default("").Comment("Departures API URL; may contain %s for the stop ID; empty uses the provider default"),
-		field.String("api_key").Default("").Sensitive().Comment("Provider API key; never logged"),
+		field.String("api_key").Default("").Comment("Provider API key; stored in the DB and never logged"),
 		field.Enum("provider").Values("vbb", "transitland", "511", "custom").Default("vbb"),
 		field.Int("max_departures").Default(4).Min(1).Max(8),
 		field.String("route_filter").Default("").MaxLen(256),

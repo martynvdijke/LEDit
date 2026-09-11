@@ -198,7 +198,11 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 
 	transits, _ := settings.Edges.TransitsOrErr()
 	for _, t := range transits {
-		sources = append(sources, sourceWithName{Name: "Transit", Source: &datasource.TransitDS{Token: t.Token, URL: t.URL}, cacheKey: fmt.Sprintf("transit:%d", t.ID)})
+		sources = append(sources, sourceWithName{Name: "Transit " + t.Token, Source: &datasource.TransitDS{
+			Token: t.Token, URL: t.URL, APIKey: t.APIKey, Provider: string(t.Provider),
+			MaxDepartures: t.MaxDepartures, RouteFilter: t.RouteFilter,
+			WalkTimeMin: t.WalkTimeMin, Timezone: t.Timezone, TimeMode: string(t.TimeMode),
+		}, cacheKey: fmt.Sprintf("transit:%d", t.ID)})
 	}
 	uptimes, _ := settings.Edges.UptimesOrErr()
 	for _, u := range uptimes {

@@ -9,7 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"ledit/ent"
 	"ledit/ent/generalsettings"
+	"ledit/ent/transit"
 )
+
+// atoiOr parses s as an int, returning def when empty or malformed.
+func atoiOr(s string, def int) int {
+	if s == "" {
+		return def
+	}
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return def
+	}
+	return n
+}
 
 // dsEntry defines CRUD operations for a token/URL datasource type.
 type dsEntry struct {
@@ -201,16 +214,24 @@ func init() {
 		},
 		"transit": {
 			TypeName: "Transit",
-			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
-				return db.Transit.Create().SetToken(token).SetURL(url).Save(ctx)
-			},
-			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Transit.Get(ctx, id) },
-			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
-				return db.Transit.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
-			},
-			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Transit.DeleteOneID(id).Exec(ctx) },
+			Get:      func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Transit.Get(ctx, id) },
+			Delete:   func(db *ent.Client, ctx context.Context, id int) error { return db.Transit.DeleteOneID(id).Exec(ctx) },
 			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
 				return u.AddTransits(obj.(*ent.Transit))
+			},
+			CreateFields: func(db *ent.Client, ctx context.Context, f map[string]string) (any, error) {
+				return db.Transit.Create().
+					SetToken(f["token"]).SetURL(f["url"]).SetAPIKey(f["api_key"]).
+					SetProvider(transit.Provider(f["provider"])).SetMaxDepartures(atoiOr(f["max_departures"], 4)).
+					SetRouteFilter(f["route_filter"]).SetWalkTimeMin(atoiOr(f["walk_time_min"], 0)).
+					SetTimezone(f["timezone"]).SetTimeMode(transit.TimeMode(f["time_mode"])).Save(ctx)
+			},
+			UpdateFields: func(db *ent.Client, ctx context.Context, id int, f map[string]string) error {
+				return db.Transit.UpdateOneID(id).
+					SetToken(f["token"]).SetURL(f["url"]).SetAPIKey(f["api_key"]).
+					SetProvider(transit.Provider(f["provider"])).SetMaxDepartures(atoiOr(f["max_departures"], 4)).
+					SetRouteFilter(f["route_filter"]).SetWalkTimeMin(atoiOr(f["walk_time_min"], 0)).
+					SetTimezone(f["timezone"]).SetTimeMode(transit.TimeMode(f["time_mode"])).Exec(ctx)
 			},
 		},
 		"uptime": {

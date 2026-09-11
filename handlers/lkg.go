@@ -183,6 +183,9 @@ func datasourceConfigSig(d datasource.Datasource) string {
 		return cfgSig(v.Name, v.Prompt, strings.Join(v.FeedURLs, ","), v.TTL.String())
 	case *datasource.NowPlayingSourceDS:
 		return cfgSig(v.Provider, v.URL, v.Token, v.Username)
+	case *datasource.TransitDS:
+		return cfgSig(v.Token, v.URL, v.Provider, strconv.Itoa(v.MaxDepartures), v.RouteFilter,
+			strconv.Itoa(v.WalkTimeMin), v.Timezone, v.TimeMode)
 	default:
 		return ""
 	}

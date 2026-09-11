@@ -506,11 +506,17 @@ func (s *Server) setupRoutes() {
 		admin.POST("/datasources/genericapi/:id/delete", s.AdminGenericAPIDelete)
 
 		// Transit
-		admin.GET("/datasources/transit/new", func(c *gin.Context) { s.renderForm(c, "Transit", "transit", false, nil) })
-		admin.POST("/datasources/transit/new", func(c *gin.Context) { s.createTokenURLDS(c, "transit") })
-		admin.GET("/datasources/transit/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "transit") })
-		admin.POST("/datasources/transit/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "transit") })
-		admin.POST("/datasources/transit/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "transit") })
+		admin.GET("/datasources/transit/new", s.AdminTransitNew)
+		admin.POST("/datasources/transit/new", s.AdminTransitCreate)
+		admin.GET("/datasources/transit/:id/edit", s.AdminTransitEdit)
+		admin.POST("/datasources/transit/:id/edit", s.AdminTransitUpdate)
+		admin.POST("/datasources/transit/:id/delete", s.AdminTransitDelete)
+
+		admin.GET("/api/transit", s.APITransitList)
+		admin.GET("/api/transit/:id", s.APITransitGet)
+		admin.POST("/api/transit", s.APITransitCreate)
+		admin.PUT("/api/transit/:id", s.APITransitUpdate)
+		admin.DELETE("/api/transit/:id", s.APITransitDelete)
 
 		// Uptime
 		admin.GET("/datasources/uptime/new", func(c *gin.Context) {

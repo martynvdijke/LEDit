@@ -165,7 +165,7 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	}
 	transits, _ := settings.Edges.TransitsOrErr()
 	for _, t := range transits {
-		add("transit", t.ID, "Transit #"+strconv.Itoa(t.ID))
+		add("transit", t.ID, "Transit "+t.Token)
 	}
 	uptimes, _ := settings.Edges.UptimesOrErr()
 	for _, u := range uptimes {
@@ -366,8 +366,12 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 	}
 	transits, _ := settings.Edges.TransitsOrErr()
 	for _, t := range transits {
-		idx.byKey[key("transit", t.ID)] = &datasource.TransitDS{Token: t.Token, URL: t.URL}
-		idx.names[key("transit", t.ID)] = "Transit"
+		idx.byKey[key("transit", t.ID)] = &datasource.TransitDS{
+			Token: t.Token, URL: t.URL, APIKey: t.APIKey, Provider: string(t.Provider),
+			MaxDepartures: t.MaxDepartures, RouteFilter: t.RouteFilter,
+			WalkTimeMin: t.WalkTimeMin, Timezone: t.Timezone, TimeMode: string(t.TimeMode),
+		}
+		idx.names[key("transit", t.ID)] = "Transit " + t.Token
 	}
 	uptimes, _ := settings.Edges.UptimesOrErr()
 	for _, u := range uptimes {

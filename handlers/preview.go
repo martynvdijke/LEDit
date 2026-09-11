@@ -32,7 +32,7 @@ func (s *Server) loadSettingsWithAll(c *gin.Context) (*ent.GeneralSettings, erro
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
 		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
 		WithImages().WithVideos().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
-		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithNowPlayingSources().Only(c.Request.Context())
+		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithNowPlayingSources().WithTransits().Only(c.Request.Context())
 	if err != nil {
 		return nil, err
 	}
@@ -163,6 +163,18 @@ func (s *Server) AdminPreviewDatasource(c *gin.Context) {
 		src = &datasource.HomeAssistantDS{Token: c.PostForm("token"), URL: c.PostForm("url")}
 	case "untappd":
 		src = &datasource.UntappdDS{Token: c.PostForm("token"), URL: c.PostForm("url")}
+	case "transit":
+		src = &datasource.TransitDS{
+			Token:         c.PostForm("token"),
+			URL:           c.PostForm("url"),
+			APIKey:        c.PostForm("api_key"),
+			Provider:      c.DefaultPostForm("provider", "vbb"),
+			MaxDepartures: mustAtoi(c.DefaultPostForm("max_departures", "4")),
+			RouteFilter:   c.PostForm("route_filter"),
+			WalkTimeMin:   mustAtoi(c.DefaultPostForm("walk_time_min", "0")),
+			Timezone:      c.PostForm("timezone"),
+			TimeMode:      c.DefaultPostForm("time_mode", "minutes"),
+		}
 	case "textslide":
 		src = &datasource.TextSlideDS{
 			Content:  c.PostForm("content"),
