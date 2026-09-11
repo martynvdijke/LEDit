@@ -280,6 +280,8 @@ func (s *Server) setupRoutes() {
 
 	s.Router.GET("/metrics", s.MetricsHandler)
 	s.Router.GET("/", s.IndexHandler)
+	// Guest remote shell (public, no server-rendered feed data).
+	s.Router.GET("/remote", s.RemotePage)
 	s.Router.GET("/ws/feed", s.WSHub.HandleWS)
 	s.Router.GET("/ws/device/:token", s.WSHub.HandleDeviceWS)
 	// Device-accurate preview: admin session (not the device token), never
@@ -294,6 +296,14 @@ func (s *Server) setupRoutes() {
 		// Public only: health and TRMNL polling stay unauthenticated.
 		api.GET("/trmnl/stats", s.APITrmnlStats)
 		api.GET("/health", s.APIHealth)
+
+		// Guest remote: scoped X-Guest-Token auth, deliberately outside the
+		// authenticated reads/mutations groups and never cookie-authenticated.
+		api.GET("/guest/status", s.GuestAuthMiddleware(""), s.APIGuestStatus)
+		api.POST("/guest/pause", s.GuestAuthMiddleware("pause"), s.APIGuestPause)
+		api.POST("/guest/resume", s.GuestAuthMiddleware("pause"), s.APIGuestResume)
+		api.POST("/guest/next", s.GuestAuthMiddleware("next"), s.APIGuestNext)
+		api.POST("/guest/message", s.GuestAuthMiddleware("message"), s.APIGuestMessage)
 
 		// Authenticated reads: feed and notifications require session or bearer token.
 		authReads := api.Group("")

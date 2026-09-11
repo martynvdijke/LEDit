@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 	"ledit/ent"
@@ -143,4 +144,97 @@ func abortGuestRateLimited(c *gin.Context, retryAfter int) {
 	c.Header("Retry-After", strconv.Itoa(retryAfter))
 	c.Header("Cache-Control", "no-store")
 	c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "rate_limit_exceeded", "code": "rate_limit_exceeded"})
+}
+
+// ---------------------------------------------------------------------------
+// Guest API (scoped, rate-limited, reusing the existing feed/notification path)
+// ---------------------------------------------------------------------------
+
+// RemotePage serves the installable guest remote shell. It carries no feed,
+// source, device, or notification data.
+func (s *Server) RemotePage(c *gin.Context) {
+	c.Header("Cache-Control", "no-store")
+	c.HTML(http.StatusOK, "remote.html", gin.H{})
+}
+
+// APIGuestStatus returns the minimal guest view: paused state, the token's
+// scopes, and its expiry. Never source names, queue, devices, or pin data.
+func (s *Server) APIGuestStatus(c *gin.Context) {
+	tok := currentGuestToken(c)
+	if tok == nil {
+		abortGuestUnauthorized(c)
+		return
+	}
+	c.Header("Cache-Control", "no-store")
+	c.JSON(http.StatusOK, gin.H{
+		"paused":     GlobalFeed.IsPaused(),
+		"scopes":     tok.Scopes,
+		"expires_at": tok.ExpiresAt,
+	})
+}
+
+// guestControl applies the shared control rate limit (30/min per token), runs
+// the feed action, and returns {"status":"ok"}.
+func (s *Server) guestControl(c *gin.Context, action func()) {
+	tok := currentGuestToken(c)
+	if tok == nil {
+		abortGuestUnauthorized(c)
+		return
+	}
+	if ok, retry := checkGuestRateLimit("ctrl:"+strconv.Itoa(tok.ID), 30); !ok {
+		abortGuestRateLimited(c, retry)
+		return
+	}
+	action()
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func (s *Server) APIGuestPause(c *gin.Context)  { s.guestControl(c, GlobalFeed.Pause) }
+func (s *Server) APIGuestResume(c *gin.Context) { s.guestControl(c, GlobalFeed.Resume) }
+func (s *Server) APIGuestNext(c *gin.Context)   { s.guestControl(c, GlobalFeed.Next) }
+
+// APIGuestMessage pushes a short guest text to the wall through the existing
+// AddNotification/TTL path. The admin-visible title is server-derived so guests
+// cannot spoof it; the untrusted text is the message body.
+func (s *Server) APIGuestMessage(c *gin.Context) {
+	tok := currentGuestToken(c)
+	if tok == nil {
+		abortGuestUnauthorized(c)
+		return
+	}
+	if ok, retry := checkGuestRateLimit("msg:tok:"+strconv.Itoa(tok.ID), 5); !ok {
+		abortGuestRateLimited(c, retry)
+		return
+	}
+	if ok, retry := checkGuestRateLimit("msg:ip:"+c.ClientIP(), 20); !ok {
+		abortGuestRateLimited(c, retry)
+		return
+	}
+
+	var req struct {
+		Text string `json:"text"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+	text := strings.TrimSpace(req.Text)
+	if text == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "message is required"})
+		return
+	}
+	if utf8.RuneCountInString(text) > 140 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "message too long (max 140 characters)"})
+		return
+	}
+
+	// webhookDefaultTTL is already clamped to 1-3600 seconds.
+	ttlSec := s.webhookDefaultTTL()
+	ttl := time.Duration(ttlSec) * time.Second
+	s.AddNotification("Guest message", text, WithTTL(ttl))
+	c.JSON(http.StatusAccepted, gin.H{
+		"id":         CurrentNotifSeq(),
+		"ttl":        ttlSec,
+		"expires_at": time.Now().Add(ttl).UTC().Format(time.RFC3339),
+	})
 }
