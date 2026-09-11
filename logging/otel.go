@@ -3,8 +3,10 @@ package logging
 import (
 	"context"
 	"log/slog"
+	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -63,6 +65,14 @@ func (t *Telemetry) IsEnabled() bool {
 func InitTelemetry() *Telemetry {
 	t := NewTelemetry()
 
+	if strings.EqualFold(strings.TrimSpace(os.Getenv("OTEL_SDK_DISABLED")), "true") {
+		slog.Info("OTel telemetry disabled – OTEL_SDK_DISABLED=true")
+		return t
+	}
+
+	// ponytail: only the general OTEL_EXPORTER_OTLP_ENDPOINT gates telemetry.
+	// Add per-signal endpoints (OTEL_EXPORTER_OTLP_{TRACES,METRICS,LOGS}_ENDPOINT)
+	// when a deployment needs different backends per signal.
 	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
 	protocol := os.Getenv("OTEL_EXPORTER_OTLP_PROTOCOL")
 	if protocol == "" {
@@ -150,49 +160,50 @@ func (t *Telemetry) initProviders() {
 	}
 }
 
+// The OTLP exporters read the standard OTEL_* environment variables themselves
+// (endpoint URL incl. scheme/path, TLS, headers, compression, timeouts). We
+// therefore pass no endpoint option when OTEL_EXPORTER_OTLP_ENDPOINT is a full
+// URL, so the SDK parses it correctly. A bare "host:port" is not a valid URL
+// and would be mis-parsed by the SDK, so we fall back to the insecure
+// host:port form for backwards compatibility.
+
 func (t *Telemetry) createTraceExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
-	switch t.protocol {
-	case "http":
-		return otlptracehttp.New(ctx,
-			otlptracehttp.WithEndpoint(t.endpoint),
-			otlptracehttp.WithInsecure(),
-		)
-	default: // grpc
-		return otlptracegrpc.New(ctx,
-			otlptracegrpc.WithEndpoint(t.endpoint),
-			otlptracegrpc.WithInsecure(),
-		)
+	if isHTTPProtocol(t.protocol) {
+		if hasScheme(t.endpoint) {
+			return otlptracehttp.New(ctx)
+		}
+		return otlptracehttp.New(ctx, otlptracehttp.WithEndpoint(t.endpoint), otlptracehttp.WithInsecure())
 	}
+	if hasScheme(t.endpoint) {
+		return otlptracegrpc.New(ctx)
+	}
+	return otlptracegrpc.New(ctx, otlptracegrpc.WithEndpoint(t.endpoint), otlptracegrpc.WithInsecure())
 }
 
 func (t *Telemetry) createMetricExporter(ctx context.Context) (sdkmetric.Exporter, error) {
-	switch t.protocol {
-	case "http":
-		return otlpmetrichttp.New(ctx,
-			otlpmetrichttp.WithEndpoint(t.endpoint),
-			otlpmetrichttp.WithInsecure(),
-		)
-	default: // grpc
-		return otlpmetricgrpc.New(ctx,
-			otlpmetricgrpc.WithEndpoint(t.endpoint),
-			otlpmetricgrpc.WithInsecure(),
-		)
+	if isHTTPProtocol(t.protocol) {
+		if hasScheme(t.endpoint) {
+			return otlpmetrichttp.New(ctx)
+		}
+		return otlpmetrichttp.New(ctx, otlpmetrichttp.WithEndpoint(t.endpoint), otlpmetrichttp.WithInsecure())
 	}
+	if hasScheme(t.endpoint) {
+		return otlpmetricgrpc.New(ctx)
+	}
+	return otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithEndpoint(t.endpoint), otlpmetricgrpc.WithInsecure())
 }
 
 func (t *Telemetry) createLogExporter(ctx context.Context) (sdklog.Exporter, error) {
-	switch t.protocol {
-	case "http":
-		return otlploghttp.New(ctx,
-			otlploghttp.WithEndpoint(t.endpoint),
-			otlploghttp.WithInsecure(),
-		)
-	default: // grpc
-		return otlploggrpc.New(ctx,
-			otlploggrpc.WithEndpoint(t.endpoint),
-			otlploggrpc.WithInsecure(),
-		)
+	if isHTTPProtocol(t.protocol) {
+		if hasScheme(t.endpoint) {
+			return otlploghttp.New(ctx)
+		}
+		return otlploghttp.New(ctx, otlploghttp.WithEndpoint(t.endpoint), otlploghttp.WithInsecure())
 	}
+	if hasScheme(t.endpoint) {
+		return otlploggrpc.New(ctx)
+	}
+	return otlploggrpc.New(ctx, otlploggrpc.WithEndpoint(t.endpoint), otlploggrpc.WithInsecure())
 }
 
 // TracerProvider returns the trace provider (nil if disabled).
@@ -317,6 +328,53 @@ func parseSampleRatio(s string) float64 {
 	return r
 }
 
+// isHTTPProtocol reports whether an OTEL_EXPORTER_OTLP_PROTOCOL value selects
+// the OTLP/HTTP transport ("http", "http/protobuf", "http/json").
+func isHTTPProtocol(protocol string) bool {
+	return strings.HasPrefix(strings.ToLower(strings.TrimSpace(protocol)), "http")
+}
+
+// hasScheme reports whether endpoint is a full URL (e.g.
+// "https://collector.example.com:4318") rather than a bare "host:port".
+func hasScheme(endpoint string) bool {
+	return strings.Contains(endpoint, "://")
+}
+
+// otlpEndpoint splits an admin-configured OTLP endpoint into its host, URL
+// path, and whether the connection should be insecure. A bare "host:port" is
+// treated as insecure to match historical behaviour.
+func otlpEndpoint(endpoint string) (host, path string, insecure bool) {
+	if !hasScheme(endpoint) {
+		return endpoint, "", true
+	}
+	u, err := url.Parse(endpoint)
+	if err != nil || u.Host == "" {
+		return endpoint, "", true
+	}
+	return u.Host, u.Path, u.Scheme != "https"
+}
+
+func logHTTPOptions(endpoint string) []otlploghttp.Option {
+	host, path, insecure := otlpEndpoint(endpoint)
+	opts := []otlploghttp.Option{otlploghttp.WithEndpoint(host)}
+	if path != "" {
+		opts = append(opts, otlploghttp.WithURLPath(path))
+	}
+	if insecure {
+		opts = append(opts, otlploghttp.WithInsecure())
+	}
+	return opts
+}
+
+func logGRPCOptions(endpoint string) []otlploggrpc.Option {
+	host, _, insecure := otlpEndpoint(endpoint)
+	opts := []otlploggrpc.Option{otlploggrpc.WithEndpoint(host)}
+	if insecure {
+		opts = append(opts, otlploggrpc.WithInsecure())
+	}
+	return opts
+}
+
 // ---------------------------------------------------------------------------
 // Legacy OTelExporter (kept for backward compatibility with existing DBHandler)
 // ---------------------------------------------------------------------------
@@ -367,17 +425,10 @@ func (e *OTelExporter) initExporter() {
 	var exp sdklog.Exporter
 	var err error
 
-	switch e.protocol {
-	case "http":
-		exp, err = otlploghttp.New(ctx,
-			otlploghttp.WithEndpoint(e.endpoint),
-			otlploghttp.WithInsecure(),
-		)
-	default: // grpc
-		exp, err = otlploggrpc.New(ctx,
-			otlploggrpc.WithEndpoint(e.endpoint),
-			otlploggrpc.WithInsecure(),
-		)
+	if isHTTPProtocol(e.protocol) {
+		exp, err = otlploghttp.New(ctx, logHTTPOptions(e.endpoint)...)
+	} else {
+		exp, err = otlploggrpc.New(ctx, logGRPCOptions(e.endpoint)...)
 	}
 
 	if err != nil {

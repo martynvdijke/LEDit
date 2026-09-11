@@ -278,3 +278,76 @@ func TestInitTelemetry_UnreachableEndpoint(t *testing.T) {
 	tm.Shutdown(context.Background())
 	_ = tm
 }
+
+func TestInitTelemetry_FullURLAndHTTPProtocol(t *testing.T) {
+	// Standard OTel setup: endpoint is a full URL and protocol is http/protobuf.
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318")
+	t.Setenv("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf")
+	tm := InitTelemetry()
+	if !tm.IsEnabled() {
+		t.Fatal("expected Telemetry enabled for full HTTP URL endpoint")
+	}
+	if tm.MeterProvider() == nil {
+		t.Error("expected metrics provider to be configured")
+	}
+	if tm.LoggerProvider() == nil {
+		t.Error("expected logs provider to be configured")
+	}
+	tm.Shutdown(context.Background())
+}
+
+func TestInitTelemetry_SDKDisabled(t *testing.T) {
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318")
+	t.Setenv("OTEL_SDK_DISABLED", "true")
+	tm := InitTelemetry()
+	if tm.IsEnabled() {
+		t.Error("expected Telemetry disabled when OTEL_SDK_DISABLED=true")
+	}
+	tm.Shutdown(context.Background())
+}
+
+func TestIsHTTPProtocol(t *testing.T) {
+	tests := map[string]bool{
+		"":              false,
+		"grpc":          false,
+		" HTTP ":        true,
+		"http":          true,
+		"http/protobuf": true,
+		"http/json":     true,
+	}
+	for in, want := range tests {
+		if got := isHTTPProtocol(in); got != want {
+			t.Errorf("isHTTPProtocol(%q) = %v, want %v", in, got, want)
+		}
+	}
+}
+
+func TestOtlpEndpoint(t *testing.T) {
+	tests := []struct {
+		in       string
+		host     string
+		path     string
+		insecure bool
+	}{
+		{"localhost:4317", "localhost:4317", "", true},
+		{"http://collector:4318", "collector:4318", "", true},
+		{"https://collector.example.com:4318", "collector.example.com:4318", "", false},
+		{"http://collector:4318/custom/logs", "collector:4318", "/custom/logs", true},
+	}
+	for _, tt := range tests {
+		host, path, insecure := otlpEndpoint(tt.in)
+		if host != tt.host || path != tt.path || insecure != tt.insecure {
+			t.Errorf("otlpEndpoint(%q) = (%q, %q, %v), want (%q, %q, %v)",
+				tt.in, host, path, insecure, tt.host, tt.path, tt.insecure)
+		}
+	}
+}
+
+func TestHasScheme(t *testing.T) {
+	if hasScheme("localhost:4317") {
+		t.Error("bare host:port should not be treated as a URL")
+	}
+	if !hasScheme("http://localhost:4318") {
+		t.Error("full URL should be detected")
+	}
+}
