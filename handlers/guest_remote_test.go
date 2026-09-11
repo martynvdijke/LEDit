@@ -449,3 +449,73 @@ func TestViewerCannotAccessGuestRemotes(t *testing.T) {
 		t.Fatalf("viewer create: expected 403, got %d", cr.Code)
 	}
 }
+
+// ---------------------------------------------------------------------------
+// 6.1 / 6.2 Integration and security boundary
+// ---------------------------------------------------------------------------
+
+func TestRemoteShellHasNoAdminData(t *testing.T) {
+	srv := newGuestRemoteTestServer(t)
+	srv.DB.WebhookSettings.Create().
+		SetAPIKey("super-secret-webhook-key").
+		SetDefaultTTL(30).
+		SaveX(srv.Ctx)
+	srv.AddNotification("UNIQUE_NOTIF_TITLE_XYZ", "UNIQUE_NOTIF_BODY_XYZ")
+
+	w := guestAPI(srv, http.MethodGet, "/remote", "", "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("remote: expected 200, got %d", w.Code)
+	}
+	if got := w.Header().Get("Cache-Control"); got != "no-store" {
+		t.Fatalf("remote Cache-Control: expected no-store, got %q", got)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "LEDit Remote") {
+		t.Fatal("remote shell missing title")
+	}
+	for _, leak := range []string{"UNIQUE_NOTIF_TITLE_XYZ", "UNIQUE_NOTIF_BODY_XYZ", "super-secret-webhook-key"} {
+		if strings.Contains(body, leak) {
+			t.Fatalf("remote shell leaked %q", leak)
+		}
+	}
+}
+
+func TestGuestStatusNeverLeaksSecretMaterial(t *testing.T) {
+	srv := newGuestRemoteTestServer(t)
+	secret := createGuestToken(t, srv, []string{"pause"}, nil, nil)
+	w := guestAPI(srv, http.MethodGet, "/api/guest/status", secret, "")
+	body := w.Body.String()
+	if strings.Contains(body, hashGuestToken(secret)) {
+		t.Fatal("status leaked token hash")
+	}
+	if strings.Contains(body, secret) {
+		t.Fatal("status leaked raw secret")
+	}
+}
+
+func TestGuestRoutesRejectSessionAndFormPost(t *testing.T) {
+	srv := newGuestRemoteTestServer(t)
+	session := loginAsAdmin(t, srv)
+
+	// A valid admin session cookie alone must not authorize a guest mutation.
+	req := httptest.NewRequest(http.MethodPost, "/api/guest/pause", nil)
+	req.AddCookie(session)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("session-only pause: expected 401, got %d", w.Code)
+	}
+	if GlobalFeed.IsPaused() {
+		t.Fatal("session-only request mutated the feed")
+	}
+
+	// A cross-origin form-style POST without the custom header is rejected.
+	req2 := httptest.NewRequest(http.MethodPost, "/api/guest/next", strings.NewReader(""))
+	req2.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req2.Header.Set("Origin", "https://evil.example")
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, req2)
+	if w2.Code != http.StatusUnauthorized {
+		t.Fatalf("form-style next: expected 401, got %d", w2.Code)
+	}
+}
