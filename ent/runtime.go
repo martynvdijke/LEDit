@@ -932,6 +932,22 @@ func init() {
 	sportsDescURL := sportsFields[1].Descriptor()
 	// sports.DefaultURL holds the default value on creation for the url field.
 	sports.DefaultURL = sportsDescURL.Default.(string)
+	// sportsDescConfig is the schema descriptor for config field.
+	sportsDescConfig := sportsFields[3].Descriptor()
+	// sports.DefaultConfig holds the default value on creation for the config field.
+	sports.DefaultConfig = sportsDescConfig.Default.(string)
+	// sportsDescLiveRefreshSeconds is the schema descriptor for live_refresh_seconds field.
+	sportsDescLiveRefreshSeconds := sportsFields[4].Descriptor()
+	// sports.DefaultLiveRefreshSeconds holds the default value on creation for the live_refresh_seconds field.
+	sports.DefaultLiveRefreshSeconds = sportsDescLiveRefreshSeconds.Default.(int)
+	// sports.LiveRefreshSecondsValidator is a validator for the "live_refresh_seconds" field. It is called by the builders before save.
+	sports.LiveRefreshSecondsValidator = sportsDescLiveRefreshSeconds.Validators[0].(func(int) error)
+	// sportsDescIdleRefreshSeconds is the schema descriptor for idle_refresh_seconds field.
+	sportsDescIdleRefreshSeconds := sportsFields[5].Descriptor()
+	// sports.DefaultIdleRefreshSeconds holds the default value on creation for the idle_refresh_seconds field.
+	sports.DefaultIdleRefreshSeconds = sportsDescIdleRefreshSeconds.Default.(int)
+	// sports.IdleRefreshSecondsValidator is a validator for the "idle_refresh_seconds" field. It is called by the builders before save.
+	sports.IdleRefreshSecondsValidator = sportsDescIdleRefreshSeconds.Validators[0].(func(int) error)
 	stockFields := schema.Stock{}.Fields()
 	_ = stockFields
 	// stockDescToken is the schema descriptor for token field.

@@ -55,6 +55,76 @@ func (_u *SportsUpdate) SetNillableURL(v *string) *SportsUpdate {
 	return _u
 }
 
+// SetProvider sets the "provider" field.
+func (_u *SportsUpdate) SetProvider(v sports.Provider) *SportsUpdate {
+	_u.mutation.SetProvider(v)
+	return _u
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *SportsUpdate) SetNillableProvider(v *sports.Provider) *SportsUpdate {
+	if v != nil {
+		_u.SetProvider(*v)
+	}
+	return _u
+}
+
+// SetConfig sets the "config" field.
+func (_u *SportsUpdate) SetConfig(v string) *SportsUpdate {
+	_u.mutation.SetConfig(v)
+	return _u
+}
+
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (_u *SportsUpdate) SetNillableConfig(v *string) *SportsUpdate {
+	if v != nil {
+		_u.SetConfig(*v)
+	}
+	return _u
+}
+
+// SetLiveRefreshSeconds sets the "live_refresh_seconds" field.
+func (_u *SportsUpdate) SetLiveRefreshSeconds(v int) *SportsUpdate {
+	_u.mutation.ResetLiveRefreshSeconds()
+	_u.mutation.SetLiveRefreshSeconds(v)
+	return _u
+}
+
+// SetNillableLiveRefreshSeconds sets the "live_refresh_seconds" field if the given value is not nil.
+func (_u *SportsUpdate) SetNillableLiveRefreshSeconds(v *int) *SportsUpdate {
+	if v != nil {
+		_u.SetLiveRefreshSeconds(*v)
+	}
+	return _u
+}
+
+// AddLiveRefreshSeconds adds value to the "live_refresh_seconds" field.
+func (_u *SportsUpdate) AddLiveRefreshSeconds(v int) *SportsUpdate {
+	_u.mutation.AddLiveRefreshSeconds(v)
+	return _u
+}
+
+// SetIdleRefreshSeconds sets the "idle_refresh_seconds" field.
+func (_u *SportsUpdate) SetIdleRefreshSeconds(v int) *SportsUpdate {
+	_u.mutation.ResetIdleRefreshSeconds()
+	_u.mutation.SetIdleRefreshSeconds(v)
+	return _u
+}
+
+// SetNillableIdleRefreshSeconds sets the "idle_refresh_seconds" field if the given value is not nil.
+func (_u *SportsUpdate) SetNillableIdleRefreshSeconds(v *int) *SportsUpdate {
+	if v != nil {
+		_u.SetIdleRefreshSeconds(*v)
+	}
+	return _u
+}
+
+// AddIdleRefreshSeconds adds value to the "idle_refresh_seconds" field.
+func (_u *SportsUpdate) AddIdleRefreshSeconds(v int) *SportsUpdate {
+	_u.mutation.AddIdleRefreshSeconds(v)
+	return _u
+}
+
 // Mutation returns the SportsMutation object of the builder.
 func (_u *SportsUpdate) Mutation() *SportsMutation {
 	return _u.mutation
@@ -87,7 +157,30 @@ func (_u *SportsUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *SportsUpdate) check() error {
+	if v, ok := _u.mutation.Provider(); ok {
+		if err := sports.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Sports.provider": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.LiveRefreshSeconds(); ok {
+		if err := sports.LiveRefreshSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "live_refresh_seconds", err: fmt.Errorf(`ent: validator failed for field "Sports.live_refresh_seconds": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.IdleRefreshSeconds(); ok {
+		if err := sports.IdleRefreshSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "idle_refresh_seconds", err: fmt.Errorf(`ent: validator failed for field "Sports.idle_refresh_seconds": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *SportsUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(sports.Table, sports.Columns, sqlgraph.NewFieldSpec(sports.FieldID, field.TypeInt))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -101,6 +194,24 @@ func (_u *SportsUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(sports.FieldURL, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(sports.FieldProvider, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Config(); ok {
+		_spec.SetField(sports.FieldConfig, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.LiveRefreshSeconds(); ok {
+		_spec.SetField(sports.FieldLiveRefreshSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedLiveRefreshSeconds(); ok {
+		_spec.AddField(sports.FieldLiveRefreshSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.IdleRefreshSeconds(); ok {
+		_spec.SetField(sports.FieldIdleRefreshSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedIdleRefreshSeconds(); ok {
+		_spec.AddField(sports.FieldIdleRefreshSeconds, field.TypeInt, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -150,6 +261,76 @@ func (_u *SportsUpdateOne) SetNillableURL(v *string) *SportsUpdateOne {
 	return _u
 }
 
+// SetProvider sets the "provider" field.
+func (_u *SportsUpdateOne) SetProvider(v sports.Provider) *SportsUpdateOne {
+	_u.mutation.SetProvider(v)
+	return _u
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *SportsUpdateOne) SetNillableProvider(v *sports.Provider) *SportsUpdateOne {
+	if v != nil {
+		_u.SetProvider(*v)
+	}
+	return _u
+}
+
+// SetConfig sets the "config" field.
+func (_u *SportsUpdateOne) SetConfig(v string) *SportsUpdateOne {
+	_u.mutation.SetConfig(v)
+	return _u
+}
+
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (_u *SportsUpdateOne) SetNillableConfig(v *string) *SportsUpdateOne {
+	if v != nil {
+		_u.SetConfig(*v)
+	}
+	return _u
+}
+
+// SetLiveRefreshSeconds sets the "live_refresh_seconds" field.
+func (_u *SportsUpdateOne) SetLiveRefreshSeconds(v int) *SportsUpdateOne {
+	_u.mutation.ResetLiveRefreshSeconds()
+	_u.mutation.SetLiveRefreshSeconds(v)
+	return _u
+}
+
+// SetNillableLiveRefreshSeconds sets the "live_refresh_seconds" field if the given value is not nil.
+func (_u *SportsUpdateOne) SetNillableLiveRefreshSeconds(v *int) *SportsUpdateOne {
+	if v != nil {
+		_u.SetLiveRefreshSeconds(*v)
+	}
+	return _u
+}
+
+// AddLiveRefreshSeconds adds value to the "live_refresh_seconds" field.
+func (_u *SportsUpdateOne) AddLiveRefreshSeconds(v int) *SportsUpdateOne {
+	_u.mutation.AddLiveRefreshSeconds(v)
+	return _u
+}
+
+// SetIdleRefreshSeconds sets the "idle_refresh_seconds" field.
+func (_u *SportsUpdateOne) SetIdleRefreshSeconds(v int) *SportsUpdateOne {
+	_u.mutation.ResetIdleRefreshSeconds()
+	_u.mutation.SetIdleRefreshSeconds(v)
+	return _u
+}
+
+// SetNillableIdleRefreshSeconds sets the "idle_refresh_seconds" field if the given value is not nil.
+func (_u *SportsUpdateOne) SetNillableIdleRefreshSeconds(v *int) *SportsUpdateOne {
+	if v != nil {
+		_u.SetIdleRefreshSeconds(*v)
+	}
+	return _u
+}
+
+// AddIdleRefreshSeconds adds value to the "idle_refresh_seconds" field.
+func (_u *SportsUpdateOne) AddIdleRefreshSeconds(v int) *SportsUpdateOne {
+	_u.mutation.AddIdleRefreshSeconds(v)
+	return _u
+}
+
 // Mutation returns the SportsMutation object of the builder.
 func (_u *SportsUpdateOne) Mutation() *SportsMutation {
 	return _u.mutation
@@ -195,7 +376,30 @@ func (_u *SportsUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *SportsUpdateOne) check() error {
+	if v, ok := _u.mutation.Provider(); ok {
+		if err := sports.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Sports.provider": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.LiveRefreshSeconds(); ok {
+		if err := sports.LiveRefreshSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "live_refresh_seconds", err: fmt.Errorf(`ent: validator failed for field "Sports.live_refresh_seconds": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.IdleRefreshSeconds(); ok {
+		if err := sports.IdleRefreshSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "idle_refresh_seconds", err: fmt.Errorf(`ent: validator failed for field "Sports.idle_refresh_seconds": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *SportsUpdateOne) sqlSave(ctx context.Context) (_node *Sports, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(sports.Table, sports.Columns, sqlgraph.NewFieldSpec(sports.FieldID, field.TypeInt))
 	id, ok := _u.mutation.ID()
 	if !ok {
@@ -226,6 +430,24 @@ func (_u *SportsUpdateOne) sqlSave(ctx context.Context) (_node *Sports, err erro
 	}
 	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(sports.FieldURL, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(sports.FieldProvider, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Config(); ok {
+		_spec.SetField(sports.FieldConfig, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.LiveRefreshSeconds(); ok {
+		_spec.SetField(sports.FieldLiveRefreshSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedLiveRefreshSeconds(); ok {
+		_spec.AddField(sports.FieldLiveRefreshSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.IdleRefreshSeconds(); ok {
+		_spec.SetField(sports.FieldIdleRefreshSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedIdleRefreshSeconds(); ok {
+		_spec.AddField(sports.FieldIdleRefreshSeconds, field.TypeInt, value)
 	}
 	_node = &Sports{config: _u.config}
 	_spec.Assign = _node.assignValues

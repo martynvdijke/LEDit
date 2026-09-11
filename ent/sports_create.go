@@ -47,6 +47,62 @@ func (_c *SportsCreate) SetNillableURL(v *string) *SportsCreate {
 	return _c
 }
 
+// SetProvider sets the "provider" field.
+func (_c *SportsCreate) SetProvider(v sports.Provider) *SportsCreate {
+	_c.mutation.SetProvider(v)
+	return _c
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_c *SportsCreate) SetNillableProvider(v *sports.Provider) *SportsCreate {
+	if v != nil {
+		_c.SetProvider(*v)
+	}
+	return _c
+}
+
+// SetConfig sets the "config" field.
+func (_c *SportsCreate) SetConfig(v string) *SportsCreate {
+	_c.mutation.SetConfig(v)
+	return _c
+}
+
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (_c *SportsCreate) SetNillableConfig(v *string) *SportsCreate {
+	if v != nil {
+		_c.SetConfig(*v)
+	}
+	return _c
+}
+
+// SetLiveRefreshSeconds sets the "live_refresh_seconds" field.
+func (_c *SportsCreate) SetLiveRefreshSeconds(v int) *SportsCreate {
+	_c.mutation.SetLiveRefreshSeconds(v)
+	return _c
+}
+
+// SetNillableLiveRefreshSeconds sets the "live_refresh_seconds" field if the given value is not nil.
+func (_c *SportsCreate) SetNillableLiveRefreshSeconds(v *int) *SportsCreate {
+	if v != nil {
+		_c.SetLiveRefreshSeconds(*v)
+	}
+	return _c
+}
+
+// SetIdleRefreshSeconds sets the "idle_refresh_seconds" field.
+func (_c *SportsCreate) SetIdleRefreshSeconds(v int) *SportsCreate {
+	_c.mutation.SetIdleRefreshSeconds(v)
+	return _c
+}
+
+// SetNillableIdleRefreshSeconds sets the "idle_refresh_seconds" field if the given value is not nil.
+func (_c *SportsCreate) SetNillableIdleRefreshSeconds(v *int) *SportsCreate {
+	if v != nil {
+		_c.SetIdleRefreshSeconds(*v)
+	}
+	return _c
+}
+
 // Mutation returns the SportsMutation object of the builder.
 func (_c *SportsCreate) Mutation() *SportsMutation {
 	return _c.mutation
@@ -90,6 +146,22 @@ func (_c *SportsCreate) defaults() {
 		v := sports.DefaultURL
 		_c.mutation.SetURL(v)
 	}
+	if _, ok := _c.mutation.Provider(); !ok {
+		v := sports.DefaultProvider
+		_c.mutation.SetProvider(v)
+	}
+	if _, ok := _c.mutation.Config(); !ok {
+		v := sports.DefaultConfig
+		_c.mutation.SetConfig(v)
+	}
+	if _, ok := _c.mutation.LiveRefreshSeconds(); !ok {
+		v := sports.DefaultLiveRefreshSeconds
+		_c.mutation.SetLiveRefreshSeconds(v)
+	}
+	if _, ok := _c.mutation.IdleRefreshSeconds(); !ok {
+		v := sports.DefaultIdleRefreshSeconds
+		_c.mutation.SetIdleRefreshSeconds(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -99,6 +171,33 @@ func (_c *SportsCreate) check() error {
 	}
 	if _, ok := _c.mutation.URL(); !ok {
 		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Sports.url"`)}
+	}
+	if _, ok := _c.mutation.Provider(); !ok {
+		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "Sports.provider"`)}
+	}
+	if v, ok := _c.mutation.Provider(); ok {
+		if err := sports.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Sports.provider": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.Config(); !ok {
+		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "Sports.config"`)}
+	}
+	if _, ok := _c.mutation.LiveRefreshSeconds(); !ok {
+		return &ValidationError{Name: "live_refresh_seconds", err: errors.New(`ent: missing required field "Sports.live_refresh_seconds"`)}
+	}
+	if v, ok := _c.mutation.LiveRefreshSeconds(); ok {
+		if err := sports.LiveRefreshSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "live_refresh_seconds", err: fmt.Errorf(`ent: validator failed for field "Sports.live_refresh_seconds": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.IdleRefreshSeconds(); !ok {
+		return &ValidationError{Name: "idle_refresh_seconds", err: errors.New(`ent: missing required field "Sports.idle_refresh_seconds"`)}
+	}
+	if v, ok := _c.mutation.IdleRefreshSeconds(); ok {
+		if err := sports.IdleRefreshSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "idle_refresh_seconds", err: fmt.Errorf(`ent: validator failed for field "Sports.idle_refresh_seconds": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -133,6 +232,22 @@ func (_c *SportsCreate) createSpec() (*Sports, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.URL(); ok {
 		_spec.SetField(sports.FieldURL, field.TypeString, value)
 		_node.URL = value
+	}
+	if value, ok := _c.mutation.Provider(); ok {
+		_spec.SetField(sports.FieldProvider, field.TypeEnum, value)
+		_node.Provider = value
+	}
+	if value, ok := _c.mutation.Config(); ok {
+		_spec.SetField(sports.FieldConfig, field.TypeString, value)
+		_node.Config = value
+	}
+	if value, ok := _c.mutation.LiveRefreshSeconds(); ok {
+		_spec.SetField(sports.FieldLiveRefreshSeconds, field.TypeInt, value)
+		_node.LiveRefreshSeconds = value
+	}
+	if value, ok := _c.mutation.IdleRefreshSeconds(); ok {
+		_spec.SetField(sports.FieldIdleRefreshSeconds, field.TypeInt, value)
+		_node.IdleRefreshSeconds = value
 	}
 	return _node, _spec
 }

@@ -63,6 +63,21 @@ func URL(v string) predicate.Sports {
 	return predicate.Sports(sql.FieldEQ(FieldURL, v))
 }
 
+// Config applies equality check predicate on the "config" field. It's identical to ConfigEQ.
+func Config(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldEQ(FieldConfig, v))
+}
+
+// LiveRefreshSeconds applies equality check predicate on the "live_refresh_seconds" field. It's identical to LiveRefreshSecondsEQ.
+func LiveRefreshSeconds(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldEQ(FieldLiveRefreshSeconds, v))
+}
+
+// IdleRefreshSeconds applies equality check predicate on the "idle_refresh_seconds" field. It's identical to IdleRefreshSecondsEQ.
+func IdleRefreshSeconds(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldEQ(FieldIdleRefreshSeconds, v))
+}
+
 // TokenEQ applies the EQ predicate on the "token" field.
 func TokenEQ(v string) predicate.Sports {
 	return predicate.Sports(sql.FieldEQ(FieldToken, v))
@@ -191,6 +206,171 @@ func URLEqualFold(v string) predicate.Sports {
 // URLContainsFold applies the ContainsFold predicate on the "url" field.
 func URLContainsFold(v string) predicate.Sports {
 	return predicate.Sports(sql.FieldContainsFold(FieldURL, v))
+}
+
+// ProviderEQ applies the EQ predicate on the "provider" field.
+func ProviderEQ(v Provider) predicate.Sports {
+	return predicate.Sports(sql.FieldEQ(FieldProvider, v))
+}
+
+// ProviderNEQ applies the NEQ predicate on the "provider" field.
+func ProviderNEQ(v Provider) predicate.Sports {
+	return predicate.Sports(sql.FieldNEQ(FieldProvider, v))
+}
+
+// ProviderIn applies the In predicate on the "provider" field.
+func ProviderIn(vs ...Provider) predicate.Sports {
+	return predicate.Sports(sql.FieldIn(FieldProvider, vs...))
+}
+
+// ProviderNotIn applies the NotIn predicate on the "provider" field.
+func ProviderNotIn(vs ...Provider) predicate.Sports {
+	return predicate.Sports(sql.FieldNotIn(FieldProvider, vs...))
+}
+
+// ConfigEQ applies the EQ predicate on the "config" field.
+func ConfigEQ(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldEQ(FieldConfig, v))
+}
+
+// ConfigNEQ applies the NEQ predicate on the "config" field.
+func ConfigNEQ(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldNEQ(FieldConfig, v))
+}
+
+// ConfigIn applies the In predicate on the "config" field.
+func ConfigIn(vs ...string) predicate.Sports {
+	return predicate.Sports(sql.FieldIn(FieldConfig, vs...))
+}
+
+// ConfigNotIn applies the NotIn predicate on the "config" field.
+func ConfigNotIn(vs ...string) predicate.Sports {
+	return predicate.Sports(sql.FieldNotIn(FieldConfig, vs...))
+}
+
+// ConfigGT applies the GT predicate on the "config" field.
+func ConfigGT(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldGT(FieldConfig, v))
+}
+
+// ConfigGTE applies the GTE predicate on the "config" field.
+func ConfigGTE(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldGTE(FieldConfig, v))
+}
+
+// ConfigLT applies the LT predicate on the "config" field.
+func ConfigLT(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldLT(FieldConfig, v))
+}
+
+// ConfigLTE applies the LTE predicate on the "config" field.
+func ConfigLTE(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldLTE(FieldConfig, v))
+}
+
+// ConfigContains applies the Contains predicate on the "config" field.
+func ConfigContains(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldContains(FieldConfig, v))
+}
+
+// ConfigHasPrefix applies the HasPrefix predicate on the "config" field.
+func ConfigHasPrefix(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldHasPrefix(FieldConfig, v))
+}
+
+// ConfigHasSuffix applies the HasSuffix predicate on the "config" field.
+func ConfigHasSuffix(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldHasSuffix(FieldConfig, v))
+}
+
+// ConfigEqualFold applies the EqualFold predicate on the "config" field.
+func ConfigEqualFold(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldEqualFold(FieldConfig, v))
+}
+
+// ConfigContainsFold applies the ContainsFold predicate on the "config" field.
+func ConfigContainsFold(v string) predicate.Sports {
+	return predicate.Sports(sql.FieldContainsFold(FieldConfig, v))
+}
+
+// LiveRefreshSecondsEQ applies the EQ predicate on the "live_refresh_seconds" field.
+func LiveRefreshSecondsEQ(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldEQ(FieldLiveRefreshSeconds, v))
+}
+
+// LiveRefreshSecondsNEQ applies the NEQ predicate on the "live_refresh_seconds" field.
+func LiveRefreshSecondsNEQ(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldNEQ(FieldLiveRefreshSeconds, v))
+}
+
+// LiveRefreshSecondsIn applies the In predicate on the "live_refresh_seconds" field.
+func LiveRefreshSecondsIn(vs ...int) predicate.Sports {
+	return predicate.Sports(sql.FieldIn(FieldLiveRefreshSeconds, vs...))
+}
+
+// LiveRefreshSecondsNotIn applies the NotIn predicate on the "live_refresh_seconds" field.
+func LiveRefreshSecondsNotIn(vs ...int) predicate.Sports {
+	return predicate.Sports(sql.FieldNotIn(FieldLiveRefreshSeconds, vs...))
+}
+
+// LiveRefreshSecondsGT applies the GT predicate on the "live_refresh_seconds" field.
+func LiveRefreshSecondsGT(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldGT(FieldLiveRefreshSeconds, v))
+}
+
+// LiveRefreshSecondsGTE applies the GTE predicate on the "live_refresh_seconds" field.
+func LiveRefreshSecondsGTE(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldGTE(FieldLiveRefreshSeconds, v))
+}
+
+// LiveRefreshSecondsLT applies the LT predicate on the "live_refresh_seconds" field.
+func LiveRefreshSecondsLT(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldLT(FieldLiveRefreshSeconds, v))
+}
+
+// LiveRefreshSecondsLTE applies the LTE predicate on the "live_refresh_seconds" field.
+func LiveRefreshSecondsLTE(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldLTE(FieldLiveRefreshSeconds, v))
+}
+
+// IdleRefreshSecondsEQ applies the EQ predicate on the "idle_refresh_seconds" field.
+func IdleRefreshSecondsEQ(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldEQ(FieldIdleRefreshSeconds, v))
+}
+
+// IdleRefreshSecondsNEQ applies the NEQ predicate on the "idle_refresh_seconds" field.
+func IdleRefreshSecondsNEQ(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldNEQ(FieldIdleRefreshSeconds, v))
+}
+
+// IdleRefreshSecondsIn applies the In predicate on the "idle_refresh_seconds" field.
+func IdleRefreshSecondsIn(vs ...int) predicate.Sports {
+	return predicate.Sports(sql.FieldIn(FieldIdleRefreshSeconds, vs...))
+}
+
+// IdleRefreshSecondsNotIn applies the NotIn predicate on the "idle_refresh_seconds" field.
+func IdleRefreshSecondsNotIn(vs ...int) predicate.Sports {
+	return predicate.Sports(sql.FieldNotIn(FieldIdleRefreshSeconds, vs...))
+}
+
+// IdleRefreshSecondsGT applies the GT predicate on the "idle_refresh_seconds" field.
+func IdleRefreshSecondsGT(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldGT(FieldIdleRefreshSeconds, v))
+}
+
+// IdleRefreshSecondsGTE applies the GTE predicate on the "idle_refresh_seconds" field.
+func IdleRefreshSecondsGTE(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldGTE(FieldIdleRefreshSeconds, v))
+}
+
+// IdleRefreshSecondsLT applies the LT predicate on the "idle_refresh_seconds" field.
+func IdleRefreshSecondsLT(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldLT(FieldIdleRefreshSeconds, v))
+}
+
+// IdleRefreshSecondsLTE applies the LTE predicate on the "idle_refresh_seconds" field.
+func IdleRefreshSecondsLTE(v int) predicate.Sports {
+	return predicate.Sports(sql.FieldLTE(FieldIdleRefreshSeconds, v))
 }
 
 // And groups predicates with the AND operator between them.

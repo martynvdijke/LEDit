@@ -3,6 +3,8 @@
 package sports
 
 import (
+	"fmt"
+
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -15,6 +17,14 @@ const (
 	FieldToken = "token"
 	// FieldURL holds the string denoting the url field in the database.
 	FieldURL = "url"
+	// FieldProvider holds the string denoting the provider field in the database.
+	FieldProvider = "provider"
+	// FieldConfig holds the string denoting the config field in the database.
+	FieldConfig = "config"
+	// FieldLiveRefreshSeconds holds the string denoting the live_refresh_seconds field in the database.
+	FieldLiveRefreshSeconds = "live_refresh_seconds"
+	// FieldIdleRefreshSeconds holds the string denoting the idle_refresh_seconds field in the database.
+	FieldIdleRefreshSeconds = "idle_refresh_seconds"
 	// Table holds the table name of the sports in the database.
 	Table = "sports"
 )
@@ -24,6 +34,10 @@ var Columns = []string{
 	FieldID,
 	FieldToken,
 	FieldURL,
+	FieldProvider,
+	FieldConfig,
+	FieldLiveRefreshSeconds,
+	FieldIdleRefreshSeconds,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "sports"
@@ -52,7 +66,44 @@ var (
 	DefaultToken string
 	// DefaultURL holds the default value on creation for the "url" field.
 	DefaultURL string
+	// DefaultConfig holds the default value on creation for the "config" field.
+	DefaultConfig string
+	// DefaultLiveRefreshSeconds holds the default value on creation for the "live_refresh_seconds" field.
+	DefaultLiveRefreshSeconds int
+	// LiveRefreshSecondsValidator is a validator for the "live_refresh_seconds" field. It is called by the builders before save.
+	LiveRefreshSecondsValidator func(int) error
+	// DefaultIdleRefreshSeconds holds the default value on creation for the "idle_refresh_seconds" field.
+	DefaultIdleRefreshSeconds int
+	// IdleRefreshSecondsValidator is a validator for the "idle_refresh_seconds" field. It is called by the builders before save.
+	IdleRefreshSecondsValidator func(int) error
 )
+
+// Provider defines the type for the "provider" enum field.
+type Provider string
+
+// ProviderEspn is the default value of the Provider enum.
+const DefaultProvider = ProviderEspn
+
+// Provider values.
+const (
+	ProviderEspn        Provider = "espn"
+	ProviderThesportsdb Provider = "thesportsdb"
+	ProviderApifootball Provider = "apifootball"
+)
+
+func (pr Provider) String() string {
+	return string(pr)
+}
+
+// ProviderValidator is a validator for the "provider" field enum values. It is called by the builders before save.
+func ProviderValidator(pr Provider) error {
+	switch pr {
+	case ProviderEspn, ProviderThesportsdb, ProviderApifootball:
+		return nil
+	default:
+		return fmt.Errorf("sports: invalid enum value for provider field: %q", pr)
+	}
+}
 
 // OrderOption defines the ordering options for the Sports queries.
 type OrderOption func(*sql.Selector)
@@ -70,4 +121,24 @@ func ByToken(opts ...sql.OrderTermOption) OrderOption {
 // ByURL orders the results by the url field.
 func ByURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldURL, opts...).ToFunc()
+}
+
+// ByProvider orders the results by the provider field.
+func ByProvider(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProvider, opts...).ToFunc()
+}
+
+// ByConfig orders the results by the config field.
+func ByConfig(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConfig, opts...).ToFunc()
+}
+
+// ByLiveRefreshSeconds orders the results by the live_refresh_seconds field.
+func ByLiveRefreshSeconds(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLiveRefreshSeconds, opts...).ToFunc()
+}
+
+// ByIdleRefreshSeconds orders the results by the idle_refresh_seconds field.
+func ByIdleRefreshSeconds(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIdleRefreshSeconds, opts...).ToFunc()
 }

@@ -939,6 +939,10 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "token", Type: field.TypeString, Default: ""},
 		{Name: "url", Type: field.TypeString, Default: "https://site.api.espn.com/apis/site/v2/sports/%s/scoreboard"},
+		{Name: "provider", Type: field.TypeEnum, Enums: []string{"espn", "thesportsdb", "apifootball"}, Default: "espn"},
+		{Name: "config", Type: field.TypeString, Default: ""},
+		{Name: "live_refresh_seconds", Type: field.TypeInt, Default: 30},
+		{Name: "idle_refresh_seconds", Type: field.TypeInt, Default: 300},
 		{Name: "general_settings_sports", Type: field.TypeInt, Nullable: true},
 	}
 	// SportsTable holds the schema information for the "sports" table.
@@ -949,7 +953,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "sports_general_settings_sports",
-				Columns:    []*schema.Column{SportsColumns[3]},
+				Columns:    []*schema.Column{SportsColumns[7]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

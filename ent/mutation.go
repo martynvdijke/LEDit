@@ -29012,15 +29012,21 @@ func (m *SonarrMutation) ResetEdge(name string) error {
 // SportsMutation represents an operation that mutates the Sports nodes in the graph.
 type SportsMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	token         *string
-	url           *string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Sports, error)
-	predicates    []predicate.Sports
+	op                      Op
+	typ                     string
+	id                      *int
+	token                   *string
+	url                     *string
+	provider                *sports.Provider
+	_config                 *string
+	live_refresh_seconds    *int
+	addlive_refresh_seconds *int
+	idle_refresh_seconds    *int
+	addidle_refresh_seconds *int
+	clearedFields           map[string]struct{}
+	done                    bool
+	oldValue                func(context.Context) (*Sports, error)
+	predicates              []predicate.Sports
 }
 
 var _ ent.Mutation = (*SportsMutation)(nil)
@@ -29193,6 +29199,190 @@ func (m *SportsMutation) ResetURL() {
 	m.url = nil
 }
 
+// SetProvider sets the "provider" field.
+func (m *SportsMutation) SetProvider(s sports.Provider) {
+	m.provider = &s
+}
+
+// Provider returns the value of the "provider" field in the mutation.
+func (m *SportsMutation) Provider() (r sports.Provider, exists bool) {
+	v := m.provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProvider returns the old "provider" field's value of the Sports entity.
+// If the Sports object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SportsMutation) OldProvider(ctx context.Context) (v sports.Provider, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProvider requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
+	}
+	return oldValue.Provider, nil
+}
+
+// ResetProvider resets all changes to the "provider" field.
+func (m *SportsMutation) ResetProvider() {
+	m.provider = nil
+}
+
+// SetConfig sets the "config" field.
+func (m *SportsMutation) SetConfig(s string) {
+	m._config = &s
+}
+
+// Config returns the value of the "config" field in the mutation.
+func (m *SportsMutation) Config() (r string, exists bool) {
+	v := m._config
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfig returns the old "config" field's value of the Sports entity.
+// If the Sports object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SportsMutation) OldConfig(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfig requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
+	}
+	return oldValue.Config, nil
+}
+
+// ResetConfig resets all changes to the "config" field.
+func (m *SportsMutation) ResetConfig() {
+	m._config = nil
+}
+
+// SetLiveRefreshSeconds sets the "live_refresh_seconds" field.
+func (m *SportsMutation) SetLiveRefreshSeconds(i int) {
+	m.live_refresh_seconds = &i
+	m.addlive_refresh_seconds = nil
+}
+
+// LiveRefreshSeconds returns the value of the "live_refresh_seconds" field in the mutation.
+func (m *SportsMutation) LiveRefreshSeconds() (r int, exists bool) {
+	v := m.live_refresh_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLiveRefreshSeconds returns the old "live_refresh_seconds" field's value of the Sports entity.
+// If the Sports object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SportsMutation) OldLiveRefreshSeconds(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLiveRefreshSeconds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLiveRefreshSeconds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLiveRefreshSeconds: %w", err)
+	}
+	return oldValue.LiveRefreshSeconds, nil
+}
+
+// AddLiveRefreshSeconds adds i to the "live_refresh_seconds" field.
+func (m *SportsMutation) AddLiveRefreshSeconds(i int) {
+	if m.addlive_refresh_seconds != nil {
+		*m.addlive_refresh_seconds += i
+	} else {
+		m.addlive_refresh_seconds = &i
+	}
+}
+
+// AddedLiveRefreshSeconds returns the value that was added to the "live_refresh_seconds" field in this mutation.
+func (m *SportsMutation) AddedLiveRefreshSeconds() (r int, exists bool) {
+	v := m.addlive_refresh_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLiveRefreshSeconds resets all changes to the "live_refresh_seconds" field.
+func (m *SportsMutation) ResetLiveRefreshSeconds() {
+	m.live_refresh_seconds = nil
+	m.addlive_refresh_seconds = nil
+}
+
+// SetIdleRefreshSeconds sets the "idle_refresh_seconds" field.
+func (m *SportsMutation) SetIdleRefreshSeconds(i int) {
+	m.idle_refresh_seconds = &i
+	m.addidle_refresh_seconds = nil
+}
+
+// IdleRefreshSeconds returns the value of the "idle_refresh_seconds" field in the mutation.
+func (m *SportsMutation) IdleRefreshSeconds() (r int, exists bool) {
+	v := m.idle_refresh_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIdleRefreshSeconds returns the old "idle_refresh_seconds" field's value of the Sports entity.
+// If the Sports object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SportsMutation) OldIdleRefreshSeconds(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIdleRefreshSeconds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIdleRefreshSeconds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIdleRefreshSeconds: %w", err)
+	}
+	return oldValue.IdleRefreshSeconds, nil
+}
+
+// AddIdleRefreshSeconds adds i to the "idle_refresh_seconds" field.
+func (m *SportsMutation) AddIdleRefreshSeconds(i int) {
+	if m.addidle_refresh_seconds != nil {
+		*m.addidle_refresh_seconds += i
+	} else {
+		m.addidle_refresh_seconds = &i
+	}
+}
+
+// AddedIdleRefreshSeconds returns the value that was added to the "idle_refresh_seconds" field in this mutation.
+func (m *SportsMutation) AddedIdleRefreshSeconds() (r int, exists bool) {
+	v := m.addidle_refresh_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetIdleRefreshSeconds resets all changes to the "idle_refresh_seconds" field.
+func (m *SportsMutation) ResetIdleRefreshSeconds() {
+	m.idle_refresh_seconds = nil
+	m.addidle_refresh_seconds = nil
+}
+
 // Where appends a list predicates to the SportsMutation builder.
 func (m *SportsMutation) Where(ps ...predicate.Sports) {
 	m.predicates = append(m.predicates, ps...)
@@ -29227,12 +29417,24 @@ func (m *SportsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SportsMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 6)
 	if m.token != nil {
 		fields = append(fields, sports.FieldToken)
 	}
 	if m.url != nil {
 		fields = append(fields, sports.FieldURL)
+	}
+	if m.provider != nil {
+		fields = append(fields, sports.FieldProvider)
+	}
+	if m._config != nil {
+		fields = append(fields, sports.FieldConfig)
+	}
+	if m.live_refresh_seconds != nil {
+		fields = append(fields, sports.FieldLiveRefreshSeconds)
+	}
+	if m.idle_refresh_seconds != nil {
+		fields = append(fields, sports.FieldIdleRefreshSeconds)
 	}
 	return fields
 }
@@ -29246,6 +29448,14 @@ func (m *SportsMutation) Field(name string) (ent.Value, bool) {
 		return m.Token()
 	case sports.FieldURL:
 		return m.URL()
+	case sports.FieldProvider:
+		return m.Provider()
+	case sports.FieldConfig:
+		return m.Config()
+	case sports.FieldLiveRefreshSeconds:
+		return m.LiveRefreshSeconds()
+	case sports.FieldIdleRefreshSeconds:
+		return m.IdleRefreshSeconds()
 	}
 	return nil, false
 }
@@ -29259,6 +29469,14 @@ func (m *SportsMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldToken(ctx)
 	case sports.FieldURL:
 		return m.OldURL(ctx)
+	case sports.FieldProvider:
+		return m.OldProvider(ctx)
+	case sports.FieldConfig:
+		return m.OldConfig(ctx)
+	case sports.FieldLiveRefreshSeconds:
+		return m.OldLiveRefreshSeconds(ctx)
+	case sports.FieldIdleRefreshSeconds:
+		return m.OldIdleRefreshSeconds(ctx)
 	}
 	return nil, fmt.Errorf("unknown Sports field %s", name)
 }
@@ -29282,6 +29500,34 @@ func (m *SportsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetURL(v)
 		return nil
+	case sports.FieldProvider:
+		v, ok := value.(sports.Provider)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProvider(v)
+		return nil
+	case sports.FieldConfig:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfig(v)
+		return nil
+	case sports.FieldLiveRefreshSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLiveRefreshSeconds(v)
+		return nil
+	case sports.FieldIdleRefreshSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIdleRefreshSeconds(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Sports field %s", name)
 }
@@ -29289,13 +29535,26 @@ func (m *SportsMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *SportsMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addlive_refresh_seconds != nil {
+		fields = append(fields, sports.FieldLiveRefreshSeconds)
+	}
+	if m.addidle_refresh_seconds != nil {
+		fields = append(fields, sports.FieldIdleRefreshSeconds)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *SportsMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case sports.FieldLiveRefreshSeconds:
+		return m.AddedLiveRefreshSeconds()
+	case sports.FieldIdleRefreshSeconds:
+		return m.AddedIdleRefreshSeconds()
+	}
 	return nil, false
 }
 
@@ -29304,6 +29563,20 @@ func (m *SportsMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *SportsMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case sports.FieldLiveRefreshSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLiveRefreshSeconds(v)
+		return nil
+	case sports.FieldIdleRefreshSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddIdleRefreshSeconds(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Sports numeric field %s", name)
 }
@@ -29336,6 +29609,18 @@ func (m *SportsMutation) ResetField(name string) error {
 		return nil
 	case sports.FieldURL:
 		m.ResetURL()
+		return nil
+	case sports.FieldProvider:
+		m.ResetProvider()
+		return nil
+	case sports.FieldConfig:
+		m.ResetConfig()
+		return nil
+	case sports.FieldLiveRefreshSeconds:
+		m.ResetLiveRefreshSeconds()
+		return nil
+	case sports.FieldIdleRefreshSeconds:
+		m.ResetIdleRefreshSeconds()
 		return nil
 	}
 	return fmt.Errorf("unknown Sports field %s", name)

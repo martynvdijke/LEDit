@@ -16,10 +16,18 @@ type Sports struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// ESPN league slug
+	// Provider API key; legacy ESPN rows use it as the league slug
 	Token string `json:"token,omitempty"`
-	// ESPN scoreboard API URL with %s for league slug
-	URL                     string `json:"url,omitempty"`
+	// Provider scoreboard API URL with %s for the league slug
+	URL string `json:"url,omitempty"`
+	// Scores provider
+	Provider sports.Provider `json:"provider,omitempty"`
+	// JSON {leagues,teams,fixtures,max_games,prefer_live}
+	Config string `json:"config,omitempty"`
+	// Poll cadence while a followed game is live
+	LiveRefreshSeconds int `json:"live_refresh_seconds,omitempty"`
+	// Poll cadence when no followed game is live
+	IdleRefreshSeconds      int `json:"idle_refresh_seconds,omitempty"`
 	general_settings_sports *int
 	selectValues            sql.SelectValues
 }
@@ -29,9 +37,9 @@ func (*Sports) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case sports.FieldID:
+		case sports.FieldID, sports.FieldLiveRefreshSeconds, sports.FieldIdleRefreshSeconds:
 			values[i] = new(sql.NullInt64)
-		case sports.FieldToken, sports.FieldURL:
+		case sports.FieldToken, sports.FieldURL, sports.FieldProvider, sports.FieldConfig:
 			values[i] = new(sql.NullString)
 		case sports.ForeignKeys[0]: // general_settings_sports
 			values[i] = new(sql.NullInt64)
@@ -67,6 +75,30 @@ func (_m *Sports) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field url", values[i])
 			} else if value.Valid {
 				_m.URL = value.String
+			}
+		case sports.FieldProvider:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
+			} else if value.Valid {
+				_m.Provider = sports.Provider(value.String)
+			}
+		case sports.FieldConfig:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field config", values[i])
+			} else if value.Valid {
+				_m.Config = value.String
+			}
+		case sports.FieldLiveRefreshSeconds:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field live_refresh_seconds", values[i])
+			} else if value.Valid {
+				_m.LiveRefreshSeconds = int(value.Int64)
+			}
+		case sports.FieldIdleRefreshSeconds:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field idle_refresh_seconds", values[i])
+			} else if value.Valid {
+				_m.IdleRefreshSeconds = int(value.Int64)
 			}
 		case sports.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -116,6 +148,18 @@ func (_m *Sports) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("url=")
 	builder.WriteString(_m.URL)
+	builder.WriteString(", ")
+	builder.WriteString("provider=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Provider))
+	builder.WriteString(", ")
+	builder.WriteString("config=")
+	builder.WriteString(_m.Config)
+	builder.WriteString(", ")
+	builder.WriteString("live_refresh_seconds=")
+	builder.WriteString(fmt.Sprintf("%v", _m.LiveRefreshSeconds))
+	builder.WriteString(", ")
+	builder.WriteString("idle_refresh_seconds=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IdleRefreshSeconds))
 	builder.WriteByte(')')
 	return builder.String()
 }
