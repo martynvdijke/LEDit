@@ -1754,6 +1754,29 @@ func HasQrcodesWith(preds ...predicate.Qrcode) predicate.GeneralSettings {
 	})
 }
 
+// HasNowPlayingSources applies the HasEdge predicate on the "now_playing_sources" edge.
+func HasNowPlayingSources() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NowPlayingSourcesTable, NowPlayingSourcesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNowPlayingSourcesWith applies the HasEdge predicate on the "now_playing_sources" edge with a given conditions (other predicates).
+func HasNowPlayingSourcesWith(preds ...predicate.NowPlayingSource) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newNowPlayingSourcesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.GeneralSettings) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.AndPredicates(predicates...))

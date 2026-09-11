@@ -36,6 +36,7 @@ import (
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/nowplayingsource"
 	"ledit/ent/outboundsettings"
 	"ledit/ent/outboundwebhook"
 	"ledit/ent/pihole"
@@ -107,6 +108,7 @@ const (
 	TypeMatrixLayout     = "MatrixLayout"
 	TypeNewsFeed         = "NewsFeed"
 	TypeNotification     = "Notification"
+	TypeNowPlayingSource = "NowPlayingSource"
 	TypeOutboundSettings = "OutboundSettings"
 	TypeOutboundWebhook  = "OutboundWebhook"
 	TypePiHole           = "PiHole"
@@ -11332,6 +11334,9 @@ type GeneralSettingsMutation struct {
 	qrcodes                        map[int]struct{}
 	removedqrcodes                 map[int]struct{}
 	clearedqrcodes                 bool
+	now_playing_sources            map[int]struct{}
+	removednow_playing_sources     map[int]struct{}
+	clearednow_playing_sources     bool
 	done                           bool
 	oldValue                       func(context.Context) (*GeneralSettings, error)
 	predicates                     []predicate.GeneralSettings
@@ -14397,6 +14402,60 @@ func (m *GeneralSettingsMutation) ResetQrcodes() {
 	m.removedqrcodes = nil
 }
 
+// AddNowPlayingSourceIDs adds the "now_playing_sources" edge to the NowPlayingSource entity by ids.
+func (m *GeneralSettingsMutation) AddNowPlayingSourceIDs(ids ...int) {
+	if m.now_playing_sources == nil {
+		m.now_playing_sources = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.now_playing_sources[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNowPlayingSources clears the "now_playing_sources" edge to the NowPlayingSource entity.
+func (m *GeneralSettingsMutation) ClearNowPlayingSources() {
+	m.clearednow_playing_sources = true
+}
+
+// NowPlayingSourcesCleared reports if the "now_playing_sources" edge to the NowPlayingSource entity was cleared.
+func (m *GeneralSettingsMutation) NowPlayingSourcesCleared() bool {
+	return m.clearednow_playing_sources
+}
+
+// RemoveNowPlayingSourceIDs removes the "now_playing_sources" edge to the NowPlayingSource entity by IDs.
+func (m *GeneralSettingsMutation) RemoveNowPlayingSourceIDs(ids ...int) {
+	if m.removednow_playing_sources == nil {
+		m.removednow_playing_sources = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.now_playing_sources, ids[i])
+		m.removednow_playing_sources[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNowPlayingSources returns the removed IDs of the "now_playing_sources" edge to the NowPlayingSource entity.
+func (m *GeneralSettingsMutation) RemovedNowPlayingSourcesIDs() (ids []int) {
+	for id := range m.removednow_playing_sources {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NowPlayingSourcesIDs returns the "now_playing_sources" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) NowPlayingSourcesIDs() (ids []int) {
+	for id := range m.now_playing_sources {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNowPlayingSources resets all changes to the "now_playing_sources" edge.
+func (m *GeneralSettingsMutation) ResetNowPlayingSources() {
+	m.now_playing_sources = nil
+	m.clearednow_playing_sources = false
+	m.removednow_playing_sources = nil
+}
+
 // Where appends a list predicates to the GeneralSettingsMutation builder.
 func (m *GeneralSettingsMutation) Where(ps ...predicate.GeneralSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -14923,7 +14982,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 40)
+	edges := make([]string, 0, 41)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -15043,6 +15102,9 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.qrcodes != nil {
 		edges = append(edges, generalsettings.EdgeQrcodes)
+	}
+	if m.now_playing_sources != nil {
+		edges = append(edges, generalsettings.EdgeNowPlayingSources)
 	}
 	return edges
 }
@@ -15291,13 +15353,19 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeNowPlayingSources:
+		ids := make([]ent.Value, 0, len(m.now_playing_sources))
+		for id := range m.now_playing_sources {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 40)
+	edges := make([]string, 0, 41)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -15417,6 +15485,9 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removedqrcodes != nil {
 		edges = append(edges, generalsettings.EdgeQrcodes)
+	}
+	if m.removednow_playing_sources != nil {
+		edges = append(edges, generalsettings.EdgeNowPlayingSources)
 	}
 	return edges
 }
@@ -15665,13 +15736,19 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeNowPlayingSources:
+		ids := make([]ent.Value, 0, len(m.removednow_playing_sources))
+		for id := range m.removednow_playing_sources {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 40)
+	edges := make([]string, 0, 41)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -15792,6 +15869,9 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	if m.clearedqrcodes {
 		edges = append(edges, generalsettings.EdgeQrcodes)
 	}
+	if m.clearednow_playing_sources {
+		edges = append(edges, generalsettings.EdgeNowPlayingSources)
+	}
 	return edges
 }
 
@@ -15879,6 +15959,8 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedmpds
 	case generalsettings.EdgeQrcodes:
 		return m.clearedqrcodes
+	case generalsettings.EdgeNowPlayingSources:
+		return m.clearednow_playing_sources
 	}
 	return false
 }
@@ -16014,6 +16096,9 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 		return nil
 	case generalsettings.EdgeQrcodes:
 		m.ResetQrcodes()
+		return nil
+	case generalsettings.EdgeNowPlayingSources:
+		m.ResetNowPlayingSources()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings edge %s", name)
@@ -23341,6 +23426,602 @@ func (m *NotificationMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *NotificationMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Notification edge %s", name)
+}
+
+// NowPlayingSourceMutation represents an operation that mutates the NowPlayingSource nodes in the graph.
+type NowPlayingSourceMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	name           *string
+	provider       *nowplayingsource.Provider
+	url            *string
+	token          *string
+	username       *string
+	show_album_art *bool
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*NowPlayingSource, error)
+	predicates     []predicate.NowPlayingSource
+}
+
+var _ ent.Mutation = (*NowPlayingSourceMutation)(nil)
+
+// nowplayingsourceOption allows management of the mutation configuration using functional options.
+type nowplayingsourceOption func(*NowPlayingSourceMutation)
+
+// newNowPlayingSourceMutation creates new mutation for the NowPlayingSource entity.
+func newNowPlayingSourceMutation(c config, op Op, opts ...nowplayingsourceOption) *NowPlayingSourceMutation {
+	m := &NowPlayingSourceMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNowPlayingSource,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNowPlayingSourceID sets the ID field of the mutation.
+func withNowPlayingSourceID(id int) nowplayingsourceOption {
+	return func(m *NowPlayingSourceMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *NowPlayingSource
+		)
+		m.oldValue = func(ctx context.Context) (*NowPlayingSource, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().NowPlayingSource.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNowPlayingSource sets the old NowPlayingSource of the mutation.
+func withNowPlayingSource(node *NowPlayingSource) nowplayingsourceOption {
+	return func(m *NowPlayingSourceMutation) {
+		m.oldValue = func(context.Context) (*NowPlayingSource, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NowPlayingSourceMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NowPlayingSourceMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NowPlayingSourceMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NowPlayingSourceMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().NowPlayingSource.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *NowPlayingSourceMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *NowPlayingSourceMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the NowPlayingSource entity.
+// If the NowPlayingSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NowPlayingSourceMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *NowPlayingSourceMutation) ResetName() {
+	m.name = nil
+}
+
+// SetProvider sets the "provider" field.
+func (m *NowPlayingSourceMutation) SetProvider(n nowplayingsource.Provider) {
+	m.provider = &n
+}
+
+// Provider returns the value of the "provider" field in the mutation.
+func (m *NowPlayingSourceMutation) Provider() (r nowplayingsource.Provider, exists bool) {
+	v := m.provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProvider returns the old "provider" field's value of the NowPlayingSource entity.
+// If the NowPlayingSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NowPlayingSourceMutation) OldProvider(ctx context.Context) (v nowplayingsource.Provider, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProvider requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
+	}
+	return oldValue.Provider, nil
+}
+
+// ResetProvider resets all changes to the "provider" field.
+func (m *NowPlayingSourceMutation) ResetProvider() {
+	m.provider = nil
+}
+
+// SetURL sets the "url" field.
+func (m *NowPlayingSourceMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *NowPlayingSourceMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the NowPlayingSource entity.
+// If the NowPlayingSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NowPlayingSourceMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *NowPlayingSourceMutation) ResetURL() {
+	m.url = nil
+}
+
+// SetToken sets the "token" field.
+func (m *NowPlayingSourceMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *NowPlayingSourceMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the NowPlayingSource entity.
+// If the NowPlayingSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NowPlayingSourceMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *NowPlayingSourceMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetUsername sets the "username" field.
+func (m *NowPlayingSourceMutation) SetUsername(s string) {
+	m.username = &s
+}
+
+// Username returns the value of the "username" field in the mutation.
+func (m *NowPlayingSourceMutation) Username() (r string, exists bool) {
+	v := m.username
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsername returns the old "username" field's value of the NowPlayingSource entity.
+// If the NowPlayingSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NowPlayingSourceMutation) OldUsername(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsername is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsername requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsername: %w", err)
+	}
+	return oldValue.Username, nil
+}
+
+// ResetUsername resets all changes to the "username" field.
+func (m *NowPlayingSourceMutation) ResetUsername() {
+	m.username = nil
+}
+
+// SetShowAlbumArt sets the "show_album_art" field.
+func (m *NowPlayingSourceMutation) SetShowAlbumArt(b bool) {
+	m.show_album_art = &b
+}
+
+// ShowAlbumArt returns the value of the "show_album_art" field in the mutation.
+func (m *NowPlayingSourceMutation) ShowAlbumArt() (r bool, exists bool) {
+	v := m.show_album_art
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldShowAlbumArt returns the old "show_album_art" field's value of the NowPlayingSource entity.
+// If the NowPlayingSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NowPlayingSourceMutation) OldShowAlbumArt(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldShowAlbumArt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldShowAlbumArt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldShowAlbumArt: %w", err)
+	}
+	return oldValue.ShowAlbumArt, nil
+}
+
+// ResetShowAlbumArt resets all changes to the "show_album_art" field.
+func (m *NowPlayingSourceMutation) ResetShowAlbumArt() {
+	m.show_album_art = nil
+}
+
+// Where appends a list predicates to the NowPlayingSourceMutation builder.
+func (m *NowPlayingSourceMutation) Where(ps ...predicate.NowPlayingSource) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NowPlayingSourceMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NowPlayingSourceMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NowPlayingSource, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NowPlayingSourceMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NowPlayingSourceMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (NowPlayingSource).
+func (m *NowPlayingSourceMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NowPlayingSourceMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.name != nil {
+		fields = append(fields, nowplayingsource.FieldName)
+	}
+	if m.provider != nil {
+		fields = append(fields, nowplayingsource.FieldProvider)
+	}
+	if m.url != nil {
+		fields = append(fields, nowplayingsource.FieldURL)
+	}
+	if m.token != nil {
+		fields = append(fields, nowplayingsource.FieldToken)
+	}
+	if m.username != nil {
+		fields = append(fields, nowplayingsource.FieldUsername)
+	}
+	if m.show_album_art != nil {
+		fields = append(fields, nowplayingsource.FieldShowAlbumArt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NowPlayingSourceMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case nowplayingsource.FieldName:
+		return m.Name()
+	case nowplayingsource.FieldProvider:
+		return m.Provider()
+	case nowplayingsource.FieldURL:
+		return m.URL()
+	case nowplayingsource.FieldToken:
+		return m.Token()
+	case nowplayingsource.FieldUsername:
+		return m.Username()
+	case nowplayingsource.FieldShowAlbumArt:
+		return m.ShowAlbumArt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NowPlayingSourceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case nowplayingsource.FieldName:
+		return m.OldName(ctx)
+	case nowplayingsource.FieldProvider:
+		return m.OldProvider(ctx)
+	case nowplayingsource.FieldURL:
+		return m.OldURL(ctx)
+	case nowplayingsource.FieldToken:
+		return m.OldToken(ctx)
+	case nowplayingsource.FieldUsername:
+		return m.OldUsername(ctx)
+	case nowplayingsource.FieldShowAlbumArt:
+		return m.OldShowAlbumArt(ctx)
+	}
+	return nil, fmt.Errorf("unknown NowPlayingSource field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NowPlayingSourceMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case nowplayingsource.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case nowplayingsource.FieldProvider:
+		v, ok := value.(nowplayingsource.Provider)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProvider(v)
+		return nil
+	case nowplayingsource.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	case nowplayingsource.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case nowplayingsource.FieldUsername:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsername(v)
+		return nil
+	case nowplayingsource.FieldShowAlbumArt:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetShowAlbumArt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NowPlayingSource field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NowPlayingSourceMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NowPlayingSourceMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NowPlayingSourceMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown NowPlayingSource numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NowPlayingSourceMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NowPlayingSourceMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NowPlayingSourceMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown NowPlayingSource nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NowPlayingSourceMutation) ResetField(name string) error {
+	switch name {
+	case nowplayingsource.FieldName:
+		m.ResetName()
+		return nil
+	case nowplayingsource.FieldProvider:
+		m.ResetProvider()
+		return nil
+	case nowplayingsource.FieldURL:
+		m.ResetURL()
+		return nil
+	case nowplayingsource.FieldToken:
+		m.ResetToken()
+		return nil
+	case nowplayingsource.FieldUsername:
+		m.ResetUsername()
+		return nil
+	case nowplayingsource.FieldShowAlbumArt:
+		m.ResetShowAlbumArt()
+		return nil
+	}
+	return fmt.Errorf("unknown NowPlayingSource field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NowPlayingSourceMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NowPlayingSourceMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NowPlayingSourceMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NowPlayingSourceMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NowPlayingSourceMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NowPlayingSourceMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NowPlayingSourceMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown NowPlayingSource unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NowPlayingSourceMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown NowPlayingSource edge %s", name)
 }
 
 // OutboundSettingsMutation represents an operation that mutates the OutboundSettings nodes in the graph.

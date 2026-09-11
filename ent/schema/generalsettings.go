@@ -89,5 +89,6 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("jellyfins", Jellyfin.Type),
 		edge.To("mpds", MPD.Type),
 		edge.To("qrcodes", Qrcode.Type),
+		edge.To("now_playing_sources", NowPlayingSource.Type),
 	}
 }

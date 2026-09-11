@@ -27,6 +27,7 @@ import (
 	"ledit/ent/mpd"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
+	"ledit/ent/nowplayingsource"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
@@ -865,6 +866,21 @@ func (_c *GeneralSettingsCreate) AddQrcodes(v ...*Qrcode) *GeneralSettingsCreate
 		ids[i] = v[i].ID
 	}
 	return _c.AddQrcodeIDs(ids...)
+}
+
+// AddNowPlayingSourceIDs adds the "now_playing_sources" edge to the NowPlayingSource entity by IDs.
+func (_c *GeneralSettingsCreate) AddNowPlayingSourceIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddNowPlayingSourceIDs(ids...)
+	return _c
+}
+
+// AddNowPlayingSources adds the "now_playing_sources" edges to the NowPlayingSource entity.
+func (_c *GeneralSettingsCreate) AddNowPlayingSources(v ...*NowPlayingSource) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddNowPlayingSourceIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -1742,6 +1758,22 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(qrcode.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.NowPlayingSourcesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NowPlayingSourcesTable,
+			Columns: []string{generalsettings.NowPlayingSourcesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nowplayingsource.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

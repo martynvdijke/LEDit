@@ -96,6 +96,9 @@ type NewsFeed func(*sql.Selector)
 // Notification is the predicate function for notification builders.
 type Notification func(*sql.Selector)
 
+// NowPlayingSource is the predicate function for nowplayingsource builders.
+type NowPlayingSource func(*sql.Selector)
+
 // OutboundSettings is the predicate function for outboundsettings builders.
 type OutboundSettings func(*sql.Selector)
 

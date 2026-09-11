@@ -27,6 +27,7 @@ import (
 	"ledit/ent/mpd"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
+	"ledit/ent/nowplayingsource"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
@@ -973,6 +974,21 @@ func (_u *GeneralSettingsUpdate) AddQrcodes(v ...*Qrcode) *GeneralSettingsUpdate
 	return _u.AddQrcodeIDs(ids...)
 }
 
+// AddNowPlayingSourceIDs adds the "now_playing_sources" edge to the NowPlayingSource entity by IDs.
+func (_u *GeneralSettingsUpdate) AddNowPlayingSourceIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddNowPlayingSourceIDs(ids...)
+	return _u
+}
+
+// AddNowPlayingSources adds the "now_playing_sources" edges to the NowPlayingSource entity.
+func (_u *GeneralSettingsUpdate) AddNowPlayingSources(v ...*NowPlayingSource) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNowPlayingSourceIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdate) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -1816,6 +1832,27 @@ func (_u *GeneralSettingsUpdate) RemoveQrcodes(v ...*Qrcode) *GeneralSettingsUpd
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveQrcodeIDs(ids...)
+}
+
+// ClearNowPlayingSources clears all "now_playing_sources" edges to the NowPlayingSource entity.
+func (_u *GeneralSettingsUpdate) ClearNowPlayingSources() *GeneralSettingsUpdate {
+	_u.mutation.ClearNowPlayingSources()
+	return _u
+}
+
+// RemoveNowPlayingSourceIDs removes the "now_playing_sources" edge to NowPlayingSource entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveNowPlayingSourceIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveNowPlayingSourceIDs(ids...)
+	return _u
+}
+
+// RemoveNowPlayingSources removes "now_playing_sources" edges to NowPlayingSource entities.
+func (_u *GeneralSettingsUpdate) RemoveNowPlayingSources(v ...*NowPlayingSource) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNowPlayingSourceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -3761,6 +3798,51 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.NowPlayingSourcesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NowPlayingSourcesTable,
+			Columns: []string{generalsettings.NowPlayingSourcesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nowplayingsource.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNowPlayingSourcesIDs(); len(nodes) > 0 && !_u.mutation.NowPlayingSourcesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NowPlayingSourcesTable,
+			Columns: []string{generalsettings.NowPlayingSourcesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nowplayingsource.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NowPlayingSourcesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NowPlayingSourcesTable,
+			Columns: []string{generalsettings.NowPlayingSourcesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nowplayingsource.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -4687,6 +4769,21 @@ func (_u *GeneralSettingsUpdateOne) AddQrcodes(v ...*Qrcode) *GeneralSettingsUpd
 	return _u.AddQrcodeIDs(ids...)
 }
 
+// AddNowPlayingSourceIDs adds the "now_playing_sources" edge to the NowPlayingSource entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddNowPlayingSourceIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddNowPlayingSourceIDs(ids...)
+	return _u
+}
+
+// AddNowPlayingSources adds the "now_playing_sources" edges to the NowPlayingSource entity.
+func (_u *GeneralSettingsUpdateOne) AddNowPlayingSources(v ...*NowPlayingSource) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNowPlayingSourceIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdateOne) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -5530,6 +5627,27 @@ func (_u *GeneralSettingsUpdateOne) RemoveQrcodes(v ...*Qrcode) *GeneralSettings
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveQrcodeIDs(ids...)
+}
+
+// ClearNowPlayingSources clears all "now_playing_sources" edges to the NowPlayingSource entity.
+func (_u *GeneralSettingsUpdateOne) ClearNowPlayingSources() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearNowPlayingSources()
+	return _u
+}
+
+// RemoveNowPlayingSourceIDs removes the "now_playing_sources" edge to NowPlayingSource entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveNowPlayingSourceIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveNowPlayingSourceIDs(ids...)
+	return _u
+}
+
+// RemoveNowPlayingSources removes "now_playing_sources" edges to NowPlayingSource entities.
+func (_u *GeneralSettingsUpdateOne) RemoveNowPlayingSources(v ...*NowPlayingSource) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNowPlayingSourceIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -7498,6 +7616,51 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(qrcode.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.NowPlayingSourcesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NowPlayingSourcesTable,
+			Columns: []string{generalsettings.NowPlayingSourcesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nowplayingsource.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNowPlayingSourcesIDs(); len(nodes) > 0 && !_u.mutation.NowPlayingSourcesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NowPlayingSourcesTable,
+			Columns: []string{generalsettings.NowPlayingSourcesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nowplayingsource.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NowPlayingSourcesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.NowPlayingSourcesTable,
+			Columns: []string{generalsettings.NowPlayingSourcesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nowplayingsource.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

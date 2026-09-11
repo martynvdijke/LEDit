@@ -72,6 +72,8 @@ type Tx struct {
 	NewsFeed *NewsFeedClient
 	// Notification is the client for interacting with the Notification builders.
 	Notification *NotificationClient
+	// NowPlayingSource is the client for interacting with the NowPlayingSource builders.
+	NowPlayingSource *NowPlayingSourceClient
 	// OutboundSettings is the client for interacting with the OutboundSettings builders.
 	OutboundSettings *OutboundSettingsClient
 	// OutboundWebhook is the client for interacting with the OutboundWebhook builders.
@@ -281,6 +283,7 @@ func (tx *Tx) init() {
 	tx.MatrixLayout = NewMatrixLayoutClient(tx.config)
 	tx.NewsFeed = NewNewsFeedClient(tx.config)
 	tx.Notification = NewNotificationClient(tx.config)
+	tx.NowPlayingSource = NewNowPlayingSourceClient(tx.config)
 	tx.OutboundSettings = NewOutboundSettingsClient(tx.config)
 	tx.OutboundWebhook = NewOutboundWebhookClient(tx.config)
 	tx.PiHole = NewPiHoleClient(tx.config)

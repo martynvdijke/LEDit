@@ -41,6 +41,7 @@ import (
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/nowplayingsource"
 	"ledit/ent/outboundsettings"
 	"ledit/ent/outboundwebhook"
 	"ledit/ent/pihole"
@@ -137,6 +138,8 @@ type Client struct {
 	NewsFeed *NewsFeedClient
 	// Notification is the client for interacting with the Notification builders.
 	Notification *NotificationClient
+	// NowPlayingSource is the client for interacting with the NowPlayingSource builders.
+	NowPlayingSource *NowPlayingSourceClient
 	// OutboundSettings is the client for interacting with the OutboundSettings builders.
 	OutboundSettings *OutboundSettingsClient
 	// OutboundWebhook is the client for interacting with the OutboundWebhook builders.
@@ -226,6 +229,7 @@ func (c *Client) init() {
 	c.MatrixLayout = NewMatrixLayoutClient(c.config)
 	c.NewsFeed = NewNewsFeedClient(c.config)
 	c.Notification = NewNotificationClient(c.config)
+	c.NowPlayingSource = NewNowPlayingSourceClient(c.config)
 	c.OutboundSettings = NewOutboundSettingsClient(c.config)
 	c.OutboundWebhook = NewOutboundWebhookClient(c.config)
 	c.PiHole = NewPiHoleClient(c.config)
@@ -372,6 +376,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MatrixLayout:     NewMatrixLayoutClient(cfg),
 		NewsFeed:         NewNewsFeedClient(cfg),
 		Notification:     NewNotificationClient(cfg),
+		NowPlayingSource: NewNowPlayingSourceClient(cfg),
 		OutboundSettings: NewOutboundSettingsClient(cfg),
 		OutboundWebhook:  NewOutboundWebhookClient(cfg),
 		PiHole:           NewPiHoleClient(cfg),
@@ -445,6 +450,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MatrixLayout:     NewMatrixLayoutClient(cfg),
 		NewsFeed:         NewNewsFeedClient(cfg),
 		Notification:     NewNotificationClient(cfg),
+		NowPlayingSource: NewNowPlayingSourceClient(cfg),
 		OutboundSettings: NewOutboundSettingsClient(cfg),
 		OutboundWebhook:  NewOutboundWebhookClient(cfg),
 		PiHole:           NewPiHoleClient(cfg),
@@ -503,11 +509,12 @@ func (c *Client) Use(hooks ...Hook) {
 		c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
 		c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD,
-		c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification, c.OutboundSettings,
-		c.OutboundWebhook, c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr,
-		c.RssFeed, c.Schedule, c.Sonarr, c.Sports, c.Stock, c.SunMoon,
-		c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit, c.UmamiSettings,
-		c.Untappd, c.Uptime, c.User, c.Video, c.Weather, c.WebhookSettings,
+		c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification, c.NowPlayingSource,
+		c.OutboundSettings, c.OutboundWebhook, c.PiHole, c.PixelArt, c.Playlist,
+		c.Qrcode, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Sports, c.Stock,
+		c.SunMoon, c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit,
+		c.UmamiSettings, c.Untappd, c.Uptime, c.User, c.Video, c.Weather,
+		c.WebhookSettings,
 	} {
 		n.Use(hooks...)
 	}
@@ -522,11 +529,12 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
 		c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD,
-		c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification, c.OutboundSettings,
-		c.OutboundWebhook, c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr,
-		c.RssFeed, c.Schedule, c.Sonarr, c.Sports, c.Stock, c.SunMoon,
-		c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit, c.UmamiSettings,
-		c.Untappd, c.Uptime, c.User, c.Video, c.Weather, c.WebhookSettings,
+		c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification, c.NowPlayingSource,
+		c.OutboundSettings, c.OutboundWebhook, c.PiHole, c.PixelArt, c.Playlist,
+		c.Qrcode, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Sports, c.Stock,
+		c.SunMoon, c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit,
+		c.UmamiSettings, c.Untappd, c.Uptime, c.User, c.Video, c.Weather,
+		c.WebhookSettings,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -595,6 +603,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.NewsFeed.mutate(ctx, m)
 	case *NotificationMutation:
 		return c.Notification.mutate(ctx, m)
+	case *NowPlayingSourceMutation:
+		return c.NowPlayingSource.mutate(ctx, m)
 	case *OutboundSettingsMutation:
 		return c.OutboundSettings.mutate(ctx, m)
 	case *OutboundWebhookMutation:
@@ -3423,6 +3433,22 @@ func (c *GeneralSettingsClient) QueryQrcodes(_m *GeneralSettings) *QrcodeQuery {
 	return query
 }
 
+// QueryNowPlayingSources queries the now_playing_sources edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryNowPlayingSources(_m *GeneralSettings) *NowPlayingSourceQuery {
+	query := (&NowPlayingSourceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(nowplayingsource.Table, nowplayingsource.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.NowPlayingSourcesTable, generalsettings.NowPlayingSourcesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GeneralSettingsClient) Hooks() []Hook {
 	return c.hooks.GeneralSettings
@@ -5307,6 +5333,139 @@ func (c *NotificationClient) mutate(ctx context.Context, m *NotificationMutation
 		return (&NotificationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Notification mutation op: %q", m.Op())
+	}
+}
+
+// NowPlayingSourceClient is a client for the NowPlayingSource schema.
+type NowPlayingSourceClient struct {
+	config
+}
+
+// NewNowPlayingSourceClient returns a client for the NowPlayingSource from the given config.
+func NewNowPlayingSourceClient(c config) *NowPlayingSourceClient {
+	return &NowPlayingSourceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `nowplayingsource.Hooks(f(g(h())))`.
+func (c *NowPlayingSourceClient) Use(hooks ...Hook) {
+	c.hooks.NowPlayingSource = append(c.hooks.NowPlayingSource, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `nowplayingsource.Intercept(f(g(h())))`.
+func (c *NowPlayingSourceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NowPlayingSource = append(c.inters.NowPlayingSource, interceptors...)
+}
+
+// Create returns a builder for creating a NowPlayingSource entity.
+func (c *NowPlayingSourceClient) Create() *NowPlayingSourceCreate {
+	mutation := newNowPlayingSourceMutation(c.config, OpCreate)
+	return &NowPlayingSourceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NowPlayingSource entities.
+func (c *NowPlayingSourceClient) CreateBulk(builders ...*NowPlayingSourceCreate) *NowPlayingSourceCreateBulk {
+	return &NowPlayingSourceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NowPlayingSourceClient) MapCreateBulk(slice any, setFunc func(*NowPlayingSourceCreate, int)) *NowPlayingSourceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NowPlayingSourceCreateBulk{err: fmt.Errorf("calling to NowPlayingSourceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NowPlayingSourceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NowPlayingSourceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NowPlayingSource.
+func (c *NowPlayingSourceClient) Update() *NowPlayingSourceUpdate {
+	mutation := newNowPlayingSourceMutation(c.config, OpUpdate)
+	return &NowPlayingSourceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NowPlayingSourceClient) UpdateOne(_m *NowPlayingSource) *NowPlayingSourceUpdateOne {
+	mutation := newNowPlayingSourceMutation(c.config, OpUpdateOne, withNowPlayingSource(_m))
+	return &NowPlayingSourceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NowPlayingSourceClient) UpdateOneID(id int) *NowPlayingSourceUpdateOne {
+	mutation := newNowPlayingSourceMutation(c.config, OpUpdateOne, withNowPlayingSourceID(id))
+	return &NowPlayingSourceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NowPlayingSource.
+func (c *NowPlayingSourceClient) Delete() *NowPlayingSourceDelete {
+	mutation := newNowPlayingSourceMutation(c.config, OpDelete)
+	return &NowPlayingSourceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NowPlayingSourceClient) DeleteOne(_m *NowPlayingSource) *NowPlayingSourceDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NowPlayingSourceClient) DeleteOneID(id int) *NowPlayingSourceDeleteOne {
+	builder := c.Delete().Where(nowplayingsource.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NowPlayingSourceDeleteOne{builder}
+}
+
+// Query returns a query builder for NowPlayingSource.
+func (c *NowPlayingSourceClient) Query() *NowPlayingSourceQuery {
+	return &NowPlayingSourceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNowPlayingSource},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NowPlayingSource entity by its id.
+func (c *NowPlayingSourceClient) Get(ctx context.Context, id int) (*NowPlayingSource, error) {
+	return c.Query().Where(nowplayingsource.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NowPlayingSourceClient) GetX(ctx context.Context, id int) *NowPlayingSource {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *NowPlayingSourceClient) Hooks() []Hook {
+	return c.hooks.NowPlayingSource
+}
+
+// Interceptors returns the client interceptors.
+func (c *NowPlayingSourceClient) Interceptors() []Interceptor {
+	return c.inters.NowPlayingSource
+}
+
+func (c *NowPlayingSourceClient) mutate(ctx context.Context, m *NowPlayingSourceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NowPlayingSourceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NowPlayingSourceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NowPlayingSourceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NowPlayingSourceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NowPlayingSource mutation op: %q", m.Op())
 	}
 }
 
@@ -8510,10 +8669,10 @@ type (
 		DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI, GitHub,
 		GoogleCalendar, GreetingRule, HomeAssistant, Image, Jellyfin, LogEntry,
 		LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
-		OutboundSettings, OutboundWebhook, PiHole, PixelArt, Playlist, Qrcode, Radarr,
-		RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon, TelegramSettings, TextSlide,
-		TimelapseFrame, Transit, UmamiSettings, Untappd, Uptime, User, Video, Weather,
-		WebhookSettings []ent.Hook
+		NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole, PixelArt,
+		Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon,
+		TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings, Untappd,
+		Uptime, User, Video, Weather, WebhookSettings []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
@@ -8521,9 +8680,9 @@ type (
 		DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI, GitHub,
 		GoogleCalendar, GreetingRule, HomeAssistant, Image, Jellyfin, LogEntry,
 		LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
-		OutboundSettings, OutboundWebhook, PiHole, PixelArt, Playlist, Qrcode, Radarr,
-		RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon, TelegramSettings, TextSlide,
-		TimelapseFrame, Transit, UmamiSettings, Untappd, Uptime, User, Video, Weather,
-		WebhookSettings []ent.Interceptor
+		NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole, PixelArt,
+		Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon,
+		TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings, Untappd,
+		Uptime, User, Video, Weather, WebhookSettings []ent.Interceptor
 	}
 )

@@ -697,6 +697,31 @@ var (
 		Columns:    NotificationsColumns,
 		PrimaryKey: []*schema.Column{NotificationsColumns[0]},
 	}
+	// NowPlayingSourcesColumns holds the columns for the "now_playing_sources" table.
+	NowPlayingSourcesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 64},
+		{Name: "provider", Type: field.TypeEnum, Enums: []string{"spotify", "plex", "jellyfin"}, Default: "jellyfin"},
+		{Name: "url", Type: field.TypeString, Default: ""},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "username", Type: field.TypeString, Size: 64, Default: ""},
+		{Name: "show_album_art", Type: field.TypeBool, Default: true},
+		{Name: "general_settings_now_playing_sources", Type: field.TypeInt, Nullable: true},
+	}
+	// NowPlayingSourcesTable holds the schema information for the "now_playing_sources" table.
+	NowPlayingSourcesTable = &schema.Table{
+		Name:       "now_playing_sources",
+		Columns:    NowPlayingSourcesColumns,
+		PrimaryKey: []*schema.Column{NowPlayingSourcesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "now_playing_sources_general_settings_now_playing_sources",
+				Columns:    []*schema.Column{NowPlayingSourcesColumns[7]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// OutboundSettingsColumns holds the columns for the "outbound_settings" table.
 	OutboundSettingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1252,6 +1277,7 @@ var (
 		MatrixLayoutsTable,
 		NewsFeedsTable,
 		NotificationsTable,
+		NowPlayingSourcesTable,
 		OutboundSettingsTable,
 		OutboundWebhooksTable,
 		PiHolesTable,
@@ -1301,6 +1327,7 @@ func init() {
 	MqttSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	MatrixLayoutsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	NewsFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	NowPlayingSourcesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PiHolesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PixelArtsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PlaylistsTable.ForeignKeys[0].RefTable = GeneralSettingsTable

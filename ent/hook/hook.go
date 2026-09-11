@@ -368,6 +368,18 @@ func (f NotificationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NotificationMutation", m)
 }
 
+// The NowPlayingSourceFunc type is an adapter to allow the use of ordinary
+// function as NowPlayingSource mutator.
+type NowPlayingSourceFunc func(context.Context, *ent.NowPlayingSourceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NowPlayingSourceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NowPlayingSourceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NowPlayingSourceMutation", m)
+}
+
 // The OutboundSettingsFunc type is an adapter to allow the use of ordinary
 // function as OutboundSettings mutator.
 type OutboundSettingsFunc func(context.Context, *ent.OutboundSettingsMutation) (ent.Value, error)

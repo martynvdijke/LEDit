@@ -136,9 +136,11 @@ type GeneralSettingsEdges struct {
 	Mpds []*MPD `json:"mpds,omitempty"`
 	// Qrcodes holds the value of the qrcodes edge.
 	Qrcodes []*Qrcode `json:"qrcodes,omitempty"`
+	// NowPlayingSources holds the value of the now_playing_sources edge.
+	NowPlayingSources []*NowPlayingSource `json:"now_playing_sources,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [40]bool
+	loadedTypes [41]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -501,6 +503,15 @@ func (e GeneralSettingsEdges) QrcodesOrErr() ([]*Qrcode, error) {
 	return nil, &NotLoadedError{edge: "qrcodes"}
 }
 
+// NowPlayingSourcesOrErr returns the NowPlayingSources value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) NowPlayingSourcesOrErr() ([]*NowPlayingSource, error) {
+	if e.loadedTypes[40] {
+		return e.NowPlayingSources, nil
+	}
+	return nil, &NotLoadedError{edge: "now_playing_sources"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -842,6 +853,11 @@ func (_m *GeneralSettings) QueryMpds() *MPDQuery {
 // QueryQrcodes queries the "qrcodes" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryQrcodes() *QrcodeQuery {
 	return NewGeneralSettingsClient(_m.config).QueryQrcodes(_m)
+}
+
+// QueryNowPlayingSources queries the "now_playing_sources" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryNowPlayingSources() *NowPlayingSourceQuery {
+	return NewGeneralSettingsClient(_m.config).QueryNowPlayingSources(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

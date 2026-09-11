@@ -124,6 +124,8 @@ const (
 	EdgeMpds = "mpds"
 	// EdgeQrcodes holds the string denoting the qrcodes edge name in mutations.
 	EdgeQrcodes = "qrcodes"
+	// EdgeNowPlayingSources holds the string denoting the now_playing_sources edge name in mutations.
+	EdgeNowPlayingSources = "now_playing_sources"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -406,6 +408,13 @@ const (
 	QrcodesInverseTable = "qrcodes"
 	// QrcodesColumn is the table column denoting the qrcodes relation/edge.
 	QrcodesColumn = "general_settings_qrcodes"
+	// NowPlayingSourcesTable is the table that holds the now_playing_sources relation/edge.
+	NowPlayingSourcesTable = "now_playing_sources"
+	// NowPlayingSourcesInverseTable is the table name for the NowPlayingSource entity.
+	// It exists in this package in order to avoid circular dependency with the "nowplayingsource" package.
+	NowPlayingSourcesInverseTable = "now_playing_sources"
+	// NowPlayingSourcesColumn is the table column denoting the now_playing_sources relation/edge.
+	NowPlayingSourcesColumn = "general_settings_now_playing_sources"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -1123,6 +1132,20 @@ func ByQrcodes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newQrcodesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByNowPlayingSourcesCount orders the results by now_playing_sources count.
+func ByNowPlayingSourcesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newNowPlayingSourcesStep(), opts...)
+	}
+}
+
+// ByNowPlayingSources orders the results by now_playing_sources terms.
+func ByNowPlayingSources(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newNowPlayingSourcesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -1401,5 +1424,12 @@ func newQrcodesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(QrcodesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, QrcodesTable, QrcodesColumn),
+	)
+}
+func newNowPlayingSourcesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(NowPlayingSourcesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, NowPlayingSourcesTable, NowPlayingSourcesColumn),
 	)
 }

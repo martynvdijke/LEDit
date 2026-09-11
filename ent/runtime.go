@@ -30,6 +30,7 @@ import (
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/nowplayingsource"
 	"ledit/ent/outboundsettings"
 	"ledit/ent/outboundwebhook"
 	"ledit/ent/pihole"
@@ -693,6 +694,44 @@ func init() {
 	notificationDescMessage := notificationFields[2].Descriptor()
 	// notification.DefaultMessage holds the default value on creation for the message field.
 	notification.DefaultMessage = notificationDescMessage.Default.(string)
+	nowplayingsourceFields := schema.NowPlayingSource{}.Fields()
+	_ = nowplayingsourceFields
+	// nowplayingsourceDescName is the schema descriptor for name field.
+	nowplayingsourceDescName := nowplayingsourceFields[0].Descriptor()
+	// nowplayingsource.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	nowplayingsource.NameValidator = func() func(string) error {
+		validators := nowplayingsourceDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// nowplayingsourceDescURL is the schema descriptor for url field.
+	nowplayingsourceDescURL := nowplayingsourceFields[2].Descriptor()
+	// nowplayingsource.DefaultURL holds the default value on creation for the url field.
+	nowplayingsource.DefaultURL = nowplayingsourceDescURL.Default.(string)
+	// nowplayingsourceDescToken is the schema descriptor for token field.
+	nowplayingsourceDescToken := nowplayingsourceFields[3].Descriptor()
+	// nowplayingsource.DefaultToken holds the default value on creation for the token field.
+	nowplayingsource.DefaultToken = nowplayingsourceDescToken.Default.(string)
+	// nowplayingsourceDescUsername is the schema descriptor for username field.
+	nowplayingsourceDescUsername := nowplayingsourceFields[4].Descriptor()
+	// nowplayingsource.DefaultUsername holds the default value on creation for the username field.
+	nowplayingsource.DefaultUsername = nowplayingsourceDescUsername.Default.(string)
+	// nowplayingsource.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	nowplayingsource.UsernameValidator = nowplayingsourceDescUsername.Validators[0].(func(string) error)
+	// nowplayingsourceDescShowAlbumArt is the schema descriptor for show_album_art field.
+	nowplayingsourceDescShowAlbumArt := nowplayingsourceFields[5].Descriptor()
+	// nowplayingsource.DefaultShowAlbumArt holds the default value on creation for the show_album_art field.
+	nowplayingsource.DefaultShowAlbumArt = nowplayingsourceDescShowAlbumArt.Default.(bool)
 	outboundsettingsFields := schema.OutboundSettings{}.Fields()
 	_ = outboundsettingsFields
 	// outboundsettingsDescMqttPublishEnabled is the schema descriptor for mqtt_publish_enabled field.

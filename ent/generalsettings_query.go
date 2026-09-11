@@ -27,6 +27,7 @@ import (
 	"ledit/ent/mpd"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
+	"ledit/ent/nowplayingsource"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
@@ -59,50 +60,51 @@ import (
 // GeneralSettingsQuery is the builder for querying GeneralSettings entities.
 type GeneralSettingsQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []generalsettings.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.GeneralSettings
-	withSonarr           *SonarrQuery
-	withRadarr           *RadarrQuery
-	withF1               *F1Query
-	withWeather          *WeatherQuery
-	withHomeAssistant    *HomeAssistantQuery
-	withUntappd          *UntappdQuery
-	withImages           *ImageQuery
-	withVideos           *VideoQuery
-	withCrypto           *CryptoQuery
-	withSchedules        *ScheduleQuery
-	withDeviceSettings   *DeviceSettingsQuery
-	withRssFeeds         *RssFeedQuery
-	withCalendars        *CalendarQuery
-	withStocks           *StockQuery
-	withTextSlides       *TextSlideQuery
-	withEmailSettings    *EmailSettingsQuery
-	withAiSettings       *AISettingsQuery
-	withUmamiSettings    *UmamiSettingsQuery
-	withGoogleCalendars  *GoogleCalendarQuery
-	withNewsFeeds        *NewsFeedQuery
-	withGenericApis      *GenericAPIQuery
-	withMatrixLayouts    *MatrixLayoutQuery
-	withCountdowns       *CountdownQuery
-	withAiDigests        *AIDigestQuery
-	withAlertSettings    *AlertSettingsQuery
-	withPixelArts        *PixelArtQuery
-	withPlaylists        *PlaylistQuery
-	withDisplayrules     *DisplayRuleQuery
-	withWebhooksettings  *WebhookSettingsQuery
-	withMqttsettings     *MQTTSettingsQuery
-	withTelegramsettings *TelegramSettingsQuery
-	withTransits         *TransitQuery
-	withUptimes          *UptimeQuery
-	withPiholes          *PiHoleQuery
-	withGithubs          *GitHubQuery
-	withSports           *SportsQuery
-	withSunmoons         *SunMoonQuery
-	withJellyfins        *JellyfinQuery
-	withMpds             *MPDQuery
-	withQrcodes          *QrcodeQuery
+	ctx                   *QueryContext
+	order                 []generalsettings.OrderOption
+	inters                []Interceptor
+	predicates            []predicate.GeneralSettings
+	withSonarr            *SonarrQuery
+	withRadarr            *RadarrQuery
+	withF1                *F1Query
+	withWeather           *WeatherQuery
+	withHomeAssistant     *HomeAssistantQuery
+	withUntappd           *UntappdQuery
+	withImages            *ImageQuery
+	withVideos            *VideoQuery
+	withCrypto            *CryptoQuery
+	withSchedules         *ScheduleQuery
+	withDeviceSettings    *DeviceSettingsQuery
+	withRssFeeds          *RssFeedQuery
+	withCalendars         *CalendarQuery
+	withStocks            *StockQuery
+	withTextSlides        *TextSlideQuery
+	withEmailSettings     *EmailSettingsQuery
+	withAiSettings        *AISettingsQuery
+	withUmamiSettings     *UmamiSettingsQuery
+	withGoogleCalendars   *GoogleCalendarQuery
+	withNewsFeeds         *NewsFeedQuery
+	withGenericApis       *GenericAPIQuery
+	withMatrixLayouts     *MatrixLayoutQuery
+	withCountdowns        *CountdownQuery
+	withAiDigests         *AIDigestQuery
+	withAlertSettings     *AlertSettingsQuery
+	withPixelArts         *PixelArtQuery
+	withPlaylists         *PlaylistQuery
+	withDisplayrules      *DisplayRuleQuery
+	withWebhooksettings   *WebhookSettingsQuery
+	withMqttsettings      *MQTTSettingsQuery
+	withTelegramsettings  *TelegramSettingsQuery
+	withTransits          *TransitQuery
+	withUptimes           *UptimeQuery
+	withPiholes           *PiHoleQuery
+	withGithubs           *GitHubQuery
+	withSports            *SportsQuery
+	withSunmoons          *SunMoonQuery
+	withJellyfins         *JellyfinQuery
+	withMpds              *MPDQuery
+	withQrcodes           *QrcodeQuery
+	withNowPlayingSources *NowPlayingSourceQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -1019,6 +1021,28 @@ func (_q *GeneralSettingsQuery) QueryQrcodes() *QrcodeQuery {
 	return query
 }
 
+// QueryNowPlayingSources chains the current query on the "now_playing_sources" edge.
+func (_q *GeneralSettingsQuery) QueryNowPlayingSources() *NowPlayingSourceQuery {
+	query := (&NowPlayingSourceClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(nowplayingsource.Table, nowplayingsource.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.NowPlayingSourcesTable, generalsettings.NowPlayingSourcesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first GeneralSettings entity from the query.
 // Returns a *NotFoundError when no GeneralSettings was found.
 func (_q *GeneralSettingsQuery) First(ctx context.Context) (*GeneralSettings, error) {
@@ -1206,51 +1230,52 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		return nil
 	}
 	return &GeneralSettingsQuery{
-		config:               _q.config,
-		ctx:                  _q.ctx.Clone(),
-		order:                append([]generalsettings.OrderOption{}, _q.order...),
-		inters:               append([]Interceptor{}, _q.inters...),
-		predicates:           append([]predicate.GeneralSettings{}, _q.predicates...),
-		withSonarr:           _q.withSonarr.Clone(),
-		withRadarr:           _q.withRadarr.Clone(),
-		withF1:               _q.withF1.Clone(),
-		withWeather:          _q.withWeather.Clone(),
-		withHomeAssistant:    _q.withHomeAssistant.Clone(),
-		withUntappd:          _q.withUntappd.Clone(),
-		withImages:           _q.withImages.Clone(),
-		withVideos:           _q.withVideos.Clone(),
-		withCrypto:           _q.withCrypto.Clone(),
-		withSchedules:        _q.withSchedules.Clone(),
-		withDeviceSettings:   _q.withDeviceSettings.Clone(),
-		withRssFeeds:         _q.withRssFeeds.Clone(),
-		withCalendars:        _q.withCalendars.Clone(),
-		withStocks:           _q.withStocks.Clone(),
-		withTextSlides:       _q.withTextSlides.Clone(),
-		withEmailSettings:    _q.withEmailSettings.Clone(),
-		withAiSettings:       _q.withAiSettings.Clone(),
-		withUmamiSettings:    _q.withUmamiSettings.Clone(),
-		withGoogleCalendars:  _q.withGoogleCalendars.Clone(),
-		withNewsFeeds:        _q.withNewsFeeds.Clone(),
-		withGenericApis:      _q.withGenericApis.Clone(),
-		withMatrixLayouts:    _q.withMatrixLayouts.Clone(),
-		withCountdowns:       _q.withCountdowns.Clone(),
-		withAiDigests:        _q.withAiDigests.Clone(),
-		withAlertSettings:    _q.withAlertSettings.Clone(),
-		withPixelArts:        _q.withPixelArts.Clone(),
-		withPlaylists:        _q.withPlaylists.Clone(),
-		withDisplayrules:     _q.withDisplayrules.Clone(),
-		withWebhooksettings:  _q.withWebhooksettings.Clone(),
-		withMqttsettings:     _q.withMqttsettings.Clone(),
-		withTelegramsettings: _q.withTelegramsettings.Clone(),
-		withTransits:         _q.withTransits.Clone(),
-		withUptimes:          _q.withUptimes.Clone(),
-		withPiholes:          _q.withPiholes.Clone(),
-		withGithubs:          _q.withGithubs.Clone(),
-		withSports:           _q.withSports.Clone(),
-		withSunmoons:         _q.withSunmoons.Clone(),
-		withJellyfins:        _q.withJellyfins.Clone(),
-		withMpds:             _q.withMpds.Clone(),
-		withQrcodes:          _q.withQrcodes.Clone(),
+		config:                _q.config,
+		ctx:                   _q.ctx.Clone(),
+		order:                 append([]generalsettings.OrderOption{}, _q.order...),
+		inters:                append([]Interceptor{}, _q.inters...),
+		predicates:            append([]predicate.GeneralSettings{}, _q.predicates...),
+		withSonarr:            _q.withSonarr.Clone(),
+		withRadarr:            _q.withRadarr.Clone(),
+		withF1:                _q.withF1.Clone(),
+		withWeather:           _q.withWeather.Clone(),
+		withHomeAssistant:     _q.withHomeAssistant.Clone(),
+		withUntappd:           _q.withUntappd.Clone(),
+		withImages:            _q.withImages.Clone(),
+		withVideos:            _q.withVideos.Clone(),
+		withCrypto:            _q.withCrypto.Clone(),
+		withSchedules:         _q.withSchedules.Clone(),
+		withDeviceSettings:    _q.withDeviceSettings.Clone(),
+		withRssFeeds:          _q.withRssFeeds.Clone(),
+		withCalendars:         _q.withCalendars.Clone(),
+		withStocks:            _q.withStocks.Clone(),
+		withTextSlides:        _q.withTextSlides.Clone(),
+		withEmailSettings:     _q.withEmailSettings.Clone(),
+		withAiSettings:        _q.withAiSettings.Clone(),
+		withUmamiSettings:     _q.withUmamiSettings.Clone(),
+		withGoogleCalendars:   _q.withGoogleCalendars.Clone(),
+		withNewsFeeds:         _q.withNewsFeeds.Clone(),
+		withGenericApis:       _q.withGenericApis.Clone(),
+		withMatrixLayouts:     _q.withMatrixLayouts.Clone(),
+		withCountdowns:        _q.withCountdowns.Clone(),
+		withAiDigests:         _q.withAiDigests.Clone(),
+		withAlertSettings:     _q.withAlertSettings.Clone(),
+		withPixelArts:         _q.withPixelArts.Clone(),
+		withPlaylists:         _q.withPlaylists.Clone(),
+		withDisplayrules:      _q.withDisplayrules.Clone(),
+		withWebhooksettings:   _q.withWebhooksettings.Clone(),
+		withMqttsettings:      _q.withMqttsettings.Clone(),
+		withTelegramsettings:  _q.withTelegramsettings.Clone(),
+		withTransits:          _q.withTransits.Clone(),
+		withUptimes:           _q.withUptimes.Clone(),
+		withPiholes:           _q.withPiholes.Clone(),
+		withGithubs:           _q.withGithubs.Clone(),
+		withSports:            _q.withSports.Clone(),
+		withSunmoons:          _q.withSunmoons.Clone(),
+		withJellyfins:         _q.withJellyfins.Clone(),
+		withMpds:              _q.withMpds.Clone(),
+		withQrcodes:           _q.withQrcodes.Clone(),
+		withNowPlayingSources: _q.withNowPlayingSources.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -1697,6 +1722,17 @@ func (_q *GeneralSettingsQuery) WithQrcodes(opts ...func(*QrcodeQuery)) *General
 	return _q
 }
 
+// WithNowPlayingSources tells the query-builder to eager-load the nodes that are connected to
+// the "now_playing_sources" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithNowPlayingSources(opts ...func(*NowPlayingSourceQuery)) *GeneralSettingsQuery {
+	query := (&NowPlayingSourceClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withNowPlayingSources = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -1775,7 +1811,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [40]bool{
+		loadedTypes = [41]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -1816,6 +1852,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withJellyfins != nil,
 			_q.withMpds != nil,
 			_q.withQrcodes != nil,
+			_q.withNowPlayingSources != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -2121,6 +2158,15 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := _q.loadQrcodes(ctx, query, nodes,
 			func(n *GeneralSettings) { n.Edges.Qrcodes = []*Qrcode{} },
 			func(n *GeneralSettings, e *Qrcode) { n.Edges.Qrcodes = append(n.Edges.Qrcodes, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withNowPlayingSources; query != nil {
+		if err := _q.loadNowPlayingSources(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.NowPlayingSources = []*NowPlayingSource{} },
+			func(n *GeneralSettings, e *NowPlayingSource) {
+				n.Edges.NowPlayingSources = append(n.Edges.NowPlayingSources, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -3362,6 +3408,37 @@ func (_q *GeneralSettingsQuery) loadQrcodes(ctx context.Context, query *QrcodeQu
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_qrcodes" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadNowPlayingSources(ctx context.Context, query *NowPlayingSourceQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *NowPlayingSource)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.NowPlayingSource(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.NowPlayingSourcesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_now_playing_sources
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_now_playing_sources" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_now_playing_sources" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

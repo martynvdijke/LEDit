@@ -36,6 +36,7 @@ import (
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/notification"
+	"ledit/ent/nowplayingsource"
 	"ledit/ent/outboundsettings"
 	"ledit/ent/outboundwebhook"
 	"ledit/ent/pihole"
@@ -156,6 +157,7 @@ func checkColumn(t, c string) error {
 			matrixlayout.Table:     matrixlayout.ValidColumn,
 			newsfeed.Table:         newsfeed.ValidColumn,
 			notification.Table:     notification.ValidColumn,
+			nowplayingsource.Table: nowplayingsource.ValidColumn,
 			outboundsettings.Table: outboundsettings.ValidColumn,
 			outboundwebhook.Table:  outboundwebhook.ValidColumn,
 			pihole.Table:           pihole.ValidColumn,
