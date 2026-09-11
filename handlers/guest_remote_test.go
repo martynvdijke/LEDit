@@ -334,3 +334,118 @@ func TestGuestMessageRateLimited(t *testing.T) {
 		t.Fatal("429 must carry Retry-After")
 	}
 }
+
+// ---------------------------------------------------------------------------
+// 4.4 Admin management round-trip
+// ---------------------------------------------------------------------------
+
+func adminCookieReq(srv *Server, method, path string, cookie *http.Cookie, body string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(method, path, strings.NewReader(body))
+	if cookie != nil {
+		req.AddCookie(cookie)
+	}
+	if body != "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	return w
+}
+
+func TestAdminGuestRemoteLifecycle(t *testing.T) {
+	srv := newGuestRemoteTestServer(t)
+	cookie := loginAsAdmin(t, srv)
+
+	// Create.
+	w := adminCookieReq(srv, http.MethodPost, "/admin/api/guest-remotes", cookie,
+		`{"label":"Party","scopes":["pause","next","message"],"expires_in_hours":2}`)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("create: expected 201, got %d (%s)", w.Code, w.Body.String())
+	}
+	var created struct {
+		ID     int    `json:"id"`
+		Secret string `json:"secret"`
+		Link   string `json:"link"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &created); err != nil {
+		t.Fatalf("create JSON: %v", err)
+	}
+	if created.Secret == "" || created.ID <= 0 {
+		t.Fatalf("create missing secret/id: %+v", created)
+	}
+	if !strings.Contains(created.Link, "/remote#"+created.Secret) {
+		t.Fatalf("share link missing fragment secret: %q", created.Link)
+	}
+
+	// The freshly created token authenticates.
+	if got := guestAPI(srv, http.MethodGet, "/api/guest/status", created.Secret, ""); got.Code != http.StatusOK {
+		t.Fatalf("new token status: expected 200, got %d", got.Code)
+	}
+
+	// List is metadata-only.
+	lw := adminCookieReq(srv, http.MethodGet, "/admin/api/guest-remotes", cookie, "")
+	if lw.Code != http.StatusOK {
+		t.Fatalf("list: expected 200, got %d", lw.Code)
+	}
+	if strings.Contains(lw.Body.String(), "token_hash") || strings.Contains(lw.Body.String(), created.Secret) {
+		t.Fatalf("list leaked secret material: %s", lw.Body.String())
+	}
+	var list []map[string]json.RawMessage
+	if err := json.Unmarshal(lw.Body.Bytes(), &list); err != nil {
+		t.Fatalf("list JSON: %v", err)
+	}
+	if len(list) != 1 || list[0]["prefix"] == nil {
+		t.Fatalf("unexpected list: %s", lw.Body.String())
+	}
+
+	// Revoke stops authentication.
+	if rw := adminCookieReq(srv, http.MethodPost, fmt.Sprintf("/admin/api/guest-remotes/%d/revoke", created.ID), cookie, ""); rw.Code != http.StatusOK {
+		t.Fatalf("revoke: expected 200, got %d", rw.Code)
+	}
+	if got := guestAPI(srv, http.MethodGet, "/api/guest/status", created.Secret, ""); got.Code != http.StatusUnauthorized {
+		t.Fatalf("revoked token: expected 401, got %d", got.Code)
+	}
+
+	// Create a second token and delete it.
+	second := adminCookieReq(srv, http.MethodPost, "/admin/api/guest-remotes", cookie, `{"label":"Guest2","scopes":["next"]}`)
+	var secondBody struct {
+		ID     int    `json:"id"`
+		Secret string `json:"secret"`
+	}
+	if err := json.Unmarshal(second.Body.Bytes(), &secondBody); err != nil {
+		t.Fatalf("second create JSON: %v", err)
+	}
+	if dw := adminCookieReq(srv, http.MethodDelete, fmt.Sprintf("/admin/api/guest-remotes/%d", secondBody.ID), cookie, ""); dw.Code != http.StatusOK {
+		t.Fatalf("delete: expected 200, got %d", dw.Code)
+	}
+	if got := guestAPI(srv, http.MethodGet, "/api/guest/status", secondBody.Secret, ""); got.Code != http.StatusUnauthorized {
+		t.Fatalf("deleted token: expected 401, got %d", got.Code)
+	}
+}
+
+func TestViewerCannotAccessGuestRemotes(t *testing.T) {
+	srv := newGuestRemoteTestServer(t)
+	createUserDirect(t, srv, "vic", "password123", "viewer")
+	cookieHeader := loginAndGetCookie(t, srv, "vic", "password123")
+
+	req := httptest.NewRequest(http.MethodGet, "/admin/api/guest-remotes", nil)
+	req.Header.Set("Cookie", cookieHeader)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("viewer list: expected 403, got %d (%s)", w.Code, w.Body.String())
+	}
+	if strings.Contains(w.Body.String(), "prefix") {
+		t.Fatalf("viewer response leaked token metadata: %s", w.Body.String())
+	}
+
+	// Viewer cannot create either.
+	cw := httptest.NewRequest(http.MethodPost, "/admin/api/guest-remotes", strings.NewReader(`{"label":"x"}`))
+	cw.Header.Set("Cookie", cookieHeader)
+	cw.Header.Set("Content-Type", "application/json")
+	cr := httptest.NewRecorder()
+	srv.ServeHTTP(cr, cw)
+	if cr.Code != http.StatusForbidden {
+		t.Fatalf("viewer create: expected 403, got %d", cr.Code)
+	}
+}

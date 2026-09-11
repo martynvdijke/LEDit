@@ -745,6 +745,13 @@ func (s *Server) setupRoutes() {
 		admin.POST("/api-tokens/:id/revoke", s.AdminAPITokenRevoke)
 		admin.POST("/api-tokens/:id/rotate", s.AdminAPITokenRotate)
 
+		// Guest remotes (admin-only): scoped tokens for the phone remote.
+		admin.GET("/guest-remotes", s.AdminGuestRemotes)
+		admin.GET("/api/guest-remotes", s.APIGuestRemotesList)
+		admin.POST("/api/guest-remotes", s.APIGuestRemotesCreate)
+		admin.POST("/api/guest-remotes/:id/revoke", s.APIGuestRemotesRevoke)
+		admin.DELETE("/api/guest-remotes/:id", s.APIGuestRemotesDelete)
+
 		// Datasource Plugins
 		admin.GET("/plugins", s.AdminPlugins)
 		admin.GET("/plugins/new", s.AdminPluginNew)

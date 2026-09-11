@@ -39,6 +39,7 @@ var pathToActive = map[string]string{
 	"/admin/password":        "password",
 	"/admin/matrixlayouts":   "matrixlayouts",
 	"/admin/alarms":          "alarms",
+	"/admin/guest-remotes":   "guest-remotes",
 	"/admin/webhook":         "webhook",
 	"/admin/mqtt":            "mqtt",
 	"/admin/telegram":        "telegram",

@@ -206,6 +206,32 @@ func (s *Server) AdminRoleMiddleware() gin.HandlerFunc {
 			c.Next()
 			return
 		}
+		// Guest remote management is admin-only (page and JSON API).
+		if strings.HasPrefix(c.Request.URL.Path, "/admin/guest-remotes") ||
+			strings.HasPrefix(c.Request.URL.Path, "/admin/api/guest-remotes") {
+			r := getSessionRole(c)
+			if r == "" {
+				r = s.getBearerRole(c)
+			}
+			if r == "" {
+				c.Redirect(http.StatusFound, "/login")
+				c.Abort()
+				return
+			}
+			if r != "admin" {
+				if strings.HasPrefix(c.Request.URL.Path, "/admin/api/") {
+					abortInsufficientRole(c)
+				} else {
+					SetFlash(c, "danger", "Admin access required")
+					c.Redirect(http.StatusFound, "/admin/")
+					c.Abort()
+				}
+				return
+			}
+			c.Set("user_role", r)
+			c.Next()
+			return
+		}
 		if c.Request.Method == http.MethodGet {
 			// require viewer (viewer or admin)
 			if r := getSessionRole(c); r == "viewer" || r == "admin" {
