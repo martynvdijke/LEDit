@@ -159,6 +159,8 @@ func datasourceConfigSig(d datasource.Datasource) string {
 		return cfgSig(v.Token, v.URL)
 	case *datasource.StockDS:
 		return cfgSig(v.Token, v.URL)
+	case *datasource.SportsDS:
+		return cfgSig(v.Token, v.URL, v.Provider, v.Config, strconv.Itoa(v.LiveRefreshSeconds), strconv.Itoa(v.IdleRefreshSeconds))
 	case *datasource.SystemStatsDS:
 		return cfgSig()
 	case *datasource.RssFeedDS:

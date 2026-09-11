@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Sports</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>Sports</h1>
+            <a href="/admin/datasources/sports/new" class="btn btn-primary mb-3">New Sports Source</a>
+            <table class="table">
+                <thead><tr><th>ID</th><th>Provider</th><th>Config</th><th>Live (s)</th><th>Idle (s)</th><th>Actions</th></tr></thead>
+                <tbody>
+                {{range .sports}}
+                <tr>
+                    <td>{{.ID}}</td>
+                    <td>{{.Provider}}</td>
+                    <td>{{.Config}}</td>
+                    <td>{{.LiveRefreshSeconds}}</td>
+                    <td>{{.IdleRefreshSeconds}}</td>
+                    <td>
+                        <a href="/admin/datasources/sports/{{.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
+                        <form method="POST" action="/admin/datasources/sports/{{.ID}}/delete" style="display:inline"><button class="btn btn-sm btn-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {{else}}<tr><td colspan="6">No sports sources</td></tr>{{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

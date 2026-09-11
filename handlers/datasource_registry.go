@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"ledit/ent"
 	"ledit/ent/generalsettings"
+	"ledit/ent/sports"
 	"ledit/ent/transit"
 )
 
@@ -288,6 +289,26 @@ func init() {
 			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Sports.DeleteOneID(id).Exec(ctx) },
 			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
 				return u.AddSports(obj.(*ent.Sports))
+			},
+			CreateFields: func(db *ent.Client, ctx context.Context, f map[string]string) (any, error) {
+				return db.Sports.Create().
+					SetToken(f["token"]).
+					SetURL(f["url"]).
+					SetProvider(sports.Provider(sportsProviderOr(f["provider"]))).
+					SetConfig(f["config"]).
+					SetLiveRefreshSeconds(atoiOr(f["live_refresh_seconds"], 30)).
+					SetIdleRefreshSeconds(atoiOr(f["idle_refresh_seconds"], 300)).
+					Save(ctx)
+			},
+			UpdateFields: func(db *ent.Client, ctx context.Context, id int, f map[string]string) error {
+				return db.Sports.UpdateOneID(id).
+					SetToken(f["token"]).
+					SetURL(f["url"]).
+					SetProvider(sports.Provider(sportsProviderOr(f["provider"]))).
+					SetConfig(f["config"]).
+					SetLiveRefreshSeconds(atoiOr(f["live_refresh_seconds"], 30)).
+					SetIdleRefreshSeconds(atoiOr(f["idle_refresh_seconds"], 300)).
+					Exec(ctx)
 			},
 		},
 		"sunmoon": {

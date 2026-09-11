@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Sports</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Sports</h1>
+            {{if .error}}<div class="alert alert-danger">{{.error}}</div>{{end}}
+            <form method="POST" action="/admin/datasources/sports{{if .edit}}/{{.id}}/edit{{else}}/new{{end}}" class="mt-4" id="sports-form">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="provider" class="form-label">Provider</label>
+                        <select class="form-select" id="provider" name="provider">
+                            <option value="espn" {{if .obj}}{{if eq (print .obj.Provider) "espn"}}selected{{end}}{{else}}selected{{end}}>ESPN</option>
+                            <option value="thesportsdb" {{if .obj}}{{if eq (print .obj.Provider) "thesportsdb"}}selected{{end}}{{end}}>TheSportsDB (reserved)</option>
+                            <option value="apifootball" {{if .obj}}{{if eq (print .obj.Provider) "apifootball"}}selected{{end}}{{end}}>API-Football (reserved)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="token" class="form-label">API Key</label>
+                        <input type="password" class="form-control" id="token" name="token" autocomplete="new-password" placeholder="{{if .edit}}Leave blank to keep current key{{end}}">
+                        <div class="form-text small text-muted">Stored in the database and never logged. ESPN needs none; legacy rows use this field as the league slug.</div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="url" class="form-label">Endpoint URL Override</label>
+                    <input type="text" class="form-control" id="url" name="url" value="{{if .obj}}{{.obj.URL}}{{end}}" placeholder="https://site.api.espn.com/apis/site/v2/sports/%s/scoreboard">
+                    <div class="form-text small text-muted">Optional. <code>%s</code> is replaced with each league slug.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="config" class="form-label">Config (JSON)</label>
+                    <textarea class="form-control" id="config" name="config" rows="5" required placeholder='{"leagues":["nfl"],"teams":["PHI"],"fixtures":[],"max_games":4}'>{{if .obj}}{{.obj.Config}}{{end}}</textarea>
+                    <div class="form-text small text-muted">
+                        Schema: <code>leagues</code> (provider league slugs), <code>teams</code> (name or abbreviation), <code>fixtures</code> (event ids), <code>max_games</code> (1-8, default 4), <code>prefer_live</code>. At least one of leagues/teams/fixtures is required. For ESPN include a league unless the API key field carries a legacy league slug.
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="live_refresh_seconds" class="form-label">Live Refresh (seconds)</label>
+                        <input type="number" class="form-control" id="live_refresh_seconds" name="live_refresh_seconds" min="15" value="{{if .obj}}{{.obj.LiveRefreshSeconds}}{{else}}30{{end}}">
+                        <div class="form-text small text-muted">Poll cadence while a followed game is live (min 15).</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="idle_refresh_seconds" class="form-label">Idle Refresh (seconds)</label>
+                        <input type="number" class="form-control" id="idle_refresh_seconds" name="idle_refresh_seconds" min="60" value="{{if .obj}}{{.obj.IdleRefreshSeconds}}{{else}}300{{end}}">
+                        <div class="form-text small text-muted">Poll cadence when nothing is live (min 60).</div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                <a href="/admin/sports" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

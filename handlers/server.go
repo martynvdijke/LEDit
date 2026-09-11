@@ -542,11 +542,17 @@ func (s *Server) setupRoutes() {
 		admin.POST("/datasources/github/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "github") })
 
 		// Sports
-		admin.GET("/datasources/sports/new", func(c *gin.Context) { s.renderForm(c, "Sports", "sports", false, nil) })
-		admin.POST("/datasources/sports/new", func(c *gin.Context) { s.createTokenURLDS(c, "sports") })
-		admin.GET("/datasources/sports/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "sports") })
-		admin.POST("/datasources/sports/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "sports") })
-		admin.POST("/datasources/sports/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "sports") })
+		admin.GET("/datasources/sports/new", s.AdminSportsNew)
+		admin.POST("/datasources/sports/new", s.AdminSportsCreate)
+		admin.GET("/datasources/sports/:id/edit", s.AdminSportsEdit)
+		admin.POST("/datasources/sports/:id/edit", s.AdminSportsUpdate)
+		admin.POST("/datasources/sports/:id/delete", s.AdminSportsDelete)
+		admin.GET("/sports", s.AdminSportsList)
+		admin.GET("/api/sports", s.APISportsList)
+		admin.GET("/api/sports/:id", s.APISportsGet)
+		admin.POST("/api/sports", s.APISportsCreate)
+		admin.PUT("/api/sports/:id", s.APISportsUpdate)
+		admin.DELETE("/api/sports/:id", s.APISportsDelete)
 
 		// Sun/Moon
 		admin.GET("/datasources/sunmoon/new", func(c *gin.Context) { s.renderForm(c, "Sun/Moon", "sunmoon", false, nil) })
