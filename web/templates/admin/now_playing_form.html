@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Now Playing Source</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Now Playing Source</h1>
+            {{if .error}}<div class="alert alert-danger">{{.error}}</div>{{end}}
+            <form method="POST" action="/admin/nowplaying{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4" id="nowplaying-form">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" maxlength="64" required value="{{if .obj}}{{.obj.Name}}{{end}}">
+                </div>
+                <div class="mb-3">
+                    <label for="provider" class="form-label">Provider</label>
+                    <select class="form-control" id="provider" name="provider">
+                        <option value="jellyfin" {{if .obj}}{{if eq .obj.Provider "jellyfin"}}selected{{end}}{{else}}selected{{end}}>Jellyfin</option>
+                        <option value="plex" {{if .obj}}{{if eq .obj.Provider "plex"}}selected{{end}}{{end}}>Plex</option>
+                        <option value="spotify" {{if .obj}}{{if eq .obj.Provider "spotify"}}selected{{end}}{{end}}>Spotify</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="url" class="form-label">Server URL</label>
+                    <input type="text" class="form-control" id="url" name="url" value="{{if .obj}}{{.obj.URL}}{{end}}" placeholder="http://server.local:8096">
+                    <small class="text-muted" id="url-hint">Required for Jellyfin and Plex. Not used for Spotify.</small>
+                </div>
+                <div class="mb-3">
+                    <label for="token" class="form-label">API / Access Token</label>
+                    <input type="password" class="form-control" id="token" name="token" autocomplete="new-password" placeholder="{{if .edit}}Leave blank to keep current token{{end}}">
+                    <small class="text-muted">Stored on the server. For Spotify use an access token (expires hourly).</small>
+                </div>
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username filter (optional)</label>
+                    <input type="text" class="form-control" id="username" name="username" maxlength="64" value="{{if .obj}}{{.obj.Username}}{{end}}">
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="show_album_art" name="show_album_art" {{if .obj}}{{if .obj.ShowAlbumArt}}checked{{end}}{{else}}checked{{end}}>
+                    <label class="form-check-label" for="show_album_art">Show album art</label>
+                </div>
+                <div class="alert alert-danger d-none" id="nowplaying-error" role="alert"></div>
+                <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                <a href="/admin/nowplaying" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+<script type="module" src="/static/assets/app.js"></script>
+<script type="module" src="/static/assets/nowplaying_form.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Now Playing</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>Now Playing</h1>
+            <a href="/admin/nowplaying/new" class="btn btn-primary mb-3">New Now Playing Source</a>
+            <table class="table">
+                <thead><tr><th>ID</th><th>Name</th><th>Provider</th><th>URL</th><th>Album Art</th><th>Actions</th></tr></thead>
+                <tbody>
+                {{range .sources}}
+                <tr>
+                    <td>{{.ID}}</td>
+                    <td>{{.Name}}</td>
+                    <td>{{.Provider}}</td>
+                    <td>{{.URL}}</td>
+                    <td>{{if .ShowAlbumArt}}yes{{else}}no{{end}}</td>
+                    <td>
+                        <a href="/admin/nowplaying/{{.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
+                        <form method="POST" action="/admin/nowplaying/{{.ID}}/delete" style="display:inline"><button class="btn btn-sm btn-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {{else}}<tr><td colspan="6">No now-playing sources</td></tr>{{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>
