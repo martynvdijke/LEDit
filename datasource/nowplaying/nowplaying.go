@@ -24,6 +24,7 @@ type NowPlaying struct {
 	Position int    // seconds
 	Duration int    // seconds
 	State    string // play, pause, stop
+	ArtURL   string // optional album art image URL
 	TempoBPM *int
 	Energy   float64
 }
