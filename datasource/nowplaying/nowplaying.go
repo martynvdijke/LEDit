@@ -119,6 +119,10 @@ func ParseJellyfinSessions(body []byte, usernameFilter string) (*NowPlaying, err
 			Artists      []string `json:"Artists"`
 			Album        string   `json:"Album"`
 			RunTimeTicks *int64   `json:"RunTimeTicks"`
+			Id           string   `json:"Id"`
+			ImageTags    struct {
+				Primary string `json:"Primary"`
+			} `json:"ImageTags"`
 		} `json:"NowPlayingItem"`
 		PlayState struct {
 			PositionTicks int64 `json:"PositionTicks"`
@@ -135,6 +139,10 @@ func ParseJellyfinSessions(body []byte, usernameFilter string) (*NowPlaying, err
 			Artists      []string `json:"Artists"`
 			Album        string   `json:"Album"`
 			RunTimeTicks *int64   `json:"RunTimeTicks"`
+			Id           string   `json:"Id"`
+			ImageTags    struct {
+				Primary string `json:"Primary"`
+			} `json:"ImageTags"`
 		} `json:"NowPlayingItem"`
 		PlayState struct {
 			PositionTicks int64 `json:"PositionTicks"`
@@ -169,6 +177,9 @@ func ParseJellyfinSessions(body []byte, usernameFilter string) (*NowPlaying, err
 	}
 	np.Track = candidate.NowPlayingItem.Name
 	np.Album = candidate.NowPlayingItem.Album
+	if candidate.NowPlayingItem.Id != "" && candidate.NowPlayingItem.ImageTags.Primary != "" {
+		np.ArtURL = "/Items/" + candidate.NowPlayingItem.Id + "/Images/Primary"
+	}
 	np.Position = int(candidate.PlayState.PositionTicks / 10000000)
 	if candidate.NowPlayingItem.RunTimeTicks != nil {
 		np.Duration = int(*candidate.NowPlayingItem.RunTimeTicks / 10000000)

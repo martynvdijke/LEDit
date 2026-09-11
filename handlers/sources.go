@@ -68,7 +68,7 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
 		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
 		WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
-		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithQrcodes().Only(c.Request.Context())
+		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithQrcodes().WithNowPlayingSources().Only(c.Request.Context())
 	if err != nil || settings == nil {
 		return opts
 	}
@@ -201,6 +201,10 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 			label = q.Content
 		}
 		add("qrcode", q.ID, "QR: "+truncateLabel(label, 20))
+	}
+	nowPlaying, _ := settings.Edges.NowPlayingSourcesOrErr()
+	for _, n := range nowPlaying {
+		add("nowplaying", n.ID, "Now Playing: "+n.Name)
 	}
 	return opts
 }
@@ -401,6 +405,13 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 			Content: q.Content, Mode: string(q.Mode), WifiSSID: q.WifiSsid, WifiPassword: q.WifiPassword, WifiAuth: string(q.WifiAuth), Caption: q.Caption, ErrorCorrection: string(q.ErrorCorrection), QuietZone: q.QuietZone,
 		}
 		idx.names[key("qrcode", q.ID)] = "QR Code"
+	}
+	nowPlaying, _ := settings.Edges.NowPlayingSourcesOrErr()
+	for _, n := range nowPlaying {
+		idx.byKey[key("nowplaying", n.ID)] = &datasource.NowPlayingSourceDS{
+			Provider: string(n.Provider), URL: n.URL, Token: n.Token, Username: n.Username, ShowAlbumArt: n.ShowAlbumArt,
+		}
+		idx.names[key("nowplaying", n.ID)] = "Now Playing: " + n.Name
 	}
 	idx.byKey[key("audio", 0)] = &datasource.AudioNowPlayingDS{}
 	idx.names[key("audio", 0)] = "Now Playing"

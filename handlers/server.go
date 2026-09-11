@@ -571,6 +571,20 @@ func (s *Server) setupRoutes() {
 		admin.PUT("/api/qrcodes/:id", s.APIQrcodeUpdate)
 		admin.DELETE("/api/qrcodes/:id", s.APIQrcodeDelete)
 
+		// Now Playing
+		admin.GET("/nowplaying", s.AdminNowPlayingList)
+		admin.GET("/nowplaying/new", s.AdminNowPlayingNew)
+		admin.POST("/nowplaying/new", s.AdminNowPlayingCreate)
+		admin.GET("/nowplaying/:id/edit", s.AdminNowPlayingEdit)
+		admin.POST("/nowplaying/:id/edit", s.AdminNowPlayingUpdate)
+		admin.POST("/nowplaying/:id/delete", s.AdminNowPlayingDelete)
+		// JSON API (session auth)
+		admin.GET("/api/nowplaying", s.APINowPlayingList)
+		admin.GET("/api/nowplaying/:id", s.APINowPlayingGet)
+		admin.POST("/api/nowplaying", s.APINowPlayingCreate)
+		admin.PUT("/api/nowplaying/:id", s.APINowPlayingUpdate)
+		admin.DELETE("/api/nowplaying/:id", s.APINowPlayingDelete)
+
 		// Pixel Art
 		admin.GET("/pixelarts", s.PixelArtList)
 		admin.GET("/pixelarts/new", s.PixelArtNew)

@@ -351,6 +351,18 @@ func init() {
 				return u.AddQrcodes(obj.(*ent.Qrcode))
 			},
 		},
+		"nowplaying": {
+			TypeName: "Now Playing",
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) {
+				return db.NowPlayingSource.Get(ctx, id)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error {
+				return db.NowPlayingSource.DeleteOneID(id).Exec(ctx)
+			},
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddNowPlayingSources(obj.(*ent.NowPlayingSource))
+			},
+		},
 	}
 }
 

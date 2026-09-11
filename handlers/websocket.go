@@ -225,6 +225,13 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 		sources = append(sources, sourceWithName{Name: "Jellyfin", Source: &datasource.JellyfinDS{Token: jf.Token, URL: jf.URL}, cacheKey: fmt.Sprintf("jellyfin:%d", jf.ID)})
 	}
 
+	nowPlaying, _ := settings.Edges.NowPlayingSourcesOrErr()
+	for _, np := range nowPlaying {
+		sources = append(sources, sourceWithName{Name: "Now Playing: " + np.Name, Source: &datasource.NowPlayingSourceDS{
+			Provider: string(np.Provider), URL: np.URL, Token: np.Token, Username: np.Username, ShowAlbumArt: np.ShowAlbumArt,
+		}, cacheKey: fmt.Sprintf("nowplaying:%d", np.ID)})
+	}
+
 	// Audio: Now Playing + Visualizer (stylized, metadata-driven)
 	sources = append(sources, sourceWithName{Name: "Now Playing", Source: &datasource.AudioNowPlayingDS{}, cacheKey: "audio:0"})
 	sources = append(sources, sourceWithName{Name: "Audio Visualizer", Source: &datasource.VisualizerDS{Mode: "bars"}, cacheKey: "audio:1"})

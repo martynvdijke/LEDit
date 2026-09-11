@@ -60,6 +60,7 @@ var KnownSourceTypes = map[string]bool{
 	"sunmoon":        true,
 	"jellyfin":       true,
 	"qrcode":         true,
+	"nowplaying":     true,
 }
 
 // IsValidSourceType reports whether sourceType is a known endpoint key.

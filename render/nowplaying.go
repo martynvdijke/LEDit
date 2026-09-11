@@ -28,7 +28,6 @@ type NowPlayingParams struct {
 	State        string
 	ShowAlbumArt bool
 	ArtURL       string
-	ArtToken     string // optional token for provider-authenticated art fetches
 	Width        int
 	Height       int
 	Theme        Theme
@@ -86,7 +85,7 @@ func RenderNowPlaying(p NowPlayingParams) (*RenderedImage, error) {
 	artSize, art := 0, image.Image(nil)
 	if p.ShowAlbumArt && p.ArtURL != "" {
 		if s := artRegionSize(p, contentH); s > 0 {
-			if got := fetchArt(p.ArtURL, p.ArtToken); got != nil {
+			if got := fetchArt(p.ArtURL); got != nil {
 				artSize, art = s, got
 			}
 		}
@@ -164,13 +163,10 @@ func nowPlayingLines(p NowPlayingParams) []string {
 }
 
 // fetchArt downloads and decodes album art, returning nil on any failure.
-func fetchArt(url, token string) image.Image {
+func fetchArt(url string) image.Image {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil
-	}
-	if token != "" {
-		req.Header.Set("X-Plex-Token", token)
 	}
 	resp, err := nowPlayingHTTPClient.Do(req)
 	if err != nil {

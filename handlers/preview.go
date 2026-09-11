@@ -32,7 +32,7 @@ func (s *Server) loadSettingsWithAll(c *gin.Context) (*ent.GeneralSettings, erro
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
 		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
 		WithImages().WithVideos().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
-		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().Only(c.Request.Context())
+		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithNowPlayingSources().Only(c.Request.Context())
 	if err != nil {
 		return nil, err
 	}
