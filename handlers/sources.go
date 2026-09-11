@@ -390,7 +390,7 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 	}
 	sportsItems, _ := settings.Edges.SportsOrErr()
 	for _, sp := range sportsItems {
-		idx.byKey[key("sports", sp.ID)] = &datasource.SportsDS{Token: sp.Token, URL: sp.URL}
+		idx.byKey[key("sports", sp.ID)] = &datasource.SportsDS{Token: sp.Token, URL: sp.URL, Provider: string(sp.Provider), Config: sp.Config, LiveRefreshSeconds: sp.LiveRefreshSeconds, IdleRefreshSeconds: sp.IdleRefreshSeconds}
 		idx.names[key("sports", sp.ID)] = "Sports"
 	}
 	sunmoons, _ := settings.Edges.SunmoonsOrErr()

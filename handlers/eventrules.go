@@ -146,7 +146,7 @@ func resolveTarget(sourceType string, sourceID int, client *ent.Client) (datasou
 	if client != nil {
 		ctx := context.Background()
 		gs, err := client.GeneralSettings.Query().Where(generalsettings.ID(1)).
-			WithGenericApis().WithHomeAssistant().WithWeather().WithSonarr().WithRadarr().WithF1().WithUntappd().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithMatrixLayouts().WithCountdowns().WithAiDigests().
+			WithGenericApis().WithHomeAssistant().WithWeather().WithSonarr().WithRadarr().WithF1().WithUntappd().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithSports().
 			Only(ctx)
 		if err == nil && gs != nil {
 			aiCfg := datasource.AIConfig{}

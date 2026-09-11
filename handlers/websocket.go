@@ -218,7 +218,7 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 	}
 	sportsItems, _ := settings.Edges.SportsOrErr()
 	for _, sp := range sportsItems {
-		sources = append(sources, sourceWithName{Name: "Sports", Source: &datasource.SportsDS{Token: sp.Token, URL: sp.URL}, cacheKey: fmt.Sprintf("sports:%d", sp.ID)})
+		sources = append(sources, sourceWithName{Name: "Sports", Source: &datasource.SportsDS{Token: sp.Token, URL: sp.URL, Provider: string(sp.Provider), Config: sp.Config, LiveRefreshSeconds: sp.LiveRefreshSeconds, IdleRefreshSeconds: sp.IdleRefreshSeconds}, cacheKey: fmt.Sprintf("sports:%d", sp.ID)})
 	}
 	sunmoons, _ := settings.Edges.SunmoonsOrErr()
 	for _, sm := range sunmoons {
