@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"image/png"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -14,6 +16,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
+	"ledit/datasource"
 	"ledit/ent"
 	"ledit/ent/enttest"
 	"ledit/ent/generalsettings"
@@ -249,5 +252,95 @@ func TestCountdownDisabledExcludedFromFeed(t *testing.T) {
 	}
 	if !foundEnabled {
 		t.Error("enabled countdown should be present in feed")
+	}
+}
+
+func TestCountdownIntegrationFeedPlaylistMatrix(t *testing.T) {
+	srv := newCountdownServer(t)
+
+	// Enabled countdown with non-default options.
+	w := countdownPost(t, srv, "/admin/countdowns/new", url.Values{
+		"name":               {"Launch"},
+		"target_time":        {"2030-01-01T00:00"},
+		"label":              {"Go"},
+		"enabled":            {"on"},
+		"granularity":        {"minutes"},
+		"direction":          {"down"},
+		"completion":         {"message"},
+		"completion_message": {"Doors open"},
+		"timezone":           {"UTC"},
+	})
+	if w.Code != http.StatusFound {
+		t.Fatalf("create status = %d", w.Code)
+	}
+	cd := countdownRows(t, srv)[0]
+	wantKey := fmt.Sprintf("countdown:%d", cd.ID)
+
+	load := func() *ent.GeneralSettings {
+		t.Helper()
+		gs, err := srv.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithCountdowns().WithMatrixLayouts().Only(srv.Ctx)
+		if err != nil {
+			t.Fatalf("load settings: %v", err)
+		}
+		return gs
+	}
+
+	// Global feed carries the configured options.
+	gs := load()
+	var feedSrc datasource.Datasource
+	for _, s := range srv.WSHub.loadSources(gs) {
+		if s.cacheKey == wantKey {
+			feedSrc = s.Source
+		}
+	}
+	cds, ok := feedSrc.(*datasource.CountdownDS)
+	if !ok {
+		t.Fatalf("countdown source not found in global feed")
+	}
+	if cds.Granularity != "minutes" || cds.Direction != "down" || cds.Completion != "message" || cds.CompletionMessage != "Doors open" {
+		t.Errorf("feed options = %s/%s/%s/%q", cds.Granularity, cds.Direction, cds.Completion, cds.CompletionMessage)
+	}
+
+	// Device playlist resolves the countdown in authored order.
+	pl := srv.DB.Playlist.Create().
+		SetName("cd playlist").
+		SetItems(fmt.Sprintf(`[{"source_type":"countdown","source_id":%d}]`, cd.ID)).
+		SetEnabled(true).
+		SaveX(srv.Ctx)
+	dev := srv.DB.DeviceSettings.Create().
+		SetName("CD Device").SetToken("cd-token").SetEnabled(true).
+		SetContentMode("playlist").SetPlaylistID(pl.ID).
+		SaveX(srv.Ctx)
+	composed := srv.WSHub.composeDeviceSources(dev, load())
+	found := false
+	for _, s := range composed {
+		if s.cacheKey == wantKey {
+			found = true
+		}
+	}
+	if !found {
+		t.Error("playlist feed should include the countdown source")
+	}
+
+	// Matrix cell binding renders at a small cell size (forcing unit fallback
+	// inside the cell renderer) without error.
+	ml := srv.DB.MatrixLayout.Create().
+		SetName("CD grid").SetRows(1).SetCols(3).SetGap(1).SetBackground("#282a36").
+		SetBindings(fmt.Sprintf(`[{"row":0,"col":0,"source_type":"countdown","source_id":%d}]`, cd.ID)).
+		SetEnabled(true).
+		SaveX(srv.Ctx)
+	mds := srv.WSHub.buildMatrixDS(load(), ml, 0)
+	if mds == nil {
+		t.Fatal("buildMatrixDS returned nil")
+	}
+	img, err := mds.GetPNG(30, 12)
+	if err != nil {
+		t.Fatalf("matrix render error: %v", err)
+	}
+	if img == nil || img.Format != "PNG" || len(img.Data) == 0 {
+		t.Fatalf("matrix render = %+v", img)
+	}
+	if _, err := png.Decode(bytes.NewReader(img.Data)); err != nil {
+		t.Fatalf("matrix PNG decode: %v", err)
 	}
 }
