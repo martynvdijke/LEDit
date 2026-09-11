@@ -181,6 +181,8 @@ func datasourceConfigSig(d datasource.Datasource) string {
 		return cfgSig(v.Name, v.Label, v.Target.Format(time.RFC3339))
 	case *datasource.AIDigestDS:
 		return cfgSig(v.Name, v.Prompt, strings.Join(v.FeedURLs, ","), v.TTL.String())
+	case *datasource.NowPlayingSourceDS:
+		return cfgSig(v.Provider, v.URL, v.Token, v.Username)
 	default:
 		return ""
 	}
