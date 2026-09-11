@@ -155,6 +155,26 @@ func ResolveBrightness(now time.Time, schedules []BrightnessWindow, sensorLevel 
 	return 100
 }
 
+// ResolveEffectiveBrightness layers the wake-alarm ramp into brightness
+// resolution: manual override > active alarm ramp > sensor > schedule > 100.
+// A nil alarmLevel means the alarm has no active brightness ramp.
+func ResolveEffectiveBrightness(now time.Time, schedules []BrightnessWindow, sensorLevel *int, override *int, alarmLevel *int) int {
+	if override != nil {
+		return ResolveBrightness(now, schedules, sensorLevel, override)
+	}
+	if alarmLevel != nil {
+		lvl := *alarmLevel
+		if lvl < 0 {
+			return 0
+		}
+		if lvl > 100 {
+			return 100
+		}
+		return lvl
+	}
+	return ResolveBrightness(now, schedules, sensorLevel, nil)
+}
+
 // SensorLevelForLux maps lux to level using sorted table.
 func SensorLevelForLux(lux float64, cfg *SensorConfig) *int {
 	if cfg == nil || len(cfg.LuxLevels) == 0 {

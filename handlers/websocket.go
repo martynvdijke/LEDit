@@ -768,7 +768,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		} else if sensorCfg != nil && sensorCache != nil && now.Sub(sensorCacheTime) > 60*time.Second {
 			sensorCache = nil
 		}
-		target := ResolveBrightness(now, bSchedules, sensorLevel, device.BrightnessOverride)
+		target := ResolveEffectiveBrightness(now, bSchedules, sensorLevel, device.BrightnessOverride, ActiveAlarmBrightnessLevel(now))
 		ramp.SetTarget(target)
 		return ramp.Advance()
 	}

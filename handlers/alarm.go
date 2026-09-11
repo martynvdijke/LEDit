@@ -177,6 +177,15 @@ func (m *AlarmManager) Source() *sourceWithName {
 	return m.source
 }
 
+// BrightnessLevel returns the active alarm's ramp level, or nil when no alarm
+// with a brightness ramp is active.
+func (m *AlarmManager) BrightnessLevel(now time.Time) *int {
+	m.mu.Lock()
+	a := m.active
+	m.mu.Unlock()
+	return AlarmBrightnessLevel(now, a)
+}
+
 // Dismiss suppresses the active alarm for the current occurrence and clears it.
 func (m *AlarmManager) Dismiss(now time.Time) {
 	m.mu.Lock()
@@ -261,6 +270,11 @@ func ActiveAlarm() (*WakeAlarm, *sourceWithName, bool) {
 // AlarmSource returns the resolved wake source for the active alarm, or nil.
 func AlarmSource() *sourceWithName {
 	return globalAlarmManager.Source()
+}
+
+// ActiveAlarmBrightnessLevel returns the active alarm's ramp level, or nil.
+func ActiveAlarmBrightnessLevel(now time.Time) *int {
+	return globalAlarmManager.BrightnessLevel(now)
 }
 
 // DismissActiveAlarm dismisses the active alarm for the current occurrence and
