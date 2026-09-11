@@ -11,7 +11,6 @@ const tokenUrlTypes: TokenUrlType[] = [
   { endpoint: 'transit', typeName: 'Transit', token: '900000003201', url: '' },
   { endpoint: 'pihole', typeName: 'Pi-hole', token: 'abc', url: '' },
   { endpoint: 'github', typeName: 'GitHub', token: 'octocat/hello-world', url: '' },
-  { endpoint: 'sports', typeName: 'Sports', token: 'nfl', url: '' },
   { endpoint: 'sunmoon', typeName: 'Sun/Moon', token: '52.52,13.405', url: '' },
   { endpoint: 'jellyfin', typeName: 'Jellyfin', token: 'emby-key', url: 'http://localhost:8096' },
 ];
@@ -109,6 +108,28 @@ test('uptime datasource create via url+config and new-form renders textarea', as
   }
 });
 
+test('sports datasource create via provider+config and delete', async ({ request }) => {
+  const form: Record<string, string> = {
+    token: 'sports-e2e-key',
+    provider: 'espn',
+    config: JSON.stringify({ leagues: ['nfl'] }),
+    live_refresh_seconds: '30',
+    idle_refresh_seconds: '300',
+  };
+  const res = await request.post('/admin/datasources/sports/new', { form });
+  expect([200, 302]).toContain(res.status());
+
+  const admin = await request.get('/admin/');
+  const html = await admin.text();
+  expect(html).toContain('Sports');
+  expect(html).toContain('sports-e2e-key');
+
+  const id = extractDeleteId(html, 'sports');
+  expect(id).not.toBeNull();
+  const del = await request.post(`/admin/datasources/sports/${id}/delete`);
+  expect([200, 302]).toContain(del.status());
+});
+
 test('sidebar disclosure Add datasource contains all seven new links', async ({ page }) => {
   await page.goto('/');
   await page.locator('summary', { hasText: 'Add datasource' }).click();
@@ -134,7 +155,7 @@ test.describe('new-form render per type', () => {
     { endpoint: 'transit', field: 'name="token"' },
     { endpoint: 'pihole', field: 'name="token"' },
     { endpoint: 'github', field: 'name="token"' },
-    { endpoint: 'sports', field: 'name="token"' },
+    { endpoint: 'sports', field: 'name="provider"' },
     { endpoint: 'sunmoon', field: 'name="token"' },
     { endpoint: 'jellyfin', field: 'name="token"' },
     { endpoint: 'uptime', field: 'name="config"' },
