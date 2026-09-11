@@ -2,7 +2,10 @@ const CACHE_NAME = 'ledit-v2';
 const ASSETS = [
   '/',
   '/login',
+  '/remote',
   '/static/pwa/manifest.json',
+  '/static/pwa/remote-manifest.json',
+  '/static/assets/remote.js',
   '/static/pwa/icon.svg',
   '/static/brand/ledit-mark.svg',
   '/static/brand/ledit-lockup-dark.svg',

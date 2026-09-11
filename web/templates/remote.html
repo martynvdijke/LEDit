@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>LEDit Remote</title>
+    <meta name="theme-color" content="#08130d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="/static/pwa/remote-manifest.json">
+    <link rel="icon" href="/static/pwa/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/static/pwa/icon-180.png">
+    <style>
+        :root { color-scheme: dark; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: #08130d;
+            color: #e8f5ee;
+            -webkit-tap-highlight-color: transparent;
+        }
+        main { max-width: 480px; margin: 0 auto; padding: 24px 16px 40px; }
+        h1 { font-size: 1.3rem; margin: 0 0 4px; }
+        #paused-state { font-size: 1rem; color: #8fe6b0; margin: 0 0 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        button {
+            font-size: 1.05rem;
+            font-weight: 600;
+            padding: 16px;
+            min-height: 56px;
+            border-radius: 14px;
+            border: 1px solid #1f3a2c;
+            background: #12251b;
+            color: inherit;
+            cursor: pointer;
+        }
+        button:active { background: #1b3a2a; }
+        button:disabled { opacity: 0.45; cursor: not-allowed; }
+        .wide { grid-column: 1 / -1; }
+        .message-row { display: flex; gap: 8px; margin-top: 16px; }
+        .message-row input {
+            flex: 1;
+            min-width: 0;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #1f3a2c;
+            background: #0d1d15;
+            color: inherit;
+            font-size: 1rem;
+        }
+        .message-row button { min-height: 52px; }
+        .notice { min-height: 1.3rem; margin: 12px 0 0; font-size: 0.92rem; }
+        .notice.error { color: #ff9a9a; }
+        .notice.ok { color: #8fe6b0; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>LEDit Remote</h1>
+        <p id="paused-state" aria-live="polite">Connecting…</p>
+
+        <div class="grid">
+            <button type="button" id="btn-pause">Pause</button>
+            <button type="button" id="btn-resume">Resume</button>
+            <button type="button" id="btn-next" class="wide">Next / Skip</button>
+        </div>
+
+        <form id="message-form" class="message-row" autocomplete="off">
+            <label for="message-text" style="position:absolute;left:-9999px">Message</label>
+            <input type="text" id="message-text" maxlength="140" enterkeyhint="send" placeholder="Message to the wall">
+            <button type="submit" id="btn-message">Send</button>
+        </form>
+
+        <p class="notice" id="notice" role="status" aria-live="polite"></p>
+    </main>
+
+    <script type="module" src="/static/assets/remote.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/static/pwa/sw.js').catch(function () {});
+            });
+        }
+    </script>
+</body>
+</html>

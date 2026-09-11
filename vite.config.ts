@@ -18,6 +18,7 @@ export default defineConfig({
         backup: resolve(__dirname, 'web/frontend/backup.ts'),
         analytics: resolve(__dirname, 'web/frontend/analytics.ts'),
         nowplaying_form: resolve(__dirname, 'web/frontend/nowplaying_form.ts'),
+        remote: resolve(__dirname, 'web/frontend/remote.ts'),
       },
       output: {
         entryFileNames: '[name].js',
