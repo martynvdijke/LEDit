@@ -625,6 +625,14 @@ func (s *Server) setupRoutes() {
 		admin.POST("/eventrules/:id/edit", s.AdminEventRuleUpdate)
 		admin.POST("/eventrules/:id/delete", s.AdminEventRuleDelete)
 
+		// Wake alarms
+		admin.GET("/alarms", s.AdminAlarmList)
+		admin.GET("/alarms/new", s.AdminAlarmNew)
+		admin.POST("/alarms/new", s.AdminAlarmCreate)
+		admin.GET("/alarms/:id/edit", s.AdminAlarmEdit)
+		admin.POST("/alarms/:id/edit", s.AdminAlarmUpdate)
+		admin.POST("/alarms/:id/delete", s.AdminAlarmDelete)
+
 		// Greetings
 		admin.GET("/greetings", s.AdminGreetings)
 		admin.GET("/api/greetings", s.APIGreetingList)

@@ -11,6 +11,7 @@
         {{template "sidebar" .}}
         <div class="container-fluid p-4">
             <h1>Devices</h1>
+            {{if .alarm_active}}<div class="alert alert-warning d-flex justify-content-between align-items-center">Wake alarm active: <strong>{{.alarm_name}}</strong> — showing <strong>{{.alarm_source}}</strong><form method="POST" action="/api/feed/alarm/dismiss" style="display:inline"><button type="submit" class="btn btn-sm btn-danger">Dismiss</button></form></div>{{end}}
             <a href="/admin/devices/new" class="btn btn-primary mb-3">New Device</a>
             {{range .groups}}<div class="card mb-3"><div class="card-header">{{.Name}} — {{index $.groupAgg .ID}}</div></div>{{end}}
             <table class="table table-striped">

@@ -38,6 +38,7 @@ var pathToActive = map[string]string{
 	"/admin/notifications":   "notifications",
 	"/admin/password":        "password",
 	"/admin/matrixlayouts":   "matrixlayouts",
+	"/admin/alarms":          "alarms",
 	"/admin/webhook":         "webhook",
 	"/admin/mqtt":            "mqtt",
 	"/admin/telegram":        "telegram",
@@ -338,6 +339,13 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		}
 	}
 	stats["pinned_by"] = GlobalFeed.Status()["pinned_by"]
+	if a, src, ok := ActiveAlarm(); ok {
+		stats["alarm_active"] = true
+		stats["alarm_name"] = a.Name
+		if src != nil {
+			stats["alarm_source"] = src.Name
+		}
+	}
 	s.renderPage(c, http.StatusOK, "dashboard.html", stats)
 }
 
@@ -642,7 +650,7 @@ func (s *Server) AdminDeviceSettingsList(c *gin.Context) {
 			grouped[*r.DeviceSettings.GroupID] = append(grouped[*r.DeviceSettings.GroupID], r)
 		}
 	}
-	s.renderPage(c, http.StatusOK, "devices.html", gin.H{
+	devicesVars := gin.H{
 		"devices":       rows,
 		"ungrouped":     ungrouped,
 		"grouped":       grouped,
@@ -652,7 +660,18 @@ func (s *Server) AdminDeviceSettingsList(c *gin.Context) {
 		"liveness":      liveness,
 		"lastErrors":    lastErrors,
 		"playlistNames": playlistNames,
-	})
+		"alarm_active":  false,
+		"alarm_name":    "",
+		"alarm_source":  "",
+	}
+	if a, src, ok := ActiveAlarm(); ok {
+		devicesVars["alarm_active"] = true
+		devicesVars["alarm_name"] = a.Name
+		if src != nil {
+			devicesVars["alarm_source"] = src.Name
+		}
+	}
+	s.renderPage(c, http.StatusOK, "devices.html", devicesVars)
 }
 
 // AdminDevicePreview renders the device-accurate live preview page. The page

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Wake Alarm</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Wake Alarm</h1>
+            {{if .error}}<div class="alert alert-danger">{{.error}}</div>{{end}}
+            <form method="POST" action="/admin/alarms{{if .edit}}/{{.id}}/edit{{else}}/new{{end}}" class="mt-4" id="alarm-form">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required value="{{.fName}}">
+                    </div>
+                    <div class="col-md-3 mb-3 form-check" style="padding-top:28px">
+                        <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if .fEnabled}}checked{{end}}>
+                        <label for="enabled" class="form-check-label">Enabled</label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Days <small class="text-muted">(server timezone: {{.server_zone}})</small></label>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="days" value="0" id="day-0" {{if index .fDays 0}}checked{{end}}><label class="form-check-label" for="day-0">Sun</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="days" value="1" id="day-1" {{if index .fDays 1}}checked{{end}}><label class="form-check-label" for="day-1">Mon</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="days" value="2" id="day-2" {{if index .fDays 2}}checked{{end}}><label class="form-check-label" for="day-2">Tue</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="days" value="3" id="day-3" {{if index .fDays 3}}checked{{end}}><label class="form-check-label" for="day-3">Wed</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="days" value="4" id="day-4" {{if index .fDays 4}}checked{{end}}><label class="form-check-label" for="day-4">Thu</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="days" value="5" id="day-5" {{if index .fDays 5}}checked{{end}}><label class="form-check-label" for="day-5">Fri</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="days" value="6" id="day-6" {{if index .fDays 6}}checked{{end}}><label class="form-check-label" for="day-6">Sat</label></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="start" class="form-label">Start (alarm time)</label>
+                        <input type="time" class="form-control" id="start" name="start" required value="{{.fStart}}">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="end" class="form-label">End (auto-dismiss)</label>
+                        <input type="time" class="form-control" id="end" name="end" required value="{{.fEnd}}">
+                    </div>
+                </div>
+
+                <!-- Wake source picker: reuses the event-rule two-select pattern -->
+                <input type="hidden" name="wake_source_type" id="wake_source_type" value="{{.fSrcType}}">
+                <input type="hidden" name="wake_source_id" id="wake_source_id" value="{{.fSrcID}}">
+                <div class="mb-3">
+                    <label class="form-label">Wake source</label>
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <select id="group-select" class="form-select" style="width:auto;min-width:180px">
+                            <option value="">— type —</option>
+                        </select>
+                        <select id="source-select" class="form-select" style="width:auto;min-width:220px">
+                            <option value="">— source —</option>
+                        </select>
+                    </div>
+                    <small class="text-muted">Matrix Layouts compose weather + clock + greeting into one wake screen.</small>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="brightness_enabled" name="brightness_enabled" {{if .fBEnabled}}checked{{end}}>
+                            <label for="brightness_enabled" class="form-check-label">Brightness ramp</label>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="brightness_start" class="form-label">Start level (0-100)</label>
+                                <input type="number" class="form-control" id="brightness_start" name="brightness_start" min="0" max="100" value="{{.fBStart}}">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="brightness_end" class="form-label">End level (0-100)</label>
+                                <input type="number" class="form-control" id="brightness_end" name="brightness_end" min="0" max="100" value="{{.fBEnd}}">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="brightness_ramp_seconds" class="form-label">Ramp seconds (0-3600)</label>
+                                <input type="number" class="form-control" id="brightness_ramp_seconds" name="brightness_ramp_seconds" min="0" max="3600" value="{{.fBRamp}}">
+                            </div>
+                        </div>
+                        <small class="text-muted">A manual device brightness override always wins over the alarm ramp.</small>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                <a href="/admin/alarms" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+<script>window.BINDING_OPTS = {{.options_json}};</script>
+<script>
+(function(){
+    var opts = window.BINDING_OPTS || {};
+    var groupSel = document.getElementById('group-select');
+    var sourceSel = document.getElementById('source-select');
+    var hiddenType = document.getElementById('wake_source_type');
+    var hiddenID = document.getElementById('wake_source_id');
+    var form = document.getElementById('alarm-form');
+
+    Object.keys(opts).sort().forEach(function(t){
+        var o=document.createElement('option');
+        o.value=t; o.textContent=t;
+        groupSel.appendChild(o);
+    });
+    function renderSourceOptions(){
+        sourceSel.innerHTML='<option value="">— source —</option>';
+        var t=groupSel.value;
+        if(!t||!opts[t]) return;
+        opts[t].forEach(function(entry){
+            var o=document.createElement('option');
+            o.value=String(entry.id);
+            o.textContent=entry.label+' (#'+entry.id+')';
+            sourceSel.appendChild(o);
+        });
+    }
+    function syncTargetHidden(){
+        hiddenType.value = groupSel.value || '';
+        hiddenID.value = sourceSel.value || '';
+    }
+    if(hiddenType.value){ groupSel.value = hiddenType.value; }
+    renderSourceOptions();
+    if(hiddenID.value){ sourceSel.value = String(hiddenID.value); }
+    groupSel.addEventListener('change', function(){ renderSourceOptions(); syncTargetHidden(); });
+    sourceSel.addEventListener('change', syncTargetHidden);
+
+    form.addEventListener('submit', function(e){
+        syncTargetHidden();
+        if(!hiddenType.value || hiddenID.value === ''){
+            e.preventDefault();
+            alert('Select a wake source.');
+            return;
+        }
+        var checked = form.querySelectorAll('input[name="days"]:checked');
+        if(checked.length === 0){
+            e.preventDefault();
+            alert('Select at least one day.');
+            return;
+        }
+        var start = document.getElementById('start').value;
+        var end = document.getElementById('end').value;
+        if(start === end){
+            e.preventDefault();
+            alert('Start and end times must differ.');
+        }
+    });
+})();
+</script>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

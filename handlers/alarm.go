@@ -1,9 +1,19 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"math"
+	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"ledit/ent"
+	"ledit/ent/generalsettings"
+	"ledit/ent/wakealarm"
 )
 
 // WakeAlarm is the resolution-time view of an alarm definition. It is a plain
@@ -282,4 +292,235 @@ func ActiveAlarmBrightnessLevel(now time.Time) *int {
 func DismissActiveAlarm() {
 	globalAlarmManager.Dismiss(time.Now())
 	alarmAll(nil)
+}
+
+// ---------------------------------------------------------------------------
+// Admin CRUD (session-authenticated, mirrors the event-rule form pattern)
+// ---------------------------------------------------------------------------
+
+func (s *Server) AdminAlarmList(c *gin.Context) {
+	rows, err := s.DB.WakeAlarm.Query().Order(ent.Asc(wakealarm.FieldID)).All(s.Ctx)
+	if err != nil {
+		rows = []*ent.WakeAlarm{}
+	}
+	vars := gin.H{
+		"alarms":            rows,
+		"server_zone":       serverZoneLabel(),
+		"alarm_active":      false,
+		"alarm_active_name": "",
+	}
+	if a, src, ok := ActiveAlarm(); ok {
+		vars["alarm_active"] = true
+		vars["alarm_active_name"] = a.Name
+		if src != nil {
+			vars["alarm_active_source"] = src.Name
+		}
+	}
+	s.renderPage(c, http.StatusOK, "alarms.html", vars)
+}
+
+func alarmFormVars(name string, enabled bool, days []int, start, end, srcType string, srcID int, bEnabled bool, bStart, bEnd, bRamp int) gin.H {
+	dm := map[int]bool{}
+	for _, d := range days {
+		dm[d] = true
+	}
+	return gin.H{
+		"fName":     name,
+		"fEnabled":  enabled,
+		"fDays":     dm,
+		"fStart":    start,
+		"fEnd":      end,
+		"fSrcType":  srcType,
+		"fSrcID":    strconv.Itoa(srcID),
+		"fBEnabled": bEnabled,
+		"fBStart":   bStart,
+		"fBEnd":     bEnd,
+		"fBRamp":    bRamp,
+	}
+}
+
+func (s *Server) AdminAlarmNew(c *gin.Context) {
+	opts := s.bindingOptions(c)
+	vars := alarmFormVars("", true, nil, "06:30", "07:00", "", 0, false, 0, 100, 600)
+	vars["options"] = opts
+	vars["options_json"] = bindingOptionsJSON(opts)
+	vars["server_zone"] = serverZoneLabel()
+	s.renderPage(c, http.StatusOK, "alarm_form.html", vars)
+}
+
+func alarmFormFromPost(c *gin.Context) (name string, enabled bool, days []int, start, end, srcType string, srcID int, bEnabled bool, bStart, bEnd, bRamp int) {
+	name = c.PostForm("name")
+	enabled = c.PostForm("enabled") == "on"
+	for _, d := range c.PostFormArray("days") {
+		if v, err := strconv.Atoi(d); err == nil {
+			days = append(days, v)
+		}
+	}
+	start = c.PostForm("start")
+	if start == "" {
+		start = "00:00"
+	}
+	end = c.PostForm("end")
+	if end == "" {
+		end = "00:00"
+	}
+	srcType = c.PostForm("wake_source_type")
+	srcID, _ = strconv.Atoi(c.PostForm("wake_source_id"))
+	bEnabled = c.PostForm("brightness_enabled") == "on"
+	bStart = atoiOr(c.PostForm("brightness_start"), 0)
+	bEnd = atoiOr(c.PostForm("brightness_end"), 100)
+	bRamp = atoiOr(c.PostForm("brightness_ramp_seconds"), 600)
+	return
+}
+
+func validateAlarm(s *Server, c *gin.Context, name string, days []int, start, end, srcType string, srcID, bStart, bEnd, bRamp int) string {
+	if strings.TrimSpace(name) == "" {
+		return "name is required"
+	}
+	if len(days) == 0 {
+		return "select at least one day"
+	}
+	seen := map[int]bool{}
+	for _, d := range days {
+		if d < 0 || d > 6 {
+			return fmt.Sprintf("day %d out of range 0-6", d)
+		}
+		if seen[d] {
+			return fmt.Sprintf("duplicate day %d", d)
+		}
+		seen[d] = true
+	}
+	if _, err := parseHM(start); err != nil {
+		return "invalid start time (HH:MM)"
+	}
+	if _, err := parseHM(end); err != nil {
+		return "invalid end time (HH:MM)"
+	}
+	if start == end {
+		return "start and end must differ"
+	}
+	opts := s.bindingOptions(c)
+	found := false
+	if list, ok := opts[srcType]; ok {
+		for _, o := range list {
+			if o.ID == srcID {
+				found = true
+				break
+			}
+		}
+	}
+	if !found {
+		return fmt.Sprintf("wake source %s:%d not found", srcType, srcID)
+	}
+	if bStart < 0 || bStart > 100 || bEnd < 0 || bEnd > 100 {
+		return "brightness must be between 0 and 100"
+	}
+	if bRamp < 0 || bRamp > 3600 {
+		return "brightness_ramp_seconds must be between 0 and 3600"
+	}
+	return ""
+}
+
+func (s *Server) AdminAlarmCreate(c *gin.Context) {
+	name, enabled, days, start, end, srcType, srcID, bEnabled, bStart, bEnd, bRamp := alarmFormFromPost(c)
+	if msg := validateAlarm(s, c, name, days, start, end, srcType, srcID, bStart, bEnd, bRamp); msg != "" {
+		SetFlash(c, "danger", msg)
+		opts := s.bindingOptions(c)
+		vars := alarmFormVars(name, enabled, days, start, end, srcType, srcID, bEnabled, bStart, bEnd, bRamp)
+		vars["error"] = msg
+		vars["options"] = opts
+		vars["options_json"] = bindingOptionsJSON(opts)
+		vars["server_zone"] = serverZoneLabel()
+		// Spec: validation failures reject with 400 while still showing the error.
+		s.renderPage(c, http.StatusBadRequest, "alarm_form.html", vars)
+		return
+	}
+	daysJSON, _ := json.Marshal(days)
+	obj, err := s.DB.WakeAlarm.Create().
+		SetName(name).SetEnabled(enabled).SetDays(string(daysJSON)).
+		SetStart(start).SetEnd(end).
+		SetWakeSourceType(srcType).SetWakeSourceID(srcID).
+		SetBrightnessEnabled(bEnabled).SetBrightnessStart(bStart).SetBrightnessEnd(bEnd).
+		SetBrightnessRampSeconds(bRamp).Save(s.Ctx)
+	if err != nil {
+		SetFlash(c, "danger", "Failed to create: "+err.Error())
+		opts := s.bindingOptions(c)
+		vars := alarmFormVars(name, enabled, days, start, end, srcType, srcID, bEnabled, bStart, bEnd, bRamp)
+		vars["options"] = opts
+		vars["options_json"] = bindingOptionsJSON(opts)
+		vars["server_zone"] = serverZoneLabel()
+		s.renderPage(c, http.StatusOK, "alarm_form.html", vars)
+		return
+	}
+	if gs, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil && gs != nil {
+		s.DB.GeneralSettings.UpdateOne(gs).AddWakealarms(obj).Exec(s.Ctx)
+	}
+	SetFlash(c, "success", "Wake alarm created")
+	c.Redirect(http.StatusFound, "/admin/alarms")
+}
+
+func (s *Server) AdminAlarmEdit(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	obj, err := s.DB.WakeAlarm.Get(s.Ctx, id)
+	if err != nil {
+		SetFlash(c, "danger", "Wake alarm not found")
+		c.Redirect(http.StatusFound, "/admin/alarms")
+		return
+	}
+	opts := s.bindingOptions(c)
+	vars := alarmFormVars(obj.Name, obj.Enabled, alarmDaysFromString(obj.Days), obj.Start, obj.End, obj.WakeSourceType, obj.WakeSourceID, obj.BrightnessEnabled, obj.BrightnessStart, obj.BrightnessEnd, obj.BrightnessRampSeconds)
+	vars["obj"] = obj
+	vars["edit"] = true
+	vars["id"] = id
+	vars["options"] = opts
+	vars["options_json"] = bindingOptionsJSON(opts)
+	vars["server_zone"] = serverZoneLabel()
+	s.renderPage(c, http.StatusOK, "alarm_form.html", vars)
+}
+
+func (s *Server) AdminAlarmUpdate(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	name, enabled, days, start, end, srcType, srcID, bEnabled, bStart, bEnd, bRamp := alarmFormFromPost(c)
+	if msg := validateAlarm(s, c, name, days, start, end, srcType, srcID, bStart, bEnd, bRamp); msg != "" {
+		SetFlash(c, "danger", msg)
+		opts := s.bindingOptions(c)
+		vars := alarmFormVars(name, enabled, days, start, end, srcType, srcID, bEnabled, bStart, bEnd, bRamp)
+		vars["error"] = msg
+		vars["edit"] = true
+		vars["id"] = id
+		vars["options"] = opts
+		vars["options_json"] = bindingOptionsJSON(opts)
+		vars["server_zone"] = serverZoneLabel()
+		s.renderPage(c, http.StatusBadRequest, "alarm_form.html", vars)
+		return
+	}
+	daysJSON, _ := json.Marshal(days)
+	if err := s.DB.WakeAlarm.UpdateOneID(id).
+		SetName(name).SetEnabled(enabled).SetDays(string(daysJSON)).
+		SetStart(start).SetEnd(end).
+		SetWakeSourceType(srcType).SetWakeSourceID(srcID).
+		SetBrightnessEnabled(bEnabled).SetBrightnessStart(bStart).SetBrightnessEnd(bEnd).
+		SetBrightnessRampSeconds(bRamp).Exec(s.Ctx); err != nil {
+		SetFlash(c, "danger", "Failed to update: "+err.Error())
+		c.Redirect(http.StatusFound, "/admin/alarms")
+		return
+	}
+	SetFlash(c, "success", "Wake alarm updated")
+	c.Redirect(http.StatusFound, "/admin/alarms")
+}
+
+func (s *Server) AdminAlarmDelete(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	if err := s.DB.WakeAlarm.DeleteOneID(id).Exec(s.Ctx); err != nil {
+		SetFlash(c, "danger", "Failed to delete: "+err.Error())
+		c.Redirect(http.StatusFound, "/admin/alarms")
+		return
+	}
+	SetFlash(c, "success", "Wake alarm deleted")
+	c.Redirect(http.StatusFound, "/admin/alarms")
+}
+
+func alarmDaysFromString(s string) []int {
+	days, _ := parseAlarmDays(s)
+	return days
 }
