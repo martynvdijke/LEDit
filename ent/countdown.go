@@ -24,7 +24,17 @@ type Countdown struct {
 	// Label holds the value of the "label" field.
 	Label string `json:"label,omitempty"`
 	// Enabled holds the value of the "enabled" field.
-	Enabled                     bool `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled,omitempty"`
+	// Granularity holds the value of the "granularity" field.
+	Granularity countdown.Granularity `json:"granularity,omitempty"`
+	// Direction holds the value of the "direction" field.
+	Direction countdown.Direction `json:"direction,omitempty"`
+	// Completion holds the value of the "completion" field.
+	Completion countdown.Completion `json:"completion,omitempty"`
+	// CompletionMessage holds the value of the "completion_message" field.
+	CompletionMessage string `json:"completion_message,omitempty"`
+	// Timezone holds the value of the "timezone" field.
+	Timezone                    string `json:"timezone,omitempty"`
 	general_settings_countdowns *int
 	selectValues                sql.SelectValues
 }
@@ -38,7 +48,7 @@ func (*Countdown) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case countdown.FieldID:
 			values[i] = new(sql.NullInt64)
-		case countdown.FieldName, countdown.FieldLabel:
+		case countdown.FieldName, countdown.FieldLabel, countdown.FieldGranularity, countdown.FieldDirection, countdown.FieldCompletion, countdown.FieldCompletionMessage, countdown.FieldTimezone:
 			values[i] = new(sql.NullString)
 		case countdown.FieldTargetTime:
 			values[i] = new(sql.NullTime)
@@ -88,6 +98,36 @@ func (_m *Countdown) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field enabled", values[i])
 			} else if value.Valid {
 				_m.Enabled = value.Bool
+			}
+		case countdown.FieldGranularity:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field granularity", values[i])
+			} else if value.Valid {
+				_m.Granularity = countdown.Granularity(value.String)
+			}
+		case countdown.FieldDirection:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field direction", values[i])
+			} else if value.Valid {
+				_m.Direction = countdown.Direction(value.String)
+			}
+		case countdown.FieldCompletion:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field completion", values[i])
+			} else if value.Valid {
+				_m.Completion = countdown.Completion(value.String)
+			}
+		case countdown.FieldCompletionMessage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field completion_message", values[i])
+			} else if value.Valid {
+				_m.CompletionMessage = value.String
+			}
+		case countdown.FieldTimezone:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field timezone", values[i])
+			} else if value.Valid {
+				_m.Timezone = value.String
 			}
 		case countdown.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -143,6 +183,21 @@ func (_m *Countdown) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("enabled=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Enabled))
+	builder.WriteString(", ")
+	builder.WriteString("granularity=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Granularity))
+	builder.WriteString(", ")
+	builder.WriteString("direction=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Direction))
+	builder.WriteString(", ")
+	builder.WriteString("completion=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Completion))
+	builder.WriteString(", ")
+	builder.WriteString("completion_message=")
+	builder.WriteString(_m.CompletionMessage)
+	builder.WriteString(", ")
+	builder.WriteString("timezone=")
+	builder.WriteString(_m.Timezone)
 	builder.WriteByte(')')
 	return builder.String()
 }

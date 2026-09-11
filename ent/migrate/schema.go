@@ -173,8 +173,13 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "target_time", Type: field.TypeTime},
-		{Name: "label", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "label", Type: field.TypeString, Nullable: true, Size: 64, Default: ""},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "granularity", Type: field.TypeEnum, Enums: []string{"seconds", "minutes", "hours", "days"}, Default: "seconds"},
+		{Name: "direction", Type: field.TypeEnum, Enums: []string{"down", "up"}, Default: "down"},
+		{Name: "completion", Type: field.TypeEnum, Enums: []string{"now", "message", "hide"}, Default: "now"},
+		{Name: "completion_message", Type: field.TypeString, Nullable: true, Size: 32, Default: ""},
+		{Name: "timezone", Type: field.TypeString, Nullable: true, Default: ""},
 		{Name: "general_settings_countdowns", Type: field.TypeInt, Nullable: true},
 	}
 	// CountdownsTable holds the schema information for the "countdowns" table.
@@ -185,7 +190,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "countdowns_general_settings_countdowns",
-				Columns:    []*schema.Column{CountdownsColumns[5]},
+				Columns:    []*schema.Column{CountdownsColumns[10]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

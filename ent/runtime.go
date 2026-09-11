@@ -163,10 +163,22 @@ func init() {
 	countdownDescLabel := countdownFields[2].Descriptor()
 	// countdown.DefaultLabel holds the default value on creation for the label field.
 	countdown.DefaultLabel = countdownDescLabel.Default.(string)
+	// countdown.LabelValidator is a validator for the "label" field. It is called by the builders before save.
+	countdown.LabelValidator = countdownDescLabel.Validators[0].(func(string) error)
 	// countdownDescEnabled is the schema descriptor for enabled field.
 	countdownDescEnabled := countdownFields[3].Descriptor()
 	// countdown.DefaultEnabled holds the default value on creation for the enabled field.
 	countdown.DefaultEnabled = countdownDescEnabled.Default.(bool)
+	// countdownDescCompletionMessage is the schema descriptor for completion_message field.
+	countdownDescCompletionMessage := countdownFields[7].Descriptor()
+	// countdown.DefaultCompletionMessage holds the default value on creation for the completion_message field.
+	countdown.DefaultCompletionMessage = countdownDescCompletionMessage.Default.(string)
+	// countdown.CompletionMessageValidator is a validator for the "completion_message" field. It is called by the builders before save.
+	countdown.CompletionMessageValidator = countdownDescCompletionMessage.Validators[0].(func(string) error)
+	// countdownDescTimezone is the schema descriptor for timezone field.
+	countdownDescTimezone := countdownFields[8].Descriptor()
+	// countdown.DefaultTimezone holds the default value on creation for the timezone field.
+	countdown.DefaultTimezone = countdownDescTimezone.Default.(string)
 	cryptoFields := schema.Crypto{}.Fields()
 	_ = cryptoFields
 	// cryptoDescToken is the schema descriptor for token field.

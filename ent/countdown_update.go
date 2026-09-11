@@ -90,6 +90,88 @@ func (_u *CountdownUpdate) SetNillableEnabled(v *bool) *CountdownUpdate {
 	return _u
 }
 
+// SetGranularity sets the "granularity" field.
+func (_u *CountdownUpdate) SetGranularity(v countdown.Granularity) *CountdownUpdate {
+	_u.mutation.SetGranularity(v)
+	return _u
+}
+
+// SetNillableGranularity sets the "granularity" field if the given value is not nil.
+func (_u *CountdownUpdate) SetNillableGranularity(v *countdown.Granularity) *CountdownUpdate {
+	if v != nil {
+		_u.SetGranularity(*v)
+	}
+	return _u
+}
+
+// SetDirection sets the "direction" field.
+func (_u *CountdownUpdate) SetDirection(v countdown.Direction) *CountdownUpdate {
+	_u.mutation.SetDirection(v)
+	return _u
+}
+
+// SetNillableDirection sets the "direction" field if the given value is not nil.
+func (_u *CountdownUpdate) SetNillableDirection(v *countdown.Direction) *CountdownUpdate {
+	if v != nil {
+		_u.SetDirection(*v)
+	}
+	return _u
+}
+
+// SetCompletion sets the "completion" field.
+func (_u *CountdownUpdate) SetCompletion(v countdown.Completion) *CountdownUpdate {
+	_u.mutation.SetCompletion(v)
+	return _u
+}
+
+// SetNillableCompletion sets the "completion" field if the given value is not nil.
+func (_u *CountdownUpdate) SetNillableCompletion(v *countdown.Completion) *CountdownUpdate {
+	if v != nil {
+		_u.SetCompletion(*v)
+	}
+	return _u
+}
+
+// SetCompletionMessage sets the "completion_message" field.
+func (_u *CountdownUpdate) SetCompletionMessage(v string) *CountdownUpdate {
+	_u.mutation.SetCompletionMessage(v)
+	return _u
+}
+
+// SetNillableCompletionMessage sets the "completion_message" field if the given value is not nil.
+func (_u *CountdownUpdate) SetNillableCompletionMessage(v *string) *CountdownUpdate {
+	if v != nil {
+		_u.SetCompletionMessage(*v)
+	}
+	return _u
+}
+
+// ClearCompletionMessage clears the value of the "completion_message" field.
+func (_u *CountdownUpdate) ClearCompletionMessage() *CountdownUpdate {
+	_u.mutation.ClearCompletionMessage()
+	return _u
+}
+
+// SetTimezone sets the "timezone" field.
+func (_u *CountdownUpdate) SetTimezone(v string) *CountdownUpdate {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *CountdownUpdate) SetNillableTimezone(v *string) *CountdownUpdate {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (_u *CountdownUpdate) ClearTimezone() *CountdownUpdate {
+	_u.mutation.ClearTimezone()
+	return _u
+}
+
 // Mutation returns the CountdownMutation object of the builder.
 func (_u *CountdownUpdate) Mutation() *CountdownMutation {
 	return _u.mutation
@@ -122,7 +204,40 @@ func (_u *CountdownUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *CountdownUpdate) check() error {
+	if v, ok := _u.mutation.Label(); ok {
+		if err := countdown.LabelValidator(v); err != nil {
+			return &ValidationError{Name: "label", err: fmt.Errorf(`ent: validator failed for field "Countdown.label": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Granularity(); ok {
+		if err := countdown.GranularityValidator(v); err != nil {
+			return &ValidationError{Name: "granularity", err: fmt.Errorf(`ent: validator failed for field "Countdown.granularity": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Direction(); ok {
+		if err := countdown.DirectionValidator(v); err != nil {
+			return &ValidationError{Name: "direction", err: fmt.Errorf(`ent: validator failed for field "Countdown.direction": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Completion(); ok {
+		if err := countdown.CompletionValidator(v); err != nil {
+			return &ValidationError{Name: "completion", err: fmt.Errorf(`ent: validator failed for field "Countdown.completion": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.CompletionMessage(); ok {
+		if err := countdown.CompletionMessageValidator(v); err != nil {
+			return &ValidationError{Name: "completion_message", err: fmt.Errorf(`ent: validator failed for field "Countdown.completion_message": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *CountdownUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(countdown.Table, countdown.Columns, sqlgraph.NewFieldSpec(countdown.FieldID, field.TypeInt))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -145,6 +260,27 @@ func (_u *CountdownUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(countdown.FieldEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Granularity(); ok {
+		_spec.SetField(countdown.FieldGranularity, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Direction(); ok {
+		_spec.SetField(countdown.FieldDirection, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Completion(); ok {
+		_spec.SetField(countdown.FieldCompletion, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.CompletionMessage(); ok {
+		_spec.SetField(countdown.FieldCompletionMessage, field.TypeString, value)
+	}
+	if _u.mutation.CompletionMessageCleared() {
+		_spec.ClearField(countdown.FieldCompletionMessage, field.TypeString)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(countdown.FieldTimezone, field.TypeString, value)
+	}
+	if _u.mutation.TimezoneCleared() {
+		_spec.ClearField(countdown.FieldTimezone, field.TypeString)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -228,6 +364,88 @@ func (_u *CountdownUpdateOne) SetNillableEnabled(v *bool) *CountdownUpdateOne {
 	return _u
 }
 
+// SetGranularity sets the "granularity" field.
+func (_u *CountdownUpdateOne) SetGranularity(v countdown.Granularity) *CountdownUpdateOne {
+	_u.mutation.SetGranularity(v)
+	return _u
+}
+
+// SetNillableGranularity sets the "granularity" field if the given value is not nil.
+func (_u *CountdownUpdateOne) SetNillableGranularity(v *countdown.Granularity) *CountdownUpdateOne {
+	if v != nil {
+		_u.SetGranularity(*v)
+	}
+	return _u
+}
+
+// SetDirection sets the "direction" field.
+func (_u *CountdownUpdateOne) SetDirection(v countdown.Direction) *CountdownUpdateOne {
+	_u.mutation.SetDirection(v)
+	return _u
+}
+
+// SetNillableDirection sets the "direction" field if the given value is not nil.
+func (_u *CountdownUpdateOne) SetNillableDirection(v *countdown.Direction) *CountdownUpdateOne {
+	if v != nil {
+		_u.SetDirection(*v)
+	}
+	return _u
+}
+
+// SetCompletion sets the "completion" field.
+func (_u *CountdownUpdateOne) SetCompletion(v countdown.Completion) *CountdownUpdateOne {
+	_u.mutation.SetCompletion(v)
+	return _u
+}
+
+// SetNillableCompletion sets the "completion" field if the given value is not nil.
+func (_u *CountdownUpdateOne) SetNillableCompletion(v *countdown.Completion) *CountdownUpdateOne {
+	if v != nil {
+		_u.SetCompletion(*v)
+	}
+	return _u
+}
+
+// SetCompletionMessage sets the "completion_message" field.
+func (_u *CountdownUpdateOne) SetCompletionMessage(v string) *CountdownUpdateOne {
+	_u.mutation.SetCompletionMessage(v)
+	return _u
+}
+
+// SetNillableCompletionMessage sets the "completion_message" field if the given value is not nil.
+func (_u *CountdownUpdateOne) SetNillableCompletionMessage(v *string) *CountdownUpdateOne {
+	if v != nil {
+		_u.SetCompletionMessage(*v)
+	}
+	return _u
+}
+
+// ClearCompletionMessage clears the value of the "completion_message" field.
+func (_u *CountdownUpdateOne) ClearCompletionMessage() *CountdownUpdateOne {
+	_u.mutation.ClearCompletionMessage()
+	return _u
+}
+
+// SetTimezone sets the "timezone" field.
+func (_u *CountdownUpdateOne) SetTimezone(v string) *CountdownUpdateOne {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *CountdownUpdateOne) SetNillableTimezone(v *string) *CountdownUpdateOne {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (_u *CountdownUpdateOne) ClearTimezone() *CountdownUpdateOne {
+	_u.mutation.ClearTimezone()
+	return _u
+}
+
 // Mutation returns the CountdownMutation object of the builder.
 func (_u *CountdownUpdateOne) Mutation() *CountdownMutation {
 	return _u.mutation
@@ -273,7 +491,40 @@ func (_u *CountdownUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *CountdownUpdateOne) check() error {
+	if v, ok := _u.mutation.Label(); ok {
+		if err := countdown.LabelValidator(v); err != nil {
+			return &ValidationError{Name: "label", err: fmt.Errorf(`ent: validator failed for field "Countdown.label": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Granularity(); ok {
+		if err := countdown.GranularityValidator(v); err != nil {
+			return &ValidationError{Name: "granularity", err: fmt.Errorf(`ent: validator failed for field "Countdown.granularity": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Direction(); ok {
+		if err := countdown.DirectionValidator(v); err != nil {
+			return &ValidationError{Name: "direction", err: fmt.Errorf(`ent: validator failed for field "Countdown.direction": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Completion(); ok {
+		if err := countdown.CompletionValidator(v); err != nil {
+			return &ValidationError{Name: "completion", err: fmt.Errorf(`ent: validator failed for field "Countdown.completion": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.CompletionMessage(); ok {
+		if err := countdown.CompletionMessageValidator(v); err != nil {
+			return &ValidationError{Name: "completion_message", err: fmt.Errorf(`ent: validator failed for field "Countdown.completion_message": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *CountdownUpdateOne) sqlSave(ctx context.Context) (_node *Countdown, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(countdown.Table, countdown.Columns, sqlgraph.NewFieldSpec(countdown.FieldID, field.TypeInt))
 	id, ok := _u.mutation.ID()
 	if !ok {
@@ -313,6 +564,27 @@ func (_u *CountdownUpdateOne) sqlSave(ctx context.Context) (_node *Countdown, er
 	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(countdown.FieldEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Granularity(); ok {
+		_spec.SetField(countdown.FieldGranularity, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Direction(); ok {
+		_spec.SetField(countdown.FieldDirection, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Completion(); ok {
+		_spec.SetField(countdown.FieldCompletion, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.CompletionMessage(); ok {
+		_spec.SetField(countdown.FieldCompletionMessage, field.TypeString, value)
+	}
+	if _u.mutation.CompletionMessageCleared() {
+		_spec.ClearField(countdown.FieldCompletionMessage, field.TypeString)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(countdown.FieldTimezone, field.TypeString, value)
+	}
+	if _u.mutation.TimezoneCleared() {
+		_spec.ClearField(countdown.FieldTimezone, field.TypeString)
 	}
 	_node = &Countdown{config: _u.config}
 	_spec.Assign = _node.assignValues

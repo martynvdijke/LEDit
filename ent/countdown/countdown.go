@@ -3,6 +3,8 @@
 package countdown
 
 import (
+	"fmt"
+
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -19,6 +21,16 @@ const (
 	FieldLabel = "label"
 	// FieldEnabled holds the string denoting the enabled field in the database.
 	FieldEnabled = "enabled"
+	// FieldGranularity holds the string denoting the granularity field in the database.
+	FieldGranularity = "granularity"
+	// FieldDirection holds the string denoting the direction field in the database.
+	FieldDirection = "direction"
+	// FieldCompletion holds the string denoting the completion field in the database.
+	FieldCompletion = "completion"
+	// FieldCompletionMessage holds the string denoting the completion_message field in the database.
+	FieldCompletionMessage = "completion_message"
+	// FieldTimezone holds the string denoting the timezone field in the database.
+	FieldTimezone = "timezone"
 	// Table holds the table name of the countdown in the database.
 	Table = "countdowns"
 )
@@ -30,6 +42,11 @@ var Columns = []string{
 	FieldTargetTime,
 	FieldLabel,
 	FieldEnabled,
+	FieldGranularity,
+	FieldDirection,
+	FieldCompletion,
+	FieldCompletionMessage,
+	FieldTimezone,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "countdowns"
@@ -56,9 +73,98 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultLabel holds the default value on creation for the "label" field.
 	DefaultLabel string
+	// LabelValidator is a validator for the "label" field. It is called by the builders before save.
+	LabelValidator func(string) error
 	// DefaultEnabled holds the default value on creation for the "enabled" field.
 	DefaultEnabled bool
+	// DefaultCompletionMessage holds the default value on creation for the "completion_message" field.
+	DefaultCompletionMessage string
+	// CompletionMessageValidator is a validator for the "completion_message" field. It is called by the builders before save.
+	CompletionMessageValidator func(string) error
+	// DefaultTimezone holds the default value on creation for the "timezone" field.
+	DefaultTimezone string
 )
+
+// Granularity defines the type for the "granularity" enum field.
+type Granularity string
+
+// GranularitySeconds is the default value of the Granularity enum.
+const DefaultGranularity = GranularitySeconds
+
+// Granularity values.
+const (
+	GranularitySeconds Granularity = "seconds"
+	GranularityMinutes Granularity = "minutes"
+	GranularityHours   Granularity = "hours"
+	GranularityDays    Granularity = "days"
+)
+
+func (gr Granularity) String() string {
+	return string(gr)
+}
+
+// GranularityValidator is a validator for the "granularity" field enum values. It is called by the builders before save.
+func GranularityValidator(gr Granularity) error {
+	switch gr {
+	case GranularitySeconds, GranularityMinutes, GranularityHours, GranularityDays:
+		return nil
+	default:
+		return fmt.Errorf("countdown: invalid enum value for granularity field: %q", gr)
+	}
+}
+
+// Direction defines the type for the "direction" enum field.
+type Direction string
+
+// DirectionDown is the default value of the Direction enum.
+const DefaultDirection = DirectionDown
+
+// Direction values.
+const (
+	DirectionDown Direction = "down"
+	DirectionUp   Direction = "up"
+)
+
+func (d Direction) String() string {
+	return string(d)
+}
+
+// DirectionValidator is a validator for the "direction" field enum values. It is called by the builders before save.
+func DirectionValidator(d Direction) error {
+	switch d {
+	case DirectionDown, DirectionUp:
+		return nil
+	default:
+		return fmt.Errorf("countdown: invalid enum value for direction field: %q", d)
+	}
+}
+
+// Completion defines the type for the "completion" enum field.
+type Completion string
+
+// CompletionNow is the default value of the Completion enum.
+const DefaultCompletion = CompletionNow
+
+// Completion values.
+const (
+	CompletionNow         Completion = "now"
+	CompletionMessageText Completion = "message"
+	CompletionHide        Completion = "hide"
+)
+
+func (c Completion) String() string {
+	return string(c)
+}
+
+// CompletionValidator is a validator for the "completion" field enum values. It is called by the builders before save.
+func CompletionValidator(c Completion) error {
+	switch c {
+	case CompletionNow, CompletionMessageText, CompletionHide:
+		return nil
+	default:
+		return fmt.Errorf("countdown: invalid enum value for completion field: %q", c)
+	}
+}
 
 // OrderOption defines the ordering options for the Countdown queries.
 type OrderOption func(*sql.Selector)
@@ -86,4 +192,29 @@ func ByLabel(opts ...sql.OrderTermOption) OrderOption {
 // ByEnabled orders the results by the enabled field.
 func ByEnabled(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEnabled, opts...).ToFunc()
+}
+
+// ByGranularity orders the results by the granularity field.
+func ByGranularity(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGranularity, opts...).ToFunc()
+}
+
+// ByDirection orders the results by the direction field.
+func ByDirection(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDirection, opts...).ToFunc()
+}
+
+// ByCompletion orders the results by the completion field.
+func ByCompletion(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCompletion, opts...).ToFunc()
+}
+
+// ByCompletionMessage orders the results by the completion_message field.
+func ByCompletionMessage(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCompletionMessage, opts...).ToFunc()
+}
+
+// ByTimezone orders the results by the timezone field.
+func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
 }

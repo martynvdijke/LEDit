@@ -4807,17 +4807,22 @@ func (m *ChartSampleMutation) ResetEdge(name string) error {
 // CountdownMutation represents an operation that mutates the Countdown nodes in the graph.
 type CountdownMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	target_time   *time.Time
-	label         *string
-	enabled       *bool
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Countdown, error)
-	predicates    []predicate.Countdown
+	op                 Op
+	typ                string
+	id                 *int
+	name               *string
+	target_time        *time.Time
+	label              *string
+	enabled            *bool
+	granularity        *countdown.Granularity
+	direction          *countdown.Direction
+	completion         *countdown.Completion
+	completion_message *string
+	timezone           *string
+	clearedFields      map[string]struct{}
+	done               bool
+	oldValue           func(context.Context) (*Countdown, error)
+	predicates         []predicate.Countdown
 }
 
 var _ ent.Mutation = (*CountdownMutation)(nil)
@@ -5075,6 +5080,212 @@ func (m *CountdownMutation) ResetEnabled() {
 	m.enabled = nil
 }
 
+// SetGranularity sets the "granularity" field.
+func (m *CountdownMutation) SetGranularity(c countdown.Granularity) {
+	m.granularity = &c
+}
+
+// Granularity returns the value of the "granularity" field in the mutation.
+func (m *CountdownMutation) Granularity() (r countdown.Granularity, exists bool) {
+	v := m.granularity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGranularity returns the old "granularity" field's value of the Countdown entity.
+// If the Countdown object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CountdownMutation) OldGranularity(ctx context.Context) (v countdown.Granularity, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGranularity is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGranularity requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGranularity: %w", err)
+	}
+	return oldValue.Granularity, nil
+}
+
+// ResetGranularity resets all changes to the "granularity" field.
+func (m *CountdownMutation) ResetGranularity() {
+	m.granularity = nil
+}
+
+// SetDirection sets the "direction" field.
+func (m *CountdownMutation) SetDirection(c countdown.Direction) {
+	m.direction = &c
+}
+
+// Direction returns the value of the "direction" field in the mutation.
+func (m *CountdownMutation) Direction() (r countdown.Direction, exists bool) {
+	v := m.direction
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDirection returns the old "direction" field's value of the Countdown entity.
+// If the Countdown object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CountdownMutation) OldDirection(ctx context.Context) (v countdown.Direction, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDirection is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDirection requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDirection: %w", err)
+	}
+	return oldValue.Direction, nil
+}
+
+// ResetDirection resets all changes to the "direction" field.
+func (m *CountdownMutation) ResetDirection() {
+	m.direction = nil
+}
+
+// SetCompletion sets the "completion" field.
+func (m *CountdownMutation) SetCompletion(c countdown.Completion) {
+	m.completion = &c
+}
+
+// Completion returns the value of the "completion" field in the mutation.
+func (m *CountdownMutation) Completion() (r countdown.Completion, exists bool) {
+	v := m.completion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompletion returns the old "completion" field's value of the Countdown entity.
+// If the Countdown object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CountdownMutation) OldCompletion(ctx context.Context) (v countdown.Completion, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompletion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompletion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompletion: %w", err)
+	}
+	return oldValue.Completion, nil
+}
+
+// ResetCompletion resets all changes to the "completion" field.
+func (m *CountdownMutation) ResetCompletion() {
+	m.completion = nil
+}
+
+// SetCompletionMessage sets the "completion_message" field.
+func (m *CountdownMutation) SetCompletionMessage(s string) {
+	m.completion_message = &s
+}
+
+// CompletionMessage returns the value of the "completion_message" field in the mutation.
+func (m *CountdownMutation) CompletionMessage() (r string, exists bool) {
+	v := m.completion_message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompletionMessage returns the old "completion_message" field's value of the Countdown entity.
+// If the Countdown object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CountdownMutation) OldCompletionMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompletionMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompletionMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompletionMessage: %w", err)
+	}
+	return oldValue.CompletionMessage, nil
+}
+
+// ClearCompletionMessage clears the value of the "completion_message" field.
+func (m *CountdownMutation) ClearCompletionMessage() {
+	m.completion_message = nil
+	m.clearedFields[countdown.FieldCompletionMessage] = struct{}{}
+}
+
+// CompletionMessageCleared returns if the "completion_message" field was cleared in this mutation.
+func (m *CountdownMutation) CompletionMessageCleared() bool {
+	_, ok := m.clearedFields[countdown.FieldCompletionMessage]
+	return ok
+}
+
+// ResetCompletionMessage resets all changes to the "completion_message" field.
+func (m *CountdownMutation) ResetCompletionMessage() {
+	m.completion_message = nil
+	delete(m.clearedFields, countdown.FieldCompletionMessage)
+}
+
+// SetTimezone sets the "timezone" field.
+func (m *CountdownMutation) SetTimezone(s string) {
+	m.timezone = &s
+}
+
+// Timezone returns the value of the "timezone" field in the mutation.
+func (m *CountdownMutation) Timezone() (r string, exists bool) {
+	v := m.timezone
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezone returns the old "timezone" field's value of the Countdown entity.
+// If the Countdown object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CountdownMutation) OldTimezone(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezone is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezone requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezone: %w", err)
+	}
+	return oldValue.Timezone, nil
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (m *CountdownMutation) ClearTimezone() {
+	m.timezone = nil
+	m.clearedFields[countdown.FieldTimezone] = struct{}{}
+}
+
+// TimezoneCleared returns if the "timezone" field was cleared in this mutation.
+func (m *CountdownMutation) TimezoneCleared() bool {
+	_, ok := m.clearedFields[countdown.FieldTimezone]
+	return ok
+}
+
+// ResetTimezone resets all changes to the "timezone" field.
+func (m *CountdownMutation) ResetTimezone() {
+	m.timezone = nil
+	delete(m.clearedFields, countdown.FieldTimezone)
+}
+
 // Where appends a list predicates to the CountdownMutation builder.
 func (m *CountdownMutation) Where(ps ...predicate.Countdown) {
 	m.predicates = append(m.predicates, ps...)
@@ -5109,7 +5320,7 @@ func (m *CountdownMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CountdownMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 9)
 	if m.name != nil {
 		fields = append(fields, countdown.FieldName)
 	}
@@ -5121,6 +5332,21 @@ func (m *CountdownMutation) Fields() []string {
 	}
 	if m.enabled != nil {
 		fields = append(fields, countdown.FieldEnabled)
+	}
+	if m.granularity != nil {
+		fields = append(fields, countdown.FieldGranularity)
+	}
+	if m.direction != nil {
+		fields = append(fields, countdown.FieldDirection)
+	}
+	if m.completion != nil {
+		fields = append(fields, countdown.FieldCompletion)
+	}
+	if m.completion_message != nil {
+		fields = append(fields, countdown.FieldCompletionMessage)
+	}
+	if m.timezone != nil {
+		fields = append(fields, countdown.FieldTimezone)
 	}
 	return fields
 }
@@ -5138,6 +5364,16 @@ func (m *CountdownMutation) Field(name string) (ent.Value, bool) {
 		return m.Label()
 	case countdown.FieldEnabled:
 		return m.Enabled()
+	case countdown.FieldGranularity:
+		return m.Granularity()
+	case countdown.FieldDirection:
+		return m.Direction()
+	case countdown.FieldCompletion:
+		return m.Completion()
+	case countdown.FieldCompletionMessage:
+		return m.CompletionMessage()
+	case countdown.FieldTimezone:
+		return m.Timezone()
 	}
 	return nil, false
 }
@@ -5155,6 +5391,16 @@ func (m *CountdownMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldLabel(ctx)
 	case countdown.FieldEnabled:
 		return m.OldEnabled(ctx)
+	case countdown.FieldGranularity:
+		return m.OldGranularity(ctx)
+	case countdown.FieldDirection:
+		return m.OldDirection(ctx)
+	case countdown.FieldCompletion:
+		return m.OldCompletion(ctx)
+	case countdown.FieldCompletionMessage:
+		return m.OldCompletionMessage(ctx)
+	case countdown.FieldTimezone:
+		return m.OldTimezone(ctx)
 	}
 	return nil, fmt.Errorf("unknown Countdown field %s", name)
 }
@@ -5192,6 +5438,41 @@ func (m *CountdownMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetEnabled(v)
 		return nil
+	case countdown.FieldGranularity:
+		v, ok := value.(countdown.Granularity)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGranularity(v)
+		return nil
+	case countdown.FieldDirection:
+		v, ok := value.(countdown.Direction)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDirection(v)
+		return nil
+	case countdown.FieldCompletion:
+		v, ok := value.(countdown.Completion)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompletion(v)
+		return nil
+	case countdown.FieldCompletionMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompletionMessage(v)
+		return nil
+	case countdown.FieldTimezone:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezone(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Countdown field %s", name)
 }
@@ -5225,6 +5506,12 @@ func (m *CountdownMutation) ClearedFields() []string {
 	if m.FieldCleared(countdown.FieldLabel) {
 		fields = append(fields, countdown.FieldLabel)
 	}
+	if m.FieldCleared(countdown.FieldCompletionMessage) {
+		fields = append(fields, countdown.FieldCompletionMessage)
+	}
+	if m.FieldCleared(countdown.FieldTimezone) {
+		fields = append(fields, countdown.FieldTimezone)
+	}
 	return fields
 }
 
@@ -5241,6 +5528,12 @@ func (m *CountdownMutation) ClearField(name string) error {
 	switch name {
 	case countdown.FieldLabel:
 		m.ClearLabel()
+		return nil
+	case countdown.FieldCompletionMessage:
+		m.ClearCompletionMessage()
+		return nil
+	case countdown.FieldTimezone:
+		m.ClearTimezone()
 		return nil
 	}
 	return fmt.Errorf("unknown Countdown nullable field %s", name)
@@ -5261,6 +5554,21 @@ func (m *CountdownMutation) ResetField(name string) error {
 		return nil
 	case countdown.FieldEnabled:
 		m.ResetEnabled()
+		return nil
+	case countdown.FieldGranularity:
+		m.ResetGranularity()
+		return nil
+	case countdown.FieldDirection:
+		m.ResetDirection()
+		return nil
+	case countdown.FieldCompletion:
+		m.ResetCompletion()
+		return nil
+	case countdown.FieldCompletionMessage:
+		m.ResetCompletionMessage()
+		return nil
+	case countdown.FieldTimezone:
+		m.ResetTimezone()
 		return nil
 	}
 	return fmt.Errorf("unknown Countdown field %s", name)

@@ -69,6 +69,16 @@ func Enabled(v bool) predicate.Countdown {
 	return predicate.Countdown(sql.FieldEQ(FieldEnabled, v))
 }
 
+// CompletionMessage applies equality check predicate on the "completion_message" field. It's identical to CompletionMessageEQ.
+func CompletionMessage(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldEQ(FieldCompletionMessage, v))
+}
+
+// Timezone applies equality check predicate on the "timezone" field. It's identical to TimezoneEQ.
+func Timezone(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldEQ(FieldTimezone, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Countdown {
 	return predicate.Countdown(sql.FieldEQ(FieldName, v))
@@ -257,6 +267,216 @@ func EnabledEQ(v bool) predicate.Countdown {
 // EnabledNEQ applies the NEQ predicate on the "enabled" field.
 func EnabledNEQ(v bool) predicate.Countdown {
 	return predicate.Countdown(sql.FieldNEQ(FieldEnabled, v))
+}
+
+// GranularityEQ applies the EQ predicate on the "granularity" field.
+func GranularityEQ(v Granularity) predicate.Countdown {
+	return predicate.Countdown(sql.FieldEQ(FieldGranularity, v))
+}
+
+// GranularityNEQ applies the NEQ predicate on the "granularity" field.
+func GranularityNEQ(v Granularity) predicate.Countdown {
+	return predicate.Countdown(sql.FieldNEQ(FieldGranularity, v))
+}
+
+// GranularityIn applies the In predicate on the "granularity" field.
+func GranularityIn(vs ...Granularity) predicate.Countdown {
+	return predicate.Countdown(sql.FieldIn(FieldGranularity, vs...))
+}
+
+// GranularityNotIn applies the NotIn predicate on the "granularity" field.
+func GranularityNotIn(vs ...Granularity) predicate.Countdown {
+	return predicate.Countdown(sql.FieldNotIn(FieldGranularity, vs...))
+}
+
+// DirectionEQ applies the EQ predicate on the "direction" field.
+func DirectionEQ(v Direction) predicate.Countdown {
+	return predicate.Countdown(sql.FieldEQ(FieldDirection, v))
+}
+
+// DirectionNEQ applies the NEQ predicate on the "direction" field.
+func DirectionNEQ(v Direction) predicate.Countdown {
+	return predicate.Countdown(sql.FieldNEQ(FieldDirection, v))
+}
+
+// DirectionIn applies the In predicate on the "direction" field.
+func DirectionIn(vs ...Direction) predicate.Countdown {
+	return predicate.Countdown(sql.FieldIn(FieldDirection, vs...))
+}
+
+// DirectionNotIn applies the NotIn predicate on the "direction" field.
+func DirectionNotIn(vs ...Direction) predicate.Countdown {
+	return predicate.Countdown(sql.FieldNotIn(FieldDirection, vs...))
+}
+
+// CompletionEQ applies the EQ predicate on the "completion" field.
+func CompletionEQ(v Completion) predicate.Countdown {
+	return predicate.Countdown(sql.FieldEQ(FieldCompletion, v))
+}
+
+// CompletionNEQ applies the NEQ predicate on the "completion" field.
+func CompletionNEQ(v Completion) predicate.Countdown {
+	return predicate.Countdown(sql.FieldNEQ(FieldCompletion, v))
+}
+
+// CompletionIn applies the In predicate on the "completion" field.
+func CompletionIn(vs ...Completion) predicate.Countdown {
+	return predicate.Countdown(sql.FieldIn(FieldCompletion, vs...))
+}
+
+// CompletionNotIn applies the NotIn predicate on the "completion" field.
+func CompletionNotIn(vs ...Completion) predicate.Countdown {
+	return predicate.Countdown(sql.FieldNotIn(FieldCompletion, vs...))
+}
+
+// CompletionMessageEQ applies the EQ predicate on the "completion_message" field.
+func CompletionMessageEQ(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldEQ(FieldCompletionMessage, v))
+}
+
+// CompletionMessageNEQ applies the NEQ predicate on the "completion_message" field.
+func CompletionMessageNEQ(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldNEQ(FieldCompletionMessage, v))
+}
+
+// CompletionMessageIn applies the In predicate on the "completion_message" field.
+func CompletionMessageIn(vs ...string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldIn(FieldCompletionMessage, vs...))
+}
+
+// CompletionMessageNotIn applies the NotIn predicate on the "completion_message" field.
+func CompletionMessageNotIn(vs ...string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldNotIn(FieldCompletionMessage, vs...))
+}
+
+// CompletionMessageGT applies the GT predicate on the "completion_message" field.
+func CompletionMessageGT(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldGT(FieldCompletionMessage, v))
+}
+
+// CompletionMessageGTE applies the GTE predicate on the "completion_message" field.
+func CompletionMessageGTE(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldGTE(FieldCompletionMessage, v))
+}
+
+// CompletionMessageLT applies the LT predicate on the "completion_message" field.
+func CompletionMessageLT(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldLT(FieldCompletionMessage, v))
+}
+
+// CompletionMessageLTE applies the LTE predicate on the "completion_message" field.
+func CompletionMessageLTE(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldLTE(FieldCompletionMessage, v))
+}
+
+// CompletionMessageContains applies the Contains predicate on the "completion_message" field.
+func CompletionMessageContains(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldContains(FieldCompletionMessage, v))
+}
+
+// CompletionMessageHasPrefix applies the HasPrefix predicate on the "completion_message" field.
+func CompletionMessageHasPrefix(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldHasPrefix(FieldCompletionMessage, v))
+}
+
+// CompletionMessageHasSuffix applies the HasSuffix predicate on the "completion_message" field.
+func CompletionMessageHasSuffix(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldHasSuffix(FieldCompletionMessage, v))
+}
+
+// CompletionMessageIsNil applies the IsNil predicate on the "completion_message" field.
+func CompletionMessageIsNil() predicate.Countdown {
+	return predicate.Countdown(sql.FieldIsNull(FieldCompletionMessage))
+}
+
+// CompletionMessageNotNil applies the NotNil predicate on the "completion_message" field.
+func CompletionMessageNotNil() predicate.Countdown {
+	return predicate.Countdown(sql.FieldNotNull(FieldCompletionMessage))
+}
+
+// CompletionMessageEqualFold applies the EqualFold predicate on the "completion_message" field.
+func CompletionMessageEqualFold(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldEqualFold(FieldCompletionMessage, v))
+}
+
+// CompletionMessageContainsFold applies the ContainsFold predicate on the "completion_message" field.
+func CompletionMessageContainsFold(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldContainsFold(FieldCompletionMessage, v))
+}
+
+// TimezoneEQ applies the EQ predicate on the "timezone" field.
+func TimezoneEQ(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldEQ(FieldTimezone, v))
+}
+
+// TimezoneNEQ applies the NEQ predicate on the "timezone" field.
+func TimezoneNEQ(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldNEQ(FieldTimezone, v))
+}
+
+// TimezoneIn applies the In predicate on the "timezone" field.
+func TimezoneIn(vs ...string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldIn(FieldTimezone, vs...))
+}
+
+// TimezoneNotIn applies the NotIn predicate on the "timezone" field.
+func TimezoneNotIn(vs ...string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldNotIn(FieldTimezone, vs...))
+}
+
+// TimezoneGT applies the GT predicate on the "timezone" field.
+func TimezoneGT(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldGT(FieldTimezone, v))
+}
+
+// TimezoneGTE applies the GTE predicate on the "timezone" field.
+func TimezoneGTE(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldGTE(FieldTimezone, v))
+}
+
+// TimezoneLT applies the LT predicate on the "timezone" field.
+func TimezoneLT(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldLT(FieldTimezone, v))
+}
+
+// TimezoneLTE applies the LTE predicate on the "timezone" field.
+func TimezoneLTE(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldLTE(FieldTimezone, v))
+}
+
+// TimezoneContains applies the Contains predicate on the "timezone" field.
+func TimezoneContains(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldContains(FieldTimezone, v))
+}
+
+// TimezoneHasPrefix applies the HasPrefix predicate on the "timezone" field.
+func TimezoneHasPrefix(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldHasPrefix(FieldTimezone, v))
+}
+
+// TimezoneHasSuffix applies the HasSuffix predicate on the "timezone" field.
+func TimezoneHasSuffix(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldHasSuffix(FieldTimezone, v))
+}
+
+// TimezoneIsNil applies the IsNil predicate on the "timezone" field.
+func TimezoneIsNil() predicate.Countdown {
+	return predicate.Countdown(sql.FieldIsNull(FieldTimezone))
+}
+
+// TimezoneNotNil applies the NotNil predicate on the "timezone" field.
+func TimezoneNotNil() predicate.Countdown {
+	return predicate.Countdown(sql.FieldNotNull(FieldTimezone))
+}
+
+// TimezoneEqualFold applies the EqualFold predicate on the "timezone" field.
+func TimezoneEqualFold(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldEqualFold(FieldTimezone, v))
+}
+
+// TimezoneContainsFold applies the ContainsFold predicate on the "timezone" field.
+func TimezoneContainsFold(v string) predicate.Countdown {
+	return predicate.Countdown(sql.FieldContainsFold(FieldTimezone, v))
 }
 
 // And groups predicates with the AND operator between them.
