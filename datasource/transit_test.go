@@ -2,127 +2,94 @@ package datasource
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"image/png"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 )
 
-func TestBuildTransitRows_FutureFilteringAndMinutes(t *testing.T) {
+func dep(line, dest string, t time.Time) TransitDeparture {
+	return TransitDeparture{Line: line, Destination: dest, Time: t}
+}
+
+func mustPNG(t *testing.T, data []byte) {
+	t.Helper()
+	if _, err := png.Decode(bytes.NewReader(data)); err != nil {
+		t.Fatalf("png decode: %v", err)
+	}
+}
+
+func TestBuildTransitRows_FilterCapPast(t *testing.T) {
 	now := time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC)
+	base := TransitConfig{Timezone: "Europe/Berlin", MaxDepartures: 4, TimeMode: "minutes"}
 
 	tests := []struct {
 		name string
-		body string
+		cfg  TransitConfig
+		deps []TransitDeparture
 		want [][2]string
 	}{
 		{
-			name: "NOW boundary 30s and 1m",
-			body: departuresJSON([]departureFixture{
-				{Line: "S7", Dest: "A", When: now.Add(30 * time.Second)},
-				{Line: "S7", Dest: "B", When: now.Add(60 * time.Second)},
-				{Line: "S7", Dest: "C", When: now.Add(90 * time.Second)},
-			}),
-			want: [][2]string{
-				{"S7 A", "NOW"},
-				{"S7 B", "NOW"},
-				{"S7 C", "2 min"},
+			name: "future only, past excluded",
+			cfg:  base,
+			deps: []TransitDeparture{
+				dep("U1", "Past", now.Add(-5*time.Minute)),
+				dep("U2", "NowExact", now),
+				dep("U2", "Future", now.Add(5*time.Minute)),
 			},
+			want: [][2]string{{"U2 Future", "5 min"}},
 		},
 		{
-			name: "future only filtering past excluded",
-			body: departuresJSON([]departureFixture{
-				{Line: "U1", Dest: "Past", When: now.Add(-5 * time.Minute)},
-				{Line: "U2", Dest: "Future", When: now.Add(5 * time.Minute)},
-				{Line: "U3", Dest: "NowExact", When: now},
-			}),
-			want: [][2]string{
-				{"U2 Future", "5 min"},
+			name: "sorted ascending and capped",
+			cfg:  TransitConfig{Timezone: "Europe/Berlin", MaxDepartures: 2, TimeMode: "minutes"},
+			deps: []TransitDeparture{
+				dep("L4", "D4", now.Add(5*time.Minute)),
+				dep("L1", "D1", now.Add(1*time.Minute)),
+				dep("L3", "D3", now.Add(3*time.Minute)),
+				dep("L2", "D2", now.Add(2*time.Minute)),
 			},
+			want: [][2]string{{"L1 D1", "NOW"}, {"L2 D2", "2 min"}},
 		},
 		{
-			name: "prefer when over plannedWhen",
-			body: func() string {
-				// departure with both fields, when is future, plannedWhen is past -> should use when
-				m := map[string]any{
-					"departures": []map[string]any{
-						{
-							"line":        map[string]string{"name": "S1"},
-							"destination": map[string]string{"name": "Dest"},
-							"plannedWhen": now.Add(-10 * time.Minute).Format(time.RFC3339),
-							"when":        now.Add(3 * time.Minute).Format(time.RFC3339),
-						},
-						{
-							"line":        map[string]string{"name": "S2"},
-							"destination": map[string]string{"name": "Dest2"},
-							"plannedWhen": now.Add(4 * time.Minute).Format(time.RFC3339),
-							"when":        "",
-						},
-					},
-				}
-				b, _ := json.Marshal(m)
-				return string(b)
-			}(),
-			want: [][2]string{
-				{"S1 Dest", "3 min"},
-				{"S2 Dest2", "4 min"},
+			name: "route filter case-insensitive and trimmed",
+			cfg:  TransitConfig{Timezone: "Europe/Berlin", MaxDepartures: 4, TimeMode: "minutes", RouteFilter: " s7,  u1 "},
+			deps: []TransitDeparture{
+				dep("S7", "A", now.Add(1*time.Minute)),
+				dep("U2", "B", now.Add(2*time.Minute)),
+				dep("u1", "C", now.Add(3*time.Minute)),
 			},
+			want: [][2]string{{"S7 A", "NOW"}, {"u1 C", "3 min"}},
 		},
 		{
-			name: "truncate 28 chars",
-			body: departuresJSON([]departureFixture{
-				{Line: "S123456789", Dest: "VeryLongDestinationNameExceedingLimit", When: now.Add(2 * time.Minute)},
-			}),
-			want: [][2]string{
-				{strings.Repeat("X", 28)[:0], ""}, // placeholder, check below
+			name: "empty filter keeps all",
+			cfg:  base,
+			deps: []TransitDeparture{
+				dep("A", "1", now.Add(1*time.Minute)),
+				dep("B", "2", now.Add(2*time.Minute)),
 			},
+			want: [][2]string{{"A 1", "NOW"}, {"B 2", "2 min"}},
 		},
 		{
-			name: "cap at 4",
-			body: departuresJSON([]departureFixture{
-				{Line: "L1", Dest: "D1", When: now.Add(2 * time.Minute)},
-				{Line: "L2", Dest: "D2", When: now.Add(3 * time.Minute)},
-				{Line: "L3", Dest: "D3", When: now.Add(4 * time.Minute)},
-				{Line: "L4", Dest: "D4", When: now.Add(5 * time.Minute)},
-				{Line: "L5", Dest: "D5", When: now.Add(6 * time.Minute)},
-				{Line: "L6", Dest: "D6", When: now.Add(7 * time.Minute)},
-			}),
-			want: [][2]string{
-				{"L1 D1", "2 min"},
-				{"L2 D2", "3 min"},
-				{"L3 D3", "4 min"},
-				{"L4 D4", "5 min"},
-			},
+			name: "missing line and destination becomes placeholder",
+			cfg:  base,
+			deps: []TransitDeparture{dep("", "", now.Add(2*time.Minute))},
+			want: [][2]string{{"?", "2 min"}},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rows, err := BuildTransitRows([]byte(tt.body), now)
+			rows, err := BuildTransitRows(tt.deps, tt.cfg, now)
 			if err != nil {
-				t.Fatalf("BuildTransitRows error: %v", err)
-			}
-			if tt.name == "truncate 28 chars" {
-				if len(rows) != 1 {
-					t.Fatalf("got %d rows want 1", len(rows))
-				}
-				if len(rows[0][0]) != 28 {
-					t.Fatalf("row1 len %d want 28, got %q", len(rows[0][0]), rows[0][0])
-				}
-				if rows[0][1] != "2 min" {
-					t.Fatalf("row2 %q want 2 min", rows[0][1])
-				}
-				return
+				t.Fatalf("BuildTransitRows: %v", err)
 			}
 			if len(rows) != len(tt.want) {
-				t.Fatalf("rows len %d want %d: %+v", len(rows), len(tt.want), rows)
+				t.Fatalf("rows = %+v want %+v", rows, tt.want)
 			}
 			for i := range rows {
-				if rows[i][0] != tt.want[i][0] || rows[i][1] != tt.want[i][1] {
+				if rows[i] != tt.want[i] {
 					t.Fatalf("row %d = %+v want %+v", i, rows[i], tt.want[i])
 				}
 			}
@@ -130,183 +97,359 @@ func TestBuildTransitRows_FutureFilteringAndMinutes(t *testing.T) {
 	}
 }
 
+func TestBuildTransitRows_WalkTimeAndNow(t *testing.T) {
+	now := time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC)
+	cfg := TransitConfig{Timezone: "Europe/Berlin", MaxDepartures: 4, TimeMode: "minutes", WalkTimeMin: 3}
+	deps := []TransitDeparture{
+		dep("A", "unreachable", now.Add(2*time.Minute)),
+		dep("B", "now", now.Add(4*time.Minute)), // 1 min after effective now -> NOW
+		dep("C", "later", now.Add(13*time.Minute)),
+	}
+	rows, err := BuildTransitRows(deps, cfg, now)
+	if err != nil {
+		t.Fatalf("BuildTransitRows: %v", err)
+	}
+	want := [][2]string{{"B now", "NOW"}, {"C later", "10 min"}}
+	if len(rows) != len(want) {
+		t.Fatalf("rows = %+v want %+v", rows, want)
+	}
+	for i := range rows {
+		if rows[i] != want[i] {
+			t.Fatalf("row %d = %+v want %+v", i, rows[i], want[i])
+		}
+	}
+}
+
+func TestBuildTransitRows_ClockModeAndTimezone(t *testing.T) {
+	// Server clock is UTC; agency zone is Europe/Berlin (+02:00 in August).
+	now := time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC)
+	cfg := TransitConfig{Timezone: "Europe/Berlin", MaxDepartures: 4, TimeMode: "clock"}
+	deps := []TransitDeparture{dep("S7", "Potsdam", time.Date(2026, 8, 23, 12, 5, 0, 0, time.UTC))}
+	rows, err := BuildTransitRows(deps, cfg, now)
+	if err != nil {
+		t.Fatalf("BuildTransitRows: %v", err)
+	}
+	if len(rows) != 1 || rows[0][1] != "14:05" {
+		t.Fatalf("rows = %+v want timing 14:05", rows)
+	}
+}
+
+func TestBuildTransitRows_DSTTransition(t *testing.T) {
+	// Europe/Berlin ends DST on 2026-10-25: 03:00 CEST -> 02:00 CET.
+	cfg := TransitConfig{Timezone: "Europe/Berlin", MaxDepartures: 4, TimeMode: "clock"}
+	before := time.Date(2026, 10, 25, 0, 55, 0, 0, time.UTC) // 02:55 CEST
+	after := time.Date(2026, 10, 25, 1, 35, 0, 0, time.UTC)  // 02:35 CET
+	now := time.Date(2026, 10, 25, 0, 0, 0, 0, time.UTC)
+	rows, err := BuildTransitRows([]TransitDeparture{
+		dep("A", "before", before),
+		dep("B", "after", after),
+	}, cfg, now)
+	if err != nil {
+		t.Fatalf("BuildTransitRows: %v", err)
+	}
+	if len(rows) != 2 || rows[0][1] != "02:55" || rows[1][1] != "02:35" {
+		t.Fatalf("rows = %+v want [02:55, 02:35]", rows)
+	}
+}
+
+func TestBuildTransitRows_InvalidTimezone(t *testing.T) {
+	_, err := BuildTransitRows(nil, TransitConfig{Timezone: "Not/AZone", MaxDepartures: 4, TimeMode: "minutes"}, time.Now())
+	if err == nil {
+		t.Fatal("expected error for invalid timezone")
+	}
+}
+
+func TestBuildTransitRows_Truncation(t *testing.T) {
+	now := time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC)
+	cfg := TransitConfig{Timezone: "Europe/Berlin", MaxDepartures: 4, TimeMode: "minutes"}
+	deps := []TransitDeparture{dep("S123456789", "VeryLongDestinationNameExceedingLimit", now.Add(2*time.Minute))}
+	rows, err := BuildTransitRows(deps, cfg, now)
+	if err != nil {
+		t.Fatalf("BuildTransitRows: %v", err)
+	}
+	if len(rows) != 1 || len(rows[0][0]) != 28 {
+		t.Fatalf("rows = %+v want 28-char label", rows)
+	}
+}
+
+func TestParseTransitDepartures_Adapters(t *testing.T) {
+	when := time.Date(2026, 8, 23, 12, 6, 0, 0, time.UTC).Format(time.RFC3339)
+
+	tests := []struct {
+		name     string
+		provider string
+		body     string
+		wantLine string
+		wantDest string
+	}{
+		{
+			name:     "vbb",
+			provider: "vbb",
+			body:     `{"departures":[{"line":{"name":"S7"},"destination":{"name":"Potsdam"},"when":"` + when + `"}]}`,
+			wantLine: "S7",
+			wantDest: "Potsdam",
+		},
+		{
+			name:     "vbb plannedWhen fallback",
+			provider: "vbb",
+			body:     `{"departures":[{"line":{"name":"U1"},"destination":{"name":"Warschauer"},"plannedWhen":"` + when + `"}]}`,
+			wantLine: "U1",
+			wantDest: "Warschauer",
+		},
+		{
+			name:     "custom",
+			provider: "custom",
+			body:     `{"departures":[{"line":"S1","destination":"Oranienburg","time":"` + when + `"}]}`,
+			wantLine: "S1",
+			wantDest: "Oranienburg",
+		},
+		{
+			name:     "transitland",
+			provider: "transitland",
+			body:     `{"stops":[{"departures":[{"route":{"route_short_name":"38"},"trip":{"trip_headsign":"Downtown"},"departure":{"scheduled":"` + when + `"}}]}]}`,
+			wantLine: "38",
+			wantDest: "Downtown",
+		},
+		{
+			name:     "511",
+			provider: "511",
+			body:     `{"ServiceDelivery":{"StopMonitoringDelivery":[{"MonitoredStopVisit":[{"MonitoredVehicleJourney":{"LineRef":{"value":"N"},"MonitoredCall":{"DestinationDisplay":{"value":"Ocean Beach"},"ExpectedDepartureTime":"` + when + `"}}}]}]}}`,
+			wantLine: "N",
+			wantDest: "Ocean Beach",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			deps, err := ParseTransitDepartures([]byte(tt.body), tt.provider)
+			if err != nil {
+				t.Fatalf("ParseTransitDepartures: %v", err)
+			}
+			if len(deps) != 1 {
+				t.Fatalf("deps = %+v want 1", deps)
+			}
+			if deps[0].Line != tt.wantLine || deps[0].Destination != tt.wantDest {
+				t.Fatalf("dep = %+v want line=%q dest=%q", deps[0], tt.wantLine, tt.wantDest)
+			}
+			if !deps[0].Time.Equal(mustParse(t, when)) {
+				t.Fatalf("time = %v want %v", deps[0].Time, when)
+			}
+		})
+	}
+}
+
+func mustParse(t *testing.T, s string) time.Time {
+	t.Helper()
+	tm, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		t.Fatalf("parse %q: %v", s, err)
+	}
+	return tm
+}
+
+func TestParseTransitDepartures_MalformedJSON(t *testing.T) {
+	if _, err := ParseTransitDepartures([]byte(`not json`), "vbb"); err == nil {
+		t.Fatal("expected error for malformed JSON")
+	}
+}
+
+func TestParseTransitDepartures_UnknownShapeIsEmpty(t *testing.T) {
+	deps, err := ParseTransitDepartures([]byte(`{"unexpected":true}`), "vbb")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(deps) != 0 {
+		t.Fatalf("deps = %+v want empty", deps)
+	}
+}
+
+func TestResolveTransitURL(t *testing.T) {
+	got, err := resolveTransitURL(TransitConfig{Provider: "vbb", StopID: "900000003201"})
+	if err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+	if got != "https://v6.vbb.transport.rest/stops/900000003201/departures" {
+		t.Fatalf("default URL = %q", got)
+	}
+
+	got, err = resolveTransitURL(TransitConfig{Provider: "custom", StopID: "42", URL: "http://example.test/custom/path"})
+	if err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+	if got != "http://example.test/custom/path" {
+		t.Fatalf("verbatim URL = %q", got)
+	}
+
+	if _, err := resolveTransitURL(TransitConfig{Provider: "custom"}); err == nil {
+		t.Fatal("expected error for custom provider without URL")
+	}
+}
+
+func transitTestDS(srvURL, provider string) *TransitDS {
+	now := time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC)
+	return &TransitDS{
+		Token:         "900000003201",
+		URL:           srvURL,
+		Provider:      provider,
+		MaxDepartures: 4,
+		Timezone:      "UTC",
+		TimeMode:      "minutes",
+		now:           func() time.Time { return now },
+	}
+}
+
 func TestTransitDS_GetPNG_URLSubstitution(t *testing.T) {
 	var gotPath string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotPath = r.URL.Path
-		// need to include departures to avoid fallback path check? return valid empty is okay
-		w.Write([]byte(`{"departures":[{"line":{"name":"S7"},"destination":{"name":"Potsdam"},"when":"` + time.Now().Add(5*time.Minute).Format(time.RFC3339) + `"}]}`))
+		fmt.Fprint(w, `{"departures":[{"line":{"name":"S7"},"destination":{"name":"Potsdam"},"when":"2026-08-23T12:05:00Z"}]}`)
 	}))
 	defer srv.Close()
 
-	// default URL contains %s, should substitute stop id
-	ds := &TransitDS{Token: "900000003201", URL: srv.URL + "/stops/%s/departures"}
+	ds := transitTestDS(srv.URL+"/stops/%s/departures", "vbb")
 	img, err := ds.GetPNG(64, 64)
 	if err != nil {
 		t.Fatalf("GetPNG: %v", err)
 	}
-	if img == nil {
-		t.Fatal("nil image")
+	mustPNG(t, img.Data)
+	if gotPath != "/stops/900000003201/departures" {
+		t.Fatalf("path = %q", gotPath)
 	}
-	if _, err := png.Decode(bytes.NewReader(img.Data)); err != nil {
-		t.Fatalf("png decode: %v", err)
-	}
-	if !strings.Contains(gotPath, "900000003201") {
-		t.Fatalf("path %q should contain stop id", gotPath)
-	}
-	// also ensure no X-API-Key header sent (token is stop id, not API key)
 }
 
 func TestTransitDS_GetPNG_CustomURLVerbatim(t *testing.T) {
 	var gotPath string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotPath = r.URL.Path
-		w.Write([]byte(`{"departures":[{"line":{"name":"S7"},"destination":{"name":"Potsdam"},"when":"` + time.Now().Add(5*time.Minute).Format(time.RFC3339) + `"}]}`))
+		fmt.Fprint(w, `{"departures":[{"line":"S7","destination":"X","time":"2026-08-23T12:05:00Z"}]}`)
 	}))
 	defer srv.Close()
 
-	customURL := srv.URL + "/custom/path"
-	ds := &TransitDS{Token: "900000003201", URL: customURL}
+	ds := transitTestDS(srv.URL+"/custom/path", "custom")
 	img, err := ds.GetPNG(64, 64)
 	if err != nil {
 		t.Fatalf("GetPNG: %v", err)
 	}
-	if _, err := png.Decode(bytes.NewReader(img.Data)); err != nil {
-		t.Fatalf("png decode: %v", err)
-	}
+	mustPNG(t, img.Data)
 	if gotPath != "/custom/path" {
-		t.Fatalf("path %q want /custom/path (verbatim)", gotPath)
+		t.Fatalf("path = %q", gotPath)
 	}
 }
 
-func TestTransitDS_GetPNG_EmptyDeparturesFallback(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`{"departures":[]}`))
-	}))
-	defer srv.Close()
-
-	ds := &TransitDS{Token: "123", URL: srv.URL}
-	img, err := ds.GetPNG(64, 64)
-	if err != nil {
-		t.Fatalf("GetPNG: %v", err)
-	}
-	if img == nil || len(img.Data) == 0 {
-		t.Fatal("fallback image empty")
-	}
-	if _, err := png.Decode(bytes.NewReader(img.Data)); err != nil {
-		t.Fatalf("png decode: %v", err)
-	}
-}
-
-func TestTransitDS_GetPNG_NetworkErrorFallback(t *testing.T) {
-	// Use invalid URL to trigger error
-	ds := &TransitDS{Token: "123", URL: "http://127.0.0.1:1"}
-	img, err := ds.GetPNG(64, 64)
-	if err != nil {
-		t.Fatalf("GetPNG should fallback not error: %v", err)
-	}
-	if _, err := png.Decode(bytes.NewReader(img.Data)); err != nil {
-		t.Fatalf("png decode: %v", err)
-	}
-}
-
-func TestTransitDS_GetPNG_NoAuthHeader(t *testing.T) {
+func TestTransitDS_GetPNG_APIKeyHeader(t *testing.T) {
 	var gotKey string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotKey = r.Header.Get("X-API-Key")
-		w.Write([]byte(`{"departures":[{"line":{"name":"S7"},"destination":{"name":"X"},"when":"` + time.Now().Add(2*time.Minute).Format(time.RFC3339) + `"}]}`))
+		fmt.Fprint(w, `{"departures":[]}`)
 	}))
 	defer srv.Close()
 
-	ds := &TransitDS{Token: "900000003201", URL: srv.URL + "/%s"}
+	ds := transitTestDS(srv.URL, "vbb")
+	ds.APIKey = "secret-key"
 	_, _ = ds.GetPNG(64, 64)
-	if gotKey != "" {
-		t.Fatalf("X-API-Key should not be sent, got %q", gotKey)
+	if gotKey != "secret-key" {
+		t.Fatalf("X-API-Key = %q", gotKey)
 	}
 }
 
-func TestTransitDS_GetPNG_DefaultURLSubstitution(t *testing.T) {
-	// When URL is empty, default URL is used with %s. We can't hit real API,
-	// so just verify fallback on network error still returns valid PNG and
-	// that code path doesn't panic.
-	// For determinism we use httptest but need to test default URL construction:
-	// Instead test that empty URL with invalid token still attempts fetch (we can't
-	// intercept default host). Just ensure method returns fallback PNG without error.
-	// Use a server and set URL to "" is not interceptable, so skip direct assert.
-	// Instead verify that building URL with %s works via previous test.
+func TestTransitDS_GetPNG_APIKeyAsQuery(t *testing.T) {
+	for _, tc := range []struct{ provider, param string }{
+		{"511", "api_key"},
+		{"transitland", "apikey"},
+	} {
+		t.Run(tc.provider, func(t *testing.T) {
+			var gotKey, gotHeader string
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				gotKey = r.URL.Query().Get(tc.param)
+				gotHeader = r.Header.Get("X-API-Key")
+				fmt.Fprint(w, `{"departures":[]}`)
+			}))
+			defer srv.Close()
 
-	// Table-driven PNG decodable check for various scenarios
-	tests := []struct {
-		name    string
-		ds      *TransitDS
-		handler func(w http.ResponseWriter, r *http.Request)
+			ds := transitTestDS(srv.URL, tc.provider)
+			ds.APIKey = "secret-key"
+			_, _ = ds.GetPNG(64, 64)
+			if gotKey != "secret-key" {
+				t.Fatalf("%s = %q", tc.param, gotKey)
+			}
+			if gotHeader != "" {
+				t.Fatalf("X-API-Key should not be set, got %q", gotHeader)
+			}
+		})
+	}
+}
+
+func TestTransitDS_GetPNG_Fallbacks(t *testing.T) {
+	cases := []struct {
+		name   string
+		status int
+		body   string
+		ds     func(url string) *TransitDS
 	}{
 		{
-			name: "success",
-			ds:   &TransitDS{Token: "123"},
-			handler: func(w http.ResponseWriter, r *http.Request) {
-				w.Write([]byte(`{"departures":[{"line":{"name":"S7"},"destination":{"name":"X"},"when":"` + time.Now().Add(5*time.Minute).Format(time.RFC3339) + `"}]}`))
-			},
+			name: "empty departures",
+			body: `{"departures":[]}`,
+			ds:   func(u string) *TransitDS { return transitTestDS(u, "vbb") },
+		},
+		{
+			name: "malformed JSON",
+			body: `not json`,
+			ds:   func(u string) *TransitDS { return transitTestDS(u, "vbb") },
+		},
+		{
+			name:   "unauthorized",
+			status: http.StatusUnauthorized,
+			body:   `{}`,
+			ds:     func(u string) *TransitDS { return transitTestDS(u, "vbb") },
+		},
+		{
+			name:   "forbidden",
+			status: http.StatusForbidden,
+			body:   `{}`,
+			ds:     func(u string) *TransitDS { return transitTestDS(u, "vbb") },
+		},
+		{
+			name: "all departures in the past",
+			body: `{"departures":[{"line":"S7","destination":"X","time":"2026-08-23T11:00:00Z"}]}`,
+			ds:   func(u string) *TransitDS { return transitTestDS(u, "custom") },
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			srv := httptest.NewServer(http.HandlerFunc(tt.handler))
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if tc.status != 0 {
+					w.WriteHeader(tc.status)
+				}
+				fmt.Fprint(w, tc.body)
+			}))
 			defer srv.Close()
-			tt.ds.URL = srv.URL + "/%s"
-			img, err := tt.ds.GetPNG(64, 64)
+			img, err := tc.ds(srv.URL).GetPNG(64, 64)
 			if err != nil {
-				t.Fatalf("GetPNG: %v", err)
+				t.Fatalf("GetPNG should fall back, not error: %v", err)
 			}
-			if _, err := png.Decode(bytes.NewReader(img.Data)); err != nil {
-				t.Fatalf("decode: %v", err)
+			if img == nil {
+				t.Fatal("nil image")
 			}
+			mustPNG(t, img.Data)
 		})
 	}
 }
 
-// helpers
-
-type departureFixture struct {
-	Line string
-	Dest string
-	When time.Time
+func TestTransitDS_GetPNG_UnreachableHost(t *testing.T) {
+	ds := &TransitDS{Token: "123", URL: "http://127.0.0.1:1", Provider: "vbb", Timezone: "UTC"}
+	img, err := ds.GetPNG(64, 64)
+	if err != nil {
+		t.Fatalf("GetPNG should fall back: %v", err)
+	}
+	mustPNG(t, img.Data)
 }
 
-func departuresJSON(deps []departureFixture) string {
-	type dep struct {
-		Line        map[string]string `json:"line"`
-		Destination map[string]string `json:"destination"`
-		When        string            `json:"when"`
+func TestTransitFallbackMessages(t *testing.T) {
+	for _, msg := range []string{"unavailable", "no departures"} {
+		img := fallbackTransit(64, 64, msg)
+		if img == nil || len(img.Data) == 0 {
+			t.Fatalf("fallback %q empty", msg)
+		}
+		mustPNG(t, img.Data)
 	}
-	var list []dep
-	for _, d := range deps {
-		list = append(list, dep{
-			Line:        map[string]string{"name": d.Line},
-			Destination: map[string]string{"name": d.Dest},
-			When:        d.When.Format(time.RFC3339),
-		})
-	}
-	m := map[string]any{"departures": list}
-	b, _ := json.Marshal(m)
-	return string(b)
-}
-
-func TestBuildTransitRows_InvalidJSON(t *testing.T) {
-	_, err := BuildTransitRows([]byte(`not json`), time.Now())
-	if err == nil {
-		t.Fatal("expected error for invalid json")
-	}
-}
-
-func TestTransitFallbackPNG(t *testing.T) {
-	img := fallbackTransit(64, 64)
-	if img == nil || len(img.Data) == 0 {
-		t.Fatal("fallback empty")
-	}
-	if _, err := png.Decode(bytes.NewReader(img.Data)); err != nil {
-		t.Fatalf("decode: %v", err)
-	}
-	// ensure it contains fallback - just check png non-nil
-	_ = fmt.Sprintf("%v", img)
 }
