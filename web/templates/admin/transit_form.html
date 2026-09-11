@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Transit</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Transit</h1>
+            {{if .error}}<div class="alert alert-danger">{{.error}}</div>{{end}}
+            <form method="POST" action="/admin/datasources/transit{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4" id="transit-form" data-live-preview-form data-preview-type="transit">
+                <input type="hidden" name="w" value="64">
+                <input type="hidden" name="h" value="64">
+                <div class="mb-3">
+                    <label for="token" class="form-label">Stop ID</label>
+                    <input type="text" class="form-control" id="token" name="token" maxlength="64" required value="{{if .obj}}{{.obj.Token}}{{end}}" placeholder="900000003201">
+                    <div class="form-text small text-muted">1-64 characters. The agency stop id (carried by the legacy token field).</div>
+                </div>
+                <div class="mb-3">
+                    <label for="url" class="form-label">Endpoint URL</label>
+                    <input type="text" class="form-control" id="url" name="url" value="{{if .obj}}{{.obj.URL}}{{end}}" placeholder="https://v6.vbb.transport.rest/stops/%s/departures">
+                    <div class="form-text small text-muted">Optional. <code>%s</code> is replaced with the stop id; leave empty for the provider default.</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="provider" class="form-label">Provider</label>
+                        <select class="form-select" id="provider" name="provider">
+                            <option value="vbb" {{if .obj}}{{if eq (print .obj.Provider) "vbb"}}selected{{end}}{{else}}selected{{end}}>VBB (transport.rest)</option>
+                            <option value="transitland" {{if .obj}}{{if eq (print .obj.Provider) "transitland"}}selected{{end}}{{end}}>Transitland</option>
+                            <option value="511" {{if .obj}}{{if eq (print .obj.Provider) "511"}}selected{{end}}{{end}}>511 (SF Bay)</option>
+                            <option value="custom" {{if .obj}}{{if eq (print .obj.Provider) "custom"}}selected{{end}}{{end}}>Custom</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="api_key" class="form-label">API Key</label>
+                        <input type="password" class="form-control" id="api_key" name="api_key" autocomplete="new-password" placeholder="{{if .edit}}Leave blank to keep current key{{end}}">
+                        <div class="form-text small text-muted">Stored in the database. Sent as <code>X-API-Key</code> (query parameter for 511/Transitland).</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="max_departures" class="form-label">Max Departures</label>
+                        <input type="number" class="form-control" id="max_departures" name="max_departures" min="1" max="8" value="{{if .obj}}{{.obj.MaxDepartures}}{{else}}4{{end}}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="walk_time_min" class="form-label">Walk Time (min)</label>
+                        <input type="number" class="form-control" id="walk_time_min" name="walk_time_min" min="0" max="60" value="{{if .obj}}{{.obj.WalkTimeMin}}{{else}}0{{end}}">
+                        <div class="form-text small text-muted">Departures within this many minutes show as NOW.</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="time_mode" class="form-label">Time Display</label>
+                        <select class="form-select" id="time_mode" name="time_mode">
+                            <option value="minutes" {{if .obj}}{{if eq (print .obj.TimeMode) "minutes"}}selected{{end}}{{else}}selected{{end}}>Minutes (N min)</option>
+                            <option value="clock" {{if .obj}}{{if eq (print .obj.TimeMode) "clock"}}selected{{end}}{{end}}>Clock (HH:MM)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="route_filter" class="form-label">Route Filter</label>
+                        <input type="text" class="form-control" id="route_filter" name="route_filter" maxlength="256" value="{{if .obj}}{{.obj.RouteFilter}}{{end}}" placeholder="S7, U1">
+                        <div class="form-text small text-muted">Comma-separated lines/routes. Empty means all.</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="timezone" class="form-label">Agency Timezone</label>
+                        <input type="text" class="form-control" id="timezone" name="timezone" value="{{if .obj}}{{.obj.Timezone}}{{else}}Europe/Berlin{{end}}" placeholder="Europe/Berlin">
+                        <div class="form-text small text-muted">IANA name. Times are computed in this zone.</div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                <a href="/admin/" class="btn btn-secondary">Cancel</a>
+            </form>
+            <div class="mt-4">
+                <h5>Live Preview</h5>
+                <div class="preview-container">
+                    <img id="live-preview-img" data-live-preview-img alt="Live preview" class="img-fluid border rounded" style="image-rendering: pixelated; max-width: 320px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

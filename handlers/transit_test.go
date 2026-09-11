@@ -5,8 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"os"
 	"strings"
 	"testing"
 
@@ -39,6 +42,9 @@ func transitTestServer(t *testing.T) (*Server, *http.Cookie) {
 	}
 	EnableAuth()
 	srv := &Server{DB: client, Ctx: ctx, Router: gin.New()}
+	tmpl := template.New("")
+	template.Must(tmpl.New("transit_form.html").Parse("ok"))
+	srv.Router.SetHTMLTemplate(tmpl)
 	srv.Router.POST("/login", srv.LoginAction)
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewReader([]byte("username=admin&password=ledit")))
@@ -62,6 +68,11 @@ func transitTestServer(t *testing.T) (*Server, *http.Cookie) {
 		admin.POST("/api/transit", srv.APITransitCreate)
 		admin.PUT("/api/transit/:id", srv.APITransitUpdate)
 		admin.DELETE("/api/transit/:id", srv.APITransitDelete)
+		admin.GET("/datasources/transit/new", srv.AdminTransitNew)
+		admin.POST("/datasources/transit/new", srv.AdminTransitCreate)
+		admin.GET("/datasources/transit/:id/edit", srv.AdminTransitEdit)
+		admin.POST("/datasources/transit/:id/edit", srv.AdminTransitUpdate)
+		admin.POST("/datasources/transit/:id/delete", srv.AdminTransitDelete)
 	}
 	return srv, sess
 }
@@ -217,5 +228,85 @@ func TestAPITransitUpdateKeepsKeyAndDelete(t *testing.T) {
 	w = transitJSONRequest(srv, http.MethodGet, "/admin/api/transit/"+id, sess, nil)
 	if w.Code != http.StatusNotFound {
 		t.Fatalf("expected 404 after delete got %d", w.Code)
+	}
+}
+
+func TestAdminTransitFormCreateAndValidation(t *testing.T) {
+	srv, sess := transitTestServer(t)
+
+	// New form renders.
+	req := httptest.NewRequest(http.MethodGet, "/admin/datasources/transit/new", nil)
+	req.AddCookie(sess)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("new form: %d %s", w.Code, w.Body.String())
+	}
+
+	// Valid form create with defaults redirects and persists defaults.
+	form := url.Values{"token": {"900000003201"}, "provider": {"vbb"}, "max_departures": {"4"}, "walk_time_min": {"0"}, "timezone": {"Europe/Berlin"}, "time_mode": {"minutes"}}
+	req = httptest.NewRequest(http.MethodPost, "/admin/datasources/transit/new", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.AddCookie(sess)
+	w = httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Fatalf("form create: expected 302 got %d %s", w.Code, w.Body.String())
+	}
+	row := srv.DB.Transit.Query().FirstX(srv.Ctx)
+	if row.Provider != "vbb" || row.MaxDepartures != 4 || row.WalkTimeMin != 0 || row.TimeMode != "minutes" || row.Timezone != "Europe/Berlin" {
+		t.Fatalf("defaults not persisted: %+v", row)
+	}
+
+	// Missing stop id is rejected with 400.
+	bad := url.Values{"provider": {"vbb"}, "max_departures": {"4"}, "timezone": {"Europe/Berlin"}, "time_mode": {"minutes"}}
+	req = httptest.NewRequest(http.MethodPost, "/admin/datasources/transit/new", strings.NewReader(bad.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.AddCookie(sess)
+	w = httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("invalid form: expected 400 got %d %s", w.Code, w.Body.String())
+	}
+}
+
+func TestAdminTransitFormTemplateFields(t *testing.T) {
+	data, err := os.ReadFile("../web/templates/admin/transit_form.html")
+	if err != nil {
+		t.Fatalf("read template: %v", err)
+	}
+	html := string(data)
+	for _, want := range []string{
+		`name="token"`, `name="url"`, `name="api_key"`, `name="provider"`,
+		`name="max_departures"`, `name="route_filter"`, `name="walk_time_min"`,
+		`name="timezone"`, `name="time_mode"`,
+		`/admin/datasources/transit`, `data-live-preview-form`, `data-preview-type="transit"`,
+		`data-live-preview-img`, `Europe/Berlin`,
+	} {
+		if !strings.Contains(html, want) {
+			t.Errorf("transit_form.html missing %q", want)
+		}
+	}
+}
+
+func TestAdminTransitFormTemplateExecutes(t *testing.T) {
+	tmpl := template.New("root")
+	template.Must(tmpl.New("sidebar").Parse(`{{define "sidebar"}}sidebar{{end}}`))
+	tmpl, err := tmpl.ParseFiles("../web/templates/admin/transit_form.html")
+	if err != nil {
+		t.Fatalf("parse transit_form.html: %v", err)
+	}
+	for _, obj := range []any{
+		nil,
+		transitInput{Token: "900", URL: "http://x/%s", Provider: "transitland", MaxDepartures: 6, WalkTimeMin: 3, Timezone: "Europe/Paris", TimeMode: "clock"},
+	} {
+		var buf bytes.Buffer
+		data := gin.H{}
+		if obj != nil {
+			data["obj"] = obj
+		}
+		if err := tmpl.ExecuteTemplate(&buf, "transit_form.html", data); err != nil {
+			t.Fatalf("execute transit_form.html (%T): %v", obj, err)
+		}
 	}
 }
