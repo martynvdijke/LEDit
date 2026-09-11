@@ -453,3 +453,49 @@ func TestTransitFallbackMessages(t *testing.T) {
 		mustPNG(t, img.Data)
 	}
 }
+
+func TestTransitDS_FallbackStateSelection(t *testing.T) {
+	now := time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC)
+
+	serve := func(body string, status int) *httptest.Server {
+		return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if status != 0 {
+				w.WriteHeader(status)
+			}
+			fmt.Fprint(w, body)
+		}))
+	}
+
+	t.Run("no departures", func(t *testing.T) {
+		srv := serve(`{"departures":[]}`, 0)
+		defer srv.Close()
+		ds := &TransitDS{URL: srv.URL, Provider: "vbb", Timezone: "UTC"}
+		data, fallback := ds.transitRenderData(ds.config(), now)
+		if data != nil || fallback != "no departures" {
+			t.Fatalf("data=%v fallback=%q", data, fallback)
+		}
+	})
+
+	t.Run("unavailable on parse failure", func(t *testing.T) {
+		srv := serve(`not json`, 0)
+		defer srv.Close()
+		ds := &TransitDS{URL: srv.URL, Provider: "vbb", Timezone: "UTC"}
+		_, fallback := ds.transitRenderData(ds.config(), now)
+		if fallback != "unavailable" {
+			t.Fatalf("fallback=%q", fallback)
+		}
+	})
+
+	t.Run("success returns rows", func(t *testing.T) {
+		srv := serve(`{"departures":[{"line":"S7","destination":"X","time":"2026-08-23T12:05:00Z"}]}`, 0)
+		defer srv.Close()
+		ds := &TransitDS{URL: srv.URL, Provider: "custom", Timezone: "UTC"}
+		data, fallback := ds.transitRenderData(ds.config(), now)
+		if fallback != "" || data == nil {
+			t.Fatalf("data=%v fallback=%q", data, fallback)
+		}
+		if data["r1"] != "S7 X 5 min" {
+			t.Fatalf("r1=%q", data["r1"])
+		}
+	})
+}

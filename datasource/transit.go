@@ -122,46 +122,57 @@ func resolveTransitURL(cfg TransitConfig) (string, error) {
 }
 
 func (t *TransitDS) GetPNG(width, height int) (*render.RenderedImage, error) {
-	cfg := t.config()
+	data, fallback := t.transitRenderData(t.config(), t.nowTime())
+	if fallback != "" {
+		return fallbackTransit(width, height, fallback), nil
+	}
+	img, err := render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
+	if err != nil {
+		return nil, err
+	}
+	slog.Info("transit data rendered", "source", "transit", "rows", len(data)-1)
+	return img, nil
+}
+
+// transitRenderData fetches and formats upcoming departures. It returns the
+// RenderDict payload on success, or a non-empty fallback message ("unavailable"
+// or "no departures") when the feed should degrade gracefully. Splitting this
+// from GetPNG keeps the fallback-state choice directly testable.
+func (t *TransitDS) transitRenderData(cfg TransitConfig, now time.Time) (map[string]string, string) {
 	rawURL, err := resolveTransitURL(cfg)
 	if err != nil {
 		slog.Warn("transit URL not configured, using fallback", "source", "transit", "provider", cfg.Provider)
-		return fallbackTransit(width, height, "unavailable"), nil
+		return nil, "unavailable"
 	}
 
 	slog.Info("fetching transit data", "source", "transit", "provider", cfg.Provider, "stop", cfg.StopID)
 	body, err := t.fetch(rawURL, cfg)
 	if err != nil {
 		slog.Warn("transit API call failed, using fallback", "source", "transit", "provider", cfg.Provider, "error", err)
-		return fallbackTransit(width, height, "unavailable"), nil
+		return nil, "unavailable"
 	}
 
 	departures, err := ParseTransitDepartures(body, cfg.Provider)
 	if err != nil {
 		slog.Warn("transit parse failed, using fallback", "source", "transit", "error", err)
-		return fallbackTransit(width, height, "unavailable"), nil
+		return nil, "unavailable"
 	}
 
-	rows, err := BuildTransitRows(departures, cfg, t.nowTime())
+	rows, err := BuildTransitRows(departures, cfg, now)
 	if err != nil {
 		slog.Warn("transit timing failed, using fallback", "source", "transit", "error", err)
-		return fallbackTransit(width, height, "unavailable"), nil
+		return nil, "unavailable"
 	}
 	if len(rows) == 0 {
 		slog.Info("transit no upcoming departures, using fallback", "source", "transit")
-		return fallbackTransit(width, height, "no departures"), nil
+		return nil, "no departures"
 	}
 
 	data := map[string]string{"title": "TRANSIT"}
 	for i, r := range rows {
 		data[fmt.Sprintf("r%d", i+1)] = strings.TrimSpace(r[0] + " " + r[1])
 	}
-	img, err := render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
-	if err != nil {
-		return nil, err
-	}
-	slog.Info("transit data rendered", "source", "transit", "rows", len(rows))
-	return img, nil
+	return data, ""
 }
 
 // fetch sends the request, carrying the API key as a header for most providers
