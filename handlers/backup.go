@@ -71,6 +71,7 @@ var importOrder = []string{
 	"device_groups",
 	"device_settings",
 	"displayrule",
+	"wakealarm",
 	"matrixlayout",
 	"pixelart",
 }
@@ -191,6 +192,11 @@ func (s *Server) ExportBundle(includeSecrets, includeMedia bool) (Bundle, error)
 	if list, err := s.DB.DisplayRule.Query().All(ctx); err == nil {
 		if len(list) > 0 {
 			entities["displayrule"] = toMapSlice(list)
+		}
+	}
+	if list, err := s.DB.WakeAlarm.Query().All(ctx); err == nil {
+		if len(list) > 0 {
+			entities["wakealarm"] = toMapSlice(list)
 		}
 	}
 	if list, err := s.DB.MatrixLayout.Query().All(ctx); err == nil {
@@ -631,6 +637,62 @@ func (s *Server) importType(typ string, arr []map[string]any, includeSecrets boo
 				if _, err := cre.Save(ctx); err != nil {
 					return err
 				}
+			}
+		}
+	case "wakealarm":
+		for _, m := range arr {
+			id := toInt(m["id"])
+			name, _ := m["name"].(string)
+			days, _ := m["days"].(string)
+			if days == "" {
+				days = "[]"
+			}
+			start, _ := m["start"].(string)
+			if start == "" {
+				start = "00:00"
+			}
+			end, _ := m["end"].(string)
+			if end == "" {
+				end = "00:00"
+			}
+			wakeType, _ := m["wake_source_type"].(string)
+			wakeID := toInt(m["wake_source_id"])
+			enabled := true
+			if v, ok := m["enabled"].(bool); ok {
+				enabled = v
+			}
+			bEnabled := false
+			if v, ok := m["brightness_enabled"].(bool); ok {
+				bEnabled = v
+			}
+			bStart := toInt(m["brightness_start"])
+			bEnd := 100
+			if _, ok := m["brightness_end"]; ok {
+				bEnd = toInt(m["brightness_end"])
+			}
+			bRamp := 600
+			if _, ok := m["brightness_ramp_seconds"]; ok {
+				bRamp = toInt(m["brightness_ramp_seconds"])
+			}
+			if id != 0 {
+				if ex, err := s.DB.WakeAlarm.Get(ctx, id); err == nil {
+					_, err := s.DB.WakeAlarm.UpdateOne(ex).
+						SetName(name).SetEnabled(enabled).SetDays(days).SetStart(start).SetEnd(end).
+						SetWakeSourceType(wakeType).SetWakeSourceID(wakeID).
+						SetBrightnessEnabled(bEnabled).SetBrightnessStart(bStart).SetBrightnessEnd(bEnd).
+						SetBrightnessRampSeconds(bRamp).Save(ctx)
+					if err != nil {
+						return err
+					}
+					continue
+				}
+			}
+			if _, err := s.DB.WakeAlarm.Create().
+				SetName(name).SetEnabled(enabled).SetDays(days).SetStart(start).SetEnd(end).
+				SetWakeSourceType(wakeType).SetWakeSourceID(wakeID).
+				SetBrightnessEnabled(bEnabled).SetBrightnessStart(bStart).SetBrightnessEnd(bEnd).
+				SetBrightnessRampSeconds(bRamp).Save(ctx); err != nil {
+				return err
 			}
 		}
 	case "pixelart":

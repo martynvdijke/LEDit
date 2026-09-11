@@ -117,6 +117,36 @@ func TestAlarmValidationRejects(t *testing.T) {
 	}
 }
 
+func TestBackupWakeAlarmRoundTrip(t *testing.T) {
+	srv := newEventRuleAuthTestServer(t)
+	w := alarmAuthedRequest(t, srv, http.MethodPost, "/admin/alarms/new", alarmCreateForm())
+	if w.Code != http.StatusFound {
+		t.Fatalf("create: expected 302, got %d", w.Code)
+	}
+	bundle, err := srv.ExportBundle(false, false)
+	if err != nil {
+		t.Fatalf("export: %v", err)
+	}
+	if arr := bundle.Entities["wakealarm"]; len(arr) != 1 {
+		t.Fatalf("expected 1 exported alarm, got %d", len(arr))
+	}
+	ctx := context.Background()
+	if _, err := srv.DB.WakeAlarm.Delete().Exec(ctx); err != nil {
+		t.Fatalf("delete all: %v", err)
+	}
+	res := srv.ImportBundle(bundle, false)
+	if res.FailedType != "" {
+		t.Fatalf("import failed at %q: %s", res.FailedType, res.Error)
+	}
+	got := srv.DB.WakeAlarm.Query().FirstX(ctx)
+	if got.Name != "Wake up" || got.Days != "[1,2,3,4,5]" || got.Start != "06:30" || got.End != "07:00" {
+		t.Fatalf("round-trip mismatch: %+v", got)
+	}
+	if !got.BrightnessEnabled || got.BrightnessStart != 1 || got.BrightnessEnd != 100 || got.BrightnessRampSeconds != 600 {
+		t.Fatalf("brightness mismatch: %+v", got)
+	}
+}
+
 func TestAlarmDeleteRemovesRow(t *testing.T) {
 	srv := newEventRuleAuthTestServer(t)
 	w := alarmAuthedRequest(t, srv, http.MethodPost, "/admin/alarms/new", alarmCreateForm())

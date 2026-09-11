@@ -173,6 +173,23 @@ func TestAlarmManagerEvaluateTransitionsAndDismiss(t *testing.T) {
 	}
 }
 
+func TestZeroAlarmsInert(t *testing.T) {
+	m := NewAlarmManager()
+	m.SetAlarms(nil)
+	if m.Evaluate(alarmTestTime(t, 6, 45), nil) {
+		t.Fatal("no alarms must not change state")
+	}
+	if _, _, ok := m.Active(); ok {
+		t.Fatal("no active alarm expected")
+	}
+	if m.Source() != nil {
+		t.Fatal("no wake source expected")
+	}
+	if m.BrightnessLevel(alarmTestTime(t, 6, 45)) != nil {
+		t.Fatal("no brightness contribution expected")
+	}
+}
+
 func TestFeedControllerNextClearsAlarm(t *testing.T) {
 	fc := &FeedController{}
 	fc.SetAlarmSource(&sourceWithName{Name: "Wake"})
