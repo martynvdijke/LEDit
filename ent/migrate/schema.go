@@ -1214,6 +1214,38 @@ var (
 			},
 		},
 	}
+	// WakeAlarmsColumns holds the columns for the "wake_alarms" table.
+	WakeAlarmsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "days", Type: field.TypeString, Size: 2147483647, Default: "[]"},
+		{Name: "start", Type: field.TypeString, Default: "00:00"},
+		{Name: "end", Type: field.TypeString, Default: "00:00"},
+		{Name: "wake_source_type", Type: field.TypeString, Default: ""},
+		{Name: "wake_source_id", Type: field.TypeInt, Default: 0},
+		{Name: "brightness_enabled", Type: field.TypeBool, Default: false},
+		{Name: "brightness_start", Type: field.TypeInt, Default: 0},
+		{Name: "brightness_end", Type: field.TypeInt, Default: 100},
+		{Name: "brightness_ramp_seconds", Type: field.TypeInt, Default: 600},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "general_settings_wakealarms", Type: field.TypeInt, Nullable: true},
+	}
+	// WakeAlarmsTable holds the schema information for the "wake_alarms" table.
+	WakeAlarmsTable = &schema.Table{
+		Name:       "wake_alarms",
+		Columns:    WakeAlarmsColumns,
+		PrimaryKey: []*schema.Column{WakeAlarmsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "wake_alarms_general_settings_wakealarms",
+				Columns:    []*schema.Column{WakeAlarmsColumns[14]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// WeathersColumns holds the columns for the "weathers" table.
 	WeathersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1311,6 +1343,7 @@ var (
 		UptimesTable,
 		UsersTable,
 		VideosTable,
+		WakeAlarmsTable,
 		WeathersTable,
 		WebhookSettingsTable,
 	}
@@ -1357,6 +1390,7 @@ func init() {
 	UntappdsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UptimesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	VideosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	WakeAlarmsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	WeathersTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	WebhookSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 }

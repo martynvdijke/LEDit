@@ -644,6 +644,18 @@ func (f VideoFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VideoMutation", m)
 }
 
+// The WakeAlarmFunc type is an adapter to allow the use of ordinary
+// function as WakeAlarm mutator.
+type WakeAlarmFunc func(context.Context, *ent.WakeAlarmMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WakeAlarmFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WakeAlarmMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WakeAlarmMutation", m)
+}
+
 // The WeatherFunc type is an adapter to allow the use of ordinary
 // function as Weather mutator.
 type WeatherFunc func(context.Context, *ent.WeatherMutation) (ent.Value, error)

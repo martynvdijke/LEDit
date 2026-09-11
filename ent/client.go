@@ -64,6 +64,7 @@ import (
 	"ledit/ent/uptime"
 	"ledit/ent/user"
 	"ledit/ent/video"
+	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
 
@@ -184,6 +185,8 @@ type Client struct {
 	User *UserClient
 	// Video is the client for interacting with the Video builders.
 	Video *VideoClient
+	// WakeAlarm is the client for interacting with the WakeAlarm builders.
+	WakeAlarm *WakeAlarmClient
 	// Weather is the client for interacting with the Weather builders.
 	Weather *WeatherClient
 	// WebhookSettings is the client for interacting with the WebhookSettings builders.
@@ -252,6 +255,7 @@ func (c *Client) init() {
 	c.Uptime = NewUptimeClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.Video = NewVideoClient(c.config)
+	c.WakeAlarm = NewWakeAlarmClient(c.config)
 	c.Weather = NewWeatherClient(c.config)
 	c.WebhookSettings = NewWebhookSettingsClient(c.config)
 }
@@ -399,6 +403,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Uptime:           NewUptimeClient(cfg),
 		User:             NewUserClient(cfg),
 		Video:            NewVideoClient(cfg),
+		WakeAlarm:        NewWakeAlarmClient(cfg),
 		Weather:          NewWeatherClient(cfg),
 		WebhookSettings:  NewWebhookSettingsClient(cfg),
 	}, nil
@@ -473,6 +478,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Uptime:           NewUptimeClient(cfg),
 		User:             NewUserClient(cfg),
 		Video:            NewVideoClient(cfg),
+		WakeAlarm:        NewWakeAlarmClient(cfg),
 		Weather:          NewWeatherClient(cfg),
 		WebhookSettings:  NewWebhookSettingsClient(cfg),
 	}, nil
@@ -513,7 +519,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OutboundSettings, c.OutboundWebhook, c.PiHole, c.PixelArt, c.Playlist,
 		c.Qrcode, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Sports, c.Stock,
 		c.SunMoon, c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit,
-		c.UmamiSettings, c.Untappd, c.Uptime, c.User, c.Video, c.Weather,
+		c.UmamiSettings, c.Untappd, c.Uptime, c.User, c.Video, c.WakeAlarm, c.Weather,
 		c.WebhookSettings,
 	} {
 		n.Use(hooks...)
@@ -533,7 +539,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OutboundSettings, c.OutboundWebhook, c.PiHole, c.PixelArt, c.Playlist,
 		c.Qrcode, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Sports, c.Stock,
 		c.SunMoon, c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit,
-		c.UmamiSettings, c.Untappd, c.Uptime, c.User, c.Video, c.Weather,
+		c.UmamiSettings, c.Untappd, c.Uptime, c.User, c.Video, c.WakeAlarm, c.Weather,
 		c.WebhookSettings,
 	} {
 		n.Intercept(interceptors...)
@@ -649,6 +655,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.User.mutate(ctx, m)
 	case *VideoMutation:
 		return c.Video.mutate(ctx, m)
+	case *WakeAlarmMutation:
+		return c.WakeAlarm.mutate(ctx, m)
 	case *WeatherMutation:
 		return c.Weather.mutate(ctx, m)
 	case *WebhookSettingsMutation:
@@ -3234,6 +3242,22 @@ func (c *GeneralSettingsClient) QueryDisplayrules(_m *GeneralSettings) *DisplayR
 			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
 			sqlgraph.To(displayrule.Table, displayrule.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.DisplayrulesTable, generalsettings.DisplayrulesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWakealarms queries the wakealarms edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryWakealarms(_m *GeneralSettings) *WakeAlarmQuery {
+	query := (&WakeAlarmClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(wakealarm.Table, wakealarm.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.WakealarmsTable, generalsettings.WakealarmsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -8395,6 +8419,139 @@ func (c *VideoClient) mutate(ctx context.Context, m *VideoMutation) (Value, erro
 	}
 }
 
+// WakeAlarmClient is a client for the WakeAlarm schema.
+type WakeAlarmClient struct {
+	config
+}
+
+// NewWakeAlarmClient returns a client for the WakeAlarm from the given config.
+func NewWakeAlarmClient(c config) *WakeAlarmClient {
+	return &WakeAlarmClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `wakealarm.Hooks(f(g(h())))`.
+func (c *WakeAlarmClient) Use(hooks ...Hook) {
+	c.hooks.WakeAlarm = append(c.hooks.WakeAlarm, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `wakealarm.Intercept(f(g(h())))`.
+func (c *WakeAlarmClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WakeAlarm = append(c.inters.WakeAlarm, interceptors...)
+}
+
+// Create returns a builder for creating a WakeAlarm entity.
+func (c *WakeAlarmClient) Create() *WakeAlarmCreate {
+	mutation := newWakeAlarmMutation(c.config, OpCreate)
+	return &WakeAlarmCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WakeAlarm entities.
+func (c *WakeAlarmClient) CreateBulk(builders ...*WakeAlarmCreate) *WakeAlarmCreateBulk {
+	return &WakeAlarmCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WakeAlarmClient) MapCreateBulk(slice any, setFunc func(*WakeAlarmCreate, int)) *WakeAlarmCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WakeAlarmCreateBulk{err: fmt.Errorf("calling to WakeAlarmClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WakeAlarmCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WakeAlarmCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WakeAlarm.
+func (c *WakeAlarmClient) Update() *WakeAlarmUpdate {
+	mutation := newWakeAlarmMutation(c.config, OpUpdate)
+	return &WakeAlarmUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WakeAlarmClient) UpdateOne(_m *WakeAlarm) *WakeAlarmUpdateOne {
+	mutation := newWakeAlarmMutation(c.config, OpUpdateOne, withWakeAlarm(_m))
+	return &WakeAlarmUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WakeAlarmClient) UpdateOneID(id int) *WakeAlarmUpdateOne {
+	mutation := newWakeAlarmMutation(c.config, OpUpdateOne, withWakeAlarmID(id))
+	return &WakeAlarmUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WakeAlarm.
+func (c *WakeAlarmClient) Delete() *WakeAlarmDelete {
+	mutation := newWakeAlarmMutation(c.config, OpDelete)
+	return &WakeAlarmDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WakeAlarmClient) DeleteOne(_m *WakeAlarm) *WakeAlarmDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WakeAlarmClient) DeleteOneID(id int) *WakeAlarmDeleteOne {
+	builder := c.Delete().Where(wakealarm.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WakeAlarmDeleteOne{builder}
+}
+
+// Query returns a query builder for WakeAlarm.
+func (c *WakeAlarmClient) Query() *WakeAlarmQuery {
+	return &WakeAlarmQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWakeAlarm},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WakeAlarm entity by its id.
+func (c *WakeAlarmClient) Get(ctx context.Context, id int) (*WakeAlarm, error) {
+	return c.Query().Where(wakealarm.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WakeAlarmClient) GetX(ctx context.Context, id int) *WakeAlarm {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *WakeAlarmClient) Hooks() []Hook {
+	return c.hooks.WakeAlarm
+}
+
+// Interceptors returns the client interceptors.
+func (c *WakeAlarmClient) Interceptors() []Interceptor {
+	return c.inters.WakeAlarm
+}
+
+func (c *WakeAlarmClient) mutate(ctx context.Context, m *WakeAlarmMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WakeAlarmCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WakeAlarmUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WakeAlarmUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WakeAlarmDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WakeAlarm mutation op: %q", m.Op())
+	}
+}
+
 // WeatherClient is a client for the Weather schema.
 type WeatherClient struct {
 	config
@@ -8672,7 +8829,7 @@ type (
 		NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole, PixelArt,
 		Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon,
 		TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings, Untappd,
-		Uptime, User, Video, Weather, WebhookSettings []ent.Hook
+		Uptime, User, Video, WakeAlarm, Weather, WebhookSettings []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
@@ -8683,6 +8840,6 @@ type (
 		NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole, PixelArt,
 		Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon,
 		TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings, Untappd,
-		Uptime, User, Video, Weather, WebhookSettings []ent.Interceptor
+		Uptime, User, Video, WakeAlarm, Weather, WebhookSettings []ent.Interceptor
 	}
 )

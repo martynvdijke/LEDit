@@ -165,6 +165,9 @@ type User func(*sql.Selector)
 // Video is the predicate function for video builders.
 type Video func(*sql.Selector)
 
+// WakeAlarm is the predicate function for wakealarm builders.
+type WakeAlarm func(*sql.Selector)
+
 // Weather is the predicate function for weather builders.
 type Weather func(*sql.Selector)
 

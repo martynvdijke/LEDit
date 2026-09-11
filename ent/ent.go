@@ -59,6 +59,7 @@ import (
 	"ledit/ent/uptime"
 	"ledit/ent/user"
 	"ledit/ent/video"
+	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
 	"reflect"
@@ -180,6 +181,7 @@ func checkColumn(t, c string) error {
 			uptime.Table:           uptime.ValidColumn,
 			user.Table:             user.ValidColumn,
 			video.Table:            video.ValidColumn,
+			wakealarm.Table:        wakealarm.ValidColumn,
 			weather.Table:          weather.ValidColumn,
 			webhooksettings.Table:  webhooksettings.ValidColumn,
 		})

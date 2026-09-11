@@ -60,6 +60,7 @@ import (
 	"ledit/ent/uptime"
 	"ledit/ent/user"
 	"ledit/ent/video"
+	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
 	"sync"
@@ -131,6 +132,7 @@ const (
 	TypeUptime           = "Uptime"
 	TypeUser             = "User"
 	TypeVideo            = "Video"
+	TypeWakeAlarm        = "WakeAlarm"
 	TypeWeather          = "Weather"
 	TypeWebhookSettings  = "WebhookSettings"
 )
@@ -11298,6 +11300,9 @@ type GeneralSettingsMutation struct {
 	displayrules                   map[int]struct{}
 	removeddisplayrules            map[int]struct{}
 	cleareddisplayrules            bool
+	wakealarms                     map[int]struct{}
+	removedwakealarms              map[int]struct{}
+	clearedwakealarms              bool
 	webhooksettings                map[int]struct{}
 	removedwebhooksettings         map[int]struct{}
 	clearedwebhooksettings         bool
@@ -13754,6 +13759,60 @@ func (m *GeneralSettingsMutation) ResetDisplayrules() {
 	m.removeddisplayrules = nil
 }
 
+// AddWakealarmIDs adds the "wakealarms" edge to the WakeAlarm entity by ids.
+func (m *GeneralSettingsMutation) AddWakealarmIDs(ids ...int) {
+	if m.wakealarms == nil {
+		m.wakealarms = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.wakealarms[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWakealarms clears the "wakealarms" edge to the WakeAlarm entity.
+func (m *GeneralSettingsMutation) ClearWakealarms() {
+	m.clearedwakealarms = true
+}
+
+// WakealarmsCleared reports if the "wakealarms" edge to the WakeAlarm entity was cleared.
+func (m *GeneralSettingsMutation) WakealarmsCleared() bool {
+	return m.clearedwakealarms
+}
+
+// RemoveWakealarmIDs removes the "wakealarms" edge to the WakeAlarm entity by IDs.
+func (m *GeneralSettingsMutation) RemoveWakealarmIDs(ids ...int) {
+	if m.removedwakealarms == nil {
+		m.removedwakealarms = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.wakealarms, ids[i])
+		m.removedwakealarms[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWakealarms returns the removed IDs of the "wakealarms" edge to the WakeAlarm entity.
+func (m *GeneralSettingsMutation) RemovedWakealarmsIDs() (ids []int) {
+	for id := range m.removedwakealarms {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WakealarmsIDs returns the "wakealarms" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) WakealarmsIDs() (ids []int) {
+	for id := range m.wakealarms {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWakealarms resets all changes to the "wakealarms" edge.
+func (m *GeneralSettingsMutation) ResetWakealarms() {
+	m.wakealarms = nil
+	m.clearedwakealarms = false
+	m.removedwakealarms = nil
+}
+
 // AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by ids.
 func (m *GeneralSettingsMutation) AddWebhooksettingIDs(ids ...int) {
 	if m.webhooksettings == nil {
@@ -14982,7 +15041,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 41)
+	edges := make([]string, 0, 42)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -15066,6 +15125,9 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.displayrules != nil {
 		edges = append(edges, generalsettings.EdgeDisplayrules)
+	}
+	if m.wakealarms != nil {
+		edges = append(edges, generalsettings.EdgeWakealarms)
 	}
 	if m.webhooksettings != nil {
 		edges = append(edges, generalsettings.EdgeWebhooksettings)
@@ -15281,6 +15343,12 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeWakealarms:
+		ids := make([]ent.Value, 0, len(m.wakealarms))
+		for id := range m.wakealarms {
+			ids = append(ids, id)
+		}
+		return ids
 	case generalsettings.EdgeWebhooksettings:
 		ids := make([]ent.Value, 0, len(m.webhooksettings))
 		for id := range m.webhooksettings {
@@ -15365,7 +15433,7 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 41)
+	edges := make([]string, 0, 42)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -15449,6 +15517,9 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removeddisplayrules != nil {
 		edges = append(edges, generalsettings.EdgeDisplayrules)
+	}
+	if m.removedwakealarms != nil {
+		edges = append(edges, generalsettings.EdgeWakealarms)
 	}
 	if m.removedwebhooksettings != nil {
 		edges = append(edges, generalsettings.EdgeWebhooksettings)
@@ -15664,6 +15735,12 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeWakealarms:
+		ids := make([]ent.Value, 0, len(m.removedwakealarms))
+		for id := range m.removedwakealarms {
+			ids = append(ids, id)
+		}
+		return ids
 	case generalsettings.EdgeWebhooksettings:
 		ids := make([]ent.Value, 0, len(m.removedwebhooksettings))
 		for id := range m.removedwebhooksettings {
@@ -15748,7 +15825,7 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 41)
+	edges := make([]string, 0, 42)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -15832,6 +15909,9 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	}
 	if m.cleareddisplayrules {
 		edges = append(edges, generalsettings.EdgeDisplayrules)
+	}
+	if m.clearedwakealarms {
+		edges = append(edges, generalsettings.EdgeWakealarms)
 	}
 	if m.clearedwebhooksettings {
 		edges = append(edges, generalsettings.EdgeWebhooksettings)
@@ -15935,6 +16015,8 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedplaylists
 	case generalsettings.EdgeDisplayrules:
 		return m.cleareddisplayrules
+	case generalsettings.EdgeWakealarms:
+		return m.clearedwakealarms
 	case generalsettings.EdgeWebhooksettings:
 		return m.clearedwebhooksettings
 	case generalsettings.EdgeMqttsettings:
@@ -16060,6 +16142,9 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 		return nil
 	case generalsettings.EdgeDisplayrules:
 		m.ResetDisplayrules()
+		return nil
+	case generalsettings.EdgeWakealarms:
+		m.ResetWakealarms()
 		return nil
 	case generalsettings.EdgeWebhooksettings:
 		m.ResetWebhooksettings()
@@ -35436,6 +35521,1115 @@ func (m *VideoMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *VideoMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Video edge %s", name)
+}
+
+// WakeAlarmMutation represents an operation that mutates the WakeAlarm nodes in the graph.
+type WakeAlarmMutation struct {
+	config
+	op                         Op
+	typ                        string
+	id                         *int
+	name                       *string
+	enabled                    *bool
+	days                       *string
+	start                      *string
+	end                        *string
+	wake_source_type           *string
+	wake_source_id             *int
+	addwake_source_id          *int
+	brightness_enabled         *bool
+	brightness_start           *int
+	addbrightness_start        *int
+	brightness_end             *int
+	addbrightness_end          *int
+	brightness_ramp_seconds    *int
+	addbrightness_ramp_seconds *int
+	created_at                 *time.Time
+	updated_at                 *time.Time
+	clearedFields              map[string]struct{}
+	done                       bool
+	oldValue                   func(context.Context) (*WakeAlarm, error)
+	predicates                 []predicate.WakeAlarm
+}
+
+var _ ent.Mutation = (*WakeAlarmMutation)(nil)
+
+// wakealarmOption allows management of the mutation configuration using functional options.
+type wakealarmOption func(*WakeAlarmMutation)
+
+// newWakeAlarmMutation creates new mutation for the WakeAlarm entity.
+func newWakeAlarmMutation(c config, op Op, opts ...wakealarmOption) *WakeAlarmMutation {
+	m := &WakeAlarmMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeWakeAlarm,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withWakeAlarmID sets the ID field of the mutation.
+func withWakeAlarmID(id int) wakealarmOption {
+	return func(m *WakeAlarmMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *WakeAlarm
+		)
+		m.oldValue = func(ctx context.Context) (*WakeAlarm, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().WakeAlarm.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withWakeAlarm sets the old WakeAlarm of the mutation.
+func withWakeAlarm(node *WakeAlarm) wakealarmOption {
+	return func(m *WakeAlarmMutation) {
+		m.oldValue = func(context.Context) (*WakeAlarm, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m WakeAlarmMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m WakeAlarmMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *WakeAlarmMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *WakeAlarmMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().WakeAlarm.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *WakeAlarmMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *WakeAlarmMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *WakeAlarmMutation) ResetName() {
+	m.name = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *WakeAlarmMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *WakeAlarmMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *WakeAlarmMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetDays sets the "days" field.
+func (m *WakeAlarmMutation) SetDays(s string) {
+	m.days = &s
+}
+
+// Days returns the value of the "days" field in the mutation.
+func (m *WakeAlarmMutation) Days() (r string, exists bool) {
+	v := m.days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDays returns the old "days" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldDays(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDays is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDays requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDays: %w", err)
+	}
+	return oldValue.Days, nil
+}
+
+// ResetDays resets all changes to the "days" field.
+func (m *WakeAlarmMutation) ResetDays() {
+	m.days = nil
+}
+
+// SetStart sets the "start" field.
+func (m *WakeAlarmMutation) SetStart(s string) {
+	m.start = &s
+}
+
+// Start returns the value of the "start" field in the mutation.
+func (m *WakeAlarmMutation) Start() (r string, exists bool) {
+	v := m.start
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStart returns the old "start" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldStart(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStart is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStart requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStart: %w", err)
+	}
+	return oldValue.Start, nil
+}
+
+// ResetStart resets all changes to the "start" field.
+func (m *WakeAlarmMutation) ResetStart() {
+	m.start = nil
+}
+
+// SetEnd sets the "end" field.
+func (m *WakeAlarmMutation) SetEnd(s string) {
+	m.end = &s
+}
+
+// End returns the value of the "end" field in the mutation.
+func (m *WakeAlarmMutation) End() (r string, exists bool) {
+	v := m.end
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnd returns the old "end" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldEnd(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnd is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnd requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnd: %w", err)
+	}
+	return oldValue.End, nil
+}
+
+// ResetEnd resets all changes to the "end" field.
+func (m *WakeAlarmMutation) ResetEnd() {
+	m.end = nil
+}
+
+// SetWakeSourceType sets the "wake_source_type" field.
+func (m *WakeAlarmMutation) SetWakeSourceType(s string) {
+	m.wake_source_type = &s
+}
+
+// WakeSourceType returns the value of the "wake_source_type" field in the mutation.
+func (m *WakeAlarmMutation) WakeSourceType() (r string, exists bool) {
+	v := m.wake_source_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWakeSourceType returns the old "wake_source_type" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldWakeSourceType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWakeSourceType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWakeSourceType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWakeSourceType: %w", err)
+	}
+	return oldValue.WakeSourceType, nil
+}
+
+// ResetWakeSourceType resets all changes to the "wake_source_type" field.
+func (m *WakeAlarmMutation) ResetWakeSourceType() {
+	m.wake_source_type = nil
+}
+
+// SetWakeSourceID sets the "wake_source_id" field.
+func (m *WakeAlarmMutation) SetWakeSourceID(i int) {
+	m.wake_source_id = &i
+	m.addwake_source_id = nil
+}
+
+// WakeSourceID returns the value of the "wake_source_id" field in the mutation.
+func (m *WakeAlarmMutation) WakeSourceID() (r int, exists bool) {
+	v := m.wake_source_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWakeSourceID returns the old "wake_source_id" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldWakeSourceID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWakeSourceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWakeSourceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWakeSourceID: %w", err)
+	}
+	return oldValue.WakeSourceID, nil
+}
+
+// AddWakeSourceID adds i to the "wake_source_id" field.
+func (m *WakeAlarmMutation) AddWakeSourceID(i int) {
+	if m.addwake_source_id != nil {
+		*m.addwake_source_id += i
+	} else {
+		m.addwake_source_id = &i
+	}
+}
+
+// AddedWakeSourceID returns the value that was added to the "wake_source_id" field in this mutation.
+func (m *WakeAlarmMutation) AddedWakeSourceID() (r int, exists bool) {
+	v := m.addwake_source_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWakeSourceID resets all changes to the "wake_source_id" field.
+func (m *WakeAlarmMutation) ResetWakeSourceID() {
+	m.wake_source_id = nil
+	m.addwake_source_id = nil
+}
+
+// SetBrightnessEnabled sets the "brightness_enabled" field.
+func (m *WakeAlarmMutation) SetBrightnessEnabled(b bool) {
+	m.brightness_enabled = &b
+}
+
+// BrightnessEnabled returns the value of the "brightness_enabled" field in the mutation.
+func (m *WakeAlarmMutation) BrightnessEnabled() (r bool, exists bool) {
+	v := m.brightness_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBrightnessEnabled returns the old "brightness_enabled" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldBrightnessEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBrightnessEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBrightnessEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBrightnessEnabled: %w", err)
+	}
+	return oldValue.BrightnessEnabled, nil
+}
+
+// ResetBrightnessEnabled resets all changes to the "brightness_enabled" field.
+func (m *WakeAlarmMutation) ResetBrightnessEnabled() {
+	m.brightness_enabled = nil
+}
+
+// SetBrightnessStart sets the "brightness_start" field.
+func (m *WakeAlarmMutation) SetBrightnessStart(i int) {
+	m.brightness_start = &i
+	m.addbrightness_start = nil
+}
+
+// BrightnessStart returns the value of the "brightness_start" field in the mutation.
+func (m *WakeAlarmMutation) BrightnessStart() (r int, exists bool) {
+	v := m.brightness_start
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBrightnessStart returns the old "brightness_start" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldBrightnessStart(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBrightnessStart is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBrightnessStart requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBrightnessStart: %w", err)
+	}
+	return oldValue.BrightnessStart, nil
+}
+
+// AddBrightnessStart adds i to the "brightness_start" field.
+func (m *WakeAlarmMutation) AddBrightnessStart(i int) {
+	if m.addbrightness_start != nil {
+		*m.addbrightness_start += i
+	} else {
+		m.addbrightness_start = &i
+	}
+}
+
+// AddedBrightnessStart returns the value that was added to the "brightness_start" field in this mutation.
+func (m *WakeAlarmMutation) AddedBrightnessStart() (r int, exists bool) {
+	v := m.addbrightness_start
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetBrightnessStart resets all changes to the "brightness_start" field.
+func (m *WakeAlarmMutation) ResetBrightnessStart() {
+	m.brightness_start = nil
+	m.addbrightness_start = nil
+}
+
+// SetBrightnessEnd sets the "brightness_end" field.
+func (m *WakeAlarmMutation) SetBrightnessEnd(i int) {
+	m.brightness_end = &i
+	m.addbrightness_end = nil
+}
+
+// BrightnessEnd returns the value of the "brightness_end" field in the mutation.
+func (m *WakeAlarmMutation) BrightnessEnd() (r int, exists bool) {
+	v := m.brightness_end
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBrightnessEnd returns the old "brightness_end" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldBrightnessEnd(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBrightnessEnd is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBrightnessEnd requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBrightnessEnd: %w", err)
+	}
+	return oldValue.BrightnessEnd, nil
+}
+
+// AddBrightnessEnd adds i to the "brightness_end" field.
+func (m *WakeAlarmMutation) AddBrightnessEnd(i int) {
+	if m.addbrightness_end != nil {
+		*m.addbrightness_end += i
+	} else {
+		m.addbrightness_end = &i
+	}
+}
+
+// AddedBrightnessEnd returns the value that was added to the "brightness_end" field in this mutation.
+func (m *WakeAlarmMutation) AddedBrightnessEnd() (r int, exists bool) {
+	v := m.addbrightness_end
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetBrightnessEnd resets all changes to the "brightness_end" field.
+func (m *WakeAlarmMutation) ResetBrightnessEnd() {
+	m.brightness_end = nil
+	m.addbrightness_end = nil
+}
+
+// SetBrightnessRampSeconds sets the "brightness_ramp_seconds" field.
+func (m *WakeAlarmMutation) SetBrightnessRampSeconds(i int) {
+	m.brightness_ramp_seconds = &i
+	m.addbrightness_ramp_seconds = nil
+}
+
+// BrightnessRampSeconds returns the value of the "brightness_ramp_seconds" field in the mutation.
+func (m *WakeAlarmMutation) BrightnessRampSeconds() (r int, exists bool) {
+	v := m.brightness_ramp_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBrightnessRampSeconds returns the old "brightness_ramp_seconds" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldBrightnessRampSeconds(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBrightnessRampSeconds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBrightnessRampSeconds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBrightnessRampSeconds: %w", err)
+	}
+	return oldValue.BrightnessRampSeconds, nil
+}
+
+// AddBrightnessRampSeconds adds i to the "brightness_ramp_seconds" field.
+func (m *WakeAlarmMutation) AddBrightnessRampSeconds(i int) {
+	if m.addbrightness_ramp_seconds != nil {
+		*m.addbrightness_ramp_seconds += i
+	} else {
+		m.addbrightness_ramp_seconds = &i
+	}
+}
+
+// AddedBrightnessRampSeconds returns the value that was added to the "brightness_ramp_seconds" field in this mutation.
+func (m *WakeAlarmMutation) AddedBrightnessRampSeconds() (r int, exists bool) {
+	v := m.addbrightness_ramp_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetBrightnessRampSeconds resets all changes to the "brightness_ramp_seconds" field.
+func (m *WakeAlarmMutation) ResetBrightnessRampSeconds() {
+	m.brightness_ramp_seconds = nil
+	m.addbrightness_ramp_seconds = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *WakeAlarmMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *WakeAlarmMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *WakeAlarmMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *WakeAlarmMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *WakeAlarmMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the WakeAlarm entity.
+// If the WakeAlarm object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WakeAlarmMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *WakeAlarmMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the WakeAlarmMutation builder.
+func (m *WakeAlarmMutation) Where(ps ...predicate.WakeAlarm) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the WakeAlarmMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *WakeAlarmMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.WakeAlarm, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *WakeAlarmMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *WakeAlarmMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (WakeAlarm).
+func (m *WakeAlarmMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *WakeAlarmMutation) Fields() []string {
+	fields := make([]string, 0, 13)
+	if m.name != nil {
+		fields = append(fields, wakealarm.FieldName)
+	}
+	if m.enabled != nil {
+		fields = append(fields, wakealarm.FieldEnabled)
+	}
+	if m.days != nil {
+		fields = append(fields, wakealarm.FieldDays)
+	}
+	if m.start != nil {
+		fields = append(fields, wakealarm.FieldStart)
+	}
+	if m.end != nil {
+		fields = append(fields, wakealarm.FieldEnd)
+	}
+	if m.wake_source_type != nil {
+		fields = append(fields, wakealarm.FieldWakeSourceType)
+	}
+	if m.wake_source_id != nil {
+		fields = append(fields, wakealarm.FieldWakeSourceID)
+	}
+	if m.brightness_enabled != nil {
+		fields = append(fields, wakealarm.FieldBrightnessEnabled)
+	}
+	if m.brightness_start != nil {
+		fields = append(fields, wakealarm.FieldBrightnessStart)
+	}
+	if m.brightness_end != nil {
+		fields = append(fields, wakealarm.FieldBrightnessEnd)
+	}
+	if m.brightness_ramp_seconds != nil {
+		fields = append(fields, wakealarm.FieldBrightnessRampSeconds)
+	}
+	if m.created_at != nil {
+		fields = append(fields, wakealarm.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, wakealarm.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *WakeAlarmMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case wakealarm.FieldName:
+		return m.Name()
+	case wakealarm.FieldEnabled:
+		return m.Enabled()
+	case wakealarm.FieldDays:
+		return m.Days()
+	case wakealarm.FieldStart:
+		return m.Start()
+	case wakealarm.FieldEnd:
+		return m.End()
+	case wakealarm.FieldWakeSourceType:
+		return m.WakeSourceType()
+	case wakealarm.FieldWakeSourceID:
+		return m.WakeSourceID()
+	case wakealarm.FieldBrightnessEnabled:
+		return m.BrightnessEnabled()
+	case wakealarm.FieldBrightnessStart:
+		return m.BrightnessStart()
+	case wakealarm.FieldBrightnessEnd:
+		return m.BrightnessEnd()
+	case wakealarm.FieldBrightnessRampSeconds:
+		return m.BrightnessRampSeconds()
+	case wakealarm.FieldCreatedAt:
+		return m.CreatedAt()
+	case wakealarm.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *WakeAlarmMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case wakealarm.FieldName:
+		return m.OldName(ctx)
+	case wakealarm.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case wakealarm.FieldDays:
+		return m.OldDays(ctx)
+	case wakealarm.FieldStart:
+		return m.OldStart(ctx)
+	case wakealarm.FieldEnd:
+		return m.OldEnd(ctx)
+	case wakealarm.FieldWakeSourceType:
+		return m.OldWakeSourceType(ctx)
+	case wakealarm.FieldWakeSourceID:
+		return m.OldWakeSourceID(ctx)
+	case wakealarm.FieldBrightnessEnabled:
+		return m.OldBrightnessEnabled(ctx)
+	case wakealarm.FieldBrightnessStart:
+		return m.OldBrightnessStart(ctx)
+	case wakealarm.FieldBrightnessEnd:
+		return m.OldBrightnessEnd(ctx)
+	case wakealarm.FieldBrightnessRampSeconds:
+		return m.OldBrightnessRampSeconds(ctx)
+	case wakealarm.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case wakealarm.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown WakeAlarm field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WakeAlarmMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case wakealarm.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case wakealarm.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case wakealarm.FieldDays:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDays(v)
+		return nil
+	case wakealarm.FieldStart:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStart(v)
+		return nil
+	case wakealarm.FieldEnd:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnd(v)
+		return nil
+	case wakealarm.FieldWakeSourceType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWakeSourceType(v)
+		return nil
+	case wakealarm.FieldWakeSourceID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWakeSourceID(v)
+		return nil
+	case wakealarm.FieldBrightnessEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBrightnessEnabled(v)
+		return nil
+	case wakealarm.FieldBrightnessStart:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBrightnessStart(v)
+		return nil
+	case wakealarm.FieldBrightnessEnd:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBrightnessEnd(v)
+		return nil
+	case wakealarm.FieldBrightnessRampSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBrightnessRampSeconds(v)
+		return nil
+	case wakealarm.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case wakealarm.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WakeAlarm field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *WakeAlarmMutation) AddedFields() []string {
+	var fields []string
+	if m.addwake_source_id != nil {
+		fields = append(fields, wakealarm.FieldWakeSourceID)
+	}
+	if m.addbrightness_start != nil {
+		fields = append(fields, wakealarm.FieldBrightnessStart)
+	}
+	if m.addbrightness_end != nil {
+		fields = append(fields, wakealarm.FieldBrightnessEnd)
+	}
+	if m.addbrightness_ramp_seconds != nil {
+		fields = append(fields, wakealarm.FieldBrightnessRampSeconds)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *WakeAlarmMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case wakealarm.FieldWakeSourceID:
+		return m.AddedWakeSourceID()
+	case wakealarm.FieldBrightnessStart:
+		return m.AddedBrightnessStart()
+	case wakealarm.FieldBrightnessEnd:
+		return m.AddedBrightnessEnd()
+	case wakealarm.FieldBrightnessRampSeconds:
+		return m.AddedBrightnessRampSeconds()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WakeAlarmMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case wakealarm.FieldWakeSourceID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWakeSourceID(v)
+		return nil
+	case wakealarm.FieldBrightnessStart:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBrightnessStart(v)
+		return nil
+	case wakealarm.FieldBrightnessEnd:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBrightnessEnd(v)
+		return nil
+	case wakealarm.FieldBrightnessRampSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBrightnessRampSeconds(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WakeAlarm numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *WakeAlarmMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *WakeAlarmMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *WakeAlarmMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown WakeAlarm nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *WakeAlarmMutation) ResetField(name string) error {
+	switch name {
+	case wakealarm.FieldName:
+		m.ResetName()
+		return nil
+	case wakealarm.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case wakealarm.FieldDays:
+		m.ResetDays()
+		return nil
+	case wakealarm.FieldStart:
+		m.ResetStart()
+		return nil
+	case wakealarm.FieldEnd:
+		m.ResetEnd()
+		return nil
+	case wakealarm.FieldWakeSourceType:
+		m.ResetWakeSourceType()
+		return nil
+	case wakealarm.FieldWakeSourceID:
+		m.ResetWakeSourceID()
+		return nil
+	case wakealarm.FieldBrightnessEnabled:
+		m.ResetBrightnessEnabled()
+		return nil
+	case wakealarm.FieldBrightnessStart:
+		m.ResetBrightnessStart()
+		return nil
+	case wakealarm.FieldBrightnessEnd:
+		m.ResetBrightnessEnd()
+		return nil
+	case wakealarm.FieldBrightnessRampSeconds:
+		m.ResetBrightnessRampSeconds()
+		return nil
+	case wakealarm.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case wakealarm.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown WakeAlarm field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *WakeAlarmMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *WakeAlarmMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *WakeAlarmMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *WakeAlarmMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *WakeAlarmMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *WakeAlarmMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *WakeAlarmMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown WakeAlarm unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *WakeAlarmMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown WakeAlarm edge %s", name)
 }
 
 // WeatherMutation represents an operation that mutates the Weather nodes in the graph.

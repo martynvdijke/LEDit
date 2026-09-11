@@ -46,6 +46,7 @@ import (
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
 	"ledit/ent/video"
+	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
 
@@ -686,6 +687,21 @@ func (_c *GeneralSettingsCreate) AddDisplayrules(v ...*DisplayRule) *GeneralSett
 		ids[i] = v[i].ID
 	}
 	return _c.AddDisplayruleIDs(ids...)
+}
+
+// AddWakealarmIDs adds the "wakealarms" edge to the WakeAlarm entity by IDs.
+func (_c *GeneralSettingsCreate) AddWakealarmIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddWakealarmIDs(ids...)
+	return _c
+}
+
+// AddWakealarms adds the "wakealarms" edges to the WakeAlarm entity.
+func (_c *GeneralSettingsCreate) AddWakealarms(v ...*WakeAlarm) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddWakealarmIDs(ids...)
 }
 
 // AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by IDs.
@@ -1566,6 +1582,22 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(displayrule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.WakealarmsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WakealarmsTable,
+			Columns: []string{generalsettings.WakealarmsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(wakealarm.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

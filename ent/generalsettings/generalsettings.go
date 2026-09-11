@@ -100,6 +100,8 @@ const (
 	EdgePlaylists = "playlists"
 	// EdgeDisplayrules holds the string denoting the displayrules edge name in mutations.
 	EdgeDisplayrules = "displayrules"
+	// EdgeWakealarms holds the string denoting the wakealarms edge name in mutations.
+	EdgeWakealarms = "wakealarms"
 	// EdgeWebhooksettings holds the string denoting the webhooksettings edge name in mutations.
 	EdgeWebhooksettings = "webhooksettings"
 	// EdgeMqttsettings holds the string denoting the mqttsettings edge name in mutations.
@@ -324,6 +326,13 @@ const (
 	DisplayrulesInverseTable = "display_rules"
 	// DisplayrulesColumn is the table column denoting the displayrules relation/edge.
 	DisplayrulesColumn = "general_settings_displayrules"
+	// WakealarmsTable is the table that holds the wakealarms relation/edge.
+	WakealarmsTable = "wake_alarms"
+	// WakealarmsInverseTable is the table name for the WakeAlarm entity.
+	// It exists in this package in order to avoid circular dependency with the "wakealarm" package.
+	WakealarmsInverseTable = "wake_alarms"
+	// WakealarmsColumn is the table column denoting the wakealarms relation/edge.
+	WakealarmsColumn = "general_settings_wakealarms"
 	// WebhooksettingsTable is the table that holds the webhooksettings relation/edge.
 	WebhooksettingsTable = "webhook_settings"
 	// WebhooksettingsInverseTable is the table name for the WebhookSettings entity.
@@ -965,6 +974,20 @@ func ByDisplayrules(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByWakealarmsCount orders the results by wakealarms count.
+func ByWakealarmsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newWakealarmsStep(), opts...)
+	}
+}
+
+// ByWakealarms orders the results by wakealarms terms.
+func ByWakealarms(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newWakealarmsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByWebhooksettingsCount orders the results by webhooksettings count.
 func ByWebhooksettingsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -1340,6 +1363,13 @@ func newDisplayrulesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DisplayrulesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, DisplayrulesTable, DisplayrulesColumn),
+	)
+}
+func newWakealarmsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(WakealarmsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, WakealarmsTable, WakealarmsColumn),
 	)
 }
 func newWebhooksettingsStep() *sqlgraph.Step {

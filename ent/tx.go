@@ -118,6 +118,8 @@ type Tx struct {
 	User *UserClient
 	// Video is the client for interacting with the Video builders.
 	Video *VideoClient
+	// WakeAlarm is the client for interacting with the WakeAlarm builders.
+	WakeAlarm *WakeAlarmClient
 	// Weather is the client for interacting with the Weather builders.
 	Weather *WeatherClient
 	// WebhookSettings is the client for interacting with the WebhookSettings builders.
@@ -306,6 +308,7 @@ func (tx *Tx) init() {
 	tx.Uptime = NewUptimeClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.Video = NewVideoClient(tx.config)
+	tx.WakeAlarm = NewWakeAlarmClient(tx.config)
 	tx.Weather = NewWeatherClient(tx.config)
 	tx.WebhookSettings = NewWebhookSettingsClient(tx.config)
 }

@@ -47,6 +47,7 @@ import (
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
 	"ledit/ent/video"
+	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
 
@@ -792,6 +793,21 @@ func (_u *GeneralSettingsUpdate) AddDisplayrules(v ...*DisplayRule) *GeneralSett
 		ids[i] = v[i].ID
 	}
 	return _u.AddDisplayruleIDs(ids...)
+}
+
+// AddWakealarmIDs adds the "wakealarms" edge to the WakeAlarm entity by IDs.
+func (_u *GeneralSettingsUpdate) AddWakealarmIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddWakealarmIDs(ids...)
+	return _u
+}
+
+// AddWakealarms adds the "wakealarms" edges to the WakeAlarm entity.
+func (_u *GeneralSettingsUpdate) AddWakealarms(v ...*WakeAlarm) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddWakealarmIDs(ids...)
 }
 
 // AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by IDs.
@@ -1580,6 +1596,27 @@ func (_u *GeneralSettingsUpdate) RemoveDisplayrules(v ...*DisplayRule) *GeneralS
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveDisplayruleIDs(ids...)
+}
+
+// ClearWakealarms clears all "wakealarms" edges to the WakeAlarm entity.
+func (_u *GeneralSettingsUpdate) ClearWakealarms() *GeneralSettingsUpdate {
+	_u.mutation.ClearWakealarms()
+	return _u
+}
+
+// RemoveWakealarmIDs removes the "wakealarms" edge to WakeAlarm entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveWakealarmIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveWakealarmIDs(ids...)
+	return _u
+}
+
+// RemoveWakealarms removes "wakealarms" edges to WakeAlarm entities.
+func (_u *GeneralSettingsUpdate) RemoveWakealarms(v ...*WakeAlarm) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveWakealarmIDs(ids...)
 }
 
 // ClearWebhooksettings clears all "webhooksettings" edges to the WebhookSettings entity.
@@ -3258,6 +3295,51 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.WakealarmsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WakealarmsTable,
+			Columns: []string{generalsettings.WakealarmsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(wakealarm.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedWakealarmsIDs(); len(nodes) > 0 && !_u.mutation.WakealarmsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WakealarmsTable,
+			Columns: []string{generalsettings.WakealarmsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(wakealarm.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.WakealarmsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WakealarmsTable,
+			Columns: []string{generalsettings.WakealarmsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(wakealarm.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.WebhooksettingsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -4589,6 +4671,21 @@ func (_u *GeneralSettingsUpdateOne) AddDisplayrules(v ...*DisplayRule) *GeneralS
 	return _u.AddDisplayruleIDs(ids...)
 }
 
+// AddWakealarmIDs adds the "wakealarms" edge to the WakeAlarm entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddWakealarmIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddWakealarmIDs(ids...)
+	return _u
+}
+
+// AddWakealarms adds the "wakealarms" edges to the WakeAlarm entity.
+func (_u *GeneralSettingsUpdateOne) AddWakealarms(v ...*WakeAlarm) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddWakealarmIDs(ids...)
+}
+
 // AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by IDs.
 func (_u *GeneralSettingsUpdateOne) AddWebhooksettingIDs(ids ...int) *GeneralSettingsUpdateOne {
 	_u.mutation.AddWebhooksettingIDs(ids...)
@@ -5375,6 +5472,27 @@ func (_u *GeneralSettingsUpdateOne) RemoveDisplayrules(v ...*DisplayRule) *Gener
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveDisplayruleIDs(ids...)
+}
+
+// ClearWakealarms clears all "wakealarms" edges to the WakeAlarm entity.
+func (_u *GeneralSettingsUpdateOne) ClearWakealarms() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearWakealarms()
+	return _u
+}
+
+// RemoveWakealarmIDs removes the "wakealarms" edge to WakeAlarm entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveWakealarmIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveWakealarmIDs(ids...)
+	return _u
+}
+
+// RemoveWakealarms removes "wakealarms" edges to WakeAlarm entities.
+func (_u *GeneralSettingsUpdateOne) RemoveWakealarms(v ...*WakeAlarm) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveWakealarmIDs(ids...)
 }
 
 // ClearWebhooksettings clears all "webhooksettings" edges to the WebhookSettings entity.
@@ -7076,6 +7194,51 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(displayrule.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.WakealarmsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WakealarmsTable,
+			Columns: []string{generalsettings.WakealarmsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(wakealarm.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedWakealarmsIDs(); len(nodes) > 0 && !_u.mutation.WakealarmsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WakealarmsTable,
+			Columns: []string{generalsettings.WakealarmsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(wakealarm.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.WakealarmsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WakealarmsTable,
+			Columns: []string{generalsettings.WakealarmsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(wakealarm.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

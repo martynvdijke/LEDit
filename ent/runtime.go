@@ -53,6 +53,7 @@ import (
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
 	"ledit/ent/user"
+	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
 	"time"
@@ -1115,6 +1116,110 @@ func init() {
 			return nil
 		}
 	}()
+	wakealarmFields := schema.WakeAlarm{}.Fields()
+	_ = wakealarmFields
+	// wakealarmDescName is the schema descriptor for name field.
+	wakealarmDescName := wakealarmFields[0].Descriptor()
+	// wakealarm.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	wakealarm.NameValidator = wakealarmDescName.Validators[0].(func(string) error)
+	// wakealarmDescEnabled is the schema descriptor for enabled field.
+	wakealarmDescEnabled := wakealarmFields[1].Descriptor()
+	// wakealarm.DefaultEnabled holds the default value on creation for the enabled field.
+	wakealarm.DefaultEnabled = wakealarmDescEnabled.Default.(bool)
+	// wakealarmDescDays is the schema descriptor for days field.
+	wakealarmDescDays := wakealarmFields[2].Descriptor()
+	// wakealarm.DefaultDays holds the default value on creation for the days field.
+	wakealarm.DefaultDays = wakealarmDescDays.Default.(string)
+	// wakealarmDescStart is the schema descriptor for start field.
+	wakealarmDescStart := wakealarmFields[3].Descriptor()
+	// wakealarm.DefaultStart holds the default value on creation for the start field.
+	wakealarm.DefaultStart = wakealarmDescStart.Default.(string)
+	// wakealarmDescEnd is the schema descriptor for end field.
+	wakealarmDescEnd := wakealarmFields[4].Descriptor()
+	// wakealarm.DefaultEnd holds the default value on creation for the end field.
+	wakealarm.DefaultEnd = wakealarmDescEnd.Default.(string)
+	// wakealarmDescWakeSourceType is the schema descriptor for wake_source_type field.
+	wakealarmDescWakeSourceType := wakealarmFields[5].Descriptor()
+	// wakealarm.DefaultWakeSourceType holds the default value on creation for the wake_source_type field.
+	wakealarm.DefaultWakeSourceType = wakealarmDescWakeSourceType.Default.(string)
+	// wakealarmDescWakeSourceID is the schema descriptor for wake_source_id field.
+	wakealarmDescWakeSourceID := wakealarmFields[6].Descriptor()
+	// wakealarm.DefaultWakeSourceID holds the default value on creation for the wake_source_id field.
+	wakealarm.DefaultWakeSourceID = wakealarmDescWakeSourceID.Default.(int)
+	// wakealarmDescBrightnessEnabled is the schema descriptor for brightness_enabled field.
+	wakealarmDescBrightnessEnabled := wakealarmFields[7].Descriptor()
+	// wakealarm.DefaultBrightnessEnabled holds the default value on creation for the brightness_enabled field.
+	wakealarm.DefaultBrightnessEnabled = wakealarmDescBrightnessEnabled.Default.(bool)
+	// wakealarmDescBrightnessStart is the schema descriptor for brightness_start field.
+	wakealarmDescBrightnessStart := wakealarmFields[8].Descriptor()
+	// wakealarm.DefaultBrightnessStart holds the default value on creation for the brightness_start field.
+	wakealarm.DefaultBrightnessStart = wakealarmDescBrightnessStart.Default.(int)
+	// wakealarm.BrightnessStartValidator is a validator for the "brightness_start" field. It is called by the builders before save.
+	wakealarm.BrightnessStartValidator = func() func(int) error {
+		validators := wakealarmDescBrightnessStart.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(brightness_start int) error {
+			for _, fn := range fns {
+				if err := fn(brightness_start); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// wakealarmDescBrightnessEnd is the schema descriptor for brightness_end field.
+	wakealarmDescBrightnessEnd := wakealarmFields[9].Descriptor()
+	// wakealarm.DefaultBrightnessEnd holds the default value on creation for the brightness_end field.
+	wakealarm.DefaultBrightnessEnd = wakealarmDescBrightnessEnd.Default.(int)
+	// wakealarm.BrightnessEndValidator is a validator for the "brightness_end" field. It is called by the builders before save.
+	wakealarm.BrightnessEndValidator = func() func(int) error {
+		validators := wakealarmDescBrightnessEnd.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(brightness_end int) error {
+			for _, fn := range fns {
+				if err := fn(brightness_end); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// wakealarmDescBrightnessRampSeconds is the schema descriptor for brightness_ramp_seconds field.
+	wakealarmDescBrightnessRampSeconds := wakealarmFields[10].Descriptor()
+	// wakealarm.DefaultBrightnessRampSeconds holds the default value on creation for the brightness_ramp_seconds field.
+	wakealarm.DefaultBrightnessRampSeconds = wakealarmDescBrightnessRampSeconds.Default.(int)
+	// wakealarm.BrightnessRampSecondsValidator is a validator for the "brightness_ramp_seconds" field. It is called by the builders before save.
+	wakealarm.BrightnessRampSecondsValidator = func() func(int) error {
+		validators := wakealarmDescBrightnessRampSeconds.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(brightness_ramp_seconds int) error {
+			for _, fn := range fns {
+				if err := fn(brightness_ramp_seconds); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// wakealarmDescCreatedAt is the schema descriptor for created_at field.
+	wakealarmDescCreatedAt := wakealarmFields[11].Descriptor()
+	// wakealarm.DefaultCreatedAt holds the default value on creation for the created_at field.
+	wakealarm.DefaultCreatedAt = wakealarmDescCreatedAt.Default.(func() time.Time)
+	// wakealarmDescUpdatedAt is the schema descriptor for updated_at field.
+	wakealarmDescUpdatedAt := wakealarmFields[12].Descriptor()
+	// wakealarm.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	wakealarm.DefaultUpdatedAt = wakealarmDescUpdatedAt.Default.(func() time.Time)
+	// wakealarm.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	wakealarm.UpdateDefaultUpdatedAt = wakealarmDescUpdatedAt.UpdateDefault.(func() time.Time)
 	weatherFields := schema.Weather{}.Fields()
 	_ = weatherFields
 	// weatherDescToken is the schema descriptor for token field.

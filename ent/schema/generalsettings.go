@@ -77,6 +77,7 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("pixel_arts", PixelArt.Type),
 		edge.To("playlists", Playlist.Type),
 		edge.To("displayrules", DisplayRule.Type),
+		edge.To("wakealarms", WakeAlarm.Type),
 		edge.To("webhooksettings", WebhookSettings.Type),
 		edge.To("mqttsettings", MQTTSettings.Type),
 		edge.To("telegramsettings", TelegramSettings.Type),
