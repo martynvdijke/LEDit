@@ -59,4 +59,48 @@ test.describe('Countdown (ambience modes)', () => {
     await expect(page).toHaveURL(/\/admin\/$/);
     await expect(page.locator(`tr:has-text("${CD_NAME}")`)).toHaveCount(0);
   });
+
+  test('configurable options round-trip and live preview', async ({ page }) => {
+    await seedCleanState(page);
+    const name = 'PW Options';
+
+    await page.goto('/admin/countdowns/new');
+    await page.fill('#name', name);
+    await page.fill('#target_time', '2020-01-01T00:00');
+    await page.fill('#label', 'Launch');
+
+    // Non-default options.
+    await page.selectOption('#granularity', 'minutes');
+    await page.selectOption('#direction', 'up');
+    await page.selectOption('#completion', 'message');
+    // The completion message field is revealed by the options behavior.
+    await expect(page.locator('[data-completion-message]')).toBeVisible();
+    await page.fill('#completion_message', 'Doors open');
+    await page.fill('#timezone', 'UTC');
+
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/admin\/$/);
+
+    // Listed on the dashboard.
+    const row = page.locator(`tr:has-text("${name}")`);
+    await expect(row).toBeVisible();
+    await expect(row).toContainText('Countdown');
+
+    // Edit round-trips every configured value, including the zoned target.
+    await page.locator(`tr:has-text("${name}") a:has-text("Edit")`).click();
+    await expect(page).toHaveURL(/\/admin\/countdowns\/\d+\/edit/);
+    await expect(page.locator('#granularity')).toHaveValue('minutes');
+    await expect(page.locator('#direction')).toHaveValue('up');
+    await expect(page.locator('#completion')).toHaveValue('message');
+    await expect(page.locator('#completion_message')).toHaveValue('Doors open');
+    await expect(page.locator('#timezone')).toHaveValue('UTC');
+    await expect(page.locator('#target_time')).toHaveValue('2020-01-01T00:00');
+    await expect(page.locator('#label')).toHaveValue('Launch');
+
+    // Live preview renders the configured state.
+    await expect(page.locator('#live-preview-img')).toHaveAttribute('src', /^(blob:|data:image\/png)/, { timeout: 15000 });
+
+    await page.click('button:has-text("Delete")');
+    await expect(page).toHaveURL(/\/admin\/$/);
+  });
 });

@@ -85,6 +85,21 @@ liveForms.forEach((form) => {
   window.setTimeout(schedule, 400);
 });
 
+// Countdown form: show the completion message input only for completion=message.
+document
+  .querySelectorAll<HTMLSelectElement>('[data-completion-select]')
+  .forEach((select) => {
+    const message = select
+      .closest('form')
+      ?.querySelector<HTMLElement>('[data-completion-message]');
+    if (!message) return;
+    const sync = (): void => {
+      message.style.display = select.value === 'message' ? '' : 'none';
+    };
+    select.addEventListener('change', sync);
+    sync();
+  });
+
 // ---------------------------------------------------------------------------
 // Matrix layout editor: grid selectors -> bindings JSON -> live composite preview
 // ---------------------------------------------------------------------------

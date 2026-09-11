@@ -21,12 +21,49 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="target_time" class="form-label">Target Time</label>
-                        <input type="datetime-local" class="form-control" id="target_time" name="target_time" required value="{{if .obj}}{{.obj.TargetTime.Format "2006-01-02T15:04"}}{{end}}">
+                        <input type="datetime-local" class="form-control" id="target_time" name="target_time" required value="{{if .obj}}{{.target_local}}{{end}}">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="label" class="form-label">Label</label>
                         <input type="text" class="form-control" id="label" name="label" value="{{if .obj}}{{.obj.Label}}{{end}}">
                     </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="granularity" class="form-label">Granularity</label>
+                        <select class="form-select" id="granularity" name="granularity">
+                            <option value="seconds" {{if .obj}}{{if eq (print .obj.Granularity) "seconds"}}selected{{end}}{{else}}selected{{end}}>Seconds</option>
+                            <option value="minutes" {{if .obj}}{{if eq (print .obj.Granularity) "minutes"}}selected{{end}}{{end}}>Minutes</option>
+                            <option value="hours" {{if .obj}}{{if eq (print .obj.Granularity) "hours"}}selected{{end}}{{end}}>Hours</option>
+                            <option value="days" {{if .obj}}{{if eq (print .obj.Granularity) "days"}}selected{{end}}{{end}}>Days</option>
+                        </select>
+                        <div class="form-text small text-muted">Smallest unit shown.</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="direction" class="form-label">Direction</label>
+                        <select class="form-select" id="direction" name="direction">
+                            <option value="down" {{if .obj}}{{if eq (print .obj.Direction) "down"}}selected{{end}}{{else}}selected{{end}}>Count down</option>
+                            <option value="up" {{if .obj}}{{if eq (print .obj.Direction) "up"}}selected{{end}}{{end}}>Count up (elapsed)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="completion" class="form-label">Completion</label>
+                        <select class="form-select" id="completion" name="completion" data-completion-select>
+                            <option value="now" {{if .obj}}{{if eq (print .obj.Completion) "now"}}selected{{end}}{{else}}selected{{end}}>Now!</option>
+                            <option value="message" {{if .obj}}{{if eq (print .obj.Completion) "message"}}selected{{end}}{{end}}>Custom message</option>
+                            <option value="hide" {{if .obj}}{{if eq (print .obj.Completion) "hide"}}selected{{end}}{{end}}>Hide</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3" data-completion-message>
+                    <label for="completion_message" class="form-label">Completion Message</label>
+                    <input type="text" class="form-control" id="completion_message" name="completion_message" maxlength="32" value="{{if .obj}}{{.obj.CompletionMessage}}{{end}}">
+                    <div class="form-text small text-muted">Shown when completion is "Custom message" (max 32 characters).</div>
+                </div>
+                <div class="mb-3">
+                    <label for="timezone" class="form-label">Timezone</label>
+                    <input type="text" class="form-control" id="timezone" name="timezone" placeholder="e.g. Europe/Paris" value="{{if .obj}}{{.obj.Timezone}}{{end}}">
+                    <div class="form-text small text-muted">IANA timezone the target wall-clock is interpreted in. Empty = server local.</div>
                 </div>
                 <div class="mb-3 form-check">
                     <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if not .obj}}checked{{else if .obj.Enabled}}checked{{end}}>
@@ -39,7 +76,6 @@
             <form method="POST" action="/admin/countdowns/{{.obj.ID}}/delete" class="mt-3">
                 <button type="submit" class="btn btn-danger">Delete</button>
             </form>
-            <div class="mt-4">
             <div class="mt-4">
                 <h5>Live Preview</h5>
                 <div class="preview-container">
