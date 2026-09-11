@@ -1,3 +1,10 @@
+## [1.33.3](https://github.com/martynvdijke/LEDit/compare/v1.33.2...v1.33.3) (2026-09-11)
+
+
+### Bug Fixes
+
+* **otel:** honor OTLP endpoint URLs and standard OTEL_* env config ([5164992](https://github.com/martynvdijke/LEDit/commit/51649921bf2190f9302b9113b81d1c2820a64fc4))
+
 ## [1.33.2](https://github.com/martynvdijke/LEDit/compare/v1.33.1...v1.33.2) (2026-09-10)
 
 ## [1.33.1](https://github.com/martynvdijke/LEDit/compare/v1.33.0...v1.33.1) (2026-09-09)
