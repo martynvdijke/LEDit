@@ -1000,6 +1000,62 @@ func init() {
 	transitDescURL := transitFields[1].Descriptor()
 	// transit.DefaultURL holds the default value on creation for the url field.
 	transit.DefaultURL = transitDescURL.Default.(string)
+	// transitDescAPIKey is the schema descriptor for api_key field.
+	transitDescAPIKey := transitFields[2].Descriptor()
+	// transit.DefaultAPIKey holds the default value on creation for the api_key field.
+	transit.DefaultAPIKey = transitDescAPIKey.Default.(string)
+	// transitDescMaxDepartures is the schema descriptor for max_departures field.
+	transitDescMaxDepartures := transitFields[4].Descriptor()
+	// transit.DefaultMaxDepartures holds the default value on creation for the max_departures field.
+	transit.DefaultMaxDepartures = transitDescMaxDepartures.Default.(int)
+	// transit.MaxDeparturesValidator is a validator for the "max_departures" field. It is called by the builders before save.
+	transit.MaxDeparturesValidator = func() func(int) error {
+		validators := transitDescMaxDepartures.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(max_departures int) error {
+			for _, fn := range fns {
+				if err := fn(max_departures); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// transitDescRouteFilter is the schema descriptor for route_filter field.
+	transitDescRouteFilter := transitFields[5].Descriptor()
+	// transit.DefaultRouteFilter holds the default value on creation for the route_filter field.
+	transit.DefaultRouteFilter = transitDescRouteFilter.Default.(string)
+	// transit.RouteFilterValidator is a validator for the "route_filter" field. It is called by the builders before save.
+	transit.RouteFilterValidator = transitDescRouteFilter.Validators[0].(func(string) error)
+	// transitDescWalkTimeMin is the schema descriptor for walk_time_min field.
+	transitDescWalkTimeMin := transitFields[6].Descriptor()
+	// transit.DefaultWalkTimeMin holds the default value on creation for the walk_time_min field.
+	transit.DefaultWalkTimeMin = transitDescWalkTimeMin.Default.(int)
+	// transit.WalkTimeMinValidator is a validator for the "walk_time_min" field. It is called by the builders before save.
+	transit.WalkTimeMinValidator = func() func(int) error {
+		validators := transitDescWalkTimeMin.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(walk_time_min int) error {
+			for _, fn := range fns {
+				if err := fn(walk_time_min); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// transitDescTimezone is the schema descriptor for timezone field.
+	transitDescTimezone := transitFields[7].Descriptor()
+	// transit.DefaultTimezone holds the default value on creation for the timezone field.
+	transit.DefaultTimezone = transitDescTimezone.Default.(string)
+	// transit.TimezoneValidator is a validator for the "timezone" field. It is called by the builders before save.
+	transit.TimezoneValidator = transitDescTimezone.Validators[0].(func(string) error)
 	umamisettingsFields := schema.UmamiSettings{}.Fields()
 	_ = umamisettingsFields
 	// umamisettingsDescEnable is the schema descriptor for enable field.

@@ -32039,15 +32039,24 @@ func (m *TimelapseFrameMutation) ResetEdge(name string) error {
 // TransitMutation represents an operation that mutates the Transit nodes in the graph.
 type TransitMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	token         *string
-	url           *string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Transit, error)
-	predicates    []predicate.Transit
+	op                Op
+	typ               string
+	id                *int
+	token             *string
+	url               *string
+	api_key           *string
+	provider          *transit.Provider
+	max_departures    *int
+	addmax_departures *int
+	route_filter      *string
+	walk_time_min     *int
+	addwalk_time_min  *int
+	timezone          *string
+	time_mode         *transit.TimeMode
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*Transit, error)
+	predicates        []predicate.Transit
 }
 
 var _ ent.Mutation = (*TransitMutation)(nil)
@@ -32220,6 +32229,298 @@ func (m *TransitMutation) ResetURL() {
 	m.url = nil
 }
 
+// SetAPIKey sets the "api_key" field.
+func (m *TransitMutation) SetAPIKey(s string) {
+	m.api_key = &s
+}
+
+// APIKey returns the value of the "api_key" field in the mutation.
+func (m *TransitMutation) APIKey() (r string, exists bool) {
+	v := m.api_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAPIKey returns the old "api_key" field's value of the Transit entity.
+// If the Transit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransitMutation) OldAPIKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAPIKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAPIKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAPIKey: %w", err)
+	}
+	return oldValue.APIKey, nil
+}
+
+// ResetAPIKey resets all changes to the "api_key" field.
+func (m *TransitMutation) ResetAPIKey() {
+	m.api_key = nil
+}
+
+// SetProvider sets the "provider" field.
+func (m *TransitMutation) SetProvider(t transit.Provider) {
+	m.provider = &t
+}
+
+// Provider returns the value of the "provider" field in the mutation.
+func (m *TransitMutation) Provider() (r transit.Provider, exists bool) {
+	v := m.provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProvider returns the old "provider" field's value of the Transit entity.
+// If the Transit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransitMutation) OldProvider(ctx context.Context) (v transit.Provider, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProvider requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
+	}
+	return oldValue.Provider, nil
+}
+
+// ResetProvider resets all changes to the "provider" field.
+func (m *TransitMutation) ResetProvider() {
+	m.provider = nil
+}
+
+// SetMaxDepartures sets the "max_departures" field.
+func (m *TransitMutation) SetMaxDepartures(i int) {
+	m.max_departures = &i
+	m.addmax_departures = nil
+}
+
+// MaxDepartures returns the value of the "max_departures" field in the mutation.
+func (m *TransitMutation) MaxDepartures() (r int, exists bool) {
+	v := m.max_departures
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMaxDepartures returns the old "max_departures" field's value of the Transit entity.
+// If the Transit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransitMutation) OldMaxDepartures(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMaxDepartures is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMaxDepartures requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMaxDepartures: %w", err)
+	}
+	return oldValue.MaxDepartures, nil
+}
+
+// AddMaxDepartures adds i to the "max_departures" field.
+func (m *TransitMutation) AddMaxDepartures(i int) {
+	if m.addmax_departures != nil {
+		*m.addmax_departures += i
+	} else {
+		m.addmax_departures = &i
+	}
+}
+
+// AddedMaxDepartures returns the value that was added to the "max_departures" field in this mutation.
+func (m *TransitMutation) AddedMaxDepartures() (r int, exists bool) {
+	v := m.addmax_departures
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMaxDepartures resets all changes to the "max_departures" field.
+func (m *TransitMutation) ResetMaxDepartures() {
+	m.max_departures = nil
+	m.addmax_departures = nil
+}
+
+// SetRouteFilter sets the "route_filter" field.
+func (m *TransitMutation) SetRouteFilter(s string) {
+	m.route_filter = &s
+}
+
+// RouteFilter returns the value of the "route_filter" field in the mutation.
+func (m *TransitMutation) RouteFilter() (r string, exists bool) {
+	v := m.route_filter
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRouteFilter returns the old "route_filter" field's value of the Transit entity.
+// If the Transit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransitMutation) OldRouteFilter(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRouteFilter is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRouteFilter requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRouteFilter: %w", err)
+	}
+	return oldValue.RouteFilter, nil
+}
+
+// ResetRouteFilter resets all changes to the "route_filter" field.
+func (m *TransitMutation) ResetRouteFilter() {
+	m.route_filter = nil
+}
+
+// SetWalkTimeMin sets the "walk_time_min" field.
+func (m *TransitMutation) SetWalkTimeMin(i int) {
+	m.walk_time_min = &i
+	m.addwalk_time_min = nil
+}
+
+// WalkTimeMin returns the value of the "walk_time_min" field in the mutation.
+func (m *TransitMutation) WalkTimeMin() (r int, exists bool) {
+	v := m.walk_time_min
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWalkTimeMin returns the old "walk_time_min" field's value of the Transit entity.
+// If the Transit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransitMutation) OldWalkTimeMin(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWalkTimeMin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWalkTimeMin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWalkTimeMin: %w", err)
+	}
+	return oldValue.WalkTimeMin, nil
+}
+
+// AddWalkTimeMin adds i to the "walk_time_min" field.
+func (m *TransitMutation) AddWalkTimeMin(i int) {
+	if m.addwalk_time_min != nil {
+		*m.addwalk_time_min += i
+	} else {
+		m.addwalk_time_min = &i
+	}
+}
+
+// AddedWalkTimeMin returns the value that was added to the "walk_time_min" field in this mutation.
+func (m *TransitMutation) AddedWalkTimeMin() (r int, exists bool) {
+	v := m.addwalk_time_min
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWalkTimeMin resets all changes to the "walk_time_min" field.
+func (m *TransitMutation) ResetWalkTimeMin() {
+	m.walk_time_min = nil
+	m.addwalk_time_min = nil
+}
+
+// SetTimezone sets the "timezone" field.
+func (m *TransitMutation) SetTimezone(s string) {
+	m.timezone = &s
+}
+
+// Timezone returns the value of the "timezone" field in the mutation.
+func (m *TransitMutation) Timezone() (r string, exists bool) {
+	v := m.timezone
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezone returns the old "timezone" field's value of the Transit entity.
+// If the Transit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransitMutation) OldTimezone(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezone is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezone requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezone: %w", err)
+	}
+	return oldValue.Timezone, nil
+}
+
+// ResetTimezone resets all changes to the "timezone" field.
+func (m *TransitMutation) ResetTimezone() {
+	m.timezone = nil
+}
+
+// SetTimeMode sets the "time_mode" field.
+func (m *TransitMutation) SetTimeMode(tm transit.TimeMode) {
+	m.time_mode = &tm
+}
+
+// TimeMode returns the value of the "time_mode" field in the mutation.
+func (m *TransitMutation) TimeMode() (r transit.TimeMode, exists bool) {
+	v := m.time_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimeMode returns the old "time_mode" field's value of the Transit entity.
+// If the Transit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransitMutation) OldTimeMode(ctx context.Context) (v transit.TimeMode, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimeMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimeMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimeMode: %w", err)
+	}
+	return oldValue.TimeMode, nil
+}
+
+// ResetTimeMode resets all changes to the "time_mode" field.
+func (m *TransitMutation) ResetTimeMode() {
+	m.time_mode = nil
+}
+
 // Where appends a list predicates to the TransitMutation builder.
 func (m *TransitMutation) Where(ps ...predicate.Transit) {
 	m.predicates = append(m.predicates, ps...)
@@ -32254,12 +32555,33 @@ func (m *TransitMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TransitMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 9)
 	if m.token != nil {
 		fields = append(fields, transit.FieldToken)
 	}
 	if m.url != nil {
 		fields = append(fields, transit.FieldURL)
+	}
+	if m.api_key != nil {
+		fields = append(fields, transit.FieldAPIKey)
+	}
+	if m.provider != nil {
+		fields = append(fields, transit.FieldProvider)
+	}
+	if m.max_departures != nil {
+		fields = append(fields, transit.FieldMaxDepartures)
+	}
+	if m.route_filter != nil {
+		fields = append(fields, transit.FieldRouteFilter)
+	}
+	if m.walk_time_min != nil {
+		fields = append(fields, transit.FieldWalkTimeMin)
+	}
+	if m.timezone != nil {
+		fields = append(fields, transit.FieldTimezone)
+	}
+	if m.time_mode != nil {
+		fields = append(fields, transit.FieldTimeMode)
 	}
 	return fields
 }
@@ -32273,6 +32595,20 @@ func (m *TransitMutation) Field(name string) (ent.Value, bool) {
 		return m.Token()
 	case transit.FieldURL:
 		return m.URL()
+	case transit.FieldAPIKey:
+		return m.APIKey()
+	case transit.FieldProvider:
+		return m.Provider()
+	case transit.FieldMaxDepartures:
+		return m.MaxDepartures()
+	case transit.FieldRouteFilter:
+		return m.RouteFilter()
+	case transit.FieldWalkTimeMin:
+		return m.WalkTimeMin()
+	case transit.FieldTimezone:
+		return m.Timezone()
+	case transit.FieldTimeMode:
+		return m.TimeMode()
 	}
 	return nil, false
 }
@@ -32286,6 +32622,20 @@ func (m *TransitMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldToken(ctx)
 	case transit.FieldURL:
 		return m.OldURL(ctx)
+	case transit.FieldAPIKey:
+		return m.OldAPIKey(ctx)
+	case transit.FieldProvider:
+		return m.OldProvider(ctx)
+	case transit.FieldMaxDepartures:
+		return m.OldMaxDepartures(ctx)
+	case transit.FieldRouteFilter:
+		return m.OldRouteFilter(ctx)
+	case transit.FieldWalkTimeMin:
+		return m.OldWalkTimeMin(ctx)
+	case transit.FieldTimezone:
+		return m.OldTimezone(ctx)
+	case transit.FieldTimeMode:
+		return m.OldTimeMode(ctx)
 	}
 	return nil, fmt.Errorf("unknown Transit field %s", name)
 }
@@ -32309,6 +32659,55 @@ func (m *TransitMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetURL(v)
 		return nil
+	case transit.FieldAPIKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAPIKey(v)
+		return nil
+	case transit.FieldProvider:
+		v, ok := value.(transit.Provider)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProvider(v)
+		return nil
+	case transit.FieldMaxDepartures:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMaxDepartures(v)
+		return nil
+	case transit.FieldRouteFilter:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRouteFilter(v)
+		return nil
+	case transit.FieldWalkTimeMin:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWalkTimeMin(v)
+		return nil
+	case transit.FieldTimezone:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezone(v)
+		return nil
+	case transit.FieldTimeMode:
+		v, ok := value.(transit.TimeMode)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimeMode(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Transit field %s", name)
 }
@@ -32316,13 +32715,26 @@ func (m *TransitMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *TransitMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addmax_departures != nil {
+		fields = append(fields, transit.FieldMaxDepartures)
+	}
+	if m.addwalk_time_min != nil {
+		fields = append(fields, transit.FieldWalkTimeMin)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *TransitMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case transit.FieldMaxDepartures:
+		return m.AddedMaxDepartures()
+	case transit.FieldWalkTimeMin:
+		return m.AddedWalkTimeMin()
+	}
 	return nil, false
 }
 
@@ -32331,6 +32743,20 @@ func (m *TransitMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *TransitMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case transit.FieldMaxDepartures:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMaxDepartures(v)
+		return nil
+	case transit.FieldWalkTimeMin:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWalkTimeMin(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Transit numeric field %s", name)
 }
@@ -32363,6 +32789,27 @@ func (m *TransitMutation) ResetField(name string) error {
 		return nil
 	case transit.FieldURL:
 		m.ResetURL()
+		return nil
+	case transit.FieldAPIKey:
+		m.ResetAPIKey()
+		return nil
+	case transit.FieldProvider:
+		m.ResetProvider()
+		return nil
+	case transit.FieldMaxDepartures:
+		m.ResetMaxDepartures()
+		return nil
+	case transit.FieldRouteFilter:
+		m.ResetRouteFilter()
+		return nil
+	case transit.FieldWalkTimeMin:
+		m.ResetWalkTimeMin()
+		return nil
+	case transit.FieldTimezone:
+		m.ResetTimezone()
+		return nil
+	case transit.FieldTimeMode:
+		m.ResetTimeMode()
 		return nil
 	}
 	return fmt.Errorf("unknown Transit field %s", name)

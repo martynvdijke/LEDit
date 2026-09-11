@@ -55,6 +55,118 @@ func (_u *TransitUpdate) SetNillableURL(v *string) *TransitUpdate {
 	return _u
 }
 
+// SetAPIKey sets the "api_key" field.
+func (_u *TransitUpdate) SetAPIKey(v string) *TransitUpdate {
+	_u.mutation.SetAPIKey(v)
+	return _u
+}
+
+// SetNillableAPIKey sets the "api_key" field if the given value is not nil.
+func (_u *TransitUpdate) SetNillableAPIKey(v *string) *TransitUpdate {
+	if v != nil {
+		_u.SetAPIKey(*v)
+	}
+	return _u
+}
+
+// SetProvider sets the "provider" field.
+func (_u *TransitUpdate) SetProvider(v transit.Provider) *TransitUpdate {
+	_u.mutation.SetProvider(v)
+	return _u
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *TransitUpdate) SetNillableProvider(v *transit.Provider) *TransitUpdate {
+	if v != nil {
+		_u.SetProvider(*v)
+	}
+	return _u
+}
+
+// SetMaxDepartures sets the "max_departures" field.
+func (_u *TransitUpdate) SetMaxDepartures(v int) *TransitUpdate {
+	_u.mutation.ResetMaxDepartures()
+	_u.mutation.SetMaxDepartures(v)
+	return _u
+}
+
+// SetNillableMaxDepartures sets the "max_departures" field if the given value is not nil.
+func (_u *TransitUpdate) SetNillableMaxDepartures(v *int) *TransitUpdate {
+	if v != nil {
+		_u.SetMaxDepartures(*v)
+	}
+	return _u
+}
+
+// AddMaxDepartures adds value to the "max_departures" field.
+func (_u *TransitUpdate) AddMaxDepartures(v int) *TransitUpdate {
+	_u.mutation.AddMaxDepartures(v)
+	return _u
+}
+
+// SetRouteFilter sets the "route_filter" field.
+func (_u *TransitUpdate) SetRouteFilter(v string) *TransitUpdate {
+	_u.mutation.SetRouteFilter(v)
+	return _u
+}
+
+// SetNillableRouteFilter sets the "route_filter" field if the given value is not nil.
+func (_u *TransitUpdate) SetNillableRouteFilter(v *string) *TransitUpdate {
+	if v != nil {
+		_u.SetRouteFilter(*v)
+	}
+	return _u
+}
+
+// SetWalkTimeMin sets the "walk_time_min" field.
+func (_u *TransitUpdate) SetWalkTimeMin(v int) *TransitUpdate {
+	_u.mutation.ResetWalkTimeMin()
+	_u.mutation.SetWalkTimeMin(v)
+	return _u
+}
+
+// SetNillableWalkTimeMin sets the "walk_time_min" field if the given value is not nil.
+func (_u *TransitUpdate) SetNillableWalkTimeMin(v *int) *TransitUpdate {
+	if v != nil {
+		_u.SetWalkTimeMin(*v)
+	}
+	return _u
+}
+
+// AddWalkTimeMin adds value to the "walk_time_min" field.
+func (_u *TransitUpdate) AddWalkTimeMin(v int) *TransitUpdate {
+	_u.mutation.AddWalkTimeMin(v)
+	return _u
+}
+
+// SetTimezone sets the "timezone" field.
+func (_u *TransitUpdate) SetTimezone(v string) *TransitUpdate {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *TransitUpdate) SetNillableTimezone(v *string) *TransitUpdate {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// SetTimeMode sets the "time_mode" field.
+func (_u *TransitUpdate) SetTimeMode(v transit.TimeMode) *TransitUpdate {
+	_u.mutation.SetTimeMode(v)
+	return _u
+}
+
+// SetNillableTimeMode sets the "time_mode" field if the given value is not nil.
+func (_u *TransitUpdate) SetNillableTimeMode(v *transit.TimeMode) *TransitUpdate {
+	if v != nil {
+		_u.SetTimeMode(*v)
+	}
+	return _u
+}
+
 // Mutation returns the TransitMutation object of the builder.
 func (_u *TransitUpdate) Mutation() *TransitMutation {
 	return _u.mutation
@@ -87,7 +199,45 @@ func (_u *TransitUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *TransitUpdate) check() error {
+	if v, ok := _u.mutation.Provider(); ok {
+		if err := transit.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Transit.provider": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.MaxDepartures(); ok {
+		if err := transit.MaxDeparturesValidator(v); err != nil {
+			return &ValidationError{Name: "max_departures", err: fmt.Errorf(`ent: validator failed for field "Transit.max_departures": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.RouteFilter(); ok {
+		if err := transit.RouteFilterValidator(v); err != nil {
+			return &ValidationError{Name: "route_filter", err: fmt.Errorf(`ent: validator failed for field "Transit.route_filter": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.WalkTimeMin(); ok {
+		if err := transit.WalkTimeMinValidator(v); err != nil {
+			return &ValidationError{Name: "walk_time_min", err: fmt.Errorf(`ent: validator failed for field "Transit.walk_time_min": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Timezone(); ok {
+		if err := transit.TimezoneValidator(v); err != nil {
+			return &ValidationError{Name: "timezone", err: fmt.Errorf(`ent: validator failed for field "Transit.timezone": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.TimeMode(); ok {
+		if err := transit.TimeModeValidator(v); err != nil {
+			return &ValidationError{Name: "time_mode", err: fmt.Errorf(`ent: validator failed for field "Transit.time_mode": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *TransitUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(transit.Table, transit.Columns, sqlgraph.NewFieldSpec(transit.FieldID, field.TypeInt))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -101,6 +251,33 @@ func (_u *TransitUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(transit.FieldURL, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.APIKey(); ok {
+		_spec.SetField(transit.FieldAPIKey, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(transit.FieldProvider, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.MaxDepartures(); ok {
+		_spec.SetField(transit.FieldMaxDepartures, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedMaxDepartures(); ok {
+		_spec.AddField(transit.FieldMaxDepartures, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.RouteFilter(); ok {
+		_spec.SetField(transit.FieldRouteFilter, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.WalkTimeMin(); ok {
+		_spec.SetField(transit.FieldWalkTimeMin, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedWalkTimeMin(); ok {
+		_spec.AddField(transit.FieldWalkTimeMin, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(transit.FieldTimezone, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.TimeMode(); ok {
+		_spec.SetField(transit.FieldTimeMode, field.TypeEnum, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -150,6 +327,118 @@ func (_u *TransitUpdateOne) SetNillableURL(v *string) *TransitUpdateOne {
 	return _u
 }
 
+// SetAPIKey sets the "api_key" field.
+func (_u *TransitUpdateOne) SetAPIKey(v string) *TransitUpdateOne {
+	_u.mutation.SetAPIKey(v)
+	return _u
+}
+
+// SetNillableAPIKey sets the "api_key" field if the given value is not nil.
+func (_u *TransitUpdateOne) SetNillableAPIKey(v *string) *TransitUpdateOne {
+	if v != nil {
+		_u.SetAPIKey(*v)
+	}
+	return _u
+}
+
+// SetProvider sets the "provider" field.
+func (_u *TransitUpdateOne) SetProvider(v transit.Provider) *TransitUpdateOne {
+	_u.mutation.SetProvider(v)
+	return _u
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *TransitUpdateOne) SetNillableProvider(v *transit.Provider) *TransitUpdateOne {
+	if v != nil {
+		_u.SetProvider(*v)
+	}
+	return _u
+}
+
+// SetMaxDepartures sets the "max_departures" field.
+func (_u *TransitUpdateOne) SetMaxDepartures(v int) *TransitUpdateOne {
+	_u.mutation.ResetMaxDepartures()
+	_u.mutation.SetMaxDepartures(v)
+	return _u
+}
+
+// SetNillableMaxDepartures sets the "max_departures" field if the given value is not nil.
+func (_u *TransitUpdateOne) SetNillableMaxDepartures(v *int) *TransitUpdateOne {
+	if v != nil {
+		_u.SetMaxDepartures(*v)
+	}
+	return _u
+}
+
+// AddMaxDepartures adds value to the "max_departures" field.
+func (_u *TransitUpdateOne) AddMaxDepartures(v int) *TransitUpdateOne {
+	_u.mutation.AddMaxDepartures(v)
+	return _u
+}
+
+// SetRouteFilter sets the "route_filter" field.
+func (_u *TransitUpdateOne) SetRouteFilter(v string) *TransitUpdateOne {
+	_u.mutation.SetRouteFilter(v)
+	return _u
+}
+
+// SetNillableRouteFilter sets the "route_filter" field if the given value is not nil.
+func (_u *TransitUpdateOne) SetNillableRouteFilter(v *string) *TransitUpdateOne {
+	if v != nil {
+		_u.SetRouteFilter(*v)
+	}
+	return _u
+}
+
+// SetWalkTimeMin sets the "walk_time_min" field.
+func (_u *TransitUpdateOne) SetWalkTimeMin(v int) *TransitUpdateOne {
+	_u.mutation.ResetWalkTimeMin()
+	_u.mutation.SetWalkTimeMin(v)
+	return _u
+}
+
+// SetNillableWalkTimeMin sets the "walk_time_min" field if the given value is not nil.
+func (_u *TransitUpdateOne) SetNillableWalkTimeMin(v *int) *TransitUpdateOne {
+	if v != nil {
+		_u.SetWalkTimeMin(*v)
+	}
+	return _u
+}
+
+// AddWalkTimeMin adds value to the "walk_time_min" field.
+func (_u *TransitUpdateOne) AddWalkTimeMin(v int) *TransitUpdateOne {
+	_u.mutation.AddWalkTimeMin(v)
+	return _u
+}
+
+// SetTimezone sets the "timezone" field.
+func (_u *TransitUpdateOne) SetTimezone(v string) *TransitUpdateOne {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *TransitUpdateOne) SetNillableTimezone(v *string) *TransitUpdateOne {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// SetTimeMode sets the "time_mode" field.
+func (_u *TransitUpdateOne) SetTimeMode(v transit.TimeMode) *TransitUpdateOne {
+	_u.mutation.SetTimeMode(v)
+	return _u
+}
+
+// SetNillableTimeMode sets the "time_mode" field if the given value is not nil.
+func (_u *TransitUpdateOne) SetNillableTimeMode(v *transit.TimeMode) *TransitUpdateOne {
+	if v != nil {
+		_u.SetTimeMode(*v)
+	}
+	return _u
+}
+
 // Mutation returns the TransitMutation object of the builder.
 func (_u *TransitUpdateOne) Mutation() *TransitMutation {
 	return _u.mutation
@@ -195,7 +484,45 @@ func (_u *TransitUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *TransitUpdateOne) check() error {
+	if v, ok := _u.mutation.Provider(); ok {
+		if err := transit.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Transit.provider": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.MaxDepartures(); ok {
+		if err := transit.MaxDeparturesValidator(v); err != nil {
+			return &ValidationError{Name: "max_departures", err: fmt.Errorf(`ent: validator failed for field "Transit.max_departures": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.RouteFilter(); ok {
+		if err := transit.RouteFilterValidator(v); err != nil {
+			return &ValidationError{Name: "route_filter", err: fmt.Errorf(`ent: validator failed for field "Transit.route_filter": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.WalkTimeMin(); ok {
+		if err := transit.WalkTimeMinValidator(v); err != nil {
+			return &ValidationError{Name: "walk_time_min", err: fmt.Errorf(`ent: validator failed for field "Transit.walk_time_min": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Timezone(); ok {
+		if err := transit.TimezoneValidator(v); err != nil {
+			return &ValidationError{Name: "timezone", err: fmt.Errorf(`ent: validator failed for field "Transit.timezone": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.TimeMode(); ok {
+		if err := transit.TimeModeValidator(v); err != nil {
+			return &ValidationError{Name: "time_mode", err: fmt.Errorf(`ent: validator failed for field "Transit.time_mode": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *TransitUpdateOne) sqlSave(ctx context.Context) (_node *Transit, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(transit.Table, transit.Columns, sqlgraph.NewFieldSpec(transit.FieldID, field.TypeInt))
 	id, ok := _u.mutation.ID()
 	if !ok {
@@ -226,6 +553,33 @@ func (_u *TransitUpdateOne) sqlSave(ctx context.Context) (_node *Transit, err er
 	}
 	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(transit.FieldURL, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.APIKey(); ok {
+		_spec.SetField(transit.FieldAPIKey, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(transit.FieldProvider, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.MaxDepartures(); ok {
+		_spec.SetField(transit.FieldMaxDepartures, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedMaxDepartures(); ok {
+		_spec.AddField(transit.FieldMaxDepartures, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.RouteFilter(); ok {
+		_spec.SetField(transit.FieldRouteFilter, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.WalkTimeMin(); ok {
+		_spec.SetField(transit.FieldWalkTimeMin, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedWalkTimeMin(); ok {
+		_spec.AddField(transit.FieldWalkTimeMin, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(transit.FieldTimezone, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.TimeMode(); ok {
+		_spec.SetField(transit.FieldTimeMode, field.TypeEnum, value)
 	}
 	_node = &Transit{config: _u.config}
 	_spec.Assign = _node.assignValues

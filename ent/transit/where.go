@@ -63,6 +63,31 @@ func URL(v string) predicate.Transit {
 	return predicate.Transit(sql.FieldEQ(FieldURL, v))
 }
 
+// APIKey applies equality check predicate on the "api_key" field. It's identical to APIKeyEQ.
+func APIKey(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldAPIKey, v))
+}
+
+// MaxDepartures applies equality check predicate on the "max_departures" field. It's identical to MaxDeparturesEQ.
+func MaxDepartures(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldMaxDepartures, v))
+}
+
+// RouteFilter applies equality check predicate on the "route_filter" field. It's identical to RouteFilterEQ.
+func RouteFilter(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldRouteFilter, v))
+}
+
+// WalkTimeMin applies equality check predicate on the "walk_time_min" field. It's identical to WalkTimeMinEQ.
+func WalkTimeMin(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldWalkTimeMin, v))
+}
+
+// Timezone applies equality check predicate on the "timezone" field. It's identical to TimezoneEQ.
+func Timezone(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldTimezone, v))
+}
+
 // TokenEQ applies the EQ predicate on the "token" field.
 func TokenEQ(v string) predicate.Transit {
 	return predicate.Transit(sql.FieldEQ(FieldToken, v))
@@ -191,6 +216,321 @@ func URLEqualFold(v string) predicate.Transit {
 // URLContainsFold applies the ContainsFold predicate on the "url" field.
 func URLContainsFold(v string) predicate.Transit {
 	return predicate.Transit(sql.FieldContainsFold(FieldURL, v))
+}
+
+// APIKeyEQ applies the EQ predicate on the "api_key" field.
+func APIKeyEQ(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldAPIKey, v))
+}
+
+// APIKeyNEQ applies the NEQ predicate on the "api_key" field.
+func APIKeyNEQ(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldNEQ(FieldAPIKey, v))
+}
+
+// APIKeyIn applies the In predicate on the "api_key" field.
+func APIKeyIn(vs ...string) predicate.Transit {
+	return predicate.Transit(sql.FieldIn(FieldAPIKey, vs...))
+}
+
+// APIKeyNotIn applies the NotIn predicate on the "api_key" field.
+func APIKeyNotIn(vs ...string) predicate.Transit {
+	return predicate.Transit(sql.FieldNotIn(FieldAPIKey, vs...))
+}
+
+// APIKeyGT applies the GT predicate on the "api_key" field.
+func APIKeyGT(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldGT(FieldAPIKey, v))
+}
+
+// APIKeyGTE applies the GTE predicate on the "api_key" field.
+func APIKeyGTE(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldGTE(FieldAPIKey, v))
+}
+
+// APIKeyLT applies the LT predicate on the "api_key" field.
+func APIKeyLT(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldLT(FieldAPIKey, v))
+}
+
+// APIKeyLTE applies the LTE predicate on the "api_key" field.
+func APIKeyLTE(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldLTE(FieldAPIKey, v))
+}
+
+// APIKeyContains applies the Contains predicate on the "api_key" field.
+func APIKeyContains(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldContains(FieldAPIKey, v))
+}
+
+// APIKeyHasPrefix applies the HasPrefix predicate on the "api_key" field.
+func APIKeyHasPrefix(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldHasPrefix(FieldAPIKey, v))
+}
+
+// APIKeyHasSuffix applies the HasSuffix predicate on the "api_key" field.
+func APIKeyHasSuffix(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldHasSuffix(FieldAPIKey, v))
+}
+
+// APIKeyEqualFold applies the EqualFold predicate on the "api_key" field.
+func APIKeyEqualFold(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldEqualFold(FieldAPIKey, v))
+}
+
+// APIKeyContainsFold applies the ContainsFold predicate on the "api_key" field.
+func APIKeyContainsFold(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldContainsFold(FieldAPIKey, v))
+}
+
+// ProviderEQ applies the EQ predicate on the "provider" field.
+func ProviderEQ(v Provider) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldProvider, v))
+}
+
+// ProviderNEQ applies the NEQ predicate on the "provider" field.
+func ProviderNEQ(v Provider) predicate.Transit {
+	return predicate.Transit(sql.FieldNEQ(FieldProvider, v))
+}
+
+// ProviderIn applies the In predicate on the "provider" field.
+func ProviderIn(vs ...Provider) predicate.Transit {
+	return predicate.Transit(sql.FieldIn(FieldProvider, vs...))
+}
+
+// ProviderNotIn applies the NotIn predicate on the "provider" field.
+func ProviderNotIn(vs ...Provider) predicate.Transit {
+	return predicate.Transit(sql.FieldNotIn(FieldProvider, vs...))
+}
+
+// MaxDeparturesEQ applies the EQ predicate on the "max_departures" field.
+func MaxDeparturesEQ(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldMaxDepartures, v))
+}
+
+// MaxDeparturesNEQ applies the NEQ predicate on the "max_departures" field.
+func MaxDeparturesNEQ(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldNEQ(FieldMaxDepartures, v))
+}
+
+// MaxDeparturesIn applies the In predicate on the "max_departures" field.
+func MaxDeparturesIn(vs ...int) predicate.Transit {
+	return predicate.Transit(sql.FieldIn(FieldMaxDepartures, vs...))
+}
+
+// MaxDeparturesNotIn applies the NotIn predicate on the "max_departures" field.
+func MaxDeparturesNotIn(vs ...int) predicate.Transit {
+	return predicate.Transit(sql.FieldNotIn(FieldMaxDepartures, vs...))
+}
+
+// MaxDeparturesGT applies the GT predicate on the "max_departures" field.
+func MaxDeparturesGT(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldGT(FieldMaxDepartures, v))
+}
+
+// MaxDeparturesGTE applies the GTE predicate on the "max_departures" field.
+func MaxDeparturesGTE(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldGTE(FieldMaxDepartures, v))
+}
+
+// MaxDeparturesLT applies the LT predicate on the "max_departures" field.
+func MaxDeparturesLT(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldLT(FieldMaxDepartures, v))
+}
+
+// MaxDeparturesLTE applies the LTE predicate on the "max_departures" field.
+func MaxDeparturesLTE(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldLTE(FieldMaxDepartures, v))
+}
+
+// RouteFilterEQ applies the EQ predicate on the "route_filter" field.
+func RouteFilterEQ(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldRouteFilter, v))
+}
+
+// RouteFilterNEQ applies the NEQ predicate on the "route_filter" field.
+func RouteFilterNEQ(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldNEQ(FieldRouteFilter, v))
+}
+
+// RouteFilterIn applies the In predicate on the "route_filter" field.
+func RouteFilterIn(vs ...string) predicate.Transit {
+	return predicate.Transit(sql.FieldIn(FieldRouteFilter, vs...))
+}
+
+// RouteFilterNotIn applies the NotIn predicate on the "route_filter" field.
+func RouteFilterNotIn(vs ...string) predicate.Transit {
+	return predicate.Transit(sql.FieldNotIn(FieldRouteFilter, vs...))
+}
+
+// RouteFilterGT applies the GT predicate on the "route_filter" field.
+func RouteFilterGT(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldGT(FieldRouteFilter, v))
+}
+
+// RouteFilterGTE applies the GTE predicate on the "route_filter" field.
+func RouteFilterGTE(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldGTE(FieldRouteFilter, v))
+}
+
+// RouteFilterLT applies the LT predicate on the "route_filter" field.
+func RouteFilterLT(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldLT(FieldRouteFilter, v))
+}
+
+// RouteFilterLTE applies the LTE predicate on the "route_filter" field.
+func RouteFilterLTE(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldLTE(FieldRouteFilter, v))
+}
+
+// RouteFilterContains applies the Contains predicate on the "route_filter" field.
+func RouteFilterContains(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldContains(FieldRouteFilter, v))
+}
+
+// RouteFilterHasPrefix applies the HasPrefix predicate on the "route_filter" field.
+func RouteFilterHasPrefix(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldHasPrefix(FieldRouteFilter, v))
+}
+
+// RouteFilterHasSuffix applies the HasSuffix predicate on the "route_filter" field.
+func RouteFilterHasSuffix(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldHasSuffix(FieldRouteFilter, v))
+}
+
+// RouteFilterEqualFold applies the EqualFold predicate on the "route_filter" field.
+func RouteFilterEqualFold(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldEqualFold(FieldRouteFilter, v))
+}
+
+// RouteFilterContainsFold applies the ContainsFold predicate on the "route_filter" field.
+func RouteFilterContainsFold(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldContainsFold(FieldRouteFilter, v))
+}
+
+// WalkTimeMinEQ applies the EQ predicate on the "walk_time_min" field.
+func WalkTimeMinEQ(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldWalkTimeMin, v))
+}
+
+// WalkTimeMinNEQ applies the NEQ predicate on the "walk_time_min" field.
+func WalkTimeMinNEQ(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldNEQ(FieldWalkTimeMin, v))
+}
+
+// WalkTimeMinIn applies the In predicate on the "walk_time_min" field.
+func WalkTimeMinIn(vs ...int) predicate.Transit {
+	return predicate.Transit(sql.FieldIn(FieldWalkTimeMin, vs...))
+}
+
+// WalkTimeMinNotIn applies the NotIn predicate on the "walk_time_min" field.
+func WalkTimeMinNotIn(vs ...int) predicate.Transit {
+	return predicate.Transit(sql.FieldNotIn(FieldWalkTimeMin, vs...))
+}
+
+// WalkTimeMinGT applies the GT predicate on the "walk_time_min" field.
+func WalkTimeMinGT(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldGT(FieldWalkTimeMin, v))
+}
+
+// WalkTimeMinGTE applies the GTE predicate on the "walk_time_min" field.
+func WalkTimeMinGTE(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldGTE(FieldWalkTimeMin, v))
+}
+
+// WalkTimeMinLT applies the LT predicate on the "walk_time_min" field.
+func WalkTimeMinLT(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldLT(FieldWalkTimeMin, v))
+}
+
+// WalkTimeMinLTE applies the LTE predicate on the "walk_time_min" field.
+func WalkTimeMinLTE(v int) predicate.Transit {
+	return predicate.Transit(sql.FieldLTE(FieldWalkTimeMin, v))
+}
+
+// TimezoneEQ applies the EQ predicate on the "timezone" field.
+func TimezoneEQ(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldTimezone, v))
+}
+
+// TimezoneNEQ applies the NEQ predicate on the "timezone" field.
+func TimezoneNEQ(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldNEQ(FieldTimezone, v))
+}
+
+// TimezoneIn applies the In predicate on the "timezone" field.
+func TimezoneIn(vs ...string) predicate.Transit {
+	return predicate.Transit(sql.FieldIn(FieldTimezone, vs...))
+}
+
+// TimezoneNotIn applies the NotIn predicate on the "timezone" field.
+func TimezoneNotIn(vs ...string) predicate.Transit {
+	return predicate.Transit(sql.FieldNotIn(FieldTimezone, vs...))
+}
+
+// TimezoneGT applies the GT predicate on the "timezone" field.
+func TimezoneGT(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldGT(FieldTimezone, v))
+}
+
+// TimezoneGTE applies the GTE predicate on the "timezone" field.
+func TimezoneGTE(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldGTE(FieldTimezone, v))
+}
+
+// TimezoneLT applies the LT predicate on the "timezone" field.
+func TimezoneLT(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldLT(FieldTimezone, v))
+}
+
+// TimezoneLTE applies the LTE predicate on the "timezone" field.
+func TimezoneLTE(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldLTE(FieldTimezone, v))
+}
+
+// TimezoneContains applies the Contains predicate on the "timezone" field.
+func TimezoneContains(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldContains(FieldTimezone, v))
+}
+
+// TimezoneHasPrefix applies the HasPrefix predicate on the "timezone" field.
+func TimezoneHasPrefix(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldHasPrefix(FieldTimezone, v))
+}
+
+// TimezoneHasSuffix applies the HasSuffix predicate on the "timezone" field.
+func TimezoneHasSuffix(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldHasSuffix(FieldTimezone, v))
+}
+
+// TimezoneEqualFold applies the EqualFold predicate on the "timezone" field.
+func TimezoneEqualFold(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldEqualFold(FieldTimezone, v))
+}
+
+// TimezoneContainsFold applies the ContainsFold predicate on the "timezone" field.
+func TimezoneContainsFold(v string) predicate.Transit {
+	return predicate.Transit(sql.FieldContainsFold(FieldTimezone, v))
+}
+
+// TimeModeEQ applies the EQ predicate on the "time_mode" field.
+func TimeModeEQ(v TimeMode) predicate.Transit {
+	return predicate.Transit(sql.FieldEQ(FieldTimeMode, v))
+}
+
+// TimeModeNEQ applies the NEQ predicate on the "time_mode" field.
+func TimeModeNEQ(v TimeMode) predicate.Transit {
+	return predicate.Transit(sql.FieldNEQ(FieldTimeMode, v))
+}
+
+// TimeModeIn applies the In predicate on the "time_mode" field.
+func TimeModeIn(vs ...TimeMode) predicate.Transit {
+	return predicate.Transit(sql.FieldIn(FieldTimeMode, vs...))
+}
+
+// TimeModeNotIn applies the NotIn predicate on the "time_mode" field.
+func TimeModeNotIn(vs ...TimeMode) predicate.Transit {
+	return predicate.Transit(sql.FieldNotIn(FieldTimeMode, vs...))
 }
 
 // And groups predicates with the AND operator between them.

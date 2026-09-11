@@ -16,10 +16,24 @@ type Transit struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// VBB stop ID
+	// Transit stop ID (legacy field name)
 	Token string `json:"token,omitempty"`
-	// Departures API URL with %s for stop ID
-	URL                       string `json:"url,omitempty"`
+	// Departures API URL; may contain %s for the stop ID; empty uses the provider default
+	URL string `json:"url,omitempty"`
+	// Provider API key; never logged
+	APIKey string `json:"-"`
+	// Provider holds the value of the "provider" field.
+	Provider transit.Provider `json:"provider,omitempty"`
+	// MaxDepartures holds the value of the "max_departures" field.
+	MaxDepartures int `json:"max_departures,omitempty"`
+	// RouteFilter holds the value of the "route_filter" field.
+	RouteFilter string `json:"route_filter,omitempty"`
+	// WalkTimeMin holds the value of the "walk_time_min" field.
+	WalkTimeMin int `json:"walk_time_min,omitempty"`
+	// Timezone holds the value of the "timezone" field.
+	Timezone string `json:"timezone,omitempty"`
+	// TimeMode holds the value of the "time_mode" field.
+	TimeMode                  transit.TimeMode `json:"time_mode,omitempty"`
 	general_settings_transits *int
 	selectValues              sql.SelectValues
 }
@@ -29,9 +43,9 @@ func (*Transit) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case transit.FieldID:
+		case transit.FieldID, transit.FieldMaxDepartures, transit.FieldWalkTimeMin:
 			values[i] = new(sql.NullInt64)
-		case transit.FieldToken, transit.FieldURL:
+		case transit.FieldToken, transit.FieldURL, transit.FieldAPIKey, transit.FieldProvider, transit.FieldRouteFilter, transit.FieldTimezone, transit.FieldTimeMode:
 			values[i] = new(sql.NullString)
 		case transit.ForeignKeys[0]: // general_settings_transits
 			values[i] = new(sql.NullInt64)
@@ -67,6 +81,48 @@ func (_m *Transit) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field url", values[i])
 			} else if value.Valid {
 				_m.URL = value.String
+			}
+		case transit.FieldAPIKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field api_key", values[i])
+			} else if value.Valid {
+				_m.APIKey = value.String
+			}
+		case transit.FieldProvider:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
+			} else if value.Valid {
+				_m.Provider = transit.Provider(value.String)
+			}
+		case transit.FieldMaxDepartures:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field max_departures", values[i])
+			} else if value.Valid {
+				_m.MaxDepartures = int(value.Int64)
+			}
+		case transit.FieldRouteFilter:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field route_filter", values[i])
+			} else if value.Valid {
+				_m.RouteFilter = value.String
+			}
+		case transit.FieldWalkTimeMin:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field walk_time_min", values[i])
+			} else if value.Valid {
+				_m.WalkTimeMin = int(value.Int64)
+			}
+		case transit.FieldTimezone:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field timezone", values[i])
+			} else if value.Valid {
+				_m.Timezone = value.String
+			}
+		case transit.FieldTimeMode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field time_mode", values[i])
+			} else if value.Valid {
+				_m.TimeMode = transit.TimeMode(value.String)
 			}
 		case transit.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -116,6 +172,26 @@ func (_m *Transit) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("url=")
 	builder.WriteString(_m.URL)
+	builder.WriteString(", ")
+	builder.WriteString("api_key=<sensitive>")
+	builder.WriteString(", ")
+	builder.WriteString("provider=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Provider))
+	builder.WriteString(", ")
+	builder.WriteString("max_departures=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MaxDepartures))
+	builder.WriteString(", ")
+	builder.WriteString("route_filter=")
+	builder.WriteString(_m.RouteFilter)
+	builder.WriteString(", ")
+	builder.WriteString("walk_time_min=")
+	builder.WriteString(fmt.Sprintf("%v", _m.WalkTimeMin))
+	builder.WriteString(", ")
+	builder.WriteString("timezone=")
+	builder.WriteString(_m.Timezone)
+	builder.WriteString(", ")
+	builder.WriteString("time_mode=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TimeMode))
 	builder.WriteByte(')')
 	return builder.String()
 }

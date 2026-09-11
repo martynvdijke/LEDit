@@ -47,6 +47,104 @@ func (_c *TransitCreate) SetNillableURL(v *string) *TransitCreate {
 	return _c
 }
 
+// SetAPIKey sets the "api_key" field.
+func (_c *TransitCreate) SetAPIKey(v string) *TransitCreate {
+	_c.mutation.SetAPIKey(v)
+	return _c
+}
+
+// SetNillableAPIKey sets the "api_key" field if the given value is not nil.
+func (_c *TransitCreate) SetNillableAPIKey(v *string) *TransitCreate {
+	if v != nil {
+		_c.SetAPIKey(*v)
+	}
+	return _c
+}
+
+// SetProvider sets the "provider" field.
+func (_c *TransitCreate) SetProvider(v transit.Provider) *TransitCreate {
+	_c.mutation.SetProvider(v)
+	return _c
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_c *TransitCreate) SetNillableProvider(v *transit.Provider) *TransitCreate {
+	if v != nil {
+		_c.SetProvider(*v)
+	}
+	return _c
+}
+
+// SetMaxDepartures sets the "max_departures" field.
+func (_c *TransitCreate) SetMaxDepartures(v int) *TransitCreate {
+	_c.mutation.SetMaxDepartures(v)
+	return _c
+}
+
+// SetNillableMaxDepartures sets the "max_departures" field if the given value is not nil.
+func (_c *TransitCreate) SetNillableMaxDepartures(v *int) *TransitCreate {
+	if v != nil {
+		_c.SetMaxDepartures(*v)
+	}
+	return _c
+}
+
+// SetRouteFilter sets the "route_filter" field.
+func (_c *TransitCreate) SetRouteFilter(v string) *TransitCreate {
+	_c.mutation.SetRouteFilter(v)
+	return _c
+}
+
+// SetNillableRouteFilter sets the "route_filter" field if the given value is not nil.
+func (_c *TransitCreate) SetNillableRouteFilter(v *string) *TransitCreate {
+	if v != nil {
+		_c.SetRouteFilter(*v)
+	}
+	return _c
+}
+
+// SetWalkTimeMin sets the "walk_time_min" field.
+func (_c *TransitCreate) SetWalkTimeMin(v int) *TransitCreate {
+	_c.mutation.SetWalkTimeMin(v)
+	return _c
+}
+
+// SetNillableWalkTimeMin sets the "walk_time_min" field if the given value is not nil.
+func (_c *TransitCreate) SetNillableWalkTimeMin(v *int) *TransitCreate {
+	if v != nil {
+		_c.SetWalkTimeMin(*v)
+	}
+	return _c
+}
+
+// SetTimezone sets the "timezone" field.
+func (_c *TransitCreate) SetTimezone(v string) *TransitCreate {
+	_c.mutation.SetTimezone(v)
+	return _c
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_c *TransitCreate) SetNillableTimezone(v *string) *TransitCreate {
+	if v != nil {
+		_c.SetTimezone(*v)
+	}
+	return _c
+}
+
+// SetTimeMode sets the "time_mode" field.
+func (_c *TransitCreate) SetTimeMode(v transit.TimeMode) *TransitCreate {
+	_c.mutation.SetTimeMode(v)
+	return _c
+}
+
+// SetNillableTimeMode sets the "time_mode" field if the given value is not nil.
+func (_c *TransitCreate) SetNillableTimeMode(v *transit.TimeMode) *TransitCreate {
+	if v != nil {
+		_c.SetTimeMode(*v)
+	}
+	return _c
+}
+
 // Mutation returns the TransitMutation object of the builder.
 func (_c *TransitCreate) Mutation() *TransitMutation {
 	return _c.mutation
@@ -90,6 +188,34 @@ func (_c *TransitCreate) defaults() {
 		v := transit.DefaultURL
 		_c.mutation.SetURL(v)
 	}
+	if _, ok := _c.mutation.APIKey(); !ok {
+		v := transit.DefaultAPIKey
+		_c.mutation.SetAPIKey(v)
+	}
+	if _, ok := _c.mutation.Provider(); !ok {
+		v := transit.DefaultProvider
+		_c.mutation.SetProvider(v)
+	}
+	if _, ok := _c.mutation.MaxDepartures(); !ok {
+		v := transit.DefaultMaxDepartures
+		_c.mutation.SetMaxDepartures(v)
+	}
+	if _, ok := _c.mutation.RouteFilter(); !ok {
+		v := transit.DefaultRouteFilter
+		_c.mutation.SetRouteFilter(v)
+	}
+	if _, ok := _c.mutation.WalkTimeMin(); !ok {
+		v := transit.DefaultWalkTimeMin
+		_c.mutation.SetWalkTimeMin(v)
+	}
+	if _, ok := _c.mutation.Timezone(); !ok {
+		v := transit.DefaultTimezone
+		_c.mutation.SetTimezone(v)
+	}
+	if _, ok := _c.mutation.TimeMode(); !ok {
+		v := transit.DefaultTimeMode
+		_c.mutation.SetTimeMode(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -99,6 +225,57 @@ func (_c *TransitCreate) check() error {
 	}
 	if _, ok := _c.mutation.URL(); !ok {
 		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Transit.url"`)}
+	}
+	if _, ok := _c.mutation.APIKey(); !ok {
+		return &ValidationError{Name: "api_key", err: errors.New(`ent: missing required field "Transit.api_key"`)}
+	}
+	if _, ok := _c.mutation.Provider(); !ok {
+		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "Transit.provider"`)}
+	}
+	if v, ok := _c.mutation.Provider(); ok {
+		if err := transit.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Transit.provider": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.MaxDepartures(); !ok {
+		return &ValidationError{Name: "max_departures", err: errors.New(`ent: missing required field "Transit.max_departures"`)}
+	}
+	if v, ok := _c.mutation.MaxDepartures(); ok {
+		if err := transit.MaxDeparturesValidator(v); err != nil {
+			return &ValidationError{Name: "max_departures", err: fmt.Errorf(`ent: validator failed for field "Transit.max_departures": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.RouteFilter(); !ok {
+		return &ValidationError{Name: "route_filter", err: errors.New(`ent: missing required field "Transit.route_filter"`)}
+	}
+	if v, ok := _c.mutation.RouteFilter(); ok {
+		if err := transit.RouteFilterValidator(v); err != nil {
+			return &ValidationError{Name: "route_filter", err: fmt.Errorf(`ent: validator failed for field "Transit.route_filter": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.WalkTimeMin(); !ok {
+		return &ValidationError{Name: "walk_time_min", err: errors.New(`ent: missing required field "Transit.walk_time_min"`)}
+	}
+	if v, ok := _c.mutation.WalkTimeMin(); ok {
+		if err := transit.WalkTimeMinValidator(v); err != nil {
+			return &ValidationError{Name: "walk_time_min", err: fmt.Errorf(`ent: validator failed for field "Transit.walk_time_min": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.Timezone(); !ok {
+		return &ValidationError{Name: "timezone", err: errors.New(`ent: missing required field "Transit.timezone"`)}
+	}
+	if v, ok := _c.mutation.Timezone(); ok {
+		if err := transit.TimezoneValidator(v); err != nil {
+			return &ValidationError{Name: "timezone", err: fmt.Errorf(`ent: validator failed for field "Transit.timezone": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.TimeMode(); !ok {
+		return &ValidationError{Name: "time_mode", err: errors.New(`ent: missing required field "Transit.time_mode"`)}
+	}
+	if v, ok := _c.mutation.TimeMode(); ok {
+		if err := transit.TimeModeValidator(v); err != nil {
+			return &ValidationError{Name: "time_mode", err: fmt.Errorf(`ent: validator failed for field "Transit.time_mode": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -133,6 +310,34 @@ func (_c *TransitCreate) createSpec() (*Transit, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.URL(); ok {
 		_spec.SetField(transit.FieldURL, field.TypeString, value)
 		_node.URL = value
+	}
+	if value, ok := _c.mutation.APIKey(); ok {
+		_spec.SetField(transit.FieldAPIKey, field.TypeString, value)
+		_node.APIKey = value
+	}
+	if value, ok := _c.mutation.Provider(); ok {
+		_spec.SetField(transit.FieldProvider, field.TypeEnum, value)
+		_node.Provider = value
+	}
+	if value, ok := _c.mutation.MaxDepartures(); ok {
+		_spec.SetField(transit.FieldMaxDepartures, field.TypeInt, value)
+		_node.MaxDepartures = value
+	}
+	if value, ok := _c.mutation.RouteFilter(); ok {
+		_spec.SetField(transit.FieldRouteFilter, field.TypeString, value)
+		_node.RouteFilter = value
+	}
+	if value, ok := _c.mutation.WalkTimeMin(); ok {
+		_spec.SetField(transit.FieldWalkTimeMin, field.TypeInt, value)
+		_node.WalkTimeMin = value
+	}
+	if value, ok := _c.mutation.Timezone(); ok {
+		_spec.SetField(transit.FieldTimezone, field.TypeString, value)
+		_node.Timezone = value
+	}
+	if value, ok := _c.mutation.TimeMode(); ok {
+		_spec.SetField(transit.FieldTimeMode, field.TypeEnum, value)
+		_node.TimeMode = value
 	}
 	return _node, _spec
 }

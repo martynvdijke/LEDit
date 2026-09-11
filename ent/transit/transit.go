@@ -3,6 +3,8 @@
 package transit
 
 import (
+	"fmt"
+
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -15,6 +17,20 @@ const (
 	FieldToken = "token"
 	// FieldURL holds the string denoting the url field in the database.
 	FieldURL = "url"
+	// FieldAPIKey holds the string denoting the api_key field in the database.
+	FieldAPIKey = "api_key"
+	// FieldProvider holds the string denoting the provider field in the database.
+	FieldProvider = "provider"
+	// FieldMaxDepartures holds the string denoting the max_departures field in the database.
+	FieldMaxDepartures = "max_departures"
+	// FieldRouteFilter holds the string denoting the route_filter field in the database.
+	FieldRouteFilter = "route_filter"
+	// FieldWalkTimeMin holds the string denoting the walk_time_min field in the database.
+	FieldWalkTimeMin = "walk_time_min"
+	// FieldTimezone holds the string denoting the timezone field in the database.
+	FieldTimezone = "timezone"
+	// FieldTimeMode holds the string denoting the time_mode field in the database.
+	FieldTimeMode = "time_mode"
 	// Table holds the table name of the transit in the database.
 	Table = "transits"
 )
@@ -24,6 +40,13 @@ var Columns = []string{
 	FieldID,
 	FieldToken,
 	FieldURL,
+	FieldAPIKey,
+	FieldProvider,
+	FieldMaxDepartures,
+	FieldRouteFilter,
+	FieldWalkTimeMin,
+	FieldTimezone,
+	FieldTimeMode,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "transits"
@@ -52,7 +75,79 @@ var (
 	DefaultToken string
 	// DefaultURL holds the default value on creation for the "url" field.
 	DefaultURL string
+	// DefaultAPIKey holds the default value on creation for the "api_key" field.
+	DefaultAPIKey string
+	// DefaultMaxDepartures holds the default value on creation for the "max_departures" field.
+	DefaultMaxDepartures int
+	// MaxDeparturesValidator is a validator for the "max_departures" field. It is called by the builders before save.
+	MaxDeparturesValidator func(int) error
+	// DefaultRouteFilter holds the default value on creation for the "route_filter" field.
+	DefaultRouteFilter string
+	// RouteFilterValidator is a validator for the "route_filter" field. It is called by the builders before save.
+	RouteFilterValidator func(string) error
+	// DefaultWalkTimeMin holds the default value on creation for the "walk_time_min" field.
+	DefaultWalkTimeMin int
+	// WalkTimeMinValidator is a validator for the "walk_time_min" field. It is called by the builders before save.
+	WalkTimeMinValidator func(int) error
+	// DefaultTimezone holds the default value on creation for the "timezone" field.
+	DefaultTimezone string
+	// TimezoneValidator is a validator for the "timezone" field. It is called by the builders before save.
+	TimezoneValidator func(string) error
 )
+
+// Provider defines the type for the "provider" enum field.
+type Provider string
+
+// ProviderVbb is the default value of the Provider enum.
+const DefaultProvider = ProviderVbb
+
+// Provider values.
+const (
+	ProviderVbb         Provider = "vbb"
+	ProviderTransitland Provider = "transitland"
+	Provider511         Provider = "511"
+	ProviderCustom      Provider = "custom"
+)
+
+func (pr Provider) String() string {
+	return string(pr)
+}
+
+// ProviderValidator is a validator for the "provider" field enum values. It is called by the builders before save.
+func ProviderValidator(pr Provider) error {
+	switch pr {
+	case ProviderVbb, ProviderTransitland, Provider511, ProviderCustom:
+		return nil
+	default:
+		return fmt.Errorf("transit: invalid enum value for provider field: %q", pr)
+	}
+}
+
+// TimeMode defines the type for the "time_mode" enum field.
+type TimeMode string
+
+// TimeModeMinutes is the default value of the TimeMode enum.
+const DefaultTimeMode = TimeModeMinutes
+
+// TimeMode values.
+const (
+	TimeModeMinutes TimeMode = "minutes"
+	TimeModeClock   TimeMode = "clock"
+)
+
+func (tm TimeMode) String() string {
+	return string(tm)
+}
+
+// TimeModeValidator is a validator for the "time_mode" field enum values. It is called by the builders before save.
+func TimeModeValidator(tm TimeMode) error {
+	switch tm {
+	case TimeModeMinutes, TimeModeClock:
+		return nil
+	default:
+		return fmt.Errorf("transit: invalid enum value for time_mode field: %q", tm)
+	}
+}
 
 // OrderOption defines the ordering options for the Transit queries.
 type OrderOption func(*sql.Selector)
@@ -70,4 +165,39 @@ func ByToken(opts ...sql.OrderTermOption) OrderOption {
 // ByURL orders the results by the url field.
 func ByURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldURL, opts...).ToFunc()
+}
+
+// ByAPIKey orders the results by the api_key field.
+func ByAPIKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAPIKey, opts...).ToFunc()
+}
+
+// ByProvider orders the results by the provider field.
+func ByProvider(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProvider, opts...).ToFunc()
+}
+
+// ByMaxDepartures orders the results by the max_departures field.
+func ByMaxDepartures(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMaxDepartures, opts...).ToFunc()
+}
+
+// ByRouteFilter orders the results by the route_filter field.
+func ByRouteFilter(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRouteFilter, opts...).ToFunc()
+}
+
+// ByWalkTimeMin orders the results by the walk_time_min field.
+func ByWalkTimeMin(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWalkTimeMin, opts...).ToFunc()
+}
+
+// ByTimezone orders the results by the timezone field.
+func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
+}
+
+// ByTimeMode orders the results by the time_mode field.
+func ByTimeMode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimeMode, opts...).ToFunc()
 }

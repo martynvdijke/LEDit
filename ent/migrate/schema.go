@@ -1072,7 +1072,14 @@ var (
 	TransitsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "token", Type: field.TypeString, Default: ""},
-		{Name: "url", Type: field.TypeString, Default: "https://v6.vbb.transport.rest/stops/%s/departures"},
+		{Name: "url", Type: field.TypeString, Default: ""},
+		{Name: "api_key", Type: field.TypeString, Default: ""},
+		{Name: "provider", Type: field.TypeEnum, Enums: []string{"vbb", "transitland", "511", "custom"}, Default: "vbb"},
+		{Name: "max_departures", Type: field.TypeInt, Default: 4},
+		{Name: "route_filter", Type: field.TypeString, Size: 256, Default: ""},
+		{Name: "walk_time_min", Type: field.TypeInt, Default: 0},
+		{Name: "timezone", Type: field.TypeString, Default: "Europe/Berlin"},
+		{Name: "time_mode", Type: field.TypeEnum, Enums: []string{"minutes", "clock"}, Default: "minutes"},
 		{Name: "general_settings_transits", Type: field.TypeInt, Nullable: true},
 	}
 	// TransitsTable holds the schema information for the "transits" table.
@@ -1083,7 +1090,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "transits_general_settings_transits",
-				Columns:    []*schema.Column{TransitsColumns[3]},
+				Columns:    []*schema.Column{TransitsColumns[10]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
