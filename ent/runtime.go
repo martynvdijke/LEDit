@@ -22,6 +22,7 @@ import (
 	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/greetingrule"
+	"ledit/ent/guesttoken"
 	"ledit/ent/homeassistant"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logsettings"
@@ -559,6 +560,26 @@ func init() {
 	greetingrule.DefaultUpdatedAt = greetingruleDescUpdatedAt.Default.(func() time.Time)
 	// greetingrule.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	greetingrule.UpdateDefaultUpdatedAt = greetingruleDescUpdatedAt.UpdateDefault.(func() time.Time)
+	guesttokenFields := schema.GuestToken{}.Fields()
+	_ = guesttokenFields
+	// guesttokenDescLabel is the schema descriptor for label field.
+	guesttokenDescLabel := guesttokenFields[1].Descriptor()
+	// guesttoken.DefaultLabel holds the default value on creation for the label field.
+	guesttoken.DefaultLabel = guesttokenDescLabel.Default.(string)
+	// guesttoken.LabelValidator is a validator for the "label" field. It is called by the builders before save.
+	guesttoken.LabelValidator = guesttokenDescLabel.Validators[0].(func(string) error)
+	// guesttokenDescTokenPrefix is the schema descriptor for token_prefix field.
+	guesttokenDescTokenPrefix := guesttokenFields[3].Descriptor()
+	// guesttoken.DefaultTokenPrefix holds the default value on creation for the token_prefix field.
+	guesttoken.DefaultTokenPrefix = guesttokenDescTokenPrefix.Default.(string)
+	// guesttokenDescScopes is the schema descriptor for scopes field.
+	guesttokenDescScopes := guesttokenFields[4].Descriptor()
+	// guesttoken.DefaultScopes holds the default value on creation for the scopes field.
+	guesttoken.DefaultScopes = guesttokenDescScopes.Default.([]string)
+	// guesttokenDescCreatedAt is the schema descriptor for created_at field.
+	guesttokenDescCreatedAt := guesttokenFields[5].Descriptor()
+	// guesttoken.DefaultCreatedAt holds the default value on creation for the created_at field.
+	guesttoken.DefaultCreatedAt = guesttokenDescCreatedAt.Default.(func() time.Time)
 	homeassistantFields := schema.HomeAssistant{}.Fields()
 	_ = homeassistantFields
 	// homeassistantDescToken is the schema descriptor for token field.

@@ -66,6 +66,9 @@ type GoogleCalendar func(*sql.Selector)
 // GreetingRule is the predicate function for greetingrule builders.
 type GreetingRule func(*sql.Selector)
 
+// GuestToken is the predicate function for guesttoken builders.
+type GuestToken func(*sql.Selector)
+
 // HomeAssistant is the predicate function for homeassistant builders.
 type HomeAssistant func(*sql.Selector)
 

@@ -26,6 +26,7 @@ import (
 	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/greetingrule"
+	"ledit/ent/guesttoken"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/jellyfin"
@@ -148,6 +149,7 @@ func checkColumn(t, c string) error {
 			github.Table:           github.ValidColumn,
 			googlecalendar.Table:   googlecalendar.ValidColumn,
 			greetingrule.Table:     greetingrule.ValidColumn,
+			guesttoken.Table:       guesttoken.ValidColumn,
 			homeassistant.Table:    homeassistant.ValidColumn,
 			image.Table:            image.ValidColumn,
 			jellyfin.Table:         jellyfin.ValidColumn,

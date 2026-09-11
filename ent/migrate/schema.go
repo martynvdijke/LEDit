@@ -489,6 +489,31 @@ var (
 		Columns:    GreetingRulesColumns,
 		PrimaryKey: []*schema.Column{GreetingRulesColumns[0]},
 	}
+	// GuestTokensColumns holds the columns for the "guest_tokens" table.
+	GuestTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "label", Type: field.TypeString, Size: 64, Default: ""},
+		{Name: "token_hash", Type: field.TypeString, Unique: true},
+		{Name: "token_prefix", Type: field.TypeString, Default: ""},
+		{Name: "scopes", Type: field.TypeJSON},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+	}
+	// GuestTokensTable holds the schema information for the "guest_tokens" table.
+	GuestTokensTable = &schema.Table{
+		Name:       "guest_tokens",
+		Columns:    GuestTokensColumns,
+		PrimaryKey: []*schema.Column{GuestTokensColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "guesttoken_revoked_at",
+				Unique:  false,
+				Columns: []*schema.Column{GuestTokensColumns[7]},
+			},
+		},
+	}
 	// HomeAssistantsColumns holds the columns for the "home_assistants" table.
 	HomeAssistantsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1310,6 +1335,7 @@ var (
 		GitHubsTable,
 		GoogleCalendarsTable,
 		GreetingRulesTable,
+		GuestTokensTable,
 		HomeAssistantsTable,
 		ImagesTable,
 		JellyfinsTable,

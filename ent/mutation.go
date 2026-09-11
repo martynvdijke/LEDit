@@ -26,6 +26,7 @@ import (
 	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/greetingrule"
+	"ledit/ent/guesttoken"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/jellyfin"
@@ -99,6 +100,7 @@ const (
 	TypeGitHub           = "GitHub"
 	TypeGoogleCalendar   = "GoogleCalendar"
 	TypeGreetingRule     = "GreetingRule"
+	TypeGuestToken       = "GuestToken"
 	TypeHomeAssistant    = "HomeAssistant"
 	TypeImage            = "Image"
 	TypeJellyfin         = "Jellyfin"
@@ -18484,6 +18486,792 @@ func (m *GreetingRuleMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *GreetingRuleMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown GreetingRule edge %s", name)
+}
+
+// GuestTokenMutation represents an operation that mutates the GuestToken nodes in the graph.
+type GuestTokenMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	label         *string
+	token_hash    *string
+	token_prefix  *string
+	scopes        *[]string
+	appendscopes  []string
+	created_at    *time.Time
+	expires_at    *time.Time
+	revoked_at    *time.Time
+	last_used_at  *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*GuestToken, error)
+	predicates    []predicate.GuestToken
+}
+
+var _ ent.Mutation = (*GuestTokenMutation)(nil)
+
+// guesttokenOption allows management of the mutation configuration using functional options.
+type guesttokenOption func(*GuestTokenMutation)
+
+// newGuestTokenMutation creates new mutation for the GuestToken entity.
+func newGuestTokenMutation(c config, op Op, opts ...guesttokenOption) *GuestTokenMutation {
+	m := &GuestTokenMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGuestToken,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGuestTokenID sets the ID field of the mutation.
+func withGuestTokenID(id int) guesttokenOption {
+	return func(m *GuestTokenMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GuestToken
+		)
+		m.oldValue = func(ctx context.Context) (*GuestToken, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GuestToken.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGuestToken sets the old GuestToken of the mutation.
+func withGuestToken(node *GuestToken) guesttokenOption {
+	return func(m *GuestTokenMutation) {
+		m.oldValue = func(context.Context) (*GuestToken, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GuestTokenMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GuestTokenMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of GuestToken entities.
+func (m *GuestTokenMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GuestTokenMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GuestTokenMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().GuestToken.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetLabel sets the "label" field.
+func (m *GuestTokenMutation) SetLabel(s string) {
+	m.label = &s
+}
+
+// Label returns the value of the "label" field in the mutation.
+func (m *GuestTokenMutation) Label() (r string, exists bool) {
+	v := m.label
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLabel returns the old "label" field's value of the GuestToken entity.
+// If the GuestToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestTokenMutation) OldLabel(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLabel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLabel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLabel: %w", err)
+	}
+	return oldValue.Label, nil
+}
+
+// ResetLabel resets all changes to the "label" field.
+func (m *GuestTokenMutation) ResetLabel() {
+	m.label = nil
+}
+
+// SetTokenHash sets the "token_hash" field.
+func (m *GuestTokenMutation) SetTokenHash(s string) {
+	m.token_hash = &s
+}
+
+// TokenHash returns the value of the "token_hash" field in the mutation.
+func (m *GuestTokenMutation) TokenHash() (r string, exists bool) {
+	v := m.token_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTokenHash returns the old "token_hash" field's value of the GuestToken entity.
+// If the GuestToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestTokenMutation) OldTokenHash(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTokenHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTokenHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTokenHash: %w", err)
+	}
+	return oldValue.TokenHash, nil
+}
+
+// ResetTokenHash resets all changes to the "token_hash" field.
+func (m *GuestTokenMutation) ResetTokenHash() {
+	m.token_hash = nil
+}
+
+// SetTokenPrefix sets the "token_prefix" field.
+func (m *GuestTokenMutation) SetTokenPrefix(s string) {
+	m.token_prefix = &s
+}
+
+// TokenPrefix returns the value of the "token_prefix" field in the mutation.
+func (m *GuestTokenMutation) TokenPrefix() (r string, exists bool) {
+	v := m.token_prefix
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTokenPrefix returns the old "token_prefix" field's value of the GuestToken entity.
+// If the GuestToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestTokenMutation) OldTokenPrefix(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTokenPrefix is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTokenPrefix requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTokenPrefix: %w", err)
+	}
+	return oldValue.TokenPrefix, nil
+}
+
+// ResetTokenPrefix resets all changes to the "token_prefix" field.
+func (m *GuestTokenMutation) ResetTokenPrefix() {
+	m.token_prefix = nil
+}
+
+// SetScopes sets the "scopes" field.
+func (m *GuestTokenMutation) SetScopes(s []string) {
+	m.scopes = &s
+	m.appendscopes = nil
+}
+
+// Scopes returns the value of the "scopes" field in the mutation.
+func (m *GuestTokenMutation) Scopes() (r []string, exists bool) {
+	v := m.scopes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScopes returns the old "scopes" field's value of the GuestToken entity.
+// If the GuestToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestTokenMutation) OldScopes(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScopes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScopes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScopes: %w", err)
+	}
+	return oldValue.Scopes, nil
+}
+
+// AppendScopes adds s to the "scopes" field.
+func (m *GuestTokenMutation) AppendScopes(s []string) {
+	m.appendscopes = append(m.appendscopes, s...)
+}
+
+// AppendedScopes returns the list of values that were appended to the "scopes" field in this mutation.
+func (m *GuestTokenMutation) AppendedScopes() ([]string, bool) {
+	if len(m.appendscopes) == 0 {
+		return nil, false
+	}
+	return m.appendscopes, true
+}
+
+// ResetScopes resets all changes to the "scopes" field.
+func (m *GuestTokenMutation) ResetScopes() {
+	m.scopes = nil
+	m.appendscopes = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *GuestTokenMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *GuestTokenMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the GuestToken entity.
+// If the GuestToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestTokenMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *GuestTokenMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *GuestTokenMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *GuestTokenMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the GuestToken entity.
+// If the GuestToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestTokenMutation) OldExpiresAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (m *GuestTokenMutation) ClearExpiresAt() {
+	m.expires_at = nil
+	m.clearedFields[guesttoken.FieldExpiresAt] = struct{}{}
+}
+
+// ExpiresAtCleared returns if the "expires_at" field was cleared in this mutation.
+func (m *GuestTokenMutation) ExpiresAtCleared() bool {
+	_, ok := m.clearedFields[guesttoken.FieldExpiresAt]
+	return ok
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *GuestTokenMutation) ResetExpiresAt() {
+	m.expires_at = nil
+	delete(m.clearedFields, guesttoken.FieldExpiresAt)
+}
+
+// SetRevokedAt sets the "revoked_at" field.
+func (m *GuestTokenMutation) SetRevokedAt(t time.Time) {
+	m.revoked_at = &t
+}
+
+// RevokedAt returns the value of the "revoked_at" field in the mutation.
+func (m *GuestTokenMutation) RevokedAt() (r time.Time, exists bool) {
+	v := m.revoked_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRevokedAt returns the old "revoked_at" field's value of the GuestToken entity.
+// If the GuestToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestTokenMutation) OldRevokedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRevokedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRevokedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRevokedAt: %w", err)
+	}
+	return oldValue.RevokedAt, nil
+}
+
+// ClearRevokedAt clears the value of the "revoked_at" field.
+func (m *GuestTokenMutation) ClearRevokedAt() {
+	m.revoked_at = nil
+	m.clearedFields[guesttoken.FieldRevokedAt] = struct{}{}
+}
+
+// RevokedAtCleared returns if the "revoked_at" field was cleared in this mutation.
+func (m *GuestTokenMutation) RevokedAtCleared() bool {
+	_, ok := m.clearedFields[guesttoken.FieldRevokedAt]
+	return ok
+}
+
+// ResetRevokedAt resets all changes to the "revoked_at" field.
+func (m *GuestTokenMutation) ResetRevokedAt() {
+	m.revoked_at = nil
+	delete(m.clearedFields, guesttoken.FieldRevokedAt)
+}
+
+// SetLastUsedAt sets the "last_used_at" field.
+func (m *GuestTokenMutation) SetLastUsedAt(t time.Time) {
+	m.last_used_at = &t
+}
+
+// LastUsedAt returns the value of the "last_used_at" field in the mutation.
+func (m *GuestTokenMutation) LastUsedAt() (r time.Time, exists bool) {
+	v := m.last_used_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastUsedAt returns the old "last_used_at" field's value of the GuestToken entity.
+// If the GuestToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestTokenMutation) OldLastUsedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastUsedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastUsedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastUsedAt: %w", err)
+	}
+	return oldValue.LastUsedAt, nil
+}
+
+// ClearLastUsedAt clears the value of the "last_used_at" field.
+func (m *GuestTokenMutation) ClearLastUsedAt() {
+	m.last_used_at = nil
+	m.clearedFields[guesttoken.FieldLastUsedAt] = struct{}{}
+}
+
+// LastUsedAtCleared returns if the "last_used_at" field was cleared in this mutation.
+func (m *GuestTokenMutation) LastUsedAtCleared() bool {
+	_, ok := m.clearedFields[guesttoken.FieldLastUsedAt]
+	return ok
+}
+
+// ResetLastUsedAt resets all changes to the "last_used_at" field.
+func (m *GuestTokenMutation) ResetLastUsedAt() {
+	m.last_used_at = nil
+	delete(m.clearedFields, guesttoken.FieldLastUsedAt)
+}
+
+// Where appends a list predicates to the GuestTokenMutation builder.
+func (m *GuestTokenMutation) Where(ps ...predicate.GuestToken) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the GuestTokenMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *GuestTokenMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.GuestToken, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *GuestTokenMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *GuestTokenMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (GuestToken).
+func (m *GuestTokenMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GuestTokenMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.label != nil {
+		fields = append(fields, guesttoken.FieldLabel)
+	}
+	if m.token_hash != nil {
+		fields = append(fields, guesttoken.FieldTokenHash)
+	}
+	if m.token_prefix != nil {
+		fields = append(fields, guesttoken.FieldTokenPrefix)
+	}
+	if m.scopes != nil {
+		fields = append(fields, guesttoken.FieldScopes)
+	}
+	if m.created_at != nil {
+		fields = append(fields, guesttoken.FieldCreatedAt)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, guesttoken.FieldExpiresAt)
+	}
+	if m.revoked_at != nil {
+		fields = append(fields, guesttoken.FieldRevokedAt)
+	}
+	if m.last_used_at != nil {
+		fields = append(fields, guesttoken.FieldLastUsedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GuestTokenMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case guesttoken.FieldLabel:
+		return m.Label()
+	case guesttoken.FieldTokenHash:
+		return m.TokenHash()
+	case guesttoken.FieldTokenPrefix:
+		return m.TokenPrefix()
+	case guesttoken.FieldScopes:
+		return m.Scopes()
+	case guesttoken.FieldCreatedAt:
+		return m.CreatedAt()
+	case guesttoken.FieldExpiresAt:
+		return m.ExpiresAt()
+	case guesttoken.FieldRevokedAt:
+		return m.RevokedAt()
+	case guesttoken.FieldLastUsedAt:
+		return m.LastUsedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GuestTokenMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case guesttoken.FieldLabel:
+		return m.OldLabel(ctx)
+	case guesttoken.FieldTokenHash:
+		return m.OldTokenHash(ctx)
+	case guesttoken.FieldTokenPrefix:
+		return m.OldTokenPrefix(ctx)
+	case guesttoken.FieldScopes:
+		return m.OldScopes(ctx)
+	case guesttoken.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case guesttoken.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
+	case guesttoken.FieldRevokedAt:
+		return m.OldRevokedAt(ctx)
+	case guesttoken.FieldLastUsedAt:
+		return m.OldLastUsedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown GuestToken field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GuestTokenMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case guesttoken.FieldLabel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLabel(v)
+		return nil
+	case guesttoken.FieldTokenHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTokenHash(v)
+		return nil
+	case guesttoken.FieldTokenPrefix:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTokenPrefix(v)
+		return nil
+	case guesttoken.FieldScopes:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScopes(v)
+		return nil
+	case guesttoken.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case guesttoken.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
+		return nil
+	case guesttoken.FieldRevokedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRevokedAt(v)
+		return nil
+	case guesttoken.FieldLastUsedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastUsedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GuestToken field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GuestTokenMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GuestTokenMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GuestTokenMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GuestToken numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GuestTokenMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(guesttoken.FieldExpiresAt) {
+		fields = append(fields, guesttoken.FieldExpiresAt)
+	}
+	if m.FieldCleared(guesttoken.FieldRevokedAt) {
+		fields = append(fields, guesttoken.FieldRevokedAt)
+	}
+	if m.FieldCleared(guesttoken.FieldLastUsedAt) {
+		fields = append(fields, guesttoken.FieldLastUsedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GuestTokenMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GuestTokenMutation) ClearField(name string) error {
+	switch name {
+	case guesttoken.FieldExpiresAt:
+		m.ClearExpiresAt()
+		return nil
+	case guesttoken.FieldRevokedAt:
+		m.ClearRevokedAt()
+		return nil
+	case guesttoken.FieldLastUsedAt:
+		m.ClearLastUsedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown GuestToken nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GuestTokenMutation) ResetField(name string) error {
+	switch name {
+	case guesttoken.FieldLabel:
+		m.ResetLabel()
+		return nil
+	case guesttoken.FieldTokenHash:
+		m.ResetTokenHash()
+		return nil
+	case guesttoken.FieldTokenPrefix:
+		m.ResetTokenPrefix()
+		return nil
+	case guesttoken.FieldScopes:
+		m.ResetScopes()
+		return nil
+	case guesttoken.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case guesttoken.FieldExpiresAt:
+		m.ResetExpiresAt()
+		return nil
+	case guesttoken.FieldRevokedAt:
+		m.ResetRevokedAt()
+		return nil
+	case guesttoken.FieldLastUsedAt:
+		m.ResetLastUsedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown GuestToken field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GuestTokenMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GuestTokenMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GuestTokenMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GuestTokenMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GuestTokenMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GuestTokenMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GuestTokenMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown GuestToken unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GuestTokenMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown GuestToken edge %s", name)
 }
 
 // HomeAssistantMutation represents an operation that mutates the HomeAssistant nodes in the graph.

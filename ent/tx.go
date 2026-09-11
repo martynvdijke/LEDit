@@ -52,6 +52,8 @@ type Tx struct {
 	GoogleCalendar *GoogleCalendarClient
 	// GreetingRule is the client for interacting with the GreetingRule builders.
 	GreetingRule *GreetingRuleClient
+	// GuestToken is the client for interacting with the GuestToken builders.
+	GuestToken *GuestTokenClient
 	// HomeAssistant is the client for interacting with the HomeAssistant builders.
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
@@ -275,6 +277,7 @@ func (tx *Tx) init() {
 	tx.GitHub = NewGitHubClient(tx.config)
 	tx.GoogleCalendar = NewGoogleCalendarClient(tx.config)
 	tx.GreetingRule = NewGreetingRuleClient(tx.config)
+	tx.GuestToken = NewGuestTokenClient(tx.config)
 	tx.HomeAssistant = NewHomeAssistantClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
 	tx.Jellyfin = NewJellyfinClient(tx.config)

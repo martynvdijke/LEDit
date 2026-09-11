@@ -31,6 +31,7 @@ import (
 	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/greetingrule"
+	"ledit/ent/guesttoken"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
 	"ledit/ent/jellyfin"
@@ -119,6 +120,8 @@ type Client struct {
 	GoogleCalendar *GoogleCalendarClient
 	// GreetingRule is the client for interacting with the GreetingRule builders.
 	GreetingRule *GreetingRuleClient
+	// GuestToken is the client for interacting with the GuestToken builders.
+	GuestToken *GuestTokenClient
 	// HomeAssistant is the client for interacting with the HomeAssistant builders.
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
@@ -222,6 +225,7 @@ func (c *Client) init() {
 	c.GitHub = NewGitHubClient(c.config)
 	c.GoogleCalendar = NewGoogleCalendarClient(c.config)
 	c.GreetingRule = NewGreetingRuleClient(c.config)
+	c.GuestToken = NewGuestTokenClient(c.config)
 	c.HomeAssistant = NewHomeAssistantClient(c.config)
 	c.Image = NewImageClient(c.config)
 	c.Jellyfin = NewJellyfinClient(c.config)
@@ -370,6 +374,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		GitHub:           NewGitHubClient(cfg),
 		GoogleCalendar:   NewGoogleCalendarClient(cfg),
 		GreetingRule:     NewGreetingRuleClient(cfg),
+		GuestToken:       NewGuestTokenClient(cfg),
 		HomeAssistant:    NewHomeAssistantClient(cfg),
 		Image:            NewImageClient(cfg),
 		Jellyfin:         NewJellyfinClient(cfg),
@@ -445,6 +450,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		GitHub:           NewGitHubClient(cfg),
 		GoogleCalendar:   NewGoogleCalendarClient(cfg),
 		GreetingRule:     NewGreetingRuleClient(cfg),
+		GuestToken:       NewGuestTokenClient(cfg),
 		HomeAssistant:    NewHomeAssistantClient(cfg),
 		Image:            NewImageClient(cfg),
 		Jellyfin:         NewJellyfinClient(cfg),
@@ -514,13 +520,13 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Calendar, c.ChartSample, c.Countdown, c.Crypto, c.DatasourcePlugin,
 		c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
-		c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD,
-		c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification, c.NowPlayingSource,
-		c.OutboundSettings, c.OutboundWebhook, c.PiHole, c.PixelArt, c.Playlist,
-		c.Qrcode, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Sports, c.Stock,
-		c.SunMoon, c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit,
-		c.UmamiSettings, c.Untappd, c.Uptime, c.User, c.Video, c.WakeAlarm, c.Weather,
-		c.WebhookSettings,
+		c.GuestToken, c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry, c.LogSettings,
+		c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
+		c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook, c.PiHole,
+		c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr,
+		c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide,
+		c.TimelapseFrame, c.Transit, c.UmamiSettings, c.Untappd, c.Uptime, c.User,
+		c.Video, c.WakeAlarm, c.Weather, c.WebhookSettings,
 	} {
 		n.Use(hooks...)
 	}
@@ -534,13 +540,13 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Calendar, c.ChartSample, c.Countdown, c.Crypto, c.DatasourcePlugin,
 		c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
-		c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD,
-		c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification, c.NowPlayingSource,
-		c.OutboundSettings, c.OutboundWebhook, c.PiHole, c.PixelArt, c.Playlist,
-		c.Qrcode, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr, c.Sports, c.Stock,
-		c.SunMoon, c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit,
-		c.UmamiSettings, c.Untappd, c.Uptime, c.User, c.Video, c.WakeAlarm, c.Weather,
-		c.WebhookSettings,
+		c.GuestToken, c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry, c.LogSettings,
+		c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
+		c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook, c.PiHole,
+		c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr,
+		c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide,
+		c.TimelapseFrame, c.Transit, c.UmamiSettings, c.Untappd, c.Uptime, c.User,
+		c.Video, c.WakeAlarm, c.Weather, c.WebhookSettings,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -589,6 +595,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.GoogleCalendar.mutate(ctx, m)
 	case *GreetingRuleMutation:
 		return c.GreetingRule.mutate(ctx, m)
+	case *GuestTokenMutation:
+		return c.GuestToken.mutate(ctx, m)
 	case *HomeAssistantMutation:
 		return c.HomeAssistant.mutate(ctx, m)
 	case *ImageMutation:
@@ -4027,6 +4035,139 @@ func (c *GreetingRuleClient) mutate(ctx context.Context, m *GreetingRuleMutation
 		return (&GreetingRuleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown GreetingRule mutation op: %q", m.Op())
+	}
+}
+
+// GuestTokenClient is a client for the GuestToken schema.
+type GuestTokenClient struct {
+	config
+}
+
+// NewGuestTokenClient returns a client for the GuestToken from the given config.
+func NewGuestTokenClient(c config) *GuestTokenClient {
+	return &GuestTokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `guesttoken.Hooks(f(g(h())))`.
+func (c *GuestTokenClient) Use(hooks ...Hook) {
+	c.hooks.GuestToken = append(c.hooks.GuestToken, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `guesttoken.Intercept(f(g(h())))`.
+func (c *GuestTokenClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GuestToken = append(c.inters.GuestToken, interceptors...)
+}
+
+// Create returns a builder for creating a GuestToken entity.
+func (c *GuestTokenClient) Create() *GuestTokenCreate {
+	mutation := newGuestTokenMutation(c.config, OpCreate)
+	return &GuestTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GuestToken entities.
+func (c *GuestTokenClient) CreateBulk(builders ...*GuestTokenCreate) *GuestTokenCreateBulk {
+	return &GuestTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GuestTokenClient) MapCreateBulk(slice any, setFunc func(*GuestTokenCreate, int)) *GuestTokenCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GuestTokenCreateBulk{err: fmt.Errorf("calling to GuestTokenClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GuestTokenCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GuestTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GuestToken.
+func (c *GuestTokenClient) Update() *GuestTokenUpdate {
+	mutation := newGuestTokenMutation(c.config, OpUpdate)
+	return &GuestTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GuestTokenClient) UpdateOne(_m *GuestToken) *GuestTokenUpdateOne {
+	mutation := newGuestTokenMutation(c.config, OpUpdateOne, withGuestToken(_m))
+	return &GuestTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GuestTokenClient) UpdateOneID(id int) *GuestTokenUpdateOne {
+	mutation := newGuestTokenMutation(c.config, OpUpdateOne, withGuestTokenID(id))
+	return &GuestTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GuestToken.
+func (c *GuestTokenClient) Delete() *GuestTokenDelete {
+	mutation := newGuestTokenMutation(c.config, OpDelete)
+	return &GuestTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GuestTokenClient) DeleteOne(_m *GuestToken) *GuestTokenDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GuestTokenClient) DeleteOneID(id int) *GuestTokenDeleteOne {
+	builder := c.Delete().Where(guesttoken.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GuestTokenDeleteOne{builder}
+}
+
+// Query returns a query builder for GuestToken.
+func (c *GuestTokenClient) Query() *GuestTokenQuery {
+	return &GuestTokenQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGuestToken},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GuestToken entity by its id.
+func (c *GuestTokenClient) Get(ctx context.Context, id int) (*GuestToken, error) {
+	return c.Query().Where(guesttoken.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GuestTokenClient) GetX(ctx context.Context, id int) *GuestToken {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *GuestTokenClient) Hooks() []Hook {
+	return c.hooks.GuestToken
+}
+
+// Interceptors returns the client interceptors.
+func (c *GuestTokenClient) Interceptors() []Interceptor {
+	return c.inters.GuestToken
+}
+
+func (c *GuestTokenClient) mutate(ctx context.Context, m *GuestTokenMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GuestTokenCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GuestTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GuestTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GuestTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GuestToken mutation op: %q", m.Op())
 	}
 }
 
@@ -8824,8 +8965,8 @@ type (
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		ChartSample, Countdown, Crypto, DatasourcePlugin, DeviceGroup, DeviceSettings,
 		DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI, GitHub,
-		GoogleCalendar, GreetingRule, HomeAssistant, Image, Jellyfin, LogEntry,
-		LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
+		GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image, Jellyfin,
+		LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
 		NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole, PixelArt,
 		Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon,
 		TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings, Untappd,
@@ -8835,8 +8976,8 @@ type (
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		ChartSample, Countdown, Crypto, DatasourcePlugin, DeviceGroup, DeviceSettings,
 		DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI, GitHub,
-		GoogleCalendar, GreetingRule, HomeAssistant, Image, Jellyfin, LogEntry,
-		LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
+		GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image, Jellyfin,
+		LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
 		NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole, PixelArt,
 		Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon,
 		TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings, Untappd,

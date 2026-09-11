@@ -248,6 +248,18 @@ func (f GreetingRuleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GreetingRuleMutation", m)
 }
 
+// The GuestTokenFunc type is an adapter to allow the use of ordinary
+// function as GuestToken mutator.
+type GuestTokenFunc func(context.Context, *ent.GuestTokenMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GuestTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GuestTokenMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GuestTokenMutation", m)
+}
+
 // The HomeAssistantFunc type is an adapter to allow the use of ordinary
 // function as HomeAssistant mutator.
 type HomeAssistantFunc func(context.Context, *ent.HomeAssistantMutation) (ent.Value, error)
