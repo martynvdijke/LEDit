@@ -1,3 +1,28 @@
+# [1.34.0](https://github.com/martynvdijke/LEDit/compare/v1.33.3...v1.34.0) (2026-09-11)
+
+
+### Features
+
+* **countdown:** add granularity, direction, completion, and timezone fields ([03189e0](https://github.com/martynvdijke/LEDit/commit/03189e070054e423d8e9c588b139cb9bb89895be))
+* **countdown:** add options to admin form and E2E coverage ([275e379](https://github.com/martynvdijke/LEDit/commit/275e379115973ff75b19c3b6e1fcb1db2b73bc40))
+* **countdown:** configurable granularity, direction, completion, and adaptive rendering ([fd196f5](https://github.com/martynvdijke/LEDit/commit/fd196f5fd6157d0f69093db9bb05c33ab226e22d))
+* **countdown:** plumb datasource options, timezone parsing, and validation ([62b067c](https://github.com/martynvdijke/LEDit/commit/62b067c2b2a6407b53677f942cdbaad3c384522f))
+* **nowplaying:** add admin list/form UI, TS validation, and E2E spec ([fbd0bf9](https://github.com/martynvdijke/LEDit/commit/fbd0bf9ffd3e85378f2890f5a4385404fca5ea46))
+* **nowplaying:** add ArtURL model field and Plex/Spotify parsers ([de7cb26](https://github.com/martynvdijke/LEDit/commit/de7cb261d5527560e50e000acfc16bd8b905a5d3))
+* **nowplaying:** add NowPlayingSource entity and settings edge ([b5336e0](https://github.com/martynvdijke/LEDit/commit/b5336e0356e883a6fa0abe9415c365d863a3eba8))
+* **nowplaying:** add per-instance datasource, CRUD handlers, and feed integration ([a970aef](https://github.com/martynvdijke/LEDit/commit/a970aef862d928c3cacad84f3f284422413902c4))
+* **nowplaying:** add rich renderer with progress bar and album art ([8f6219a](https://github.com/martynvdijke/LEDit/commit/8f6219acb4a0b13b036f357510159e0363439038))
+* **sports:** custom admin CRUD, form, list page, and routes ([f8ec882](https://github.com/martynvdijke/LEDit/commit/f8ec882386b9ee283721579e1ecaed4ca00cd52f))
+* **sports:** extend schema with provider, config, and refresh intervals ([e1210d9](https://github.com/martynvdijke/LEDit/commit/e1210d979e0bc6e65924fa60910cf06d418571ac))
+* **sports:** provider abstraction, normalization, adaptive polling, rendering, and state ([bc74f2a](https://github.com/martynvdijke/LEDit/commit/bc74f2a32eb9cd37f7c4f9830760b61c19a92fc9))
+* **sports:** resolve sports sources for event rules and pass provider config ([be03c61](https://github.com/martynvdijke/LEDit/commit/be03c61837080c0250d2b86bd782cd1c2668632a))
+* **transit:** add dedicated admin form with live preview ([669485f](https://github.com/martynvdijke/LEDit/commit/669485ffac86f6fa08cb08f91efb05997ae17020))
+* **transit:** distinguish unavailable and no-departure fallback states ([0c4e646](https://github.com/martynvdijke/LEDit/commit/0c4e646fd04d741bd47bed458d4eafbea5e1aa97))
+* **transit:** extend Transit entity with provider, time, and filter fields ([e5ee81b](https://github.com/martynvdijke/LEDit/commit/e5ee81bdbb32728318f3c45d2c86806efb773969))
+* **transit:** field-based CRUD, validation, preview, and feed wiring ([e3347f1](https://github.com/martynvdijke/LEDit/commit/e3347f1e6430c63c78739b0d6880421ec72da658))
+* **transit:** rework datasource with provider adapters, filtering, and timezone timing ([a9d1917](https://github.com/martynvdijke/LEDit/commit/a9d19178366ed16fef10ed12a99924e066b26bfb))
+* **wake-alarm:** add WakeAlarm entity, GeneralSettings edge, and codegen ([3c6419b](https://github.com/martynvdijke/LEDit/commit/3c6419b8f67db75feac5f96eecf7e18cb21a374a))
+
 ## [1.33.3](https://github.com/martynvdijke/LEDit/compare/v1.33.2...v1.33.3) (2026-09-11)
 
 
