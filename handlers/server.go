@@ -314,6 +314,7 @@ func (s *Server) setupRoutes() {
 			apiMut.POST("/feed/next", s.APIFeedNext)
 			apiMut.POST("/feed/pause", s.APIFeedPause)
 			apiMut.POST("/feed/resume", s.APIFeedResume)
+			apiMut.POST("/feed/alarm/dismiss", s.APIFeedAlarmDismiss)
 		}
 		// Webhook routes: machine integrations authenticate via webhook key
 		// (X-API-Key header or ?token=), not admin sessions.

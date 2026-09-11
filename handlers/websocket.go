@@ -902,6 +902,11 @@ type brightnessFn func() int
 func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, random bool, timeout time.Duration, width, height int, feed *FeedController, transitionStyle string, transitionMs int, bFn brightnessFn) {
 	joinController(feed)
 	defer leaveController(feed)
+	// Seed the alarm tier for connections that join mid-occurrence; the
+	// evaluator broadcasts future changes to all registered controllers.
+	if src := AlarmSource(); src != nil {
+		feed.SetAlarmSource(src)
+	}
 	cursor := CurrentNotifSeq()
 
 	// Transition config is fixed per connection (loaded ONCE at handshake).
@@ -946,6 +951,8 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				// Reserved here; not parsed in v1 (metadata-driven visualizer only).
 				// case "spectrum":
 				//      handleSpectrumBins(cmd["bins"])
+			case "dismiss_alarm":
+				feed.DismissAlarm()
 			}
 		}
 	}()
@@ -984,8 +991,16 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				continue
 			}
 
+			// Wake alarm tier: outranks event pins, below notifications. The
+			// resolved wake source is rendered directly (it need not be in the
+			// connection's rotation list) and held across slot boundaries until
+			// the alarm ends or is dismissed.
+			alarmSrc := feed.GetAlarmSource()
+
 			// Pin honoring: BEFORE advancing, if pinned and resolvable in this connection's sources, render pinned source.
-			if pinnedKey, _, ok := feed.IsPinned(); ok {
+			if alarmSrc != nil {
+				sw = *alarmSrc
+			} else if pinnedKey, _, ok := feed.IsPinned(); ok {
 				for idx, s := range sources {
 					if s.cacheKey == pinnedKey {
 						sw = s
@@ -998,7 +1013,9 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 
 			// Compute next source name
 			nextName := ""
-			if GetOrderingMode() == "adaptive" {
+			if alarmSrc != nil {
+				nextName = sw.Name
+			} else if GetOrderingMode() == "adaptive" {
 				w := globalWeightsCache.GetWeights()
 				if w != nil && len(w) > 0 {
 					nextName = WeightedRandom(w, sources).Name

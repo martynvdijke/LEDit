@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 	"ledit/ent"
 	"ledit/ent/displayrule"
 	"ledit/ent/generalsettings"
+	"ledit/ent/wakealarm"
 )
 
 // ---------------------------------------------------------------------------
@@ -54,6 +56,96 @@ func unpinAll() {
 	for fc := range controllers {
 		fc.Unpin()
 	}
+}
+
+func alarmAll(src *sourceWithName) {
+	controllersMu.Lock()
+	defer controllersMu.Unlock()
+	for fc := range controllers {
+		fc.SetAlarmSource(src)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Wake alarm pass (reuses the evaluator ticker; no new goroutine)
+// ---------------------------------------------------------------------------
+
+// AlarmSourceResolver resolves an alarm's wake source; overridable in tests.
+var AlarmSourceResolver func(a *WakeAlarm) (*sourceWithName, bool)
+
+func parseAlarmDays(s string) ([]int, error) {
+	if strings.TrimSpace(s) == "" {
+		return nil, nil
+	}
+	var days []int
+	if err := json.Unmarshal([]byte(s), &days); err != nil {
+		return nil, err
+	}
+	return days, nil
+}
+
+func loadAlarmDefs(ctx context.Context, client *ent.Client) []WakeAlarm {
+	if client == nil {
+		return nil
+	}
+	rows, err := client.WakeAlarm.Query().Where(wakealarm.EnabledEQ(true)).Order(ent.Asc(wakealarm.FieldID)).All(ctx)
+	if err != nil {
+		slog.Error("event evaluator: failed to load alarms", "error", err)
+		return nil
+	}
+	out := make([]WakeAlarm, 0, len(rows))
+	for _, r := range rows {
+		days, derr := parseAlarmDays(r.Days)
+		if derr != nil {
+			slog.Warn("alarm days parse error, skipping", "alarm", r.Name, "error", derr)
+			continue
+		}
+		out = append(out, WakeAlarm{
+			ID:                    r.ID,
+			Name:                  r.Name,
+			Enabled:               r.Enabled,
+			Days:                  days,
+			Start:                 r.Start,
+			End:                   r.End,
+			WakeSourceType:        r.WakeSourceType,
+			WakeSourceID:          r.WakeSourceID,
+			BrightnessEnabled:     r.BrightnessEnabled,
+			BrightnessStart:       r.BrightnessStart,
+			BrightnessEnd:         r.BrightnessEnd,
+			BrightnessRampSeconds: r.BrightnessRampSeconds,
+		})
+	}
+	return out
+}
+
+// resolveAlarmSource resolves the wake source through the existing catalog. It
+// returns false (feed keeps rotating) when the reference cannot be resolved.
+func resolveAlarmSource(client *ent.Client, a *WakeAlarm) (*sourceWithName, bool) {
+	if client == nil {
+		return nil, false
+	}
+	ctx := context.Background()
+	gs, err := client.GeneralSettings.Query().Where(generalsettings.ID(1)).
+		WithGenericApis().WithHomeAssistant().WithWeather().WithSonarr().WithRadarr().WithF1().
+		WithUntappd().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
+		WithGoogleCalendars().WithNewsFeeds().WithMatrixLayouts().WithCountdowns().WithAiDigests().
+		WithImages().WithVideos().WithTransits().WithUptimes().WithPiholes().WithGithubs().
+		WithSports().WithSunmoons().WithJellyfins().WithQrcodes().WithNowPlayingSources().Only(ctx)
+	if err != nil || gs == nil {
+		slog.Warn("alarm wake source settings load failed", "alarm", a.Name, "error", err)
+		return nil, false
+	}
+	aiCfg := datasource.AIConfig{}
+	if ai, aerr := client.AISettings.Query().Only(ctx); aerr == nil && ai != nil {
+		aiCfg = datasource.AIConfig{Provider: ai.Provider, Endpoint: ai.Endpoint, APIKey: ai.APIKey, Model: ai.Model}
+	}
+	key := fmt.Sprintf("%s:%d", a.WakeSourceType, a.WakeSourceID)
+	src, name, rerr := buildSourceIndex(gs, aiCfg).Resolve(a.WakeSourceType, a.WakeSourceID)
+	if rerr != nil {
+		slog.Warn("alarm wake source not resolvable, skipping", "alarm", a.Name, "source", key, "error", rerr)
+		return nil, false
+	}
+	return &sourceWithName{Name: name, Source: src, cacheKey: key}, true
 }
 
 // ---------------------------------------------------------------------------
@@ -94,6 +186,11 @@ func StartEventRuleEngine(client *ent.Client) {
 			default:
 				return nil, false
 			}
+		}
+	}
+	if AlarmSourceResolver == nil {
+		AlarmSourceResolver = func(a *WakeAlarm) (*sourceWithName, bool) {
+			return resolveAlarmSource(client, a)
 		}
 	}
 	go runEvaluator(ctx, client)
@@ -215,14 +312,23 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 	}
 	loadRules()
 
+	loadAlarms := func() {
+		globalAlarmManager.SetAlarms(loadAlarmDefs(ctx, client))
+	}
+	loadAlarms()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-reloadTicker.C:
 			loadRules()
+			loadAlarms()
 		case <-ticker.C:
 			now := time.Now()
+			if globalAlarmManager.Evaluate(now, AlarmSourceResolver) {
+				alarmAll(globalAlarmManager.Source())
+			}
 			for _, rs := range states {
 				if now.Before(rs.nextCheck) {
 					continue

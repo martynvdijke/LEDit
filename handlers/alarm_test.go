@@ -173,6 +173,21 @@ func TestAlarmManagerEvaluateTransitionsAndDismiss(t *testing.T) {
 	}
 }
 
+func TestFeedControllerNextClearsAlarm(t *testing.T) {
+	fc := &FeedController{}
+	fc.SetAlarmSource(&sourceWithName{Name: "Wake"})
+	if fc.GetAlarmSource() == nil {
+		t.Fatal("expected alarm source set")
+	}
+	fc.Next()
+	if fc.GetAlarmSource() != nil {
+		t.Fatal("Next should clear the alarm tier")
+	}
+	if !fc.ShouldSkip() {
+		t.Fatal("Next should still set skip")
+	}
+}
+
 func TestAlarmManagerUnresolvableSourceFallsBack(t *testing.T) {
 	m := NewAlarmManager()
 	m.SetAlarms([]WakeAlarm{{ID: 1, Enabled: true, Days: []int{2}, Start: "06:30", End: "07:00"}})

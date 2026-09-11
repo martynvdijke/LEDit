@@ -17,6 +17,7 @@ type FeedController struct {
 	NextName    string
 	PinnedKey   string
 	PinnedBy    string
+	AlarmSource *sourceWithName
 }
 
 var GlobalFeed = &FeedController{}
@@ -79,7 +80,9 @@ func (fc *FeedController) Next() {
 	fc.Skip = true
 	fc.PinnedKey = ""
 	fc.PinnedBy = ""
+	fc.AlarmSource = nil
 	fc.mu.Unlock()
+	DismissActiveAlarm()
 	// attribute skip
 	if cur != "" {
 		RecordSkip("", 0, cur)
@@ -87,6 +90,29 @@ func (fc *FeedController) Next() {
 		RecordSkip("", 0, "")
 	}
 	triggerSkipRecompute()
+}
+
+// SetAlarmSource publishes the active wake source to this controller; nil
+// clears it (alarm ended or dismissed).
+func (fc *FeedController) SetAlarmSource(s *sourceWithName) {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	fc.AlarmSource = s
+}
+
+// GetAlarmSource returns the active wake source, or nil for normal rotation.
+func (fc *FeedController) GetAlarmSource() *sourceWithName {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	return fc.AlarmSource
+}
+
+// DismissAlarm releases the wake screen and suppresses the current occurrence.
+func (fc *FeedController) DismissAlarm() {
+	fc.mu.Lock()
+	fc.AlarmSource = nil
+	fc.mu.Unlock()
+	DismissActiveAlarm()
 }
 
 func (fc *FeedController) Pin(key, by string) {
@@ -136,6 +162,13 @@ func (fc *FeedController) Status() map[string]any {
 		m["pinned_by"] = fc.PinnedBy
 		m["pinned_key"] = fc.PinnedKey
 	}
+	if a, src, ok := ActiveAlarm(); ok {
+		m["alarm_active"] = true
+		m["alarm_name"] = a.Name
+		if src != nil {
+			m["alarm_source"] = src.Name
+		}
+	}
 	return m
 }
 
@@ -159,6 +192,12 @@ func (s *Server) APIFeedPause(c *gin.Context) {
 
 func (s *Server) APIFeedResume(c *gin.Context) {
 	GlobalFeed.Resume()
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+// APIFeedAlarmDismiss releases an active wake alarm for the current occurrence.
+func (s *Server) APIFeedAlarmDismiss(c *gin.Context) {
+	DismissActiveAlarm()
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 

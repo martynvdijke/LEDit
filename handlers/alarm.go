@@ -263,7 +263,9 @@ func AlarmSource() *sourceWithName {
 	return globalAlarmManager.Source()
 }
 
-// DismissActiveAlarm dismisses the active alarm for the current occurrence.
+// DismissActiveAlarm dismisses the active alarm for the current occurrence and
+// immediately clears the wake source from every live feed.
 func DismissActiveAlarm() {
 	globalAlarmManager.Dismiss(time.Now())
+	alarmAll(nil)
 }
