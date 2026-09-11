@@ -134,21 +134,22 @@ func TestRenderMatrixRainSizes(t *testing.T) {
 
 func TestFormatCountdown(t *testing.T) {
 	cases := []struct {
-		d    time.Duration
-		want string
+		d           time.Duration
+		granularity string
+		want        string
 	}{
-		{25 * time.Hour, "1d 01:00:00"},
-		{24 * time.Hour, "1d 00:00:00"},
-		{23 * time.Hour, "23:00:00"},
-		{1 * time.Hour, "01:00:00"},
-		{59*time.Minute + 59*time.Second, "59:59"},
-		{1 * time.Minute, "01:00"},
-		{0, "DONE"},
-		{-5 * time.Second, "DONE"},
+		{25 * time.Hour, "seconds", "1d 01:00:00"},
+		{24 * time.Hour, "seconds", "1d 00:00:00"},
+		{23 * time.Hour, "seconds", "23:00:00"},
+		{1 * time.Hour, "seconds", "01:00:00"},
+		{59*time.Minute + 59*time.Second, "seconds", "59:59"},
+		{1 * time.Minute, "seconds", "01:00"},
+		{0, "seconds", "00:00"},
+		{-5 * time.Second, "seconds", "00:00"},
 	}
 	for _, c := range cases {
-		if got := formatCountdown(c.d); got != c.want {
-			t.Errorf("formatCountdown(%v) = %q, want %q", c.d, got, c.want)
+		if got := formatCountdown(c.d, c.granularity); got != c.want {
+			t.Errorf("formatCountdown(%v, %q) = %q, want %q", c.d, c.granularity, got, c.want)
 		}
 	}
 }
@@ -167,7 +168,7 @@ func TestRenderCountdown(t *testing.T) {
 		t.Fatalf("png.Decode error: %v", err)
 	}
 
-	// DONE state blinks: even second shows DONE, odd second blank.
+	// The built-in Now! state blinks: even second shows content, odd second blank.
 	done := now.Add(-time.Minute)
 	on, err := RenderCountdown("", done, now.Add(2*time.Second), 64, 32)
 	if err != nil {
@@ -178,7 +179,7 @@ func TestRenderCountdown(t *testing.T) {
 		t.Fatal(err)
 	}
 	if bytes.Equal(on.Data, off.Data) {
-		t.Error("DONE blink should alternate blank/content frames")
+		t.Error("Now! blink should alternate blank/content frames")
 	}
 }
 
