@@ -1,3 +1,24 @@
+# [1.35.0](https://github.com/martynvdijke/LEDit/compare/v1.34.0...v1.35.0) (2026-09-12)
+
+
+### Bug Fixes
+
+* **tests:** stop Playwright specs leaking global auth and feed state ([c35a59d](https://github.com/martynvdijke/LEDit/commit/c35a59d46ac25222ca5d933a99f9758e61557df8))
+
+
+### Features
+
+* **guest-remote:** add GuestToken entity and codegen ([5ded0ce](https://github.com/martynvdijke/LEDit/commit/5ded0ce3dcf5a907a273529624a1119fb6ca3868))
+* **guest-remote:** admin management page, JSON API, and nav link ([99a5225](https://github.com/martynvdijke/LEDit/commit/99a5225022b9a112a415d5fcffc3e529c675610e))
+* **guest-remote:** installable PWA remote shell and client ([c17257b](https://github.com/martynvdijke/LEDit/commit/c17257b5de3a189d2229174b7aaf32c64a8b4c26))
+* **guest-remote:** scoped guest status/control/message API endpoints ([629bdc5](https://github.com/martynvdijke/LEDit/commit/629bdc5971c12f779d85893950be1caea1e68fc6))
+* **guest-remote:** scoped header auth and per-token/IP rate limiting ([f0a0b10](https://github.com/martynvdijke/LEDit/commit/f0a0b10ba49fd8e161a47d3eb772a8463808df3e))
+* **wake-alarm:** admin CRUD, templates, nav, indicator, and E2E spec ([5885b9a](https://github.com/martynvdijke/LEDit/commit/5885b9ace341c17c066f757b7b06e09a305b1f56))
+* **wake-alarm:** alarm resolver, brightness ramp, and in-memory manager ([d7bc93d](https://github.com/martynvdijke/LEDit/commit/d7bc93dc30397e7ed444fd9fa44ae6c80af0b905))
+* **wake-alarm:** backup export/import and inertness tests ([0779a22](https://github.com/martynvdijke/LEDit/commit/0779a223f58eb2c51d0881aad15fb5c5cceec72d))
+* **wake-alarm:** evaluator alarm pass, feed tier, dismissal API/WS ([bb5ab77](https://github.com/martynvdijke/LEDit/commit/bb5ab77b3bc995cf4b8fd2c880551fa4b3c1a286))
+* **wake-alarm:** layer alarm brightness ramp into device feed ([815c675](https://github.com/martynvdijke/LEDit/commit/815c675244f962508b5ad6c72b628f915c0cb2d1))
+
 # [1.34.0](https://github.com/martynvdijke/LEDit/compare/v1.33.3...v1.34.0) (2026-09-11)
 
 
