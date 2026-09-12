@@ -9,6 +9,17 @@ function randSuffix() { return Math.random().toString(36).slice(2, 7); }
 test.describe('User roles E2E', () => {
   test.setTimeout(60000);
 
+  // This spec flips global auth on to test roles. Restore the auth-disabled
+  // state so later specs are not redirected to /setup.
+  test.afterAll(async ({ playwright }) => {
+    const ctx = await playwright.request.newContext({
+      baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:8080',
+    });
+    await ctx.post('/api/test/disable-auth').catch(() => {});
+    await ctx.post('/api/feed/resume').catch(() => {});
+    await ctx.dispose();
+  });
+
   const viewerUser = `viewer_${randSuffix()}`;
   const viewerPass = 'ViewerPass123';
   const adminUser = 'admin';

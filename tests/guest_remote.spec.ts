@@ -1,5 +1,11 @@
 import { test, expect } from './fixtures';
 
+// The feed controller is process-global: a guest test that pauses the wall must
+// not leave it paused for later specs (feed/index/notifications/qrcode).
+test.afterEach(async ({ request }) => {
+  await request.post('/api/feed/resume').catch(() => {});
+});
+
 // E2E runs with LEDIT_AUTH_DISABLE=true, so the admin JSON API is open and no
 // login is needed to create a guest token. Guest auth itself is header-based
 // and independent of the disabled session auth.

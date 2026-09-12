@@ -334,6 +334,7 @@ func (s *Server) setupRoutes() {
 		if os.Getenv("LEDIT_AUTH_DISABLE") == "true" || os.Getenv("LEDIT_AUTH_DISABLE") == "1" {
 			api.POST("/test/seed-timelapse", s.TestSeedTimelapse)
 			api.POST("/test/enable-auth", s.TestEnableAuth)
+			api.POST("/test/disable-auth", s.TestDisableAuth)
 		}
 		api.GET("/display", s.WebhookAuthMiddleware(), s.APIDisplay)
 		// Pixel art import (admin only)

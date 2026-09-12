@@ -24,3 +24,13 @@ func (s *Server) TestEnableAuth(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"authEnabled": true})
 }
+
+// TestDisableAuth restores the auth-disabled state the Playwright webServer
+// starts with, so specs that flip auth on do not leak into later specs (which
+// would otherwise be redirected to /setup).
+func (s *Server) TestDisableAuth(c *gin.Context) {
+	authMu.Lock()
+	authEnabled = false
+	authMu.Unlock()
+	c.JSON(http.StatusOK, gin.H{"authEnabled": false})
+}

@@ -17,6 +17,10 @@ async function selectWakeSource(page: Page, type: string, id: string): Promise<v
 }
 
 test.describe('Wake alarm admin', () => {
+  // The evaluator reloads definitions on a ~30s cadence and the active-alarm
+  // assertion allows 45s, so the default 30s test timeout is too short.
+  test.setTimeout(90_000);
+
   test('create, list, active indicator, dismiss, and validation', async ({ page }) => {
     await clearAlarms(page);
     const name = `PW-Wake-${Math.random().toString(36).slice(2, 6)}`;
@@ -34,8 +38,9 @@ test.describe('Wake alarm admin', () => {
     await expect(page).toHaveURL(/\/admin\/alarms$/);
     await expect(page.locator('table')).toContainText(name);
 
-    // A window covering "now" activates the alarm; the evaluator reloads
-    // definitions on its ~30s cadence, so allow a generous timeout.
+    // A window covering "now" activates the alarm, but the evaluator reloads
+    // definitions on its ~30s cadence. The admin page is server-rendered and
+    // does not poll, so reload it until the active banner appears.
     const activeName = `${name}-active`;
     await page.goto('/admin/alarms/new');
     await page.fill('#name', activeName);
@@ -48,8 +53,13 @@ test.describe('Wake alarm admin', () => {
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/admin\/alarms$/);
 
-    await page.goto('/admin/alarms');
-    await expect(page.locator('.alert-warning')).toContainText(activeName, { timeout: 45000 });
+    await expect
+      .poll(async () => {
+        await page.goto('/admin/alarms');
+        return page.locator('.alert-warning').count();
+      }, { timeout: 60_000, intervals: [2000, 3000, 5000] })
+      .toBeGreaterThan(0);
+    await expect(page.locator('.alert-warning')).toContainText(activeName);
 
     // Dismiss releases the active alarm and clears the indicator.
     await page.request.post('/api/feed/alarm/dismiss');
