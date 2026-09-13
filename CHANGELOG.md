@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/martynvdijke/LEDit/compare/v1.35.0...v1.36.0) (2026-09-13)
+
+
+### Features
+
+* add persistent per-device overlay strip ([1042ee0](https://github.com/martynvdijke/LEDit/commit/1042ee0887db730304acc2cce772f6c80f633c0c))
+
 # [1.35.0](https://github.com/martynvdijke/LEDit/compare/v1.34.0...v1.35.0) (2026-09-12)
 
 
