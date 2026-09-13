@@ -197,7 +197,6 @@
 (function(){
     var hidden = document.getElementById('brightness_schedules');
     var editor = document.getElementById('brightness-editor');
-    var form = document.getElementById('device-form');
     if (!hidden || !editor) return;
     var schedules = [];
     try { var p=JSON.parse(hidden.value||'[]'); if(Array.isArray(p)) schedules=p; } catch(e){ schedules=[]; }
@@ -257,7 +256,9 @@
     var addBtn=document.createElement('button'); addBtn.type='button'; addBtn.className='btn btn-sm btn-outline-primary mt-2'; addBtn.textContent='Add brightness window';
     addBtn.addEventListener('click',function(){ if(schedules.length>=16){ alert('Max 16 windows'); return; } schedules.push({days:[1,2,3,4,5], start:"07:00", end:"19:00", level:50}); sync(); render(); });
     editor.parentNode.insertBefore(addBtn, editor.nextSibling);
-    if(form) form.addEventListener('submit',function(){ sync(); });
+    // NB: no submit-time re-serialization — every edit already calls sync(), and
+    // re-running sync() on submit would clobber a value set directly on the
+    // hidden input (e.g. scripts/tests).
     render();
 })();
 </script>
