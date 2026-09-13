@@ -44,6 +44,20 @@ const (
 	FieldAdaptiveWindowDays = "adaptive_window_days"
 	// FieldAdaptiveEpsilon holds the string denoting the adaptive_epsilon field in the database.
 	FieldAdaptiveEpsilon = "adaptive_epsilon"
+	// FieldLatitude holds the string denoting the latitude field in the database.
+	FieldLatitude = "latitude"
+	// FieldLongitude holds the string denoting the longitude field in the database.
+	FieldLongitude = "longitude"
+	// FieldHolidays holds the string denoting the holidays field in the database.
+	FieldHolidays = "holidays"
+	// FieldHolidayIcsURL holds the string denoting the holiday_ics_url field in the database.
+	FieldHolidayIcsURL = "holiday_ics_url"
+	// FieldHolidayIcsDates holds the string denoting the holiday_ics_dates field in the database.
+	FieldHolidayIcsDates = "holiday_ics_dates"
+	// FieldHolidayIcsFetchedAt holds the string denoting the holiday_ics_fetched_at field in the database.
+	FieldHolidayIcsFetchedAt = "holiday_ics_fetched_at"
+	// FieldHolidayIcsError holds the string denoting the holiday_ics_error field in the database.
+	FieldHolidayIcsError = "holiday_ics_error"
 	// EdgeSonarr holds the string denoting the sonarr edge name in mutations.
 	EdgeSonarr = "sonarr"
 	// EdgeRadarr holds the string denoting the radarr edge name in mutations.
@@ -445,6 +459,13 @@ var Columns = []string{
 	FieldAdaptiveHalfLifeDays,
 	FieldAdaptiveWindowDays,
 	FieldAdaptiveEpsilon,
+	FieldLatitude,
+	FieldLongitude,
+	FieldHolidays,
+	FieldHolidayIcsURL,
+	FieldHolidayIcsDates,
+	FieldHolidayIcsFetchedAt,
+	FieldHolidayIcsError,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -492,6 +513,14 @@ var (
 	DefaultAdaptiveWindowDays int
 	// DefaultAdaptiveEpsilon holds the default value on creation for the "adaptive_epsilon" field.
 	DefaultAdaptiveEpsilon float64
+	// DefaultHolidays holds the default value on creation for the "holidays" field.
+	DefaultHolidays string
+	// DefaultHolidayIcsURL holds the default value on creation for the "holiday_ics_url" field.
+	DefaultHolidayIcsURL string
+	// DefaultHolidayIcsDates holds the default value on creation for the "holiday_ics_dates" field.
+	DefaultHolidayIcsDates string
+	// DefaultHolidayIcsError holds the default value on creation for the "holiday_ics_error" field.
+	DefaultHolidayIcsError string
 )
 
 // OrderOption defines the ordering options for the GeneralSettings queries.
@@ -580,6 +609,41 @@ func ByAdaptiveWindowDays(opts ...sql.OrderTermOption) OrderOption {
 // ByAdaptiveEpsilon orders the results by the adaptive_epsilon field.
 func ByAdaptiveEpsilon(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAdaptiveEpsilon, opts...).ToFunc()
+}
+
+// ByLatitude orders the results by the latitude field.
+func ByLatitude(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLatitude, opts...).ToFunc()
+}
+
+// ByLongitude orders the results by the longitude field.
+func ByLongitude(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLongitude, opts...).ToFunc()
+}
+
+// ByHolidays orders the results by the holidays field.
+func ByHolidays(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHolidays, opts...).ToFunc()
+}
+
+// ByHolidayIcsURL orders the results by the holiday_ics_url field.
+func ByHolidayIcsURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHolidayIcsURL, opts...).ToFunc()
+}
+
+// ByHolidayIcsDates orders the results by the holiday_ics_dates field.
+func ByHolidayIcsDates(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHolidayIcsDates, opts...).ToFunc()
+}
+
+// ByHolidayIcsFetchedAt orders the results by the holiday_ics_fetched_at field.
+func ByHolidayIcsFetchedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHolidayIcsFetchedAt, opts...).ToFunc()
+}
+
+// ByHolidayIcsError orders the results by the holiday_ics_error field.
+func ByHolidayIcsError(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHolidayIcsError, opts...).ToFunc()
 }
 
 // BySonarrCount orders the results by sonarr count.

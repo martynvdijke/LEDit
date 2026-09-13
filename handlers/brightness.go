@@ -12,10 +12,12 @@ import (
 
 // BrightnessWindow mirrors schedule window but with Level 0-100.
 type BrightnessWindow struct {
-	Days  []int  `json:"days"`
-	Start string `json:"start"`
-	End   string `json:"end"`
-	Level int    `json:"level"`
+	Days          []int  `json:"days"`
+	Start         string `json:"start"`
+	End           string `json:"end"`
+	Level         int    `json:"level"`
+	TimeMode      string `json:"time_mode,omitempty"`
+	OffsetMinutes int    `json:"offset_minutes,omitempty"`
 }
 
 // LuxLevel maps maxLux -> level.
@@ -76,6 +78,19 @@ func ValidateBrightnessWindows(windows []BrightnessWindow) error {
 			}
 			seen[d] = true
 		}
+		if w.TimeMode != "" && w.TimeMode != "fixed" && w.TimeMode != "sunrise" && w.TimeMode != "sunset" {
+			return fmt.Errorf("window %d: invalid time_mode %q", i, w.TimeMode)
+		}
+		if w.OffsetMinutes < -180 || w.OffsetMinutes > 180 {
+			return fmt.Errorf("window %d: offset_minutes %d out of range -180..180", i, w.OffsetMinutes)
+		}
+		isSun := w.TimeMode == "sunrise" || w.TimeMode == "sunset"
+		if isSun {
+			if w.Level < 0 || w.Level > 100 {
+				return fmt.Errorf("window %d: level %d out of range 0-100", i, w.Level)
+			}
+			continue
+		}
 		if _, err := parseHM(w.Start); err != nil {
 			return fmt.Errorf("window %d: invalid start %q: %w", i, w.Start, err)
 		}
@@ -121,7 +136,7 @@ func ValidateSensorConfig(c *SensorConfig) error {
 
 // brightnessWindowMatches uses same logic as WindowMatches.
 func brightnessWindowMatches(now time.Time, w BrightnessWindow) bool {
-	sw := ScheduleWindow{Days: w.Days, Start: w.Start, End: w.End}
+	sw := ScheduleWindow{Days: w.Days, Start: w.Start, End: w.End, TimeMode: w.TimeMode, OffsetMinutes: w.OffsetMinutes}
 	return WindowMatches(now, sw)
 }
 

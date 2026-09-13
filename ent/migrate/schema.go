@@ -407,6 +407,13 @@ var (
 		{Name: "adaptive_half_life_days", Type: field.TypeInt, Default: 7},
 		{Name: "adaptive_window_days", Type: field.TypeInt, Default: 14},
 		{Name: "adaptive_epsilon", Type: field.TypeFloat64, Default: 0.15},
+		{Name: "latitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "longitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "holidays", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: "[]"},
+		{Name: "holiday_ics_url", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "holiday_ics_dates", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: "[]"},
+		{Name: "holiday_ics_fetched_at", Type: field.TypeTime, Nullable: true},
+		{Name: "holiday_ics_error", Type: field.TypeString, Nullable: true, Default: ""},
 	}
 	// GeneralSettingsTable holds the schema information for the "general_settings" table.
 	GeneralSettingsTable = &schema.Table{

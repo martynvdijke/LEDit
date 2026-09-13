@@ -11999,6 +11999,15 @@ type GeneralSettingsMutation struct {
 	addadaptive_window_days        *int
 	adaptive_epsilon               *float64
 	addadaptive_epsilon            *float64
+	latitude                       *float64
+	addlatitude                    *float64
+	longitude                      *float64
+	addlongitude                   *float64
+	holidays                       *string
+	holiday_ics_url                *string
+	holiday_ics_dates              *string
+	holiday_ics_fetched_at         *time.Time
+	holiday_ics_error              *string
 	clearedFields                  map[string]struct{}
 	sonarr                         map[int]struct{}
 	removedsonarr                  map[int]struct{}
@@ -13029,6 +13038,391 @@ func (m *GeneralSettingsMutation) AddedAdaptiveEpsilon() (r float64, exists bool
 func (m *GeneralSettingsMutation) ResetAdaptiveEpsilon() {
 	m.adaptive_epsilon = nil
 	m.addadaptive_epsilon = nil
+}
+
+// SetLatitude sets the "latitude" field.
+func (m *GeneralSettingsMutation) SetLatitude(f float64) {
+	m.latitude = &f
+	m.addlatitude = nil
+}
+
+// Latitude returns the value of the "latitude" field in the mutation.
+func (m *GeneralSettingsMutation) Latitude() (r float64, exists bool) {
+	v := m.latitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLatitude returns the old "latitude" field's value of the GeneralSettings entity.
+// If the GeneralSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GeneralSettingsMutation) OldLatitude(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLatitude is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLatitude requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLatitude: %w", err)
+	}
+	return oldValue.Latitude, nil
+}
+
+// AddLatitude adds f to the "latitude" field.
+func (m *GeneralSettingsMutation) AddLatitude(f float64) {
+	if m.addlatitude != nil {
+		*m.addlatitude += f
+	} else {
+		m.addlatitude = &f
+	}
+}
+
+// AddedLatitude returns the value that was added to the "latitude" field in this mutation.
+func (m *GeneralSettingsMutation) AddedLatitude() (r float64, exists bool) {
+	v := m.addlatitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLatitude clears the value of the "latitude" field.
+func (m *GeneralSettingsMutation) ClearLatitude() {
+	m.latitude = nil
+	m.addlatitude = nil
+	m.clearedFields[generalsettings.FieldLatitude] = struct{}{}
+}
+
+// LatitudeCleared returns if the "latitude" field was cleared in this mutation.
+func (m *GeneralSettingsMutation) LatitudeCleared() bool {
+	_, ok := m.clearedFields[generalsettings.FieldLatitude]
+	return ok
+}
+
+// ResetLatitude resets all changes to the "latitude" field.
+func (m *GeneralSettingsMutation) ResetLatitude() {
+	m.latitude = nil
+	m.addlatitude = nil
+	delete(m.clearedFields, generalsettings.FieldLatitude)
+}
+
+// SetLongitude sets the "longitude" field.
+func (m *GeneralSettingsMutation) SetLongitude(f float64) {
+	m.longitude = &f
+	m.addlongitude = nil
+}
+
+// Longitude returns the value of the "longitude" field in the mutation.
+func (m *GeneralSettingsMutation) Longitude() (r float64, exists bool) {
+	v := m.longitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLongitude returns the old "longitude" field's value of the GeneralSettings entity.
+// If the GeneralSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GeneralSettingsMutation) OldLongitude(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLongitude is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLongitude requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLongitude: %w", err)
+	}
+	return oldValue.Longitude, nil
+}
+
+// AddLongitude adds f to the "longitude" field.
+func (m *GeneralSettingsMutation) AddLongitude(f float64) {
+	if m.addlongitude != nil {
+		*m.addlongitude += f
+	} else {
+		m.addlongitude = &f
+	}
+}
+
+// AddedLongitude returns the value that was added to the "longitude" field in this mutation.
+func (m *GeneralSettingsMutation) AddedLongitude() (r float64, exists bool) {
+	v := m.addlongitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLongitude clears the value of the "longitude" field.
+func (m *GeneralSettingsMutation) ClearLongitude() {
+	m.longitude = nil
+	m.addlongitude = nil
+	m.clearedFields[generalsettings.FieldLongitude] = struct{}{}
+}
+
+// LongitudeCleared returns if the "longitude" field was cleared in this mutation.
+func (m *GeneralSettingsMutation) LongitudeCleared() bool {
+	_, ok := m.clearedFields[generalsettings.FieldLongitude]
+	return ok
+}
+
+// ResetLongitude resets all changes to the "longitude" field.
+func (m *GeneralSettingsMutation) ResetLongitude() {
+	m.longitude = nil
+	m.addlongitude = nil
+	delete(m.clearedFields, generalsettings.FieldLongitude)
+}
+
+// SetHolidays sets the "holidays" field.
+func (m *GeneralSettingsMutation) SetHolidays(s string) {
+	m.holidays = &s
+}
+
+// Holidays returns the value of the "holidays" field in the mutation.
+func (m *GeneralSettingsMutation) Holidays() (r string, exists bool) {
+	v := m.holidays
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHolidays returns the old "holidays" field's value of the GeneralSettings entity.
+// If the GeneralSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GeneralSettingsMutation) OldHolidays(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHolidays is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHolidays requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHolidays: %w", err)
+	}
+	return oldValue.Holidays, nil
+}
+
+// ClearHolidays clears the value of the "holidays" field.
+func (m *GeneralSettingsMutation) ClearHolidays() {
+	m.holidays = nil
+	m.clearedFields[generalsettings.FieldHolidays] = struct{}{}
+}
+
+// HolidaysCleared returns if the "holidays" field was cleared in this mutation.
+func (m *GeneralSettingsMutation) HolidaysCleared() bool {
+	_, ok := m.clearedFields[generalsettings.FieldHolidays]
+	return ok
+}
+
+// ResetHolidays resets all changes to the "holidays" field.
+func (m *GeneralSettingsMutation) ResetHolidays() {
+	m.holidays = nil
+	delete(m.clearedFields, generalsettings.FieldHolidays)
+}
+
+// SetHolidayIcsURL sets the "holiday_ics_url" field.
+func (m *GeneralSettingsMutation) SetHolidayIcsURL(s string) {
+	m.holiday_ics_url = &s
+}
+
+// HolidayIcsURL returns the value of the "holiday_ics_url" field in the mutation.
+func (m *GeneralSettingsMutation) HolidayIcsURL() (r string, exists bool) {
+	v := m.holiday_ics_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHolidayIcsURL returns the old "holiday_ics_url" field's value of the GeneralSettings entity.
+// If the GeneralSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GeneralSettingsMutation) OldHolidayIcsURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHolidayIcsURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHolidayIcsURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHolidayIcsURL: %w", err)
+	}
+	return oldValue.HolidayIcsURL, nil
+}
+
+// ClearHolidayIcsURL clears the value of the "holiday_ics_url" field.
+func (m *GeneralSettingsMutation) ClearHolidayIcsURL() {
+	m.holiday_ics_url = nil
+	m.clearedFields[generalsettings.FieldHolidayIcsURL] = struct{}{}
+}
+
+// HolidayIcsURLCleared returns if the "holiday_ics_url" field was cleared in this mutation.
+func (m *GeneralSettingsMutation) HolidayIcsURLCleared() bool {
+	_, ok := m.clearedFields[generalsettings.FieldHolidayIcsURL]
+	return ok
+}
+
+// ResetHolidayIcsURL resets all changes to the "holiday_ics_url" field.
+func (m *GeneralSettingsMutation) ResetHolidayIcsURL() {
+	m.holiday_ics_url = nil
+	delete(m.clearedFields, generalsettings.FieldHolidayIcsURL)
+}
+
+// SetHolidayIcsDates sets the "holiday_ics_dates" field.
+func (m *GeneralSettingsMutation) SetHolidayIcsDates(s string) {
+	m.holiday_ics_dates = &s
+}
+
+// HolidayIcsDates returns the value of the "holiday_ics_dates" field in the mutation.
+func (m *GeneralSettingsMutation) HolidayIcsDates() (r string, exists bool) {
+	v := m.holiday_ics_dates
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHolidayIcsDates returns the old "holiday_ics_dates" field's value of the GeneralSettings entity.
+// If the GeneralSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GeneralSettingsMutation) OldHolidayIcsDates(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHolidayIcsDates is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHolidayIcsDates requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHolidayIcsDates: %w", err)
+	}
+	return oldValue.HolidayIcsDates, nil
+}
+
+// ClearHolidayIcsDates clears the value of the "holiday_ics_dates" field.
+func (m *GeneralSettingsMutation) ClearHolidayIcsDates() {
+	m.holiday_ics_dates = nil
+	m.clearedFields[generalsettings.FieldHolidayIcsDates] = struct{}{}
+}
+
+// HolidayIcsDatesCleared returns if the "holiday_ics_dates" field was cleared in this mutation.
+func (m *GeneralSettingsMutation) HolidayIcsDatesCleared() bool {
+	_, ok := m.clearedFields[generalsettings.FieldHolidayIcsDates]
+	return ok
+}
+
+// ResetHolidayIcsDates resets all changes to the "holiday_ics_dates" field.
+func (m *GeneralSettingsMutation) ResetHolidayIcsDates() {
+	m.holiday_ics_dates = nil
+	delete(m.clearedFields, generalsettings.FieldHolidayIcsDates)
+}
+
+// SetHolidayIcsFetchedAt sets the "holiday_ics_fetched_at" field.
+func (m *GeneralSettingsMutation) SetHolidayIcsFetchedAt(t time.Time) {
+	m.holiday_ics_fetched_at = &t
+}
+
+// HolidayIcsFetchedAt returns the value of the "holiday_ics_fetched_at" field in the mutation.
+func (m *GeneralSettingsMutation) HolidayIcsFetchedAt() (r time.Time, exists bool) {
+	v := m.holiday_ics_fetched_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHolidayIcsFetchedAt returns the old "holiday_ics_fetched_at" field's value of the GeneralSettings entity.
+// If the GeneralSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GeneralSettingsMutation) OldHolidayIcsFetchedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHolidayIcsFetchedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHolidayIcsFetchedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHolidayIcsFetchedAt: %w", err)
+	}
+	return oldValue.HolidayIcsFetchedAt, nil
+}
+
+// ClearHolidayIcsFetchedAt clears the value of the "holiday_ics_fetched_at" field.
+func (m *GeneralSettingsMutation) ClearHolidayIcsFetchedAt() {
+	m.holiday_ics_fetched_at = nil
+	m.clearedFields[generalsettings.FieldHolidayIcsFetchedAt] = struct{}{}
+}
+
+// HolidayIcsFetchedAtCleared returns if the "holiday_ics_fetched_at" field was cleared in this mutation.
+func (m *GeneralSettingsMutation) HolidayIcsFetchedAtCleared() bool {
+	_, ok := m.clearedFields[generalsettings.FieldHolidayIcsFetchedAt]
+	return ok
+}
+
+// ResetHolidayIcsFetchedAt resets all changes to the "holiday_ics_fetched_at" field.
+func (m *GeneralSettingsMutation) ResetHolidayIcsFetchedAt() {
+	m.holiday_ics_fetched_at = nil
+	delete(m.clearedFields, generalsettings.FieldHolidayIcsFetchedAt)
+}
+
+// SetHolidayIcsError sets the "holiday_ics_error" field.
+func (m *GeneralSettingsMutation) SetHolidayIcsError(s string) {
+	m.holiday_ics_error = &s
+}
+
+// HolidayIcsError returns the value of the "holiday_ics_error" field in the mutation.
+func (m *GeneralSettingsMutation) HolidayIcsError() (r string, exists bool) {
+	v := m.holiday_ics_error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHolidayIcsError returns the old "holiday_ics_error" field's value of the GeneralSettings entity.
+// If the GeneralSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GeneralSettingsMutation) OldHolidayIcsError(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHolidayIcsError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHolidayIcsError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHolidayIcsError: %w", err)
+	}
+	return oldValue.HolidayIcsError, nil
+}
+
+// ClearHolidayIcsError clears the value of the "holiday_ics_error" field.
+func (m *GeneralSettingsMutation) ClearHolidayIcsError() {
+	m.holiday_ics_error = nil
+	m.clearedFields[generalsettings.FieldHolidayIcsError] = struct{}{}
+}
+
+// HolidayIcsErrorCleared returns if the "holiday_ics_error" field was cleared in this mutation.
+func (m *GeneralSettingsMutation) HolidayIcsErrorCleared() bool {
+	_, ok := m.clearedFields[generalsettings.FieldHolidayIcsError]
+	return ok
+}
+
+// ResetHolidayIcsError resets all changes to the "holiday_ics_error" field.
+func (m *GeneralSettingsMutation) ResetHolidayIcsError() {
+	m.holiday_ics_error = nil
+	delete(m.clearedFields, generalsettings.FieldHolidayIcsError)
 }
 
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by ids.
@@ -15333,7 +15727,7 @@ func (m *GeneralSettingsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GeneralSettingsMutation) Fields() []string {
-	fields := make([]string, 0, 16)
+	fields := make([]string, 0, 23)
 	if m.timeout != nil {
 		fields = append(fields, generalsettings.FieldTimeout)
 	}
@@ -15382,6 +15776,27 @@ func (m *GeneralSettingsMutation) Fields() []string {
 	if m.adaptive_epsilon != nil {
 		fields = append(fields, generalsettings.FieldAdaptiveEpsilon)
 	}
+	if m.latitude != nil {
+		fields = append(fields, generalsettings.FieldLatitude)
+	}
+	if m.longitude != nil {
+		fields = append(fields, generalsettings.FieldLongitude)
+	}
+	if m.holidays != nil {
+		fields = append(fields, generalsettings.FieldHolidays)
+	}
+	if m.holiday_ics_url != nil {
+		fields = append(fields, generalsettings.FieldHolidayIcsURL)
+	}
+	if m.holiday_ics_dates != nil {
+		fields = append(fields, generalsettings.FieldHolidayIcsDates)
+	}
+	if m.holiday_ics_fetched_at != nil {
+		fields = append(fields, generalsettings.FieldHolidayIcsFetchedAt)
+	}
+	if m.holiday_ics_error != nil {
+		fields = append(fields, generalsettings.FieldHolidayIcsError)
+	}
 	return fields
 }
 
@@ -15422,6 +15837,20 @@ func (m *GeneralSettingsMutation) Field(name string) (ent.Value, bool) {
 		return m.AdaptiveWindowDays()
 	case generalsettings.FieldAdaptiveEpsilon:
 		return m.AdaptiveEpsilon()
+	case generalsettings.FieldLatitude:
+		return m.Latitude()
+	case generalsettings.FieldLongitude:
+		return m.Longitude()
+	case generalsettings.FieldHolidays:
+		return m.Holidays()
+	case generalsettings.FieldHolidayIcsURL:
+		return m.HolidayIcsURL()
+	case generalsettings.FieldHolidayIcsDates:
+		return m.HolidayIcsDates()
+	case generalsettings.FieldHolidayIcsFetchedAt:
+		return m.HolidayIcsFetchedAt()
+	case generalsettings.FieldHolidayIcsError:
+		return m.HolidayIcsError()
 	}
 	return nil, false
 }
@@ -15463,6 +15892,20 @@ func (m *GeneralSettingsMutation) OldField(ctx context.Context, name string) (en
 		return m.OldAdaptiveWindowDays(ctx)
 	case generalsettings.FieldAdaptiveEpsilon:
 		return m.OldAdaptiveEpsilon(ctx)
+	case generalsettings.FieldLatitude:
+		return m.OldLatitude(ctx)
+	case generalsettings.FieldLongitude:
+		return m.OldLongitude(ctx)
+	case generalsettings.FieldHolidays:
+		return m.OldHolidays(ctx)
+	case generalsettings.FieldHolidayIcsURL:
+		return m.OldHolidayIcsURL(ctx)
+	case generalsettings.FieldHolidayIcsDates:
+		return m.OldHolidayIcsDates(ctx)
+	case generalsettings.FieldHolidayIcsFetchedAt:
+		return m.OldHolidayIcsFetchedAt(ctx)
+	case generalsettings.FieldHolidayIcsError:
+		return m.OldHolidayIcsError(ctx)
 	}
 	return nil, fmt.Errorf("unknown GeneralSettings field %s", name)
 }
@@ -15584,6 +16027,55 @@ func (m *GeneralSettingsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAdaptiveEpsilon(v)
 		return nil
+	case generalsettings.FieldLatitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLatitude(v)
+		return nil
+	case generalsettings.FieldLongitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLongitude(v)
+		return nil
+	case generalsettings.FieldHolidays:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHolidays(v)
+		return nil
+	case generalsettings.FieldHolidayIcsURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHolidayIcsURL(v)
+		return nil
+	case generalsettings.FieldHolidayIcsDates:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHolidayIcsDates(v)
+		return nil
+	case generalsettings.FieldHolidayIcsFetchedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHolidayIcsFetchedAt(v)
+		return nil
+	case generalsettings.FieldHolidayIcsError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHolidayIcsError(v)
+		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings field %s", name)
 }
@@ -15622,6 +16114,12 @@ func (m *GeneralSettingsMutation) AddedFields() []string {
 	if m.addadaptive_epsilon != nil {
 		fields = append(fields, generalsettings.FieldAdaptiveEpsilon)
 	}
+	if m.addlatitude != nil {
+		fields = append(fields, generalsettings.FieldLatitude)
+	}
+	if m.addlongitude != nil {
+		fields = append(fields, generalsettings.FieldLongitude)
+	}
 	return fields
 }
 
@@ -15650,6 +16148,10 @@ func (m *GeneralSettingsMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedAdaptiveWindowDays()
 	case generalsettings.FieldAdaptiveEpsilon:
 		return m.AddedAdaptiveEpsilon()
+	case generalsettings.FieldLatitude:
+		return m.AddedLatitude()
+	case generalsettings.FieldLongitude:
+		return m.AddedLongitude()
 	}
 	return nil, false
 }
@@ -15729,6 +16231,20 @@ func (m *GeneralSettingsMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddAdaptiveEpsilon(v)
 		return nil
+	case generalsettings.FieldLatitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLatitude(v)
+		return nil
+	case generalsettings.FieldLongitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLongitude(v)
+		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings numeric field %s", name)
 }
@@ -15742,6 +16258,27 @@ func (m *GeneralSettingsMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(generalsettings.FieldEinkMode) {
 		fields = append(fields, generalsettings.FieldEinkMode)
+	}
+	if m.FieldCleared(generalsettings.FieldLatitude) {
+		fields = append(fields, generalsettings.FieldLatitude)
+	}
+	if m.FieldCleared(generalsettings.FieldLongitude) {
+		fields = append(fields, generalsettings.FieldLongitude)
+	}
+	if m.FieldCleared(generalsettings.FieldHolidays) {
+		fields = append(fields, generalsettings.FieldHolidays)
+	}
+	if m.FieldCleared(generalsettings.FieldHolidayIcsURL) {
+		fields = append(fields, generalsettings.FieldHolidayIcsURL)
+	}
+	if m.FieldCleared(generalsettings.FieldHolidayIcsDates) {
+		fields = append(fields, generalsettings.FieldHolidayIcsDates)
+	}
+	if m.FieldCleared(generalsettings.FieldHolidayIcsFetchedAt) {
+		fields = append(fields, generalsettings.FieldHolidayIcsFetchedAt)
+	}
+	if m.FieldCleared(generalsettings.FieldHolidayIcsError) {
+		fields = append(fields, generalsettings.FieldHolidayIcsError)
 	}
 	return fields
 }
@@ -15762,6 +16299,27 @@ func (m *GeneralSettingsMutation) ClearField(name string) error {
 		return nil
 	case generalsettings.FieldEinkMode:
 		m.ClearEinkMode()
+		return nil
+	case generalsettings.FieldLatitude:
+		m.ClearLatitude()
+		return nil
+	case generalsettings.FieldLongitude:
+		m.ClearLongitude()
+		return nil
+	case generalsettings.FieldHolidays:
+		m.ClearHolidays()
+		return nil
+	case generalsettings.FieldHolidayIcsURL:
+		m.ClearHolidayIcsURL()
+		return nil
+	case generalsettings.FieldHolidayIcsDates:
+		m.ClearHolidayIcsDates()
+		return nil
+	case generalsettings.FieldHolidayIcsFetchedAt:
+		m.ClearHolidayIcsFetchedAt()
+		return nil
+	case generalsettings.FieldHolidayIcsError:
+		m.ClearHolidayIcsError()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings nullable field %s", name)
@@ -15818,6 +16376,27 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 		return nil
 	case generalsettings.FieldAdaptiveEpsilon:
 		m.ResetAdaptiveEpsilon()
+		return nil
+	case generalsettings.FieldLatitude:
+		m.ResetLatitude()
+		return nil
+	case generalsettings.FieldLongitude:
+		m.ResetLongitude()
+		return nil
+	case generalsettings.FieldHolidays:
+		m.ResetHolidays()
+		return nil
+	case generalsettings.FieldHolidayIcsURL:
+		m.ResetHolidayIcsURL()
+		return nil
+	case generalsettings.FieldHolidayIcsDates:
+		m.ResetHolidayIcsDates()
+		return nil
+	case generalsettings.FieldHolidayIcsFetchedAt:
+		m.ResetHolidayIcsFetchedAt()
+		return nil
+	case generalsettings.FieldHolidayIcsError:
+		m.ResetHolidayIcsError()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings field %s", name)

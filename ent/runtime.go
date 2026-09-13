@@ -509,6 +509,22 @@ func init() {
 	generalsettingsDescAdaptiveEpsilon := generalsettingsFields[15].Descriptor()
 	// generalsettings.DefaultAdaptiveEpsilon holds the default value on creation for the adaptive_epsilon field.
 	generalsettings.DefaultAdaptiveEpsilon = generalsettingsDescAdaptiveEpsilon.Default.(float64)
+	// generalsettingsDescHolidays is the schema descriptor for holidays field.
+	generalsettingsDescHolidays := generalsettingsFields[18].Descriptor()
+	// generalsettings.DefaultHolidays holds the default value on creation for the holidays field.
+	generalsettings.DefaultHolidays = generalsettingsDescHolidays.Default.(string)
+	// generalsettingsDescHolidayIcsURL is the schema descriptor for holiday_ics_url field.
+	generalsettingsDescHolidayIcsURL := generalsettingsFields[19].Descriptor()
+	// generalsettings.DefaultHolidayIcsURL holds the default value on creation for the holiday_ics_url field.
+	generalsettings.DefaultHolidayIcsURL = generalsettingsDescHolidayIcsURL.Default.(string)
+	// generalsettingsDescHolidayIcsDates is the schema descriptor for holiday_ics_dates field.
+	generalsettingsDescHolidayIcsDates := generalsettingsFields[20].Descriptor()
+	// generalsettings.DefaultHolidayIcsDates holds the default value on creation for the holiday_ics_dates field.
+	generalsettings.DefaultHolidayIcsDates = generalsettingsDescHolidayIcsDates.Default.(string)
+	// generalsettingsDescHolidayIcsError is the schema descriptor for holiday_ics_error field.
+	generalsettingsDescHolidayIcsError := generalsettingsFields[22].Descriptor()
+	// generalsettings.DefaultHolidayIcsError holds the default value on creation for the holiday_ics_error field.
+	generalsettings.DefaultHolidayIcsError = generalsettingsDescHolidayIcsError.Default.(string)
 	genericapiFields := schema.GenericAPI{}.Fields()
 	_ = genericapiFields
 	// genericapiDescToken is the schema descriptor for token field.

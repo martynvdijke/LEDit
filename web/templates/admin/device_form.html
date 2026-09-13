@@ -193,5 +193,73 @@
     render();
 })();
 </script>
+<script>
+(function(){
+    var hidden = document.getElementById('brightness_schedules');
+    var editor = document.getElementById('brightness-editor');
+    var form = document.getElementById('device-form');
+    if (!hidden || !editor) return;
+    var schedules = [];
+    try { var p=JSON.parse(hidden.value||'[]'); if(Array.isArray(p)) schedules=p; } catch(e){ schedules=[]; }
+    var DAY_MAP = [{label:'Mon',value:1},{label:'Tue',value:2},{label:'Wed',value:3},{label:'Thu',value:4},{label:'Fri',value:5},{label:'Sat',value:6},{label:'Sun',value:0}];
+    function clean(obj){
+        var out={days:obj.days||[], start:obj.start||"07:00", end:obj.end||"09:00", level: (obj.level!=null?obj.level:50)};
+        if(obj.time_mode==="sunrise"||obj.time_mode==="sunset") out.time_mode=obj.time_mode;
+        var v=parseInt(obj.offset_minutes,10); if(!isNaN(v)&&v!==0) out.offset_minutes=v;
+        return out;
+    }
+    function sync(){ hidden.value=JSON.stringify(schedules.map(clean)); }
+    function render(){
+        editor.innerHTML='';
+        if(schedules.length===0){
+            var e=document.createElement('div'); e.className='text-muted small fst-italic py-1'; e.textContent='No brightness windows — brightness 100 unless overridden.'; editor.appendChild(e);
+        }
+        schedules.forEach(function(w,idx){
+            var row=document.createElement('div'); row.className='list-group-item d-flex flex-wrap gap-2 align-items-center p-2';
+            var daysWrap=document.createElement('div'); daysWrap.className='d-flex flex-wrap gap-1 align-items-center';
+            DAY_MAP.forEach(function(d){
+                var label=document.createElement('label'); label.className='form-check form-check-inline me-1 mb-0';
+                var cb=document.createElement('input'); cb.type='checkbox'; cb.className='form-check-input'; cb.value=String(d.value); cb.checked=Array.isArray(w.days)&&w.days.indexOf(d.value)!==-1;
+                cb.addEventListener('change',function(){ var vals=[]; daysWrap.querySelectorAll('input[type=checkbox]').forEach(function(c){ if(c.checked) vals.push(parseInt(c.value,10)); }); w.days=vals; sync(); });
+                var txt=document.createElement('span'); txt.className='form-check-label small'; txt.textContent=d.label;
+                label.appendChild(cb); label.appendChild(txt); daysWrap.appendChild(label);
+            });
+            var modeSel=document.createElement('select'); modeSel.className='form-select form-select-sm'; modeSel.style.width='110px';
+            [["fixed","Fixed"],["sunrise","Sunrise"],["sunset","Sunset"]].forEach(function(o){ var opt=document.createElement('option'); opt.value=o[0]; opt.textContent=o[1]; modeSel.appendChild(opt); });
+            modeSel.value=(w.time_mode==="sunrise"||w.time_mode==="sunset")?w.time_mode:"fixed";
+            var offsetInput=document.createElement('input'); offsetInput.type='number'; offsetInput.min='-180'; offsetInput.max='180'; offsetInput.step='1'; offsetInput.className='form-control form-control-sm'; offsetInput.style.width='80px'; offsetInput.value=(w.offset_minutes!=null?w.offset_minutes:0);
+            var offsetWrap=document.createElement('div'); offsetWrap.className='d-flex align-items-center gap-1'; var ml=document.createElement('span'); ml.className='small text-muted'; ml.textContent='min'; offsetWrap.appendChild(offsetInput); offsetWrap.appendChild(ml);
+            var modeWrap=document.createElement('div'); modeWrap.className='d-flex align-items-center gap-1'; modeWrap.appendChild(modeSel); modeWrap.appendChild(offsetWrap);
+            var timeWrap=document.createElement('div'); timeWrap.className='d-flex align-items-center gap-1';
+            var sI=document.createElement('input'); sI.type='time'; sI.className='form-control form-control-sm'; sI.style.width='120px'; sI.value=w.start||'07:00'; sI.addEventListener('change',function(){w.start=sI.value;sync();}); sI.addEventListener('input',function(){w.start=sI.value;sync();});
+            var dash=document.createElement('span'); dash.className='small text-muted'; dash.textContent='—';
+            var eI=document.createElement('input'); eI.type='time'; eI.className='form-control form-control-sm'; eI.style.width='120px'; eI.value=w.end||'09:00'; eI.addEventListener('change',function(){w.end=eI.value;sync();}); eI.addEventListener('input',function(){w.end=eI.value;sync();});
+            timeWrap.appendChild(sI); timeWrap.appendChild(dash); timeWrap.appendChild(eI);
+            var lvlWrap=document.createElement('div'); lvlWrap.className='d-flex align-items-center gap-1'; var ll=document.createElement('span'); ll.className='small text-muted'; ll.textContent='Level'; var lvl=document.createElement('input'); lvl.type='number'; lvl.min='0'; lvl.max='100'; lvl.step='1'; lvl.className='form-control form-control-sm'; lvl.style.width='72px'; lvl.value=(w.level!=null?w.level:50); lvl.addEventListener('change',function(){w.level=parseInt(lvl.value,10)||0;sync();}); lvl.addEventListener('input',function(){w.level=parseInt(lvl.value,10)||0;sync();}); lvlWrap.appendChild(ll); lvlWrap.appendChild(lvl);
+            function syncVis(){
+                var isSun=modeSel.value==='sunrise'||modeSel.value==='sunset';
+                timeWrap.style.display=isSun?'none':''; sI.disabled=isSun; eI.disabled=isSun;
+                offsetWrap.style.display=isSun?'':'none'; offsetInput.disabled=!isSun;
+                if(isSun) w.time_mode=modeSel.value; else { delete w.time_mode; delete w.offset_minutes; offsetInput.value=0; }
+                if(isSun){ var v=parseInt(offsetInput.value,10); if(isNaN(v)) v=0; if(v!==0) w.offset_minutes=v; else delete w.offset_minutes; }
+                sync();
+            }
+            modeSel.addEventListener('change',syncVis);
+            offsetInput.addEventListener('change',function(){ var v=parseInt(offsetInput.value,10); if(isNaN(v)) v=0; if(v<-180) v=-180; if(v>180) v=180; offsetInput.value=v; if(v!==0) w.offset_minutes=v; else delete w.offset_minutes; sync(); });
+            offsetInput.addEventListener('input',function(){ var v=parseInt(offsetInput.value,10); if(isNaN(v)) v=0; if(v!==0) w.offset_minutes=v; else delete w.offset_minutes; sync(); });
+            syncVis();
+            var rm=document.createElement('button'); rm.type='button'; rm.className='btn btn-sm btn-outline-danger ms-auto'; rm.textContent='✕'; rm.addEventListener('click',function(){ schedules.splice(idx,1); sync(); render(); });
+            row.appendChild(daysWrap); row.appendChild(modeWrap); row.appendChild(timeWrap); row.appendChild(lvlWrap); row.appendChild(rm);
+            editor.appendChild(row);
+        });
+        sync();
+    }
+    var addBtn=document.createElement('button'); addBtn.type='button'; addBtn.className='btn btn-sm btn-outline-primary mt-2'; addBtn.textContent='Add brightness window';
+    addBtn.addEventListener('click',function(){ if(schedules.length>=16){ alert('Max 16 windows'); return; } schedules.push({days:[1,2,3,4,5], start:"07:00", end:"19:00", level:50}); sync(); render(); });
+    editor.parentNode.insertBefore(addBtn, editor.nextSibling);
+    if(form) form.addEventListener('submit',function(){ sync(); });
+    render();
+})();
+</script>
 </body><script type="module" src="/static/assets/app.js"></script>
 </html>

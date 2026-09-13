@@ -12,10 +12,12 @@ import (
 // Start inclusive, End exclusive, both HH:MM. When End <= Start the window
 // wraps past midnight (e.g. 22:00-06:00).
 type ScheduleWindow struct {
-	Days     []int  `json:"days"`
-	Start    string `json:"start"`
-	End      string `json:"end"`
-	Priority int    `json:"priority"`
+	Days          []int  `json:"days"`
+	Start         string `json:"start"`
+	End           string `json:"end"`
+	Priority      int    `json:"priority"`
+	TimeMode      string `json:"time_mode,omitempty"`
+	OffsetMinutes int    `json:"offset_minutes,omitempty"`
 }
 
 // PlaylistSchedule is the minimal view needed to resolve schedules. It mirrors
@@ -91,6 +93,16 @@ func ValidateWindows(windows []ScheduleWindow) error {
 			}
 			seen[d] = true
 		}
+		if w.TimeMode != "" && w.TimeMode != "fixed" && w.TimeMode != "sunrise" && w.TimeMode != "sunset" {
+			return fmt.Errorf("window %d: invalid time_mode %q", i, w.TimeMode)
+		}
+		if w.OffsetMinutes < -180 || w.OffsetMinutes > 180 {
+			return fmt.Errorf("window %d: offset_minutes %d out of range -180..180", i, w.OffsetMinutes)
+		}
+		isSun := w.TimeMode == "sunrise" || w.TimeMode == "sunset"
+		if isSun {
+			continue
+		}
 		startMin, err := parseHM(w.Start)
 		if err != nil {
 			return fmt.Errorf("window %d: invalid start %q: %w", i, w.Start, err)
@@ -131,14 +143,44 @@ func parseHM(s string) (int, error) {
 
 // WindowMatches reports whether now (in server-local zone) matches w.
 func WindowMatches(now time.Time, w ScheduleWindow) bool {
-	startMin, err := parseHM(w.Start)
-	if err != nil {
+	if IsHoliday(now) {
 		return false
 	}
-	endMin, err := parseHM(w.End)
-	if err != nil {
-		return false
+	var startMin, endMin int
+	switch w.TimeMode {
+	case "sunrise", "sunset":
+		rise, set, ok := SunTimes(now)
+		if !ok {
+			startMin = 7*60 + w.OffsetMinutes
+			endMin = 19*60 + w.OffsetMinutes
+			break
+		}
+		if w.TimeMode == "sunrise" {
+			startMin = rise + w.OffsetMinutes
+			endMin = set + w.OffsetMinutes
+		} else {
+			tomorrow := now.Add(24 * time.Hour)
+			riseNext, _, ok2 := SunTimes(tomorrow)
+			if !ok2 {
+				riseNext = 7 * 60
+			}
+			startMin = set + w.OffsetMinutes
+			endMin = riseNext + w.OffsetMinutes
+		}
+	default:
+		var err error
+		startMin, err = parseHM(w.Start)
+		if err != nil {
+			return false
+		}
+		endMin, err = parseHM(w.End)
+		if err != nil {
+			return false
+		}
 	}
+	// normalize to 0..1439 after offset
+	startMin = ((startMin % 1440) + 1440) % 1440
+	endMin = ((endMin % 1440) + 1440) % 1440
 	wd := int(now.Weekday())
 	nowMin := now.Hour()*60 + now.Minute()
 	containsDay := func(d int) bool {
@@ -230,6 +272,8 @@ func ResolveScheduledPlaylist(now time.Time, candidates []PlaylistSchedule) *Pla
 // NextSwitchTime computes the next time after now where the active playlist
 // could change (earliest start or end of any window in next 7 days). Returns
 // zero time if no windows. Used for debug/badge "until HH:MM".
+// Note: minute scan automatically covers sun-mode boundaries because WindowMatches
+// resolves sunrise/sunset per evaluated minute via SunTimes; no special sun logic needed.
 func NextSwitchTime(now time.Time, candidates []PlaylistSchedule) time.Time {
 	if len(candidates) == 0 {
 		return time.Time{}

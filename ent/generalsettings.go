@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ledit/ent/generalsettings"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -48,6 +49,20 @@ type GeneralSettings struct {
 	AdaptiveWindowDays int `json:"adaptive_window_days,omitempty"`
 	// AdaptiveEpsilon holds the value of the "adaptive_epsilon" field.
 	AdaptiveEpsilon float64 `json:"adaptive_epsilon,omitempty"`
+	// Latitude holds the value of the "latitude" field.
+	Latitude *float64 `json:"latitude,omitempty"`
+	// Longitude holds the value of the "longitude" field.
+	Longitude *float64 `json:"longitude,omitempty"`
+	// Holidays holds the value of the "holidays" field.
+	Holidays string `json:"holidays,omitempty"`
+	// HolidayIcsURL holds the value of the "holiday_ics_url" field.
+	HolidayIcsURL string `json:"holiday_ics_url,omitempty"`
+	// HolidayIcsDates holds the value of the "holiday_ics_dates" field.
+	HolidayIcsDates string `json:"holiday_ics_dates,omitempty"`
+	// HolidayIcsFetchedAt holds the value of the "holiday_ics_fetched_at" field.
+	HolidayIcsFetchedAt *time.Time `json:"holiday_ics_fetched_at,omitempty"`
+	// HolidayIcsError holds the value of the "holiday_ics_error" field.
+	HolidayIcsError string `json:"holiday_ics_error,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GeneralSettingsQuery when eager-loading is set.
 	Edges        GeneralSettingsEdges `json:"edges"`
@@ -530,12 +545,14 @@ func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case generalsettings.FieldRandom, generalsettings.FieldEinkMode:
 			values[i] = new(sql.NullBool)
-		case generalsettings.FieldTimeout, generalsettings.FieldAdaptiveFloor, generalsettings.FieldAdaptiveEpsilon:
+		case generalsettings.FieldTimeout, generalsettings.FieldAdaptiveFloor, generalsettings.FieldAdaptiveEpsilon, generalsettings.FieldLatitude, generalsettings.FieldLongitude:
 			values[i] = new(sql.NullFloat64)
 		case generalsettings.FieldID, generalsettings.FieldWidth, generalsettings.FieldHeight, generalsettings.FieldTransitionMs, generalsettings.FieldChartRetentionHours, generalsettings.FieldChartMaxPointsPerSource, generalsettings.FieldAdaptiveHalfLifeDays, generalsettings.FieldAdaptiveWindowDays:
 			values[i] = new(sql.NullInt64)
-		case generalsettings.FieldTheme, generalsettings.FieldTransitionStyle, generalsettings.FieldNowPlayingProvider, generalsettings.FieldOrderingMode:
+		case generalsettings.FieldTheme, generalsettings.FieldTransitionStyle, generalsettings.FieldNowPlayingProvider, generalsettings.FieldOrderingMode, generalsettings.FieldHolidays, generalsettings.FieldHolidayIcsURL, generalsettings.FieldHolidayIcsDates, generalsettings.FieldHolidayIcsError:
 			values[i] = new(sql.NullString)
+		case generalsettings.FieldHolidayIcsFetchedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -652,6 +669,51 @@ func (_m *GeneralSettings) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field adaptive_epsilon", values[i])
 			} else if value.Valid {
 				_m.AdaptiveEpsilon = value.Float64
+			}
+		case generalsettings.FieldLatitude:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field latitude", values[i])
+			} else if value.Valid {
+				_m.Latitude = new(float64)
+				*_m.Latitude = value.Float64
+			}
+		case generalsettings.FieldLongitude:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field longitude", values[i])
+			} else if value.Valid {
+				_m.Longitude = new(float64)
+				*_m.Longitude = value.Float64
+			}
+		case generalsettings.FieldHolidays:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field holidays", values[i])
+			} else if value.Valid {
+				_m.Holidays = value.String
+			}
+		case generalsettings.FieldHolidayIcsURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field holiday_ics_url", values[i])
+			} else if value.Valid {
+				_m.HolidayIcsURL = value.String
+			}
+		case generalsettings.FieldHolidayIcsDates:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field holiday_ics_dates", values[i])
+			} else if value.Valid {
+				_m.HolidayIcsDates = value.String
+			}
+		case generalsettings.FieldHolidayIcsFetchedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field holiday_ics_fetched_at", values[i])
+			} else if value.Valid {
+				_m.HolidayIcsFetchedAt = new(time.Time)
+				*_m.HolidayIcsFetchedAt = value.Time
+			}
+		case generalsettings.FieldHolidayIcsError:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field holiday_ics_error", values[i])
+			} else if value.Valid {
+				_m.HolidayIcsError = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -946,6 +1008,33 @@ func (_m *GeneralSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("adaptive_epsilon=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AdaptiveEpsilon))
+	builder.WriteString(", ")
+	if v := _m.Latitude; v != nil {
+		builder.WriteString("latitude=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.Longitude; v != nil {
+		builder.WriteString("longitude=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("holidays=")
+	builder.WriteString(_m.Holidays)
+	builder.WriteString(", ")
+	builder.WriteString("holiday_ics_url=")
+	builder.WriteString(_m.HolidayIcsURL)
+	builder.WriteString(", ")
+	builder.WriteString("holiday_ics_dates=")
+	builder.WriteString(_m.HolidayIcsDates)
+	builder.WriteString(", ")
+	if v := _m.HolidayIcsFetchedAt; v != nil {
+		builder.WriteString("holiday_ics_fetched_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("holiday_ics_error=")
+	builder.WriteString(_m.HolidayIcsError)
 	builder.WriteByte(')')
 	return builder.String()
 }

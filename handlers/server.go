@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"html/template"
 	"io/fs"
 	"log/slog"
@@ -74,6 +75,31 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	}
 
 	srv.setupRoutes()
+	// Init sun/holiday context from DB
+	if gs, err := client.GeneralSettings.Query().First(ctx); err == nil {
+		RefreshTimeContext(gs)
+		if gs.HolidayIcsURL != "" {
+			// ponytail: 24h ticker goroutine, single global ticker; retain last-known on failure
+			go func(url string) {
+				ticker := time.NewTicker(24 * time.Hour)
+				defer ticker.Stop()
+				for range ticker.C {
+					fctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+					dates, err := FetchHolidayICS(fctx, url)
+					cancel()
+					if err != nil {
+						_ = client.GeneralSettings.UpdateOneID(1).SetHolidayIcsError(err.Error()).Exec(context.Background())
+						continue
+					}
+					jb, _ := json.Marshal(dates)
+					_ = client.GeneralSettings.UpdateOneID(1).SetHolidayIcsDates(string(jb)).SetHolidayIcsFetchedAt(time.Now()).SetHolidayIcsError("").Exec(context.Background())
+					if gs2, err := client.GeneralSettings.Query().First(context.Background()); err == nil {
+						RefreshTimeContext(gs2)
+					}
+				}
+			}(gs.HolidayIcsURL)
+		}
+	}
 	StartEventRuleEngine(client)
 	StartIncidentManager(client)
 	StartPluginManager(client)
@@ -380,6 +406,7 @@ func (s *Server) setupRoutes() {
 		admin.GET("/", s.AdminDashboard)
 		admin.GET("/settings", s.AdminSettings)
 		admin.POST("/settings", s.AdminSettingsSave)
+		admin.POST("/settings/holidays/fetch", s.AdminHolidayFetch)
 		admin.GET("/notifications", s.AdminNotifications)
 
 		// Sonarr

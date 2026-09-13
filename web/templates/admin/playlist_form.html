@@ -158,7 +158,17 @@
         {label:'Sun', value:0}
     ];
 
-    function syncHidden(){ hidden.value = JSON.stringify(windows); }
+    function cleanWindow(obj){
+        var out = {days: obj.days || [], start: obj.start || "07:00", end: obj.end || "09:00"};
+        if (obj.priority != null) out.priority = obj.priority;
+        var tm = obj.time_mode;
+        if (tm === "sunrise" || tm === "sunset") out.time_mode = tm;
+        var off = parseInt(obj.offset_minutes,10);
+        if (!isNaN(off) && off !== 0) out.offset_minutes = off;
+        else if (typeof obj.offset_minutes === 'number' && obj.offset_minutes !== 0) out.offset_minutes = obj.offset_minutes;
+        return out;
+    }
+    function syncHidden(){ hidden.value = JSON.stringify(windows.map(cleanWindow)); }
 
     function updateAddState(){
         if (windows.length >= 32){
@@ -210,6 +220,36 @@
                 daysWrap.appendChild(label);
             });
 
+            var modeWrap = document.createElement('div');
+            modeWrap.className = 'd-flex align-items-center gap-1';
+            var modeSelect = document.createElement('select');
+            modeSelect.className = 'form-select form-select-sm';
+            modeSelect.style.width = '120px';
+            [["fixed","Fixed"],["sunrise","Sunrise"],["sunset","Sunset"]].forEach(function(o){
+                var opt=document.createElement('option'); opt.value=o[0]; opt.textContent=o[1]; modeSelect.appendChild(opt);
+            });
+            modeSelect.value = (w.time_mode==="sunrise"||w.time_mode==="sunset") ? w.time_mode : "fixed";
+            modeWrap.appendChild(modeSelect);
+
+            var offsetInput = document.createElement('input');
+            offsetInput.type = 'number';
+            offsetInput.min = '-180';
+            offsetInput.max = '180';
+            offsetInput.step = '1';
+            offsetInput.className = 'form-control form-control-sm';
+            offsetInput.style.width = '90px';
+            offsetInput.placeholder = 'offset';
+            offsetInput.title = 'Offset minutes (-180..180)';
+            offsetInput.value = (w.offset_minutes != null ? w.offset_minutes : 0);
+            var offsetLabel = document.createElement('span');
+            offsetLabel.className = 'small text-muted';
+            offsetLabel.textContent = 'min';
+            var offsetWrap = document.createElement('div');
+            offsetWrap.className = 'd-flex align-items-center gap-1';
+            offsetWrap.appendChild(offsetInput);
+            offsetWrap.appendChild(offsetLabel);
+            modeWrap.appendChild(offsetWrap);
+
             var timeWrap = document.createElement('div');
             timeWrap.className = 'd-flex align-items-center gap-1';
             var startInput = document.createElement('input');
@@ -237,6 +277,26 @@
             timeWrap.appendChild(startInput);
             timeWrap.appendChild(dash);
             timeWrap.appendChild(endInput);
+
+            function syncModeVisibility(){
+                var isSun = modeSelect.value === 'sunrise' || modeSelect.value === 'sunset';
+                timeWrap.style.display = isSun ? 'none' : '';
+                startInput.disabled = isSun;
+                endInput.disabled = isSun;
+                offsetWrap.style.display = isSun ? '' : 'none';
+                offsetInput.disabled = !isSun;
+                if (isSun) { w.time_mode = modeSelect.value; }
+                else { delete w.time_mode; delete w.offset_minutes; offsetInput.value = 0; }
+                if (isSun) {
+                    var v = parseInt(offsetInput.value,10); if(isNaN(v)) v=0; if(v<-180) v=-180; if(v>180) v=180;
+                    if (v !== 0) w.offset_minutes = v; else delete w.offset_minutes;
+                }
+                syncHidden();
+            }
+            modeSelect.addEventListener('change', syncModeVisibility);
+            offsetInput.addEventListener('change', function(){ var v=parseInt(offsetInput.value,10); if(isNaN(v)) v=0; if(v<-180) v=-180; if(v>180) v=180; offsetInput.value=v; if(v!==0) w.offset_minutes=v; else delete w.offset_minutes; syncHidden(); });
+            offsetInput.addEventListener('input', function(){ var v=parseInt(offsetInput.value,10); if(isNaN(v)) v=0; if(v!==0) w.offset_minutes=v; else delete w.offset_minutes; syncHidden(); });
+            syncModeVisibility();
 
             var prioWrap = document.createElement('div');
             prioWrap.className = 'd-flex align-items-center gap-1';
@@ -268,6 +328,7 @@
             });
 
             row.appendChild(daysWrap);
+            row.appendChild(modeWrap);
             row.appendChild(timeWrap);
             row.appendChild(prioWrap);
             row.appendChild(rm);

@@ -50,6 +50,7 @@ import (
 	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -372,6 +373,160 @@ func (_u *GeneralSettingsUpdate) SetNillableAdaptiveEpsilon(v *float64) *General
 // AddAdaptiveEpsilon adds value to the "adaptive_epsilon" field.
 func (_u *GeneralSettingsUpdate) AddAdaptiveEpsilon(v float64) *GeneralSettingsUpdate {
 	_u.mutation.AddAdaptiveEpsilon(v)
+	return _u
+}
+
+// SetLatitude sets the "latitude" field.
+func (_u *GeneralSettingsUpdate) SetLatitude(v float64) *GeneralSettingsUpdate {
+	_u.mutation.ResetLatitude()
+	_u.mutation.SetLatitude(v)
+	return _u
+}
+
+// SetNillableLatitude sets the "latitude" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableLatitude(v *float64) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetLatitude(*v)
+	}
+	return _u
+}
+
+// AddLatitude adds value to the "latitude" field.
+func (_u *GeneralSettingsUpdate) AddLatitude(v float64) *GeneralSettingsUpdate {
+	_u.mutation.AddLatitude(v)
+	return _u
+}
+
+// ClearLatitude clears the value of the "latitude" field.
+func (_u *GeneralSettingsUpdate) ClearLatitude() *GeneralSettingsUpdate {
+	_u.mutation.ClearLatitude()
+	return _u
+}
+
+// SetLongitude sets the "longitude" field.
+func (_u *GeneralSettingsUpdate) SetLongitude(v float64) *GeneralSettingsUpdate {
+	_u.mutation.ResetLongitude()
+	_u.mutation.SetLongitude(v)
+	return _u
+}
+
+// SetNillableLongitude sets the "longitude" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableLongitude(v *float64) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetLongitude(*v)
+	}
+	return _u
+}
+
+// AddLongitude adds value to the "longitude" field.
+func (_u *GeneralSettingsUpdate) AddLongitude(v float64) *GeneralSettingsUpdate {
+	_u.mutation.AddLongitude(v)
+	return _u
+}
+
+// ClearLongitude clears the value of the "longitude" field.
+func (_u *GeneralSettingsUpdate) ClearLongitude() *GeneralSettingsUpdate {
+	_u.mutation.ClearLongitude()
+	return _u
+}
+
+// SetHolidays sets the "holidays" field.
+func (_u *GeneralSettingsUpdate) SetHolidays(v string) *GeneralSettingsUpdate {
+	_u.mutation.SetHolidays(v)
+	return _u
+}
+
+// SetNillableHolidays sets the "holidays" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableHolidays(v *string) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetHolidays(*v)
+	}
+	return _u
+}
+
+// ClearHolidays clears the value of the "holidays" field.
+func (_u *GeneralSettingsUpdate) ClearHolidays() *GeneralSettingsUpdate {
+	_u.mutation.ClearHolidays()
+	return _u
+}
+
+// SetHolidayIcsURL sets the "holiday_ics_url" field.
+func (_u *GeneralSettingsUpdate) SetHolidayIcsURL(v string) *GeneralSettingsUpdate {
+	_u.mutation.SetHolidayIcsURL(v)
+	return _u
+}
+
+// SetNillableHolidayIcsURL sets the "holiday_ics_url" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableHolidayIcsURL(v *string) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetHolidayIcsURL(*v)
+	}
+	return _u
+}
+
+// ClearHolidayIcsURL clears the value of the "holiday_ics_url" field.
+func (_u *GeneralSettingsUpdate) ClearHolidayIcsURL() *GeneralSettingsUpdate {
+	_u.mutation.ClearHolidayIcsURL()
+	return _u
+}
+
+// SetHolidayIcsDates sets the "holiday_ics_dates" field.
+func (_u *GeneralSettingsUpdate) SetHolidayIcsDates(v string) *GeneralSettingsUpdate {
+	_u.mutation.SetHolidayIcsDates(v)
+	return _u
+}
+
+// SetNillableHolidayIcsDates sets the "holiday_ics_dates" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableHolidayIcsDates(v *string) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetHolidayIcsDates(*v)
+	}
+	return _u
+}
+
+// ClearHolidayIcsDates clears the value of the "holiday_ics_dates" field.
+func (_u *GeneralSettingsUpdate) ClearHolidayIcsDates() *GeneralSettingsUpdate {
+	_u.mutation.ClearHolidayIcsDates()
+	return _u
+}
+
+// SetHolidayIcsFetchedAt sets the "holiday_ics_fetched_at" field.
+func (_u *GeneralSettingsUpdate) SetHolidayIcsFetchedAt(v time.Time) *GeneralSettingsUpdate {
+	_u.mutation.SetHolidayIcsFetchedAt(v)
+	return _u
+}
+
+// SetNillableHolidayIcsFetchedAt sets the "holiday_ics_fetched_at" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableHolidayIcsFetchedAt(v *time.Time) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetHolidayIcsFetchedAt(*v)
+	}
+	return _u
+}
+
+// ClearHolidayIcsFetchedAt clears the value of the "holiday_ics_fetched_at" field.
+func (_u *GeneralSettingsUpdate) ClearHolidayIcsFetchedAt() *GeneralSettingsUpdate {
+	_u.mutation.ClearHolidayIcsFetchedAt()
+	return _u
+}
+
+// SetHolidayIcsError sets the "holiday_ics_error" field.
+func (_u *GeneralSettingsUpdate) SetHolidayIcsError(v string) *GeneralSettingsUpdate {
+	_u.mutation.SetHolidayIcsError(v)
+	return _u
+}
+
+// SetNillableHolidayIcsError sets the "holiday_ics_error" field if the given value is not nil.
+func (_u *GeneralSettingsUpdate) SetNillableHolidayIcsError(v *string) *GeneralSettingsUpdate {
+	if v != nil {
+		_u.SetHolidayIcsError(*v)
+	}
+	return _u
+}
+
+// ClearHolidayIcsError clears the value of the "holiday_ics_error" field.
+func (_u *GeneralSettingsUpdate) ClearHolidayIcsError() *GeneralSettingsUpdate {
+	_u.mutation.ClearHolidayIcsError()
 	return _u
 }
 
@@ -2034,6 +2189,54 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if value, ok := _u.mutation.AddedAdaptiveEpsilon(); ok {
 		_spec.AddField(generalsettings.FieldAdaptiveEpsilon, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.Latitude(); ok {
+		_spec.SetField(generalsettings.FieldLatitude, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedLatitude(); ok {
+		_spec.AddField(generalsettings.FieldLatitude, field.TypeFloat64, value)
+	}
+	if _u.mutation.LatitudeCleared() {
+		_spec.ClearField(generalsettings.FieldLatitude, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.Longitude(); ok {
+		_spec.SetField(generalsettings.FieldLongitude, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedLongitude(); ok {
+		_spec.AddField(generalsettings.FieldLongitude, field.TypeFloat64, value)
+	}
+	if _u.mutation.LongitudeCleared() {
+		_spec.ClearField(generalsettings.FieldLongitude, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.Holidays(); ok {
+		_spec.SetField(generalsettings.FieldHolidays, field.TypeString, value)
+	}
+	if _u.mutation.HolidaysCleared() {
+		_spec.ClearField(generalsettings.FieldHolidays, field.TypeString)
+	}
+	if value, ok := _u.mutation.HolidayIcsURL(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsURL, field.TypeString, value)
+	}
+	if _u.mutation.HolidayIcsURLCleared() {
+		_spec.ClearField(generalsettings.FieldHolidayIcsURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.HolidayIcsDates(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsDates, field.TypeString, value)
+	}
+	if _u.mutation.HolidayIcsDatesCleared() {
+		_spec.ClearField(generalsettings.FieldHolidayIcsDates, field.TypeString)
+	}
+	if value, ok := _u.mutation.HolidayIcsFetchedAt(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsFetchedAt, field.TypeTime, value)
+	}
+	if _u.mutation.HolidayIcsFetchedAtCleared() {
+		_spec.ClearField(generalsettings.FieldHolidayIcsFetchedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.HolidayIcsError(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsError, field.TypeString, value)
+	}
+	if _u.mutation.HolidayIcsErrorCleared() {
+		_spec.ClearField(generalsettings.FieldHolidayIcsError, field.TypeString)
 	}
 	if _u.mutation.SonarrCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -4251,6 +4454,160 @@ func (_u *GeneralSettingsUpdateOne) AddAdaptiveEpsilon(v float64) *GeneralSettin
 	return _u
 }
 
+// SetLatitude sets the "latitude" field.
+func (_u *GeneralSettingsUpdateOne) SetLatitude(v float64) *GeneralSettingsUpdateOne {
+	_u.mutation.ResetLatitude()
+	_u.mutation.SetLatitude(v)
+	return _u
+}
+
+// SetNillableLatitude sets the "latitude" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableLatitude(v *float64) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetLatitude(*v)
+	}
+	return _u
+}
+
+// AddLatitude adds value to the "latitude" field.
+func (_u *GeneralSettingsUpdateOne) AddLatitude(v float64) *GeneralSettingsUpdateOne {
+	_u.mutation.AddLatitude(v)
+	return _u
+}
+
+// ClearLatitude clears the value of the "latitude" field.
+func (_u *GeneralSettingsUpdateOne) ClearLatitude() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearLatitude()
+	return _u
+}
+
+// SetLongitude sets the "longitude" field.
+func (_u *GeneralSettingsUpdateOne) SetLongitude(v float64) *GeneralSettingsUpdateOne {
+	_u.mutation.ResetLongitude()
+	_u.mutation.SetLongitude(v)
+	return _u
+}
+
+// SetNillableLongitude sets the "longitude" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableLongitude(v *float64) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetLongitude(*v)
+	}
+	return _u
+}
+
+// AddLongitude adds value to the "longitude" field.
+func (_u *GeneralSettingsUpdateOne) AddLongitude(v float64) *GeneralSettingsUpdateOne {
+	_u.mutation.AddLongitude(v)
+	return _u
+}
+
+// ClearLongitude clears the value of the "longitude" field.
+func (_u *GeneralSettingsUpdateOne) ClearLongitude() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearLongitude()
+	return _u
+}
+
+// SetHolidays sets the "holidays" field.
+func (_u *GeneralSettingsUpdateOne) SetHolidays(v string) *GeneralSettingsUpdateOne {
+	_u.mutation.SetHolidays(v)
+	return _u
+}
+
+// SetNillableHolidays sets the "holidays" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableHolidays(v *string) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetHolidays(*v)
+	}
+	return _u
+}
+
+// ClearHolidays clears the value of the "holidays" field.
+func (_u *GeneralSettingsUpdateOne) ClearHolidays() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearHolidays()
+	return _u
+}
+
+// SetHolidayIcsURL sets the "holiday_ics_url" field.
+func (_u *GeneralSettingsUpdateOne) SetHolidayIcsURL(v string) *GeneralSettingsUpdateOne {
+	_u.mutation.SetHolidayIcsURL(v)
+	return _u
+}
+
+// SetNillableHolidayIcsURL sets the "holiday_ics_url" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableHolidayIcsURL(v *string) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetHolidayIcsURL(*v)
+	}
+	return _u
+}
+
+// ClearHolidayIcsURL clears the value of the "holiday_ics_url" field.
+func (_u *GeneralSettingsUpdateOne) ClearHolidayIcsURL() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearHolidayIcsURL()
+	return _u
+}
+
+// SetHolidayIcsDates sets the "holiday_ics_dates" field.
+func (_u *GeneralSettingsUpdateOne) SetHolidayIcsDates(v string) *GeneralSettingsUpdateOne {
+	_u.mutation.SetHolidayIcsDates(v)
+	return _u
+}
+
+// SetNillableHolidayIcsDates sets the "holiday_ics_dates" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableHolidayIcsDates(v *string) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetHolidayIcsDates(*v)
+	}
+	return _u
+}
+
+// ClearHolidayIcsDates clears the value of the "holiday_ics_dates" field.
+func (_u *GeneralSettingsUpdateOne) ClearHolidayIcsDates() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearHolidayIcsDates()
+	return _u
+}
+
+// SetHolidayIcsFetchedAt sets the "holiday_ics_fetched_at" field.
+func (_u *GeneralSettingsUpdateOne) SetHolidayIcsFetchedAt(v time.Time) *GeneralSettingsUpdateOne {
+	_u.mutation.SetHolidayIcsFetchedAt(v)
+	return _u
+}
+
+// SetNillableHolidayIcsFetchedAt sets the "holiday_ics_fetched_at" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableHolidayIcsFetchedAt(v *time.Time) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetHolidayIcsFetchedAt(*v)
+	}
+	return _u
+}
+
+// ClearHolidayIcsFetchedAt clears the value of the "holiday_ics_fetched_at" field.
+func (_u *GeneralSettingsUpdateOne) ClearHolidayIcsFetchedAt() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearHolidayIcsFetchedAt()
+	return _u
+}
+
+// SetHolidayIcsError sets the "holiday_ics_error" field.
+func (_u *GeneralSettingsUpdateOne) SetHolidayIcsError(v string) *GeneralSettingsUpdateOne {
+	_u.mutation.SetHolidayIcsError(v)
+	return _u
+}
+
+// SetNillableHolidayIcsError sets the "holiday_ics_error" field if the given value is not nil.
+func (_u *GeneralSettingsUpdateOne) SetNillableHolidayIcsError(v *string) *GeneralSettingsUpdateOne {
+	if v != nil {
+		_u.SetHolidayIcsError(*v)
+	}
+	return _u
+}
+
+// ClearHolidayIcsError clears the value of the "holiday_ics_error" field.
+func (_u *GeneralSettingsUpdateOne) ClearHolidayIcsError() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearHolidayIcsError()
+	return _u
+}
+
 // AddSonarrIDs adds the "sonarr" edge to the Sonarr entity by IDs.
 func (_u *GeneralSettingsUpdateOne) AddSonarrIDs(ids ...int) *GeneralSettingsUpdateOne {
 	_u.mutation.AddSonarrIDs(ids...)
@@ -5940,6 +6297,54 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 	}
 	if value, ok := _u.mutation.AddedAdaptiveEpsilon(); ok {
 		_spec.AddField(generalsettings.FieldAdaptiveEpsilon, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.Latitude(); ok {
+		_spec.SetField(generalsettings.FieldLatitude, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedLatitude(); ok {
+		_spec.AddField(generalsettings.FieldLatitude, field.TypeFloat64, value)
+	}
+	if _u.mutation.LatitudeCleared() {
+		_spec.ClearField(generalsettings.FieldLatitude, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.Longitude(); ok {
+		_spec.SetField(generalsettings.FieldLongitude, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedLongitude(); ok {
+		_spec.AddField(generalsettings.FieldLongitude, field.TypeFloat64, value)
+	}
+	if _u.mutation.LongitudeCleared() {
+		_spec.ClearField(generalsettings.FieldLongitude, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.Holidays(); ok {
+		_spec.SetField(generalsettings.FieldHolidays, field.TypeString, value)
+	}
+	if _u.mutation.HolidaysCleared() {
+		_spec.ClearField(generalsettings.FieldHolidays, field.TypeString)
+	}
+	if value, ok := _u.mutation.HolidayIcsURL(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsURL, field.TypeString, value)
+	}
+	if _u.mutation.HolidayIcsURLCleared() {
+		_spec.ClearField(generalsettings.FieldHolidayIcsURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.HolidayIcsDates(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsDates, field.TypeString, value)
+	}
+	if _u.mutation.HolidayIcsDatesCleared() {
+		_spec.ClearField(generalsettings.FieldHolidayIcsDates, field.TypeString)
+	}
+	if value, ok := _u.mutation.HolidayIcsFetchedAt(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsFetchedAt, field.TypeTime, value)
+	}
+	if _u.mutation.HolidayIcsFetchedAtCleared() {
+		_spec.ClearField(generalsettings.FieldHolidayIcsFetchedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.HolidayIcsError(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsError, field.TypeString, value)
+	}
+	if _u.mutation.HolidayIcsErrorCleared() {
+		_spec.ClearField(generalsettings.FieldHolidayIcsError, field.TypeString)
 	}
 	if _u.mutation.SonarrCleared() {
 		edge := &sqlgraph.EdgeSpec{

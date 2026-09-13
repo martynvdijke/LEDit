@@ -49,6 +49,7 @@ import (
 	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -265,6 +266,104 @@ func (_c *GeneralSettingsCreate) SetAdaptiveEpsilon(v float64) *GeneralSettingsC
 func (_c *GeneralSettingsCreate) SetNillableAdaptiveEpsilon(v *float64) *GeneralSettingsCreate {
 	if v != nil {
 		_c.SetAdaptiveEpsilon(*v)
+	}
+	return _c
+}
+
+// SetLatitude sets the "latitude" field.
+func (_c *GeneralSettingsCreate) SetLatitude(v float64) *GeneralSettingsCreate {
+	_c.mutation.SetLatitude(v)
+	return _c
+}
+
+// SetNillableLatitude sets the "latitude" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableLatitude(v *float64) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetLatitude(*v)
+	}
+	return _c
+}
+
+// SetLongitude sets the "longitude" field.
+func (_c *GeneralSettingsCreate) SetLongitude(v float64) *GeneralSettingsCreate {
+	_c.mutation.SetLongitude(v)
+	return _c
+}
+
+// SetNillableLongitude sets the "longitude" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableLongitude(v *float64) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetLongitude(*v)
+	}
+	return _c
+}
+
+// SetHolidays sets the "holidays" field.
+func (_c *GeneralSettingsCreate) SetHolidays(v string) *GeneralSettingsCreate {
+	_c.mutation.SetHolidays(v)
+	return _c
+}
+
+// SetNillableHolidays sets the "holidays" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableHolidays(v *string) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetHolidays(*v)
+	}
+	return _c
+}
+
+// SetHolidayIcsURL sets the "holiday_ics_url" field.
+func (_c *GeneralSettingsCreate) SetHolidayIcsURL(v string) *GeneralSettingsCreate {
+	_c.mutation.SetHolidayIcsURL(v)
+	return _c
+}
+
+// SetNillableHolidayIcsURL sets the "holiday_ics_url" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableHolidayIcsURL(v *string) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetHolidayIcsURL(*v)
+	}
+	return _c
+}
+
+// SetHolidayIcsDates sets the "holiday_ics_dates" field.
+func (_c *GeneralSettingsCreate) SetHolidayIcsDates(v string) *GeneralSettingsCreate {
+	_c.mutation.SetHolidayIcsDates(v)
+	return _c
+}
+
+// SetNillableHolidayIcsDates sets the "holiday_ics_dates" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableHolidayIcsDates(v *string) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetHolidayIcsDates(*v)
+	}
+	return _c
+}
+
+// SetHolidayIcsFetchedAt sets the "holiday_ics_fetched_at" field.
+func (_c *GeneralSettingsCreate) SetHolidayIcsFetchedAt(v time.Time) *GeneralSettingsCreate {
+	_c.mutation.SetHolidayIcsFetchedAt(v)
+	return _c
+}
+
+// SetNillableHolidayIcsFetchedAt sets the "holiday_ics_fetched_at" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableHolidayIcsFetchedAt(v *time.Time) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetHolidayIcsFetchedAt(*v)
+	}
+	return _c
+}
+
+// SetHolidayIcsError sets the "holiday_ics_error" field.
+func (_c *GeneralSettingsCreate) SetHolidayIcsError(v string) *GeneralSettingsCreate {
+	_c.mutation.SetHolidayIcsError(v)
+	return _c
+}
+
+// SetNillableHolidayIcsError sets the "holiday_ics_error" field if the given value is not nil.
+func (_c *GeneralSettingsCreate) SetNillableHolidayIcsError(v *string) *GeneralSettingsCreate {
+	if v != nil {
+		_c.SetHolidayIcsError(*v)
 	}
 	return _c
 }
@@ -990,6 +1089,22 @@ func (_c *GeneralSettingsCreate) defaults() {
 		v := generalsettings.DefaultAdaptiveEpsilon
 		_c.mutation.SetAdaptiveEpsilon(v)
 	}
+	if _, ok := _c.mutation.Holidays(); !ok {
+		v := generalsettings.DefaultHolidays
+		_c.mutation.SetHolidays(v)
+	}
+	if _, ok := _c.mutation.HolidayIcsURL(); !ok {
+		v := generalsettings.DefaultHolidayIcsURL
+		_c.mutation.SetHolidayIcsURL(v)
+	}
+	if _, ok := _c.mutation.HolidayIcsDates(); !ok {
+		v := generalsettings.DefaultHolidayIcsDates
+		_c.mutation.SetHolidayIcsDates(v)
+	}
+	if _, ok := _c.mutation.HolidayIcsError(); !ok {
+		v := generalsettings.DefaultHolidayIcsError
+		_c.mutation.SetHolidayIcsError(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -1140,6 +1255,34 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 	if value, ok := _c.mutation.AdaptiveEpsilon(); ok {
 		_spec.SetField(generalsettings.FieldAdaptiveEpsilon, field.TypeFloat64, value)
 		_node.AdaptiveEpsilon = value
+	}
+	if value, ok := _c.mutation.Latitude(); ok {
+		_spec.SetField(generalsettings.FieldLatitude, field.TypeFloat64, value)
+		_node.Latitude = &value
+	}
+	if value, ok := _c.mutation.Longitude(); ok {
+		_spec.SetField(generalsettings.FieldLongitude, field.TypeFloat64, value)
+		_node.Longitude = &value
+	}
+	if value, ok := _c.mutation.Holidays(); ok {
+		_spec.SetField(generalsettings.FieldHolidays, field.TypeString, value)
+		_node.Holidays = value
+	}
+	if value, ok := _c.mutation.HolidayIcsURL(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsURL, field.TypeString, value)
+		_node.HolidayIcsURL = value
+	}
+	if value, ok := _c.mutation.HolidayIcsDates(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsDates, field.TypeString, value)
+		_node.HolidayIcsDates = value
+	}
+	if value, ok := _c.mutation.HolidayIcsFetchedAt(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsFetchedAt, field.TypeTime, value)
+		_node.HolidayIcsFetchedAt = &value
+	}
+	if value, ok := _c.mutation.HolidayIcsError(); ok {
+		_spec.SetField(generalsettings.FieldHolidayIcsError, field.TypeString, value)
+		_node.HolidayIcsError = value
 	}
 	if nodes := _c.mutation.SonarrIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

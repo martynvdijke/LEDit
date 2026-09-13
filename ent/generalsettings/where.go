@@ -4,6 +4,7 @@ package generalsettings
 
 import (
 	"ledit/ent/predicate"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -132,6 +133,41 @@ func AdaptiveWindowDays(v int) predicate.GeneralSettings {
 // AdaptiveEpsilon applies equality check predicate on the "adaptive_epsilon" field. It's identical to AdaptiveEpsilonEQ.
 func AdaptiveEpsilon(v float64) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldEQ(FieldAdaptiveEpsilon, v))
+}
+
+// Latitude applies equality check predicate on the "latitude" field. It's identical to LatitudeEQ.
+func Latitude(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldLatitude, v))
+}
+
+// Longitude applies equality check predicate on the "longitude" field. It's identical to LongitudeEQ.
+func Longitude(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldLongitude, v))
+}
+
+// Holidays applies equality check predicate on the "holidays" field. It's identical to HolidaysEQ.
+func Holidays(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldHolidays, v))
+}
+
+// HolidayIcsURL applies equality check predicate on the "holiday_ics_url" field. It's identical to HolidayIcsURLEQ.
+func HolidayIcsURL(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsDates applies equality check predicate on the "holiday_ics_dates" field. It's identical to HolidayIcsDatesEQ.
+func HolidayIcsDates(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsFetchedAt applies equality check predicate on the "holiday_ics_fetched_at" field. It's identical to HolidayIcsFetchedAtEQ.
+func HolidayIcsFetchedAt(v time.Time) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldHolidayIcsFetchedAt, v))
+}
+
+// HolidayIcsError applies equality check predicate on the "holiday_ics_error" field. It's identical to HolidayIcsErrorEQ.
+func HolidayIcsError(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldHolidayIcsError, v))
 }
 
 // TimeoutEQ applies the EQ predicate on the "timeout" field.
@@ -832,6 +868,456 @@ func AdaptiveEpsilonLT(v float64) predicate.GeneralSettings {
 // AdaptiveEpsilonLTE applies the LTE predicate on the "adaptive_epsilon" field.
 func AdaptiveEpsilonLTE(v float64) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.FieldLTE(FieldAdaptiveEpsilon, v))
+}
+
+// LatitudeEQ applies the EQ predicate on the "latitude" field.
+func LatitudeEQ(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldLatitude, v))
+}
+
+// LatitudeNEQ applies the NEQ predicate on the "latitude" field.
+func LatitudeNEQ(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldLatitude, v))
+}
+
+// LatitudeIn applies the In predicate on the "latitude" field.
+func LatitudeIn(vs ...float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldLatitude, vs...))
+}
+
+// LatitudeNotIn applies the NotIn predicate on the "latitude" field.
+func LatitudeNotIn(vs ...float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldLatitude, vs...))
+}
+
+// LatitudeGT applies the GT predicate on the "latitude" field.
+func LatitudeGT(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldLatitude, v))
+}
+
+// LatitudeGTE applies the GTE predicate on the "latitude" field.
+func LatitudeGTE(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldLatitude, v))
+}
+
+// LatitudeLT applies the LT predicate on the "latitude" field.
+func LatitudeLT(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldLatitude, v))
+}
+
+// LatitudeLTE applies the LTE predicate on the "latitude" field.
+func LatitudeLTE(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldLatitude, v))
+}
+
+// LatitudeIsNil applies the IsNil predicate on the "latitude" field.
+func LatitudeIsNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIsNull(FieldLatitude))
+}
+
+// LatitudeNotNil applies the NotNil predicate on the "latitude" field.
+func LatitudeNotNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotNull(FieldLatitude))
+}
+
+// LongitudeEQ applies the EQ predicate on the "longitude" field.
+func LongitudeEQ(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldLongitude, v))
+}
+
+// LongitudeNEQ applies the NEQ predicate on the "longitude" field.
+func LongitudeNEQ(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldLongitude, v))
+}
+
+// LongitudeIn applies the In predicate on the "longitude" field.
+func LongitudeIn(vs ...float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldLongitude, vs...))
+}
+
+// LongitudeNotIn applies the NotIn predicate on the "longitude" field.
+func LongitudeNotIn(vs ...float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldLongitude, vs...))
+}
+
+// LongitudeGT applies the GT predicate on the "longitude" field.
+func LongitudeGT(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldLongitude, v))
+}
+
+// LongitudeGTE applies the GTE predicate on the "longitude" field.
+func LongitudeGTE(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldLongitude, v))
+}
+
+// LongitudeLT applies the LT predicate on the "longitude" field.
+func LongitudeLT(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldLongitude, v))
+}
+
+// LongitudeLTE applies the LTE predicate on the "longitude" field.
+func LongitudeLTE(v float64) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldLongitude, v))
+}
+
+// LongitudeIsNil applies the IsNil predicate on the "longitude" field.
+func LongitudeIsNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIsNull(FieldLongitude))
+}
+
+// LongitudeNotNil applies the NotNil predicate on the "longitude" field.
+func LongitudeNotNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotNull(FieldLongitude))
+}
+
+// HolidaysEQ applies the EQ predicate on the "holidays" field.
+func HolidaysEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldHolidays, v))
+}
+
+// HolidaysNEQ applies the NEQ predicate on the "holidays" field.
+func HolidaysNEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldHolidays, v))
+}
+
+// HolidaysIn applies the In predicate on the "holidays" field.
+func HolidaysIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldHolidays, vs...))
+}
+
+// HolidaysNotIn applies the NotIn predicate on the "holidays" field.
+func HolidaysNotIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldHolidays, vs...))
+}
+
+// HolidaysGT applies the GT predicate on the "holidays" field.
+func HolidaysGT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldHolidays, v))
+}
+
+// HolidaysGTE applies the GTE predicate on the "holidays" field.
+func HolidaysGTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldHolidays, v))
+}
+
+// HolidaysLT applies the LT predicate on the "holidays" field.
+func HolidaysLT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldHolidays, v))
+}
+
+// HolidaysLTE applies the LTE predicate on the "holidays" field.
+func HolidaysLTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldHolidays, v))
+}
+
+// HolidaysContains applies the Contains predicate on the "holidays" field.
+func HolidaysContains(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContains(FieldHolidays, v))
+}
+
+// HolidaysHasPrefix applies the HasPrefix predicate on the "holidays" field.
+func HolidaysHasPrefix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasPrefix(FieldHolidays, v))
+}
+
+// HolidaysHasSuffix applies the HasSuffix predicate on the "holidays" field.
+func HolidaysHasSuffix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasSuffix(FieldHolidays, v))
+}
+
+// HolidaysIsNil applies the IsNil predicate on the "holidays" field.
+func HolidaysIsNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIsNull(FieldHolidays))
+}
+
+// HolidaysNotNil applies the NotNil predicate on the "holidays" field.
+func HolidaysNotNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotNull(FieldHolidays))
+}
+
+// HolidaysEqualFold applies the EqualFold predicate on the "holidays" field.
+func HolidaysEqualFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEqualFold(FieldHolidays, v))
+}
+
+// HolidaysContainsFold applies the ContainsFold predicate on the "holidays" field.
+func HolidaysContainsFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContainsFold(FieldHolidays, v))
+}
+
+// HolidayIcsURLEQ applies the EQ predicate on the "holiday_ics_url" field.
+func HolidayIcsURLEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsURLNEQ applies the NEQ predicate on the "holiday_ics_url" field.
+func HolidayIcsURLNEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsURLIn applies the In predicate on the "holiday_ics_url" field.
+func HolidayIcsURLIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldHolidayIcsURL, vs...))
+}
+
+// HolidayIcsURLNotIn applies the NotIn predicate on the "holiday_ics_url" field.
+func HolidayIcsURLNotIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldHolidayIcsURL, vs...))
+}
+
+// HolidayIcsURLGT applies the GT predicate on the "holiday_ics_url" field.
+func HolidayIcsURLGT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsURLGTE applies the GTE predicate on the "holiday_ics_url" field.
+func HolidayIcsURLGTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsURLLT applies the LT predicate on the "holiday_ics_url" field.
+func HolidayIcsURLLT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsURLLTE applies the LTE predicate on the "holiday_ics_url" field.
+func HolidayIcsURLLTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsURLContains applies the Contains predicate on the "holiday_ics_url" field.
+func HolidayIcsURLContains(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContains(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsURLHasPrefix applies the HasPrefix predicate on the "holiday_ics_url" field.
+func HolidayIcsURLHasPrefix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasPrefix(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsURLHasSuffix applies the HasSuffix predicate on the "holiday_ics_url" field.
+func HolidayIcsURLHasSuffix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasSuffix(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsURLIsNil applies the IsNil predicate on the "holiday_ics_url" field.
+func HolidayIcsURLIsNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIsNull(FieldHolidayIcsURL))
+}
+
+// HolidayIcsURLNotNil applies the NotNil predicate on the "holiday_ics_url" field.
+func HolidayIcsURLNotNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotNull(FieldHolidayIcsURL))
+}
+
+// HolidayIcsURLEqualFold applies the EqualFold predicate on the "holiday_ics_url" field.
+func HolidayIcsURLEqualFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEqualFold(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsURLContainsFold applies the ContainsFold predicate on the "holiday_ics_url" field.
+func HolidayIcsURLContainsFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContainsFold(FieldHolidayIcsURL, v))
+}
+
+// HolidayIcsDatesEQ applies the EQ predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsDatesNEQ applies the NEQ predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesNEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsDatesIn applies the In predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldHolidayIcsDates, vs...))
+}
+
+// HolidayIcsDatesNotIn applies the NotIn predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesNotIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldHolidayIcsDates, vs...))
+}
+
+// HolidayIcsDatesGT applies the GT predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesGT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsDatesGTE applies the GTE predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesGTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsDatesLT applies the LT predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesLT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsDatesLTE applies the LTE predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesLTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsDatesContains applies the Contains predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesContains(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContains(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsDatesHasPrefix applies the HasPrefix predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesHasPrefix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasPrefix(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsDatesHasSuffix applies the HasSuffix predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesHasSuffix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasSuffix(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsDatesIsNil applies the IsNil predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesIsNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIsNull(FieldHolidayIcsDates))
+}
+
+// HolidayIcsDatesNotNil applies the NotNil predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesNotNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotNull(FieldHolidayIcsDates))
+}
+
+// HolidayIcsDatesEqualFold applies the EqualFold predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesEqualFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEqualFold(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsDatesContainsFold applies the ContainsFold predicate on the "holiday_ics_dates" field.
+func HolidayIcsDatesContainsFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContainsFold(FieldHolidayIcsDates, v))
+}
+
+// HolidayIcsFetchedAtEQ applies the EQ predicate on the "holiday_ics_fetched_at" field.
+func HolidayIcsFetchedAtEQ(v time.Time) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldHolidayIcsFetchedAt, v))
+}
+
+// HolidayIcsFetchedAtNEQ applies the NEQ predicate on the "holiday_ics_fetched_at" field.
+func HolidayIcsFetchedAtNEQ(v time.Time) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldHolidayIcsFetchedAt, v))
+}
+
+// HolidayIcsFetchedAtIn applies the In predicate on the "holiday_ics_fetched_at" field.
+func HolidayIcsFetchedAtIn(vs ...time.Time) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldHolidayIcsFetchedAt, vs...))
+}
+
+// HolidayIcsFetchedAtNotIn applies the NotIn predicate on the "holiday_ics_fetched_at" field.
+func HolidayIcsFetchedAtNotIn(vs ...time.Time) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldHolidayIcsFetchedAt, vs...))
+}
+
+// HolidayIcsFetchedAtGT applies the GT predicate on the "holiday_ics_fetched_at" field.
+func HolidayIcsFetchedAtGT(v time.Time) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldHolidayIcsFetchedAt, v))
+}
+
+// HolidayIcsFetchedAtGTE applies the GTE predicate on the "holiday_ics_fetched_at" field.
+func HolidayIcsFetchedAtGTE(v time.Time) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldHolidayIcsFetchedAt, v))
+}
+
+// HolidayIcsFetchedAtLT applies the LT predicate on the "holiday_ics_fetched_at" field.
+func HolidayIcsFetchedAtLT(v time.Time) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldHolidayIcsFetchedAt, v))
+}
+
+// HolidayIcsFetchedAtLTE applies the LTE predicate on the "holiday_ics_fetched_at" field.
+func HolidayIcsFetchedAtLTE(v time.Time) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldHolidayIcsFetchedAt, v))
+}
+
+// HolidayIcsFetchedAtIsNil applies the IsNil predicate on the "holiday_ics_fetched_at" field.
+func HolidayIcsFetchedAtIsNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIsNull(FieldHolidayIcsFetchedAt))
+}
+
+// HolidayIcsFetchedAtNotNil applies the NotNil predicate on the "holiday_ics_fetched_at" field.
+func HolidayIcsFetchedAtNotNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotNull(FieldHolidayIcsFetchedAt))
+}
+
+// HolidayIcsErrorEQ applies the EQ predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEQ(FieldHolidayIcsError, v))
+}
+
+// HolidayIcsErrorNEQ applies the NEQ predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorNEQ(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNEQ(FieldHolidayIcsError, v))
+}
+
+// HolidayIcsErrorIn applies the In predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIn(FieldHolidayIcsError, vs...))
+}
+
+// HolidayIcsErrorNotIn applies the NotIn predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorNotIn(vs ...string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotIn(FieldHolidayIcsError, vs...))
+}
+
+// HolidayIcsErrorGT applies the GT predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorGT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGT(FieldHolidayIcsError, v))
+}
+
+// HolidayIcsErrorGTE applies the GTE predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorGTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldGTE(FieldHolidayIcsError, v))
+}
+
+// HolidayIcsErrorLT applies the LT predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorLT(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLT(FieldHolidayIcsError, v))
+}
+
+// HolidayIcsErrorLTE applies the LTE predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorLTE(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldLTE(FieldHolidayIcsError, v))
+}
+
+// HolidayIcsErrorContains applies the Contains predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorContains(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContains(FieldHolidayIcsError, v))
+}
+
+// HolidayIcsErrorHasPrefix applies the HasPrefix predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorHasPrefix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasPrefix(FieldHolidayIcsError, v))
+}
+
+// HolidayIcsErrorHasSuffix applies the HasSuffix predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorHasSuffix(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldHasSuffix(FieldHolidayIcsError, v))
+}
+
+// HolidayIcsErrorIsNil applies the IsNil predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorIsNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldIsNull(FieldHolidayIcsError))
+}
+
+// HolidayIcsErrorNotNil applies the NotNil predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorNotNil() predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldNotNull(FieldHolidayIcsError))
+}
+
+// HolidayIcsErrorEqualFold applies the EqualFold predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorEqualFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldEqualFold(FieldHolidayIcsError, v))
+}
+
+// HolidayIcsErrorContainsFold applies the ContainsFold predicate on the "holiday_ics_error" field.
+func HolidayIcsErrorContainsFold(v string) predicate.GeneralSettings {
+	return predicate.GeneralSettings(sql.FieldContainsFold(FieldHolidayIcsError, v))
 }
 
 // HasSonarr applies the HasEdge predicate on the "sonarr" edge.

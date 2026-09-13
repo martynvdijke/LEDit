@@ -44,6 +44,13 @@ func (GeneralSettings) Fields() []ent.Field {
 		field.Int("adaptive_half_life_days").Default(7),
 		field.Int("adaptive_window_days").Default(14),
 		field.Float("adaptive_epsilon").Default(0.15),
+		field.Float("latitude").Optional().Nillable(),
+		field.Float("longitude").Optional().Nillable(),
+		field.Text("holidays").Default("[]").Optional(),
+		field.String("holiday_ics_url").Default("").Optional(),
+		field.Text("holiday_ics_dates").Default("[]").Optional(),
+		field.Time("holiday_ics_fetched_at").Optional().Nillable(),
+		field.String("holiday_ics_error").Default("").Optional(),
 	}
 }
 

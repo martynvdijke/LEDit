@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -10,6 +11,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -356,9 +358,59 @@ func (s *Server) AdminSettings(c *gin.Context) {
 	if err != nil {
 		settings = nil
 	}
+	// Build template vars for sun/holiday UI contract
+	var latVal, lonVal string
+	var latSet, lonSet bool
+	var holidaysJSON, holidaysText, holidayICSURL, holidayStatus, holidayLastFetch, sunriseToday, sunsetToday string
+	holidaysJSON = "[]"
+	if settings != nil {
+		if settings.Latitude != nil {
+			latVal = fmt.Sprintf("%v", *settings.Latitude)
+			latSet = true
+		}
+		if settings.Longitude != nil {
+			lonVal = fmt.Sprintf("%v", *settings.Longitude)
+			lonSet = true
+		}
+		if settings.Holidays != "" {
+			holidaysJSON = settings.Holidays
+			var arr []string
+			if err := json.Unmarshal([]byte(settings.Holidays), &arr); err == nil {
+				holidaysText = strings.Join(arr, "\n")
+			}
+		}
+		holidayICSURL = settings.HolidayIcsURL
+		holidayStatus = settings.HolidayIcsError
+		if settings.HolidayIcsFetchedAt != nil {
+			holidayLastFetch = settings.HolidayIcsFetchedAt.Format(time.RFC3339)
+		}
+		// sunrise/sunset today
+		rise, set, _ := SunTimes(time.Now())
+		sunriseToday = fmt.Sprintf("%02d:%02d", rise/60, rise%60)
+		sunsetToday = fmt.Sprintf("%02d:%02d", set/60, set%60)
+		if settings.Latitude == nil || settings.Longitude == nil {
+			sunriseToday = "—"
+			sunsetToday = "—"
+		}
+	} else {
+		sunriseToday = "—"
+		sunsetToday = "—"
+	}
 	s.renderPage(c, http.StatusOK, "settings.html", gin.H{
-		"settings":    settings,
-		"hasSettings": settings != nil,
+		"settings":           settings,
+		"hasSettings":        settings != nil,
+		"latitude":           latVal,
+		"longitude":          lonVal,
+		"latitude_set":       latSet,
+		"longitude_set":      lonSet,
+		"holidays_json":      holidaysJSON,
+		"holidays_text":      holidaysText,
+		"holiday_ics_url":    holidayICSURL,
+		"holiday_status":     holidayStatus,
+		"holiday_last_fetch": holidayLastFetch,
+		"sunrise_today":      sunriseToday,
+		"sunset_today":       sunsetToday,
+		"zone_label":         serverZoneLabel(),
 	})
 }
 
@@ -407,9 +459,65 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 		return
 	}
 
+	// latitude / longitude
+	latRaw := strings.TrimSpace(c.PostForm("latitude"))
+	lonRaw := strings.TrimSpace(c.PostForm("longitude"))
+	var latPtr, lonPtr *float64
+	var clearLat, clearLon bool
+	if latRaw == "" {
+		clearLat = true
+	} else {
+		f, err := strconv.ParseFloat(latRaw, 64)
+		if err != nil || f < -90 || f > 90 {
+			SetFlash(c, "danger", "latitude must be -90..90")
+			c.Redirect(http.StatusFound, "/admin/settings")
+			return
+		}
+		latPtr = &f
+	}
+	if lonRaw == "" {
+		clearLon = true
+	} else {
+		f, err := strconv.ParseFloat(lonRaw, 64)
+		if err != nil || f < -180 || f > 180 {
+			SetFlash(c, "danger", "longitude must be -180..180")
+			c.Redirect(http.StatusFound, "/admin/settings")
+			return
+		}
+		lonPtr = &f
+	}
+	// holidays textarea
+	holidaysRaw := strings.TrimSpace(c.PostForm("holidays"))
+	var holidaysList []string
+	if holidaysRaw != "" {
+		lines := strings.Split(holidaysRaw, "\n")
+		for _, l := range lines {
+			t := strings.TrimSpace(l)
+			if t == "" {
+				continue
+			}
+			if _, err := time.Parse("2006-01-02", t); err != nil {
+				SetFlash(c, "danger", "holidays: invalid date "+t)
+				c.Redirect(http.StatusFound, "/admin/settings")
+				return
+			}
+			holidaysList = append(holidaysList, t)
+		}
+	}
+	holidaysJSON, _ := json.Marshal(holidaysList)
+	if len(holidaysList) == 0 {
+		holidaysJSON = []byte("[]")
+	}
+	holidayICSURL := strings.TrimSpace(c.PostForm("holiday_ics_url"))
+	if holidayICSURL != "" && !strings.HasPrefix(holidayICSURL, "http://") && !strings.HasPrefix(holidayICSURL, "https://") {
+		SetFlash(c, "danger", "holiday_ics_url must be http:// or https://")
+		c.Redirect(http.StatusFound, "/admin/settings")
+		return
+	}
+
 	exists, _ := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Exist(s.Ctx)
 	if !exists {
-		s.DB.GeneralSettings.Create().
+		b := s.DB.GeneralSettings.Create().
 			SetTimeout(timeout).
 			SetRandom(random).
 			SetWidth(width).
@@ -422,9 +530,21 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 			SetAdaptiveWindowDays(windowDays).
 			SetAdaptiveFloor(floor).
 			SetAdaptiveEpsilon(epsilon).
-			Save(s.Ctx)
+			SetHolidays(string(holidaysJSON)).
+			SetHolidayIcsURL(holidayICSURL)
+		if clearLat {
+			b.SetNillableLatitude(nil)
+		} else {
+			b.SetLatitude(*latPtr)
+		}
+		if clearLon {
+			b.SetNillableLongitude(nil)
+		} else {
+			b.SetLongitude(*lonPtr)
+		}
+		b.Save(s.Ctx)
 	} else {
-		s.DB.GeneralSettings.UpdateOneID(1).
+		b := s.DB.GeneralSettings.UpdateOneID(1).
 			SetTimeout(timeout).
 			SetRandom(random).
 			SetWidth(width).
@@ -437,12 +557,59 @@ func (s *Server) AdminSettingsSave(c *gin.Context) {
 			SetAdaptiveWindowDays(windowDays).
 			SetAdaptiveFloor(floor).
 			SetAdaptiveEpsilon(epsilon).
-			Exec(s.Ctx)
+			SetHolidays(string(holidaysJSON)).
+			SetHolidayIcsURL(holidayICSURL)
+		if clearLat {
+			b.ClearLatitude()
+		} else {
+			b.SetLatitude(*latPtr)
+		}
+		if clearLon {
+			b.ClearLongitude()
+		} else {
+			b.SetLongitude(*lonPtr)
+		}
+		b.Exec(s.Ctx)
+	}
+	// refresh in-memory context
+	if gs, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
+		RefreshTimeContext(gs)
 	}
 	SetOrderingMode(orderingMode)
 	globalWeightsCache.RecomputeFromAnalytics(AdaptiveConfig{WindowDays: windowDays, HalfLifeDays: halfLife, Floor: floor, Epsilon: epsilon, Beta: 1.0, MinDisplaysForSkipTrust: 10})
 	SetFlash(c, "success", "Settings saved")
 	c.Redirect(http.StatusFound, "/admin/")
+}
+
+func (s *Server) AdminHolidayFetch(c *gin.Context) {
+	url := strings.TrimSpace(c.PostForm("holiday_ics_url"))
+	if url == "" {
+		if gs, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
+			url = gs.HolidayIcsURL
+		}
+	}
+	if url == "" {
+		SetFlash(c, "danger", "holiday_ics_url not set")
+		c.Redirect(http.StatusFound, "/admin/settings")
+		return
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 15*time.Second)
+	defer cancel()
+	dates, err := FetchHolidayICS(ctx, url)
+	if err != nil {
+		_ = s.DB.GeneralSettings.UpdateOneID(1).SetHolidayIcsError(err.Error()).Exec(s.Ctx)
+		SetFlash(c, "danger", "ICS fetch failed: "+err.Error())
+		c.Redirect(http.StatusFound, "/admin/settings")
+		return
+	}
+	jb, _ := json.Marshal(dates)
+	now := time.Now()
+	_ = s.DB.GeneralSettings.UpdateOneID(1).SetHolidayIcsDates(string(jb)).SetHolidayIcsFetchedAt(now).SetHolidayIcsError("").Exec(s.Ctx)
+	if gs, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
+		RefreshTimeContext(gs)
+	}
+	SetFlash(c, "success", fmt.Sprintf("ICS fetched: %d dates", len(dates)))
+	c.Redirect(http.StatusFound, "/admin/settings")
 }
 
 // ---------------------------------------------------------------------------
