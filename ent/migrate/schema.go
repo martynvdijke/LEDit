@@ -955,6 +955,33 @@ var (
 			},
 		},
 	}
+	// ScenesColumns holds the columns for the "scenes" table.
+	ScenesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "triggers", Type: field.TypeString, Size: 2147483647, Default: "[]"},
+		{Name: "actions", Type: field.TypeString, Size: 2147483647, Default: "{}"},
+		{Name: "priority", Type: field.TypeInt, Default: 0},
+		{Name: "ttl_seconds", Type: field.TypeInt, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "general_settings_scenes", Type: field.TypeInt, Nullable: true},
+	}
+	// ScenesTable holds the schema information for the "scenes" table.
+	ScenesTable = &schema.Table{
+		Name:       "scenes",
+		Columns:    ScenesColumns,
+		PrimaryKey: []*schema.Column{ScenesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "scenes_general_settings_scenes",
+				Columns:    []*schema.Column{ScenesColumns[9]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// SchedulesColumns holds the columns for the "schedules" table.
 	SchedulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1395,6 +1422,7 @@ var (
 		QrcodesTable,
 		RadarrsTable,
 		RssFeedsTable,
+		ScenesTable,
 		SchedulesTable,
 		SonarrsTable,
 		SportsTable,
@@ -1444,6 +1472,7 @@ func init() {
 	QrcodesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RadarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RssFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	ScenesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SchedulesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SonarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	SportsTable.ForeignKeys[0].RefTable = GeneralSettingsTable

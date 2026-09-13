@@ -34,6 +34,7 @@ import (
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/sports"
@@ -801,6 +802,21 @@ func (_c *GeneralSettingsCreate) AddWakealarms(v ...*WakeAlarm) *GeneralSettings
 		ids[i] = v[i].ID
 	}
 	return _c.AddWakealarmIDs(ids...)
+}
+
+// AddSceneIDs adds the "scenes" edge to the Scene entity by IDs.
+func (_c *GeneralSettingsCreate) AddSceneIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddSceneIDs(ids...)
+	return _c
+}
+
+// AddScenes adds the "scenes" edges to the Scene entity.
+func (_c *GeneralSettingsCreate) AddScenes(v ...*Scene) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSceneIDs(ids...)
 }
 
 // AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by IDs.
@@ -1741,6 +1757,22 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(wakealarm.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ScenesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ScenesTable,
+			Columns: []string{generalsettings.ScenesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scene.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

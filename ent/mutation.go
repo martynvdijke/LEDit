@@ -48,6 +48,7 @@ import (
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/sports"
@@ -122,6 +123,7 @@ const (
 	TypeQrcode           = "Qrcode"
 	TypeRadarr           = "Radarr"
 	TypeRssFeed          = "RssFeed"
+	TypeScene            = "Scene"
 	TypeSchedule         = "Schedule"
 	TypeSonarr           = "Sonarr"
 	TypeSports           = "Sports"
@@ -12096,6 +12098,9 @@ type GeneralSettingsMutation struct {
 	wakealarms                     map[int]struct{}
 	removedwakealarms              map[int]struct{}
 	clearedwakealarms              bool
+	scenes                         map[int]struct{}
+	removedscenes                  map[int]struct{}
+	clearedscenes                  bool
 	webhooksettings                map[int]struct{}
 	removedwebhooksettings         map[int]struct{}
 	clearedwebhooksettings         bool
@@ -14991,6 +14996,60 @@ func (m *GeneralSettingsMutation) ResetWakealarms() {
 	m.removedwakealarms = nil
 }
 
+// AddSceneIDs adds the "scenes" edge to the Scene entity by ids.
+func (m *GeneralSettingsMutation) AddSceneIDs(ids ...int) {
+	if m.scenes == nil {
+		m.scenes = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.scenes[ids[i]] = struct{}{}
+	}
+}
+
+// ClearScenes clears the "scenes" edge to the Scene entity.
+func (m *GeneralSettingsMutation) ClearScenes() {
+	m.clearedscenes = true
+}
+
+// ScenesCleared reports if the "scenes" edge to the Scene entity was cleared.
+func (m *GeneralSettingsMutation) ScenesCleared() bool {
+	return m.clearedscenes
+}
+
+// RemoveSceneIDs removes the "scenes" edge to the Scene entity by IDs.
+func (m *GeneralSettingsMutation) RemoveSceneIDs(ids ...int) {
+	if m.removedscenes == nil {
+		m.removedscenes = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.scenes, ids[i])
+		m.removedscenes[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScenes returns the removed IDs of the "scenes" edge to the Scene entity.
+func (m *GeneralSettingsMutation) RemovedScenesIDs() (ids []int) {
+	for id := range m.removedscenes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ScenesIDs returns the "scenes" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) ScenesIDs() (ids []int) {
+	for id := range m.scenes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetScenes resets all changes to the "scenes" edge.
+func (m *GeneralSettingsMutation) ResetScenes() {
+	m.scenes = nil
+	m.clearedscenes = false
+	m.removedscenes = nil
+}
+
 // AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by ids.
 func (m *GeneralSettingsMutation) AddWebhooksettingIDs(ids ...int) {
 	if m.webhooksettings == nil {
@@ -16404,7 +16463,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 42)
+	edges := make([]string, 0, 43)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -16491,6 +16550,9 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.wakealarms != nil {
 		edges = append(edges, generalsettings.EdgeWakealarms)
+	}
+	if m.scenes != nil {
+		edges = append(edges, generalsettings.EdgeScenes)
 	}
 	if m.webhooksettings != nil {
 		edges = append(edges, generalsettings.EdgeWebhooksettings)
@@ -16712,6 +16774,12 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeScenes:
+		ids := make([]ent.Value, 0, len(m.scenes))
+		for id := range m.scenes {
+			ids = append(ids, id)
+		}
+		return ids
 	case generalsettings.EdgeWebhooksettings:
 		ids := make([]ent.Value, 0, len(m.webhooksettings))
 		for id := range m.webhooksettings {
@@ -16796,7 +16864,7 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 42)
+	edges := make([]string, 0, 43)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -16883,6 +16951,9 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removedwakealarms != nil {
 		edges = append(edges, generalsettings.EdgeWakealarms)
+	}
+	if m.removedscenes != nil {
+		edges = append(edges, generalsettings.EdgeScenes)
 	}
 	if m.removedwebhooksettings != nil {
 		edges = append(edges, generalsettings.EdgeWebhooksettings)
@@ -17104,6 +17175,12 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeScenes:
+		ids := make([]ent.Value, 0, len(m.removedscenes))
+		for id := range m.removedscenes {
+			ids = append(ids, id)
+		}
+		return ids
 	case generalsettings.EdgeWebhooksettings:
 		ids := make([]ent.Value, 0, len(m.removedwebhooksettings))
 		for id := range m.removedwebhooksettings {
@@ -17188,7 +17265,7 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 42)
+	edges := make([]string, 0, 43)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -17275,6 +17352,9 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	}
 	if m.clearedwakealarms {
 		edges = append(edges, generalsettings.EdgeWakealarms)
+	}
+	if m.clearedscenes {
+		edges = append(edges, generalsettings.EdgeScenes)
 	}
 	if m.clearedwebhooksettings {
 		edges = append(edges, generalsettings.EdgeWebhooksettings)
@@ -17380,6 +17460,8 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.cleareddisplayrules
 	case generalsettings.EdgeWakealarms:
 		return m.clearedwakealarms
+	case generalsettings.EdgeScenes:
+		return m.clearedscenes
 	case generalsettings.EdgeWebhooksettings:
 		return m.clearedwebhooksettings
 	case generalsettings.EdgeMqttsettings:
@@ -17508,6 +17590,9 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 		return nil
 	case generalsettings.EdgeWakealarms:
 		m.ResetWakealarms()
+		return nil
+	case generalsettings.EdgeScenes:
+		m.ResetScenes()
 		return nil
 	case generalsettings.EdgeWebhooksettings:
 		m.ResetWebhooksettings()
@@ -31261,6 +31346,869 @@ func (m *RssFeedMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *RssFeedMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown RssFeed edge %s", name)
+}
+
+// SceneMutation represents an operation that mutates the Scene nodes in the graph.
+type SceneMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *int
+	name                    *string
+	enabled                 *bool
+	triggers                *string
+	actions                 *string
+	priority                *int
+	addpriority             *int
+	ttl_seconds             *int
+	addttl_seconds          *int
+	created_at              *time.Time
+	updated_at              *time.Time
+	clearedFields           map[string]struct{}
+	general_settings        *int
+	clearedgeneral_settings bool
+	done                    bool
+	oldValue                func(context.Context) (*Scene, error)
+	predicates              []predicate.Scene
+}
+
+var _ ent.Mutation = (*SceneMutation)(nil)
+
+// sceneOption allows management of the mutation configuration using functional options.
+type sceneOption func(*SceneMutation)
+
+// newSceneMutation creates new mutation for the Scene entity.
+func newSceneMutation(c config, op Op, opts ...sceneOption) *SceneMutation {
+	m := &SceneMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeScene,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSceneID sets the ID field of the mutation.
+func withSceneID(id int) sceneOption {
+	return func(m *SceneMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Scene
+		)
+		m.oldValue = func(ctx context.Context) (*Scene, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Scene.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withScene sets the old Scene of the mutation.
+func withScene(node *Scene) sceneOption {
+	return func(m *SceneMutation) {
+		m.oldValue = func(context.Context) (*Scene, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SceneMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SceneMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SceneMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SceneMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Scene.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *SceneMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *SceneMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Scene entity.
+// If the Scene object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SceneMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *SceneMutation) ResetName() {
+	m.name = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *SceneMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *SceneMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the Scene entity.
+// If the Scene object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SceneMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *SceneMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetTriggers sets the "triggers" field.
+func (m *SceneMutation) SetTriggers(s string) {
+	m.triggers = &s
+}
+
+// Triggers returns the value of the "triggers" field in the mutation.
+func (m *SceneMutation) Triggers() (r string, exists bool) {
+	v := m.triggers
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTriggers returns the old "triggers" field's value of the Scene entity.
+// If the Scene object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SceneMutation) OldTriggers(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTriggers is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTriggers requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTriggers: %w", err)
+	}
+	return oldValue.Triggers, nil
+}
+
+// ResetTriggers resets all changes to the "triggers" field.
+func (m *SceneMutation) ResetTriggers() {
+	m.triggers = nil
+}
+
+// SetActions sets the "actions" field.
+func (m *SceneMutation) SetActions(s string) {
+	m.actions = &s
+}
+
+// Actions returns the value of the "actions" field in the mutation.
+func (m *SceneMutation) Actions() (r string, exists bool) {
+	v := m.actions
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActions returns the old "actions" field's value of the Scene entity.
+// If the Scene object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SceneMutation) OldActions(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActions: %w", err)
+	}
+	return oldValue.Actions, nil
+}
+
+// ResetActions resets all changes to the "actions" field.
+func (m *SceneMutation) ResetActions() {
+	m.actions = nil
+}
+
+// SetPriority sets the "priority" field.
+func (m *SceneMutation) SetPriority(i int) {
+	m.priority = &i
+	m.addpriority = nil
+}
+
+// Priority returns the value of the "priority" field in the mutation.
+func (m *SceneMutation) Priority() (r int, exists bool) {
+	v := m.priority
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPriority returns the old "priority" field's value of the Scene entity.
+// If the Scene object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SceneMutation) OldPriority(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPriority is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPriority requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPriority: %w", err)
+	}
+	return oldValue.Priority, nil
+}
+
+// AddPriority adds i to the "priority" field.
+func (m *SceneMutation) AddPriority(i int) {
+	if m.addpriority != nil {
+		*m.addpriority += i
+	} else {
+		m.addpriority = &i
+	}
+}
+
+// AddedPriority returns the value that was added to the "priority" field in this mutation.
+func (m *SceneMutation) AddedPriority() (r int, exists bool) {
+	v := m.addpriority
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPriority resets all changes to the "priority" field.
+func (m *SceneMutation) ResetPriority() {
+	m.priority = nil
+	m.addpriority = nil
+}
+
+// SetTTLSeconds sets the "ttl_seconds" field.
+func (m *SceneMutation) SetTTLSeconds(i int) {
+	m.ttl_seconds = &i
+	m.addttl_seconds = nil
+}
+
+// TTLSeconds returns the value of the "ttl_seconds" field in the mutation.
+func (m *SceneMutation) TTLSeconds() (r int, exists bool) {
+	v := m.ttl_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTTLSeconds returns the old "ttl_seconds" field's value of the Scene entity.
+// If the Scene object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SceneMutation) OldTTLSeconds(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTTLSeconds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTTLSeconds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTTLSeconds: %w", err)
+	}
+	return oldValue.TTLSeconds, nil
+}
+
+// AddTTLSeconds adds i to the "ttl_seconds" field.
+func (m *SceneMutation) AddTTLSeconds(i int) {
+	if m.addttl_seconds != nil {
+		*m.addttl_seconds += i
+	} else {
+		m.addttl_seconds = &i
+	}
+}
+
+// AddedTTLSeconds returns the value that was added to the "ttl_seconds" field in this mutation.
+func (m *SceneMutation) AddedTTLSeconds() (r int, exists bool) {
+	v := m.addttl_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearTTLSeconds clears the value of the "ttl_seconds" field.
+func (m *SceneMutation) ClearTTLSeconds() {
+	m.ttl_seconds = nil
+	m.addttl_seconds = nil
+	m.clearedFields[scene.FieldTTLSeconds] = struct{}{}
+}
+
+// TTLSecondsCleared returns if the "ttl_seconds" field was cleared in this mutation.
+func (m *SceneMutation) TTLSecondsCleared() bool {
+	_, ok := m.clearedFields[scene.FieldTTLSeconds]
+	return ok
+}
+
+// ResetTTLSeconds resets all changes to the "ttl_seconds" field.
+func (m *SceneMutation) ResetTTLSeconds() {
+	m.ttl_seconds = nil
+	m.addttl_seconds = nil
+	delete(m.clearedFields, scene.FieldTTLSeconds)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *SceneMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *SceneMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Scene entity.
+// If the Scene object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SceneMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *SceneMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *SceneMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *SceneMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Scene entity.
+// If the Scene object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SceneMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *SceneMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetGeneralSettingsID sets the "general_settings" edge to the GeneralSettings entity by id.
+func (m *SceneMutation) SetGeneralSettingsID(id int) {
+	m.general_settings = &id
+}
+
+// ClearGeneralSettings clears the "general_settings" edge to the GeneralSettings entity.
+func (m *SceneMutation) ClearGeneralSettings() {
+	m.clearedgeneral_settings = true
+}
+
+// GeneralSettingsCleared reports if the "general_settings" edge to the GeneralSettings entity was cleared.
+func (m *SceneMutation) GeneralSettingsCleared() bool {
+	return m.clearedgeneral_settings
+}
+
+// GeneralSettingsID returns the "general_settings" edge ID in the mutation.
+func (m *SceneMutation) GeneralSettingsID() (id int, exists bool) {
+	if m.general_settings != nil {
+		return *m.general_settings, true
+	}
+	return
+}
+
+// GeneralSettingsIDs returns the "general_settings" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GeneralSettingsID instead. It exists only for internal usage by the builders.
+func (m *SceneMutation) GeneralSettingsIDs() (ids []int) {
+	if id := m.general_settings; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGeneralSettings resets all changes to the "general_settings" edge.
+func (m *SceneMutation) ResetGeneralSettings() {
+	m.general_settings = nil
+	m.clearedgeneral_settings = false
+}
+
+// Where appends a list predicates to the SceneMutation builder.
+func (m *SceneMutation) Where(ps ...predicate.Scene) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the SceneMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *SceneMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Scene, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *SceneMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *SceneMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Scene).
+func (m *SceneMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SceneMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.name != nil {
+		fields = append(fields, scene.FieldName)
+	}
+	if m.enabled != nil {
+		fields = append(fields, scene.FieldEnabled)
+	}
+	if m.triggers != nil {
+		fields = append(fields, scene.FieldTriggers)
+	}
+	if m.actions != nil {
+		fields = append(fields, scene.FieldActions)
+	}
+	if m.priority != nil {
+		fields = append(fields, scene.FieldPriority)
+	}
+	if m.ttl_seconds != nil {
+		fields = append(fields, scene.FieldTTLSeconds)
+	}
+	if m.created_at != nil {
+		fields = append(fields, scene.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, scene.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SceneMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case scene.FieldName:
+		return m.Name()
+	case scene.FieldEnabled:
+		return m.Enabled()
+	case scene.FieldTriggers:
+		return m.Triggers()
+	case scene.FieldActions:
+		return m.Actions()
+	case scene.FieldPriority:
+		return m.Priority()
+	case scene.FieldTTLSeconds:
+		return m.TTLSeconds()
+	case scene.FieldCreatedAt:
+		return m.CreatedAt()
+	case scene.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SceneMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case scene.FieldName:
+		return m.OldName(ctx)
+	case scene.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case scene.FieldTriggers:
+		return m.OldTriggers(ctx)
+	case scene.FieldActions:
+		return m.OldActions(ctx)
+	case scene.FieldPriority:
+		return m.OldPriority(ctx)
+	case scene.FieldTTLSeconds:
+		return m.OldTTLSeconds(ctx)
+	case scene.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case scene.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Scene field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SceneMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case scene.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case scene.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case scene.FieldTriggers:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTriggers(v)
+		return nil
+	case scene.FieldActions:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActions(v)
+		return nil
+	case scene.FieldPriority:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPriority(v)
+		return nil
+	case scene.FieldTTLSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTTLSeconds(v)
+		return nil
+	case scene.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case scene.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Scene field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SceneMutation) AddedFields() []string {
+	var fields []string
+	if m.addpriority != nil {
+		fields = append(fields, scene.FieldPriority)
+	}
+	if m.addttl_seconds != nil {
+		fields = append(fields, scene.FieldTTLSeconds)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SceneMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case scene.FieldPriority:
+		return m.AddedPriority()
+	case scene.FieldTTLSeconds:
+		return m.AddedTTLSeconds()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SceneMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case scene.FieldPriority:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPriority(v)
+		return nil
+	case scene.FieldTTLSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTTLSeconds(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Scene numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SceneMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(scene.FieldTTLSeconds) {
+		fields = append(fields, scene.FieldTTLSeconds)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SceneMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SceneMutation) ClearField(name string) error {
+	switch name {
+	case scene.FieldTTLSeconds:
+		m.ClearTTLSeconds()
+		return nil
+	}
+	return fmt.Errorf("unknown Scene nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SceneMutation) ResetField(name string) error {
+	switch name {
+	case scene.FieldName:
+		m.ResetName()
+		return nil
+	case scene.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case scene.FieldTriggers:
+		m.ResetTriggers()
+		return nil
+	case scene.FieldActions:
+		m.ResetActions()
+		return nil
+	case scene.FieldPriority:
+		m.ResetPriority()
+		return nil
+	case scene.FieldTTLSeconds:
+		m.ResetTTLSeconds()
+		return nil
+	case scene.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case scene.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Scene field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SceneMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.general_settings != nil {
+		edges = append(edges, scene.EdgeGeneralSettings)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SceneMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case scene.EdgeGeneralSettings:
+		if id := m.general_settings; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SceneMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SceneMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SceneMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedgeneral_settings {
+		edges = append(edges, scene.EdgeGeneralSettings)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SceneMutation) EdgeCleared(name string) bool {
+	switch name {
+	case scene.EdgeGeneralSettings:
+		return m.clearedgeneral_settings
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SceneMutation) ClearEdge(name string) error {
+	switch name {
+	case scene.EdgeGeneralSettings:
+		m.ClearGeneralSettings()
+		return nil
+	}
+	return fmt.Errorf("unknown Scene unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SceneMutation) ResetEdge(name string) error {
+	switch name {
+	case scene.EdgeGeneralSettings:
+		m.ResetGeneralSettings()
+		return nil
+	}
+	return fmt.Errorf("unknown Scene edge %s", name)
 }
 
 // ScheduleMutation represents an operation that mutates the Schedule nodes in the graph.

@@ -129,6 +129,9 @@ type Radarr func(*sql.Selector)
 // RssFeed is the predicate function for rssfeed builders.
 type RssFeed func(*sql.Selector)
 
+// Scene is the predicate function for scene builders.
+type Scene func(*sql.Selector)
+
 // Schedule is the predicate function for schedule builders.
 type Schedule func(*sql.Selector)
 

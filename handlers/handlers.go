@@ -42,6 +42,7 @@ var pathToActive = map[string]string{
 	"/admin/password":        "password",
 	"/admin/matrixlayouts":   "matrixlayouts",
 	"/admin/alarms":          "alarms",
+	"/admin/scenes":          "scenes",
 	"/admin/guest-remotes":   "guest-remotes",
 	"/admin/webhook":         "webhook",
 	"/admin/mqtt":            "mqtt",
@@ -1088,6 +1089,10 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		}
 	}
 	obj := builder.SaveX(s.Ctx)
+	if brightnessOverride != nil {
+		// D6: a manual brightness override reclaims the wall from ambient automation.
+		SuppressActiveScene()
+	}
 	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
 		s.DB.GeneralSettings.UpdateOne(settings).AddDeviceSettings(obj).Exec(s.Ctx)
 	}
@@ -1310,6 +1315,10 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		}
 	}
 	upd.Exec(s.Ctx)
+	if hasOverride {
+		// D6: a manual brightness override reclaims the wall from ambient automation.
+		SuppressActiveScene()
+	}
 	SetFlash(c, "success", "Device updated")
 	c.Redirect(http.StatusFound, "/admin/devices")
 }

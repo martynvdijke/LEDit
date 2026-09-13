@@ -174,11 +174,29 @@ func ResolveBrightness(now time.Time, schedules []BrightnessWindow, sensorLevel 
 // resolution: manual override > active alarm ramp > sensor > schedule > 100.
 // A nil alarmLevel means the alarm has no active brightness ramp.
 func ResolveEffectiveBrightness(now time.Time, schedules []BrightnessWindow, sensorLevel *int, override *int, alarmLevel *int) int {
+	return ResolveEffectiveBrightnessWithScene(now, schedules, sensorLevel, override, alarmLevel, nil)
+}
+
+// ResolveEffectiveBrightnessWithScene inserts the scene tier between the alarm
+// ramp and the sensor/schedule fallback:
+// override > alarm ramp > scene > HA lux sensor > schedule > 100.
+// A nil sceneLevel means no active scene brightness action.
+func ResolveEffectiveBrightnessWithScene(now time.Time, schedules []BrightnessWindow, sensorLevel *int, override *int, alarmLevel *int, sceneLevel *int) int {
 	if override != nil {
 		return ResolveBrightness(now, schedules, sensorLevel, override)
 	}
 	if alarmLevel != nil {
 		lvl := *alarmLevel
+		if lvl < 0 {
+			return 0
+		}
+		if lvl > 100 {
+			return 100
+		}
+		return lvl
+	}
+	if sceneLevel != nil {
+		lvl := *sceneLevel
 		if lvl < 0 {
 			return 0
 		}

@@ -94,6 +94,8 @@ type Tx struct {
 	Radarr *RadarrClient
 	// RssFeed is the client for interacting with the RssFeed builders.
 	RssFeed *RssFeedClient
+	// Scene is the client for interacting with the Scene builders.
+	Scene *SceneClient
 	// Schedule is the client for interacting with the Schedule builders.
 	Schedule *ScheduleClient
 	// Sonarr is the client for interacting with the Sonarr builders.
@@ -300,6 +302,7 @@ func (tx *Tx) init() {
 	tx.Qrcode = NewQrcodeClient(tx.config)
 	tx.Radarr = NewRadarrClient(tx.config)
 	tx.RssFeed = NewRssFeedClient(tx.config)
+	tx.Scene = NewSceneClient(tx.config)
 	tx.Schedule = NewScheduleClient(tx.config)
 	tx.Sonarr = NewSonarrClient(tx.config)
 	tx.Sports = NewSportsClient(tx.config)

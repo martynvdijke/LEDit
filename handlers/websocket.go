@@ -792,7 +792,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		} else if sensorCfg != nil && sensorCache != nil && now.Sub(sensorCacheTime) > 60*time.Second {
 			sensorCache = nil
 		}
-		target := ResolveEffectiveBrightness(now, bSchedules, sensorLevel, device.BrightnessOverride, ActiveAlarmBrightnessLevel(now))
+		target := ResolveEffectiveBrightnessWithScene(now, bSchedules, sensorLevel, device.BrightnessOverride, ActiveAlarmBrightnessLevel(now), ActiveSceneBrightnessLevel(now))
 		ramp.SetTarget(target)
 		return ramp.Advance()
 	}
@@ -934,6 +934,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 	if src := AlarmSource(); src != nil {
 		feed.SetAlarmSource(src)
 	}
+	// Seed the scene tier for connections that join mid-scene.
+	if src := ActiveSceneSource(); src != nil {
+		feed.SetSceneSource(src)
+	}
 	cursor := CurrentNotifSeq()
 
 	// Transition config is fixed per connection (loaded ONCE at handshake).
@@ -1016,10 +1020,16 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 	// cache key still get their own strip. Skipped for transition ramp and
 	// notification frames (v1).
 	applyOverlay := func(data []byte) []byte {
-		if !fc.overlay.Enabled {
+		spec := fc.overlay
+		// Scene overlay text replaces the per-device strip while a scene holds;
+		// notifications/incidents render before this path so they still win.
+		if sceneSpec, ok := ActiveSceneOverlay(time.Now()); ok {
+			spec = sceneSpec
+		}
+		if !spec.Enabled {
 			return data
 		}
-		out, err := render.CompositeOverlayPNG(data, fc.overlay, time.Now())
+		out, err := render.CompositeOverlayPNG(data, spec, time.Now())
 		if err != nil {
 			slog.Warn("overlay composite failed, sending raw frame", "device", fc.deviceID, "error", err)
 			return data
@@ -1077,10 +1087,15 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			// connection's rotation list) and held across slot boundaries until
 			// the alarm ends or is dismissed.
 			alarmSrc := feed.GetAlarmSource()
+			// Scene tier: notification > incident > alarm > scene > pin >
+			// playlist/rotation. The manager-published source takes over the
+			// connection without needing to be in its rotation list.
+			sceneSrc := feed.GetSceneSource()
 
 			// Pin honoring: BEFORE advancing, if pinned and resolvable in this connection's sources, render pinned source.
-			if alarmSrc != nil {
-				sw = *alarmSrc
+			tierSrc := selectTierSource(alarmSrc, sceneSrc)
+			if tierSrc != nil {
+				sw = *tierSrc
 			} else if pinnedKey, _, ok := feed.IsPinned(); ok {
 				for idx, s := range sources {
 					if s.cacheKey == pinnedKey {
@@ -1094,7 +1109,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 
 			// Compute next source name
 			nextName := ""
-			if alarmSrc != nil {
+			if tierSrc != nil {
 				nextName = sw.Name
 			} else if GetOrderingMode() == "adaptive" {
 				w := globalWeightsCache.GetWeights()

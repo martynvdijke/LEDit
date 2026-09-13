@@ -18,6 +18,7 @@ type FeedController struct {
 	PinnedKey   string
 	PinnedBy    string
 	AlarmSource *sourceWithName
+	SceneSource *sourceWithName
 }
 
 var GlobalFeed = &FeedController{}
@@ -62,8 +63,10 @@ func (fc *FeedController) ShouldSkip() bool {
 
 func (fc *FeedController) Pause() {
 	fc.mu.Lock()
-	defer fc.mu.Unlock()
 	fc.Paused = true
+	fc.mu.Unlock()
+	// D6: a manual pause reclaims the wall from ambient automation.
+	SuppressActiveScene()
 	GlobalBus.Emit(Event{Type: EventFeedPaused, Timestamp: time.Now()})
 }
 
@@ -81,8 +84,12 @@ func (fc *FeedController) Next() {
 	fc.PinnedKey = ""
 	fc.PinnedBy = ""
 	fc.AlarmSource = nil
+	fc.SceneSource = nil
 	fc.mu.Unlock()
 	DismissActiveAlarm()
+	// D6: a manual skip reclaims the wall from ambient automation until the
+	// scene's next rising edge.
+	SuppressActiveScene()
 	// attribute skip
 	if cur != "" {
 		RecordSkip("", 0, cur)
@@ -105,6 +112,21 @@ func (fc *FeedController) GetAlarmSource() *sourceWithName {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
 	return fc.AlarmSource
+}
+
+// SetSceneSource publishes the active scene-tier source to this controller;
+// nil clears it (scene ended, preempted, or suppressed).
+func (fc *FeedController) SetSceneSource(s *sourceWithName) {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	fc.SceneSource = s
+}
+
+// GetSceneSource returns the active scene-tier source, or nil.
+func (fc *FeedController) GetSceneSource() *sourceWithName {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	return fc.SceneSource
 }
 
 // DismissAlarm releases the wake screen and suppresses the current occurrence.

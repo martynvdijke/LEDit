@@ -355,6 +355,7 @@ func (s *Server) setupRoutes() {
 			apiMut.POST("/feed/resume", s.APIFeedResume)
 			apiMut.POST("/feed/alarm/dismiss", s.APIFeedAlarmDismiss)
 			apiMut.POST("/incidents/:id/resolve", s.APIIncidentResolve)
+			apiMut.POST("/scenes/:id/preview", s.APIScenePreview)
 		}
 		// Webhook routes: machine integrations authenticate via webhook key
 		// (X-API-Key header or ?token=), not admin sessions.
@@ -677,6 +678,14 @@ func (s *Server) setupRoutes() {
 		admin.GET("/alarms/:id/edit", s.AdminAlarmEdit)
 		admin.POST("/alarms/:id/edit", s.AdminAlarmUpdate)
 		admin.POST("/alarms/:id/delete", s.AdminAlarmDelete)
+
+		// Ambient scenes
+		admin.GET("/scenes", s.AdminSceneList)
+		admin.GET("/scenes/new", s.AdminSceneNew)
+		admin.POST("/scenes/new", s.AdminSceneCreate)
+		admin.GET("/scenes/:id/edit", s.AdminSceneEdit)
+		admin.POST("/scenes/:id/edit", s.AdminSceneUpdate)
+		admin.POST("/scenes/:id/delete", s.AdminSceneDelete)
 
 		// Greetings
 		admin.GET("/greetings", s.AdminGreetings)

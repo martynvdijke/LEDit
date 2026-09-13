@@ -35,6 +35,7 @@ import (
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/sports"
@@ -94,6 +95,7 @@ type GeneralSettingsQuery struct {
 	withPlaylists         *PlaylistQuery
 	withDisplayrules      *DisplayRuleQuery
 	withWakealarms        *WakeAlarmQuery
+	withScenes            *SceneQuery
 	withWebhooksettings   *WebhookSettingsQuery
 	withMqttsettings      *MQTTSettingsQuery
 	withTelegramsettings  *TelegramSettingsQuery
@@ -781,6 +783,28 @@ func (_q *GeneralSettingsQuery) QueryWakealarms() *WakeAlarmQuery {
 	return query
 }
 
+// QueryScenes chains the current query on the "scenes" edge.
+func (_q *GeneralSettingsQuery) QueryScenes() *SceneQuery {
+	query := (&SceneClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(scene.Table, scene.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.ScenesTable, generalsettings.ScenesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryWebhooksettings chains the current query on the "webhooksettings" edge.
 func (_q *GeneralSettingsQuery) QueryWebhooksettings() *WebhookSettingsQuery {
 	query := (&WebhookSettingsClient{config: _q.config}).Query()
@@ -1288,6 +1312,7 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		withPlaylists:         _q.withPlaylists.Clone(),
 		withDisplayrules:      _q.withDisplayrules.Clone(),
 		withWakealarms:        _q.withWakealarms.Clone(),
+		withScenes:            _q.withScenes.Clone(),
 		withWebhooksettings:   _q.withWebhooksettings.Clone(),
 		withMqttsettings:      _q.withMqttsettings.Clone(),
 		withTelegramsettings:  _q.withTelegramsettings.Clone(),
@@ -1626,6 +1651,17 @@ func (_q *GeneralSettingsQuery) WithWakealarms(opts ...func(*WakeAlarmQuery)) *G
 	return _q
 }
 
+// WithScenes tells the query-builder to eager-load the nodes that are connected to
+// the "scenes" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithScenes(opts ...func(*SceneQuery)) *GeneralSettingsQuery {
+	query := (&SceneClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withScenes = query
+	return _q
+}
+
 // WithWebhooksettings tells the query-builder to eager-load the nodes that are connected to
 // the "webhooksettings" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *GeneralSettingsQuery) WithWebhooksettings(opts ...func(*WebhookSettingsQuery)) *GeneralSettingsQuery {
@@ -1847,7 +1883,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [42]bool{
+		loadedTypes = [43]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -1877,6 +1913,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withPlaylists != nil,
 			_q.withDisplayrules != nil,
 			_q.withWakealarms != nil,
+			_q.withScenes != nil,
 			_q.withWebhooksettings != nil,
 			_q.withMqttsettings != nil,
 			_q.withTelegramsettings != nil,
@@ -2114,6 +2151,13 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := _q.loadWakealarms(ctx, query, nodes,
 			func(n *GeneralSettings) { n.Edges.Wakealarms = []*WakeAlarm{} },
 			func(n *GeneralSettings, e *WakeAlarm) { n.Edges.Wakealarms = append(n.Edges.Wakealarms, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withScenes; query != nil {
+		if err := _q.loadScenes(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Scenes = []*Scene{} },
+			func(n *GeneralSettings, e *Scene) { n.Edges.Scenes = append(n.Edges.Scenes, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -3111,6 +3155,37 @@ func (_q *GeneralSettingsQuery) loadWakealarms(ctx context.Context, query *WakeA
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_wakealarms" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadScenes(ctx context.Context, query *SceneQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Scene)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Scene(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.ScenesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_scenes
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_scenes" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_scenes" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

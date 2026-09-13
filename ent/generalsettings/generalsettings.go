@@ -116,6 +116,8 @@ const (
 	EdgeDisplayrules = "displayrules"
 	// EdgeWakealarms holds the string denoting the wakealarms edge name in mutations.
 	EdgeWakealarms = "wakealarms"
+	// EdgeScenes holds the string denoting the scenes edge name in mutations.
+	EdgeScenes = "scenes"
 	// EdgeWebhooksettings holds the string denoting the webhooksettings edge name in mutations.
 	EdgeWebhooksettings = "webhooksettings"
 	// EdgeMqttsettings holds the string denoting the mqttsettings edge name in mutations.
@@ -347,6 +349,13 @@ const (
 	WakealarmsInverseTable = "wake_alarms"
 	// WakealarmsColumn is the table column denoting the wakealarms relation/edge.
 	WakealarmsColumn = "general_settings_wakealarms"
+	// ScenesTable is the table that holds the scenes relation/edge.
+	ScenesTable = "scenes"
+	// ScenesInverseTable is the table name for the Scene entity.
+	// It exists in this package in order to avoid circular dependency with the "scene" package.
+	ScenesInverseTable = "scenes"
+	// ScenesColumn is the table column denoting the scenes relation/edge.
+	ScenesColumn = "general_settings_scenes"
 	// WebhooksettingsTable is the table that holds the webhooksettings relation/edge.
 	WebhooksettingsTable = "webhook_settings"
 	// WebhooksettingsInverseTable is the table name for the WebhookSettings entity.
@@ -1052,6 +1061,20 @@ func ByWakealarms(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByScenesCount orders the results by scenes count.
+func ByScenesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newScenesStep(), opts...)
+	}
+}
+
+// ByScenes orders the results by scenes terms.
+func ByScenes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newScenesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByWebhooksettingsCount orders the results by webhooksettings count.
 func ByWebhooksettingsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -1434,6 +1457,13 @@ func newWakealarmsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(WakealarmsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, WakealarmsTable, WakealarmsColumn),
+	)
+}
+func newScenesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ScenesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ScenesTable, ScenesColumn),
 	)
 }
 func newWebhooksettingsStep() *sqlgraph.Step {

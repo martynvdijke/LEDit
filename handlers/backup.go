@@ -72,6 +72,7 @@ var importOrder = []string{
 	"device_settings",
 	"displayrule",
 	"wakealarm",
+	"scenes",
 	"matrixlayout",
 	"pixelart",
 }
@@ -197,6 +198,11 @@ func (s *Server) ExportBundle(includeSecrets, includeMedia bool) (Bundle, error)
 	if list, err := s.DB.WakeAlarm.Query().All(ctx); err == nil {
 		if len(list) > 0 {
 			entities["wakealarm"] = toMapSlice(list)
+		}
+	}
+	if list, err := s.DB.Scene.Query().All(ctx); err == nil {
+		if len(list) > 0 {
+			entities["scenes"] = toMapSlice(list)
 		}
 	}
 	if list, err := s.DB.MatrixLayout.Query().All(ctx); err == nil {
@@ -692,6 +698,50 @@ func (s *Server) importType(typ string, arr []map[string]any, includeSecrets boo
 				SetWakeSourceType(wakeType).SetWakeSourceID(wakeID).
 				SetBrightnessEnabled(bEnabled).SetBrightnessStart(bStart).SetBrightnessEnd(bEnd).
 				SetBrightnessRampSeconds(bRamp).Save(ctx); err != nil {
+				return err
+			}
+		}
+	case "scenes":
+		for _, m := range arr {
+			id := toInt(m["id"])
+			name, _ := m["name"].(string)
+			triggers, _ := m["triggers"].(string)
+			if triggers == "" {
+				triggers = "[]"
+			}
+			actions, _ := m["actions"].(string)
+			if actions == "" {
+				actions = "{}"
+			}
+			priority := toInt(m["priority"])
+			enabled := true
+			if v, ok := m["enabled"].(bool); ok {
+				enabled = v
+			}
+			var ttl *int
+			if v, ok := m["ttl_seconds"]; ok && v != nil {
+				tv := toInt(v)
+				ttl = &tv
+			}
+			if id != 0 {
+				if ex, err := s.DB.Scene.Get(ctx, id); err == nil {
+					upd := s.DB.Scene.UpdateOne(ex).SetName(name).SetEnabled(enabled).SetPriority(priority).SetTriggers(triggers).SetActions(actions)
+					if ttl != nil {
+						upd.SetTTLSeconds(*ttl)
+					} else {
+						upd.ClearTTLSeconds()
+					}
+					if _, err := upd.Save(ctx); err != nil {
+						return err
+					}
+					continue
+				}
+			}
+			cre := s.DB.Scene.Create().SetName(name).SetEnabled(enabled).SetPriority(priority).SetTriggers(triggers).SetActions(actions)
+			if ttl != nil {
+				cre.SetTTLSeconds(*ttl)
+			}
+			if _, err := cre.Save(ctx); err != nil {
 				return err
 			}
 		}

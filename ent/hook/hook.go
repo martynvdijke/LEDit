@@ -500,6 +500,18 @@ func (f RssFeedFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RssFeedMutation", m)
 }
 
+// The SceneFunc type is an adapter to allow the use of ordinary
+// function as Scene mutator.
+type SceneFunc func(context.Context, *ent.SceneMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SceneFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SceneMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SceneMutation", m)
+}
+
 // The ScheduleFunc type is an adapter to allow the use of ordinary
 // function as Schedule mutator.
 type ScheduleFunc func(context.Context, *ent.ScheduleMutation) (ent.Value, error)

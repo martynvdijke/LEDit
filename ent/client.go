@@ -52,6 +52,7 @@ import (
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/sports"
@@ -163,6 +164,8 @@ type Client struct {
 	Radarr *RadarrClient
 	// RssFeed is the client for interacting with the RssFeed builders.
 	RssFeed *RssFeedClient
+	// Scene is the client for interacting with the Scene builders.
+	Scene *SceneClient
 	// Schedule is the client for interacting with the Schedule builders.
 	Schedule *ScheduleClient
 	// Sonarr is the client for interacting with the Sonarr builders.
@@ -249,6 +252,7 @@ func (c *Client) init() {
 	c.Qrcode = NewQrcodeClient(c.config)
 	c.Radarr = NewRadarrClient(c.config)
 	c.RssFeed = NewRssFeedClient(c.config)
+	c.Scene = NewSceneClient(c.config)
 	c.Schedule = NewScheduleClient(c.config)
 	c.Sonarr = NewSonarrClient(c.config)
 	c.Sports = NewSportsClient(c.config)
@@ -399,6 +403,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Qrcode:           NewQrcodeClient(cfg),
 		Radarr:           NewRadarrClient(cfg),
 		RssFeed:          NewRssFeedClient(cfg),
+		Scene:            NewSceneClient(cfg),
 		Schedule:         NewScheduleClient(cfg),
 		Sonarr:           NewSonarrClient(cfg),
 		Sports:           NewSportsClient(cfg),
@@ -476,6 +481,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Qrcode:           NewQrcodeClient(cfg),
 		Radarr:           NewRadarrClient(cfg),
 		RssFeed:          NewRssFeedClient(cfg),
+		Scene:            NewSceneClient(cfg),
 		Schedule:         NewScheduleClient(cfg),
 		Sonarr:           NewSonarrClient(cfg),
 		Sports:           NewSportsClient(cfg),
@@ -529,10 +535,10 @@ func (c *Client) Use(hooks ...Hook) {
 		c.GuestToken, c.HomeAssistant, c.Image, c.Incident, c.Jellyfin, c.LogEntry,
 		c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
 		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
-		c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Schedule,
-		c.Sonarr, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide,
-		c.TimelapseFrame, c.Transit, c.UmamiSettings, c.Untappd, c.Uptime, c.User,
-		c.Video, c.WakeAlarm, c.Weather, c.WebhookSettings,
+		c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Scene,
+		c.Schedule, c.Sonarr, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings,
+		c.TextSlide, c.TimelapseFrame, c.Transit, c.UmamiSettings, c.Untappd, c.Uptime,
+		c.User, c.Video, c.WakeAlarm, c.Weather, c.WebhookSettings,
 	} {
 		n.Use(hooks...)
 	}
@@ -549,10 +555,10 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.GuestToken, c.HomeAssistant, c.Image, c.Incident, c.Jellyfin, c.LogEntry,
 		c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
 		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
-		c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Schedule,
-		c.Sonarr, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide,
-		c.TimelapseFrame, c.Transit, c.UmamiSettings, c.Untappd, c.Uptime, c.User,
-		c.Video, c.WakeAlarm, c.Weather, c.WebhookSettings,
+		c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Scene,
+		c.Schedule, c.Sonarr, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings,
+		c.TextSlide, c.TimelapseFrame, c.Transit, c.UmamiSettings, c.Untappd, c.Uptime,
+		c.User, c.Video, c.WakeAlarm, c.Weather, c.WebhookSettings,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -643,6 +649,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Radarr.mutate(ctx, m)
 	case *RssFeedMutation:
 		return c.RssFeed.mutate(ctx, m)
+	case *SceneMutation:
+		return c.Scene.mutate(ctx, m)
 	case *ScheduleMutation:
 		return c.Schedule.mutate(ctx, m)
 	case *SonarrMutation:
@@ -3274,6 +3282,22 @@ func (c *GeneralSettingsClient) QueryWakealarms(_m *GeneralSettings) *WakeAlarmQ
 			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
 			sqlgraph.To(wakealarm.Table, wakealarm.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.WakealarmsTable, generalsettings.WakealarmsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryScenes queries the scenes edge of a GeneralSettings.
+func (c *GeneralSettingsClient) QueryScenes(_m *GeneralSettings) *SceneQuery {
+	query := (&SceneClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, id),
+			sqlgraph.To(scene.Table, scene.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.ScenesTable, generalsettings.ScenesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -6839,6 +6863,155 @@ func (c *RssFeedClient) mutate(ctx context.Context, m *RssFeedMutation) (Value, 
 	}
 }
 
+// SceneClient is a client for the Scene schema.
+type SceneClient struct {
+	config
+}
+
+// NewSceneClient returns a client for the Scene from the given config.
+func NewSceneClient(c config) *SceneClient {
+	return &SceneClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `scene.Hooks(f(g(h())))`.
+func (c *SceneClient) Use(hooks ...Hook) {
+	c.hooks.Scene = append(c.hooks.Scene, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `scene.Intercept(f(g(h())))`.
+func (c *SceneClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Scene = append(c.inters.Scene, interceptors...)
+}
+
+// Create returns a builder for creating a Scene entity.
+func (c *SceneClient) Create() *SceneCreate {
+	mutation := newSceneMutation(c.config, OpCreate)
+	return &SceneCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Scene entities.
+func (c *SceneClient) CreateBulk(builders ...*SceneCreate) *SceneCreateBulk {
+	return &SceneCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SceneClient) MapCreateBulk(slice any, setFunc func(*SceneCreate, int)) *SceneCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SceneCreateBulk{err: fmt.Errorf("calling to SceneClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SceneCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SceneCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Scene.
+func (c *SceneClient) Update() *SceneUpdate {
+	mutation := newSceneMutation(c.config, OpUpdate)
+	return &SceneUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SceneClient) UpdateOne(_m *Scene) *SceneUpdateOne {
+	mutation := newSceneMutation(c.config, OpUpdateOne, withScene(_m))
+	return &SceneUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SceneClient) UpdateOneID(id int) *SceneUpdateOne {
+	mutation := newSceneMutation(c.config, OpUpdateOne, withSceneID(id))
+	return &SceneUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Scene.
+func (c *SceneClient) Delete() *SceneDelete {
+	mutation := newSceneMutation(c.config, OpDelete)
+	return &SceneDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SceneClient) DeleteOne(_m *Scene) *SceneDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SceneClient) DeleteOneID(id int) *SceneDeleteOne {
+	builder := c.Delete().Where(scene.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SceneDeleteOne{builder}
+}
+
+// Query returns a query builder for Scene.
+func (c *SceneClient) Query() *SceneQuery {
+	return &SceneQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeScene},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Scene entity by its id.
+func (c *SceneClient) Get(ctx context.Context, id int) (*Scene, error) {
+	return c.Query().Where(scene.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SceneClient) GetX(ctx context.Context, id int) *Scene {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryGeneralSettings queries the general_settings edge of a Scene.
+func (c *SceneClient) QueryGeneralSettings(_m *Scene) *GeneralSettingsQuery {
+	query := (&GeneralSettingsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(scene.Table, scene.FieldID, id),
+			sqlgraph.To(generalsettings.Table, generalsettings.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, scene.GeneralSettingsTable, scene.GeneralSettingsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SceneClient) Hooks() []Hook {
+	return c.hooks.Scene
+}
+
+// Interceptors returns the client interceptors.
+func (c *SceneClient) Interceptors() []Interceptor {
+	return c.inters.Scene
+}
+
+func (c *SceneClient) mutate(ctx context.Context, m *SceneMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SceneCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SceneUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SceneUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SceneDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Scene mutation op: %q", m.Op())
+	}
+}
+
 // ScheduleClient is a client for the Schedule schema.
 type ScheduleClient struct {
 	config
@@ -9109,9 +9282,10 @@ type (
 		GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image, Incident,
 		Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed,
 		Notification, NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole,
-		PixelArt, Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock,
-		SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings,
-		Untappd, Uptime, User, Video, WakeAlarm, Weather, WebhookSettings []ent.Hook
+		PixelArt, Playlist, Qrcode, Radarr, RssFeed, Scene, Schedule, Sonarr, Sports,
+		Stock, SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit,
+		UmamiSettings, Untappd, Uptime, User, Video, WakeAlarm, Weather,
+		WebhookSettings []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
@@ -9120,9 +9294,9 @@ type (
 		GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image, Incident,
 		Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed,
 		Notification, NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole,
-		PixelArt, Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock,
-		SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings,
-		Untappd, Uptime, User, Video, WakeAlarm, Weather,
+		PixelArt, Playlist, Qrcode, Radarr, RssFeed, Scene, Schedule, Sonarr, Sports,
+		Stock, SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit,
+		UmamiSettings, Untappd, Uptime, User, Video, WakeAlarm, Weather,
 		WebhookSettings []ent.Interceptor
 	}
 )

@@ -66,6 +66,14 @@ func alarmAll(src *sourceWithName) {
 	}
 }
 
+func sceneAll(src *sourceWithName) {
+	controllersMu.Lock()
+	defer controllersMu.Unlock()
+	for fc := range controllers {
+		fc.SetSceneSource(src)
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Wake alarm pass (reuses the evaluator ticker; no new goroutine)
 // ---------------------------------------------------------------------------
@@ -232,6 +240,11 @@ func StartEventRuleEngine(client *ent.Client) {
 			return resolveAlarmSource(client, a)
 		}
 	}
+	if SceneSourceResolver == nil {
+		SceneSourceResolver = func(s *Scene) (*sourceWithName, bool) {
+			return resolveSceneSource(client, s)
+		}
+	}
 	go runEvaluator(ctx, client)
 	slog.Info("event rule engine started")
 }
@@ -359,6 +372,11 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 	}
 	loadAlarms()
 
+	loadScenes := func() {
+		globalSceneManager.SetScenes(loadSceneDefs(ctx, client))
+	}
+	loadScenes()
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -366,8 +384,10 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 		case <-reloadTicker.C:
 			loadRules()
 			loadAlarms()
+			loadScenes()
 		case <-ticker.C:
 			now := time.Now()
+			evaluateScenesTick(ctx, client, now)
 			if globalAlarmManager.Evaluate(now, AlarmSourceResolver) {
 				alarmAll(globalAlarmManager.Source())
 			}

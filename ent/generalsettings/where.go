@@ -1987,6 +1987,29 @@ func HasWakealarmsWith(preds ...predicate.WakeAlarm) predicate.GeneralSettings {
 	})
 }
 
+// HasScenes applies the HasEdge predicate on the "scenes" edge.
+func HasScenes() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ScenesTable, ScenesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasScenesWith applies the HasEdge predicate on the "scenes" edge with a given conditions (other predicates).
+func HasScenesWith(preds ...predicate.Scene) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newScenesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasWebhooksettings applies the HasEdge predicate on the "webhooksettings" edge.
 func HasWebhooksettings() predicate.GeneralSettings {
 	return predicate.GeneralSettings(func(s *sql.Selector) {

@@ -41,6 +41,7 @@ import (
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/schema"
 	"ledit/ent/sonarr"
@@ -1021,6 +1022,56 @@ func init() {
 	rssfeedDescName := rssfeedFields[1].Descriptor()
 	// rssfeed.DefaultName holds the default value on creation for the name field.
 	rssfeed.DefaultName = rssfeedDescName.Default.(string)
+	sceneFields := schema.Scene{}.Fields()
+	_ = sceneFields
+	// sceneDescName is the schema descriptor for name field.
+	sceneDescName := sceneFields[0].Descriptor()
+	// scene.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	scene.NameValidator = sceneDescName.Validators[0].(func(string) error)
+	// sceneDescEnabled is the schema descriptor for enabled field.
+	sceneDescEnabled := sceneFields[1].Descriptor()
+	// scene.DefaultEnabled holds the default value on creation for the enabled field.
+	scene.DefaultEnabled = sceneDescEnabled.Default.(bool)
+	// sceneDescTriggers is the schema descriptor for triggers field.
+	sceneDescTriggers := sceneFields[2].Descriptor()
+	// scene.DefaultTriggers holds the default value on creation for the triggers field.
+	scene.DefaultTriggers = sceneDescTriggers.Default.(string)
+	// sceneDescActions is the schema descriptor for actions field.
+	sceneDescActions := sceneFields[3].Descriptor()
+	// scene.DefaultActions holds the default value on creation for the actions field.
+	scene.DefaultActions = sceneDescActions.Default.(string)
+	// sceneDescPriority is the schema descriptor for priority field.
+	sceneDescPriority := sceneFields[4].Descriptor()
+	// scene.DefaultPriority holds the default value on creation for the priority field.
+	scene.DefaultPriority = sceneDescPriority.Default.(int)
+	// sceneDescTTLSeconds is the schema descriptor for ttl_seconds field.
+	sceneDescTTLSeconds := sceneFields[5].Descriptor()
+	// scene.TTLSecondsValidator is a validator for the "ttl_seconds" field. It is called by the builders before save.
+	scene.TTLSecondsValidator = func() func(int) error {
+		validators := sceneDescTTLSeconds.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(ttl_seconds int) error {
+			for _, fn := range fns {
+				if err := fn(ttl_seconds); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// sceneDescCreatedAt is the schema descriptor for created_at field.
+	sceneDescCreatedAt := sceneFields[6].Descriptor()
+	// scene.DefaultCreatedAt holds the default value on creation for the created_at field.
+	scene.DefaultCreatedAt = sceneDescCreatedAt.Default.(func() time.Time)
+	// sceneDescUpdatedAt is the schema descriptor for updated_at field.
+	sceneDescUpdatedAt := sceneFields[7].Descriptor()
+	// scene.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	scene.DefaultUpdatedAt = sceneDescUpdatedAt.Default.(func() time.Time)
+	// scene.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	scene.UpdateDefaultUpdatedAt = sceneDescUpdatedAt.UpdateDefault.(func() time.Time)
 	scheduleFields := schema.Schedule{}.Fields()
 	_ = scheduleFields
 	// scheduleDescName is the schema descriptor for name field.

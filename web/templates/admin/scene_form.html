@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Scene</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Scene</h1>
+            {{if .error}}<div class="alert alert-danger">{{.error}}</div>{{end}}
+            <form method="POST" action="/admin/scenes{{if .edit}}/{{.id}}/edit{{else}}/new{{end}}" class="mt-4" id="scene-form">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required value="{{.fName}}">
+                    </div>
+                    <div class="col-md-2 mb-3 form-check" style="padding-top:28px">
+                        <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if .fEnabled}}checked{{end}}>
+                        <label for="enabled" class="form-check-label">Enabled</label>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="priority" class="form-label">Priority</label>
+                        <input type="number" class="form-control" id="priority" name="priority" value="{{.fPriority}}">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="ttl_seconds" class="form-label">TTL (s, optional)</label>
+                        <input type="number" min="0" max="86400" class="form-control" id="ttl_seconds" name="ttl_seconds" value="{{.fTTL}}">
+                    </div>
+                </div>
+
+                <input type="hidden" name="triggers" id="triggers" value="{{.fTriggers}}">
+                <datalist id="entity-list">{{range .entity_ids}}<option value="{{.}}"></option>{{end}}</datalist>
+
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Sensor triggers <small class="text-muted">(all groups must hold)</small></span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="add-group">Add group</button>
+                    </div>
+                    <div class="card-body" id="trigger-groups"></div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Actions <small class="text-muted">(applied atomically; source wins over playlist)</small></div>
+                    <div class="card-body">
+                        <input type="hidden" name="source_type" id="source_type" value="{{.fSrcType}}">
+                        <input type="hidden" name="source_id" id="source_id" value="{{.fSrcID}}">
+                        <div class="mb-3">
+                            <label class="form-label">Pin source</label>
+                            <div class="d-flex gap-2 align-items-center flex-wrap">
+                                <select id="group-select" class="form-select" style="width:auto;min-width:180px">
+                                    <option value="">— type —</option>
+                                </select>
+                                <select id="source-select" class="form-select" style="width:auto;min-width:220px">
+                                    <option value="">— source —</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="playlist_id" class="form-label">Or playlist</label>
+                                <select id="playlist_id" name="playlist_id" class="form-select">
+                                    <option value="">— none —</option>
+                                    {{range .playlists}}
+                                    <option value="{{.ID}}" {{if eq (printf "%d" .ID) $.fPlaylistID}}selected{{end}}>{{.Name}}</option>
+                                    {{end}}
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="brightness_level" class="form-label">Brightness (0-100)</label>
+                                <input type="number" min="0" max="100" class="form-control" id="brightness_level" name="brightness_level" value="{{.fBrightness}}">
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                <label for="overlay_text" class="form-label">Overlay text</label>
+                                <input type="text" maxlength="200" class="form-control" id="overlay_text" name="overlay_text" value="{{.fOverlay}}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                <a href="/admin/scenes" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+<script>window.BINDING_OPTS = {{.options_json}};</script>
+<script>
+(function(){
+    var OPS = ['==','!=','>','>=','<','<=','in','not in'];
+    var groupsEl = document.getElementById('trigger-groups');
+    var hidden = document.getElementById('triggers');
+    var form = document.getElementById('scene-form');
+
+    function makeOpt(value, label){
+        var o = document.createElement('option');
+        o.value = value; o.textContent = label;
+        return o;
+    }
+
+    function addCondition(group, cond){
+        cond = cond || {};
+        var row = document.createElement('div');
+        row.className = 'd-flex gap-2 align-items-center flex-wrap mb-2 condition-row';
+        var entity = document.createElement('input');
+        entity.type = 'text';
+        entity.className = 'form-control cond-entity';
+        entity.setAttribute('list','entity-list');
+        entity.placeholder = 'entity_id (e.g. sensor.temp)';
+        entity.style.maxWidth = '260px';
+        entity.value = cond.entity_id || '';
+        var op = document.createElement('select');
+        op.className = 'form-select cond-op';
+        op.style.width = 'auto';
+        OPS.forEach(function(v){ op.appendChild(makeOpt(v, v)); });
+        if(cond.operator) op.value = cond.operator;
+        var val = document.createElement('input');
+        val.type = 'text';
+        val.className = 'form-control cond-value';
+        val.placeholder = 'value';
+        val.style.maxWidth = '200px';
+        val.value = (cond.value === undefined || cond.value === null) ? '' : String(cond.value);
+        var rm = document.createElement('button');
+        rm.type = 'button';
+        rm.className = 'btn btn-sm btn-outline-danger';
+        rm.textContent = 'Remove';
+        rm.addEventListener('click', function(){ row.remove(); });
+        row.appendChild(entity); row.appendChild(op); row.appendChild(val); row.appendChild(rm);
+        group.querySelector('.conditions').appendChild(row);
+    }
+
+    function addGroup(grp){
+        grp = grp || {};
+        var card = document.createElement('div');
+        card.className = 'border rounded p-2 mb-2 trigger-group';
+        var head = document.createElement('div');
+        head.className = 'd-flex gap-2 align-items-center mb-2';
+        var op = document.createElement('select');
+        op.className = 'form-select group-op';
+        op.style.width = 'auto';
+        op.appendChild(makeOpt('all-of','all-of (every condition)'));
+        op.appendChild(makeOpt('any-of','any-of (any condition)'));
+        op.value = grp.op || 'all-of';
+        var addCond = document.createElement('button');
+        addCond.type = 'button';
+        addCond.className = 'btn btn-sm btn-outline-secondary';
+        addCond.textContent = 'Add condition';
+        addCond.addEventListener('click', function(){ addCondition(card); });
+        var rm = document.createElement('button');
+        rm.type = 'button';
+        rm.className = 'btn btn-sm btn-outline-danger ms-auto';
+        rm.textContent = 'Remove group';
+        rm.addEventListener('click', function(){ card.remove(); });
+        head.appendChild(document.createTextNode('Group'));
+        head.appendChild(op); head.appendChild(addCond); head.appendChild(rm);
+        var conds = document.createElement('div');
+        conds.className = 'conditions';
+        card.appendChild(head); card.appendChild(conds);
+        groupsEl.appendChild(card);
+        var list = grp.conditions || [];
+        if(list.length === 0){ addCondition(card); }
+        else { list.forEach(function(c){ addCondition(card, c); }); }
+    }
+
+    // Prepopulate from hidden JSON (edit + error re-render).
+    var initial = [];
+    try {
+        var raw = (hidden.value || '').trim();
+        if(raw){ initial = JSON.parse(raw) || []; }
+    } catch(e){ initial = []; }
+    if(Array.isArray(initial) && initial.length){ initial.forEach(addGroup); }
+    else { addGroup(); }
+    document.getElementById('add-group').addEventListener('click', function(){ addGroup(); });
+
+    // Source picker (binding options).
+    var opts = window.BINDING_OPTS || {};
+    var groupSel = document.getElementById('group-select');
+    var sourceSel = document.getElementById('source-select');
+    var hiddenType = document.getElementById('source_type');
+    var hiddenID = document.getElementById('source_id');
+    Object.keys(opts).sort().forEach(function(t){ groupSel.appendChild(makeOpt(t, t)); });
+    function renderSourceOptions(){
+        sourceSel.innerHTML = '<option value="">— source —</option>';
+        var t = groupSel.value;
+        if(!t || !opts[t]) return;
+        opts[t].forEach(function(entry){
+            sourceSel.appendChild(makeOpt(String(entry.id), entry.label + ' (#' + entry.id + ')'));
+        });
+    }
+    function syncTargetHidden(){
+        hiddenType.value = groupSel.value || '';
+        hiddenID.value = sourceSel.value || '';
+    }
+    if(hiddenType.value){ groupSel.value = hiddenType.value; }
+    renderSourceOptions();
+    if(hiddenID.value){ sourceSel.value = String(hiddenID.value); }
+    groupSel.addEventListener('change', function(){ renderSourceOptions(); syncTargetHidden(); });
+    sourceSel.addEventListener('change', syncTargetHidden);
+
+    function serializeTriggers(){
+        var out = [];
+        groupsEl.querySelectorAll('.trigger-group').forEach(function(g){
+            var conds = [];
+            g.querySelectorAll('.condition-row').forEach(function(r){
+                conds.push({
+                    entity_id: r.querySelector('.cond-entity').value.trim(),
+                    operator: r.querySelector('.cond-op').value,
+                    value: r.querySelector('.cond-value').value
+                });
+            });
+            out.push({op: g.querySelector('.group-op').value, conditions: conds});
+        });
+        hidden.value = JSON.stringify(out);
+    }
+
+    form.addEventListener('submit', function(){
+        syncTargetHidden();
+        serializeTriggers();
+    });
+})();
+</script>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

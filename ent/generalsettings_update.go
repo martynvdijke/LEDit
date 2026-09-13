@@ -35,6 +35,7 @@ import (
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/sports"
@@ -965,6 +966,21 @@ func (_u *GeneralSettingsUpdate) AddWakealarms(v ...*WakeAlarm) *GeneralSettings
 	return _u.AddWakealarmIDs(ids...)
 }
 
+// AddSceneIDs adds the "scenes" edge to the Scene entity by IDs.
+func (_u *GeneralSettingsUpdate) AddSceneIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddSceneIDs(ids...)
+	return _u
+}
+
+// AddScenes adds the "scenes" edges to the Scene entity.
+func (_u *GeneralSettingsUpdate) AddScenes(v ...*Scene) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSceneIDs(ids...)
+}
+
 // AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by IDs.
 func (_u *GeneralSettingsUpdate) AddWebhooksettingIDs(ids ...int) *GeneralSettingsUpdate {
 	_u.mutation.AddWebhooksettingIDs(ids...)
@@ -1772,6 +1788,27 @@ func (_u *GeneralSettingsUpdate) RemoveWakealarms(v ...*WakeAlarm) *GeneralSetti
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveWakealarmIDs(ids...)
+}
+
+// ClearScenes clears all "scenes" edges to the Scene entity.
+func (_u *GeneralSettingsUpdate) ClearScenes() *GeneralSettingsUpdate {
+	_u.mutation.ClearScenes()
+	return _u
+}
+
+// RemoveSceneIDs removes the "scenes" edge to Scene entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveSceneIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveSceneIDs(ids...)
+	return _u
+}
+
+// RemoveScenes removes "scenes" edges to Scene entities.
+func (_u *GeneralSettingsUpdate) RemoveScenes(v ...*Scene) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSceneIDs(ids...)
 }
 
 // ClearWebhooksettings clears all "webhooksettings" edges to the WebhookSettings entity.
@@ -3543,6 +3580,51 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ScenesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ScenesTable,
+			Columns: []string{generalsettings.ScenesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scene.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedScenesIDs(); len(nodes) > 0 && !_u.mutation.ScenesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ScenesTable,
+			Columns: []string{generalsettings.ScenesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scene.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ScenesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ScenesTable,
+			Columns: []string{generalsettings.ScenesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scene.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.WebhooksettingsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -5043,6 +5125,21 @@ func (_u *GeneralSettingsUpdateOne) AddWakealarms(v ...*WakeAlarm) *GeneralSetti
 	return _u.AddWakealarmIDs(ids...)
 }
 
+// AddSceneIDs adds the "scenes" edge to the Scene entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddSceneIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddSceneIDs(ids...)
+	return _u
+}
+
+// AddScenes adds the "scenes" edges to the Scene entity.
+func (_u *GeneralSettingsUpdateOne) AddScenes(v ...*Scene) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSceneIDs(ids...)
+}
+
 // AddWebhooksettingIDs adds the "webhooksettings" edge to the WebhookSettings entity by IDs.
 func (_u *GeneralSettingsUpdateOne) AddWebhooksettingIDs(ids ...int) *GeneralSettingsUpdateOne {
 	_u.mutation.AddWebhooksettingIDs(ids...)
@@ -5850,6 +5947,27 @@ func (_u *GeneralSettingsUpdateOne) RemoveWakealarms(v ...*WakeAlarm) *GeneralSe
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveWakealarmIDs(ids...)
+}
+
+// ClearScenes clears all "scenes" edges to the Scene entity.
+func (_u *GeneralSettingsUpdateOne) ClearScenes() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearScenes()
+	return _u
+}
+
+// RemoveSceneIDs removes the "scenes" edge to Scene entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveSceneIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveSceneIDs(ids...)
+	return _u
+}
+
+// RemoveScenes removes "scenes" edges to Scene entities.
+func (_u *GeneralSettingsUpdateOne) RemoveScenes(v ...*Scene) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSceneIDs(ids...)
 }
 
 // ClearWebhooksettings clears all "webhooksettings" edges to the WebhookSettings entity.
@@ -7644,6 +7762,51 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(wakealarm.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ScenesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ScenesTable,
+			Columns: []string{generalsettings.ScenesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scene.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedScenesIDs(); len(nodes) > 0 && !_u.mutation.ScenesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ScenesTable,
+			Columns: []string{generalsettings.ScenesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scene.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ScenesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ScenesTable,
+			Columns: []string{generalsettings.ScenesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scene.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

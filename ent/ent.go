@@ -47,6 +47,7 @@ import (
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
 	"ledit/ent/sports"
@@ -171,6 +172,7 @@ func checkColumn(t, c string) error {
 			qrcode.Table:           qrcode.ValidColumn,
 			radarr.Table:           radarr.ValidColumn,
 			rssfeed.Table:          rssfeed.ValidColumn,
+			scene.Table:            scene.ValidColumn,
 			schedule.Table:         schedule.ValidColumn,
 			sonarr.Table:           sonarr.ValidColumn,
 			sports.Table:           sports.ValidColumn,

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Ambient Scenes</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Ambient Scenes</h1>
+                <a href="/admin/scenes/new" class="btn btn-primary">New Scene</a>
+            </div>
+            <p class="text-muted">Scenes reconfigure the whole wall (source/playlist, brightness, overlay) when their Home Assistant sensor triggers hold. Precedence: notification &gt; incident &gt; alarm &gt; scene &gt; rotation.</p>
+            {{if .scenes}}
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>State</th>
+                        <th>Priority</th>
+                        <th>TTL</th>
+                        <th>Triggers</th>
+                        <th>Actions</th>
+                        <th>Operations</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .scenes}}
+                    <tr>
+                        <td>{{.ID}}</td>
+                        <td>{{.Name}}</td>
+                        <td>
+                            {{if not .Enabled}}<span class="badge bg-secondary">disabled</span>{{end}}
+                            {{if .Active}}<span class="badge bg-success">active</span>{{end}}
+                            {{if and .Enabled (not .Active)}}<span class="badge bg-light text-dark">idle</span>{{end}}
+                        </td>
+                        <td>{{.Priority}}</td>
+                        <td>{{.TTLText}}</td>
+                        <td>
+                            {{if .Groups}}
+                                {{range .Groups}}
+                                <div class="mb-1">
+                                    <span class="badge bg-info text-dark">{{.Op}}</span>
+                                    {{range .Conditions}}
+                                        <span class="badge {{if eq .Status "true"}}bg-success{{else if eq .Status "false"}}bg-secondary{{else}}bg-warning text-dark{{end}}"
+                                              title="HA state: {{if .State}}{{.State}}{{else}}unknown{{end}}">
+                                            {{.EntityID}} {{.Operator}} {{.Value}} → {{.Status}}
+                                        </span>
+                                    {{end}}
+                                </div>
+                                {{end}}
+                            {{else}}<span class="text-muted">no triggers</span>{{end}}
+                        </td>
+                        <td><code>{{.Action}}</code></td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-primary preview-btn" data-scene-id="{{.ID}}">Preview</button>
+                            <a href="/admin/scenes/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            <form method="POST" action="/admin/scenes/{{.ID}}/delete" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            <script>
+            (function(){
+                function csrf(){ return ''; }
+                document.querySelectorAll('.preview-btn').forEach(function(btn){
+                    btn.addEventListener('click', function(){
+                        var id = btn.getAttribute('data-scene-id');
+                        btn.disabled = true;
+                        fetch('/api/scenes/' + id + '/preview', {method:'POST', headers:{'Content-Type':'application/json'}})
+                            .then(function(r){ return r.json().then(function(b){ return {ok:r.ok, body:b}; }); })
+                            .then(function(res){
+                                btn.disabled = false;
+                                if(res.ok){ btn.textContent = 'Previewing…'; setTimeout(function(){ btn.textContent='Preview'; }, 3000); }
+                                else { alert('Preview failed: ' + (res.body.error || 'unknown')); }
+                            })
+                            .catch(function(){ btn.disabled = false; alert('Preview request failed'); });
+                    });
+                });
+            })();
+            </script>
+            {{else}}
+            <p class="text-muted mt-4">No scenes yet. <a href="/admin/scenes/new">Create one</a> to reconfigure the wall from ambient sensors.</p>
+            {{end}}
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>
