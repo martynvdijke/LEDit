@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -12,6 +13,8 @@ import (
 
 	"ledit/render"
 )
+
+var _ StateProvider = (*TransitDS)(nil)
 
 // TransitDeparture is the normalized departure shape every provider adapter
 // produces. Time carries its embedded offset.
@@ -119,6 +122,43 @@ func resolveTransitURL(cfg TransitConfig) (string, error) {
 		return "", fmt.Errorf("no departures URL configured")
 	}
 	return strings.ReplaceAll(u, "%s", cfg.StopID), nil
+}
+
+func (t *TransitDS) CurrentState(ctx context.Context) (map[string]any, error) {
+	cfg := t.config()
+	rawURL, err := resolveTransitURL(cfg)
+	if err != nil {
+		return nil, err
+	}
+	body, err := t.fetch(rawURL, cfg)
+	if err != nil {
+		return nil, err
+	}
+	departures, err := ParseTransitDepartures(body, cfg.Provider)
+	if err != nil {
+		return nil, err
+	}
+	effectiveNow := t.nowTime().Add(time.Duration(cfg.WalkTimeMin) * time.Minute)
+	future := make([]TransitDeparture, 0, len(departures))
+	for _, d := range departures {
+		if d.Time.After(effectiveNow) {
+			future = append(future, d)
+		}
+	}
+	if len(future) == 0 {
+		return map[string]any{"nextDepartureMinutes": 0}, nil
+	}
+	sort.SliceStable(future, func(i, j int) bool { return future[i].Time.Before(future[j].Time) })
+	next := future[0]
+	mins := int(math.Floor(next.Time.Sub(effectiveNow).Minutes()))
+	if mins < 0 {
+		mins = 0
+	}
+	return map[string]any{
+		"nextDepartureMinutes": mins,
+		"line":                 next.Line,
+		"destination":          next.Destination,
+	}, nil
 }
 
 func (t *TransitDS) GetPNG(width, height int) (*render.RenderedImage, error) {

@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -9,6 +10,8 @@ import (
 
 	"ledit/render"
 )
+
+var _ StateProvider = (*GitHubDS)(nil)
 
 type GitHubDS struct {
 	Token string
@@ -56,6 +59,42 @@ func (g *GitHubDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	}
 	slog.Info("github data rendered", "source", "github", "repo", g.Token)
 	return img, nil
+}
+
+func (g *GitHubDS) CurrentState(_ context.Context) (map[string]any, error) {
+	parts := strings.SplitN(g.Token, "/", 2)
+	if len(parts) != 2 || strings.TrimSpace(parts[0]) == "" || strings.TrimSpace(parts[1]) == "" {
+		return nil, fmt.Errorf("malformed token")
+	}
+	url := g.URL
+	if url == "" {
+		url = "https://api.github.com/repos/%s"
+	}
+	if strings.Contains(url, "%s") {
+		url = fmt.Sprintf(url, g.Token)
+	}
+	body, err := apiGet(url, "", nil)
+	if err != nil {
+		return nil, err
+	}
+	var resp struct {
+		Issues int `json:"open_issues_count"`
+	}
+	if err := json.Unmarshal(body, &resp); err != nil {
+		return nil, err
+	}
+	// ponytail: cap openPRs at 100 via per_page=100; paginate if GH shows >100 PRs matters
+	pullsURL := strings.TrimRight(url, "/") + "/pulls?state=open&per_page=100"
+	openPRs := 0
+	if pullsBody, err := apiGet(pullsURL, "", nil); err == nil {
+		var pulls []json.RawMessage
+		if err := json.Unmarshal(pullsBody, &pulls); err == nil {
+			openPRs = len(pulls)
+		}
+	} else {
+		slog.Warn("github pulls fetch failed, defaulting openPRs to 0", "error", err)
+	}
+	return map[string]any{"openIssues": resp.Issues, "openPRs": openPRs}, nil
 }
 
 func fallbackGitHub(width, height int) *render.RenderedImage {

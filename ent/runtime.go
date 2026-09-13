@@ -399,14 +399,18 @@ func init() {
 	displayruleDescCondition := displayruleFields[4].Descriptor()
 	// displayrule.DefaultCondition holds the default value on creation for the condition field.
 	displayrule.DefaultCondition = displayruleDescCondition.Default.(string)
+	// displayruleDescStatePath is the schema descriptor for state_path field.
+	displayruleDescStatePath := displayruleFields[5].Descriptor()
+	// displayrule.DefaultStatePath holds the default value on creation for the state_path field.
+	displayrule.DefaultStatePath = displayruleDescStatePath.Default.(string)
 	// displayruleDescCheckIntervalSeconds is the schema descriptor for check_interval_seconds field.
-	displayruleDescCheckIntervalSeconds := displayruleFields[5].Descriptor()
+	displayruleDescCheckIntervalSeconds := displayruleFields[6].Descriptor()
 	// displayrule.DefaultCheckIntervalSeconds holds the default value on creation for the check_interval_seconds field.
 	displayrule.DefaultCheckIntervalSeconds = displayruleDescCheckIntervalSeconds.Default.(int)
 	// displayrule.CheckIntervalSecondsValidator is a validator for the "check_interval_seconds" field. It is called by the builders before save.
 	displayrule.CheckIntervalSecondsValidator = displayruleDescCheckIntervalSeconds.Validators[0].(func(int) error)
 	// displayruleDescCooldownSeconds is the schema descriptor for cooldown_seconds field.
-	displayruleDescCooldownSeconds := displayruleFields[6].Descriptor()
+	displayruleDescCooldownSeconds := displayruleFields[7].Descriptor()
 	// displayrule.DefaultCooldownSeconds holds the default value on creation for the cooldown_seconds field.
 	displayrule.DefaultCooldownSeconds = displayruleDescCooldownSeconds.Default.(int)
 	// displayrule.CooldownSecondsValidator is a validator for the "cooldown_seconds" field. It is called by the builders before save.

@@ -2,6 +2,7 @@ package datasource
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"image"
@@ -16,6 +17,8 @@ import (
 
 	"ledit/render"
 )
+
+var _ StateProvider = (*WeatherDS)(nil)
 
 type WeatherDS struct {
 	Token string
@@ -74,6 +77,44 @@ func (w *WeatherDS) getCondition() string {
 // Ambient reports whether last known condition is precipitation.
 func (w *WeatherDS) Ambient() bool {
 	return isPrecipitation(w.getCondition())
+}
+
+func (w *WeatherDS) CurrentState(ctx context.Context) (map[string]any, error) {
+	city := "London"
+	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=metric", city, w.Token)
+	if w.URL != "" {
+		url = w.URL
+	}
+	body, err := apiGet(url, w.Token, nil)
+	if err != nil {
+		return nil, err
+	}
+	var resp struct {
+		Main struct {
+			Temp     float64 `json:"temp"`
+			Humidity int     `json:"humidity"`
+		} `json:"main"`
+		Weather []struct {
+			Main string `json:"main"`
+		} `json:"weather"`
+	}
+	if err := json.Unmarshal(body, &resp); err != nil {
+		return nil, err
+	}
+	if len(resp.Weather) == 0 {
+		return nil, fmt.Errorf("weather: no weather data")
+	}
+	cond := strings.ToLower(strings.TrimSpace(resp.Weather[0].Main))
+	if cond == "" {
+		cond = "unknown"
+	} else {
+		cond = normalizeCondition(cond)
+	}
+	return map[string]any{
+		"temp":      resp.Main.Temp,
+		"condition": cond,
+		"humidity":  resp.Main.Humidity,
+	}, nil
 }
 
 func (w *WeatherDS) GetPNG(width, height int) (*render.RenderedImage, error) {

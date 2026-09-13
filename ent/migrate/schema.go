@@ -323,6 +323,7 @@ var (
 		{Name: "source_type", Type: field.TypeString, Default: ""},
 		{Name: "source_id", Type: field.TypeInt, Default: 0},
 		{Name: "condition", Type: field.TypeString, Size: 2147483647, Default: "{}"},
+		{Name: "state_path", Type: field.TypeString, Default: ""},
 		{Name: "check_interval_seconds", Type: field.TypeInt, Default: 30},
 		{Name: "cooldown_seconds", Type: field.TypeInt, Default: 0},
 		{Name: "general_settings_displayrules", Type: field.TypeInt, Nullable: true},
@@ -335,7 +336,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "display_rules_general_settings_displayrules",
-				Columns:    []*schema.Column{DisplayRulesColumns[8]},
+				Columns:    []*schema.Column{DisplayRulesColumns[9]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

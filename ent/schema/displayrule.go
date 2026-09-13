@@ -18,6 +18,9 @@ func (DisplayRule) Fields() []ent.Field {
 		field.String("source_type").Default(""),
 		field.Int("source_id").Default(0),
 		field.Text("condition").Default("{}"),
+		// state_path optionally scopes the condition to a sub-value of the
+		// source state map (dotted). Empty = evaluate against the whole map.
+		field.String("state_path").Default(""),
 		field.Int("check_interval_seconds").Default(30).Min(5),
 		field.Int("cooldown_seconds").Default(0).Min(0),
 	}

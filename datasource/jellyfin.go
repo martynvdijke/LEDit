@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -8,6 +9,8 @@ import (
 
 	"ledit/render"
 )
+
+var _ StateProvider = (*JellyfinDS)(nil)
 
 // JellyfinDS fetches Jellyfin active sessions.
 //
@@ -131,6 +134,34 @@ func (j *JellyfinDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 		return nil, err
 	}
 	return img, nil
+}
+
+func (j *JellyfinDS) CurrentState(_ context.Context) (map[string]any, error) {
+	base := strings.TrimRight(j.URL, "/")
+	fetchURL := base + "/Sessions"
+	headers := map[string]string{}
+	if j.Token != "" {
+		headers["X-Emby-Token"] = j.Token
+	}
+	body, err := apiGet(fetchURL, "", headers)
+	if err != nil {
+		return nil, err
+	}
+	var sessions []struct {
+		NowPlayingItem *struct {
+			Name string `json:"Name"`
+		} `json:"NowPlayingItem"`
+	}
+	if err := json.Unmarshal(body, &sessions); err != nil {
+		return nil, fmt.Errorf("jellyfin parse error: %w", err)
+	}
+	count := 0
+	for _, s := range sessions {
+		if s.NowPlayingItem != nil {
+			count++
+		}
+	}
+	return map[string]any{"activeStreams": count}, nil
 }
 
 func fallbackJellyfin(width, height int) *render.RenderedImage {

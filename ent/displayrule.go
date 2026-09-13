@@ -26,6 +26,8 @@ type DisplayRule struct {
 	SourceID int `json:"source_id,omitempty"`
 	// Condition holds the value of the "condition" field.
 	Condition string `json:"condition,omitempty"`
+	// StatePath holds the value of the "state_path" field.
+	StatePath string `json:"state_path,omitempty"`
 	// CheckIntervalSeconds holds the value of the "check_interval_seconds" field.
 	CheckIntervalSeconds int `json:"check_interval_seconds,omitempty"`
 	// CooldownSeconds holds the value of the "cooldown_seconds" field.
@@ -43,7 +45,7 @@ func (*DisplayRule) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case displayrule.FieldID, displayrule.FieldSourceID, displayrule.FieldCheckIntervalSeconds, displayrule.FieldCooldownSeconds:
 			values[i] = new(sql.NullInt64)
-		case displayrule.FieldName, displayrule.FieldSourceType, displayrule.FieldCondition:
+		case displayrule.FieldName, displayrule.FieldSourceType, displayrule.FieldCondition, displayrule.FieldStatePath:
 			values[i] = new(sql.NullString)
 		case displayrule.ForeignKeys[0]: // general_settings_displayrules
 			values[i] = new(sql.NullInt64)
@@ -97,6 +99,12 @@ func (_m *DisplayRule) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field condition", values[i])
 			} else if value.Valid {
 				_m.Condition = value.String
+			}
+		case displayrule.FieldStatePath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field state_path", values[i])
+			} else if value.Valid {
+				_m.StatePath = value.String
 			}
 		case displayrule.FieldCheckIntervalSeconds:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -167,6 +175,9 @@ func (_m *DisplayRule) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("condition=")
 	builder.WriteString(_m.Condition)
+	builder.WriteString(", ")
+	builder.WriteString("state_path=")
+	builder.WriteString(_m.StatePath)
 	builder.WriteString(", ")
 	builder.WriteString("check_interval_seconds=")
 	builder.WriteString(fmt.Sprintf("%v", _m.CheckIntervalSeconds))

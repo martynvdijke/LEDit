@@ -89,6 +89,20 @@ func (_c *DisplayRuleCreate) SetNillableCondition(v *string) *DisplayRuleCreate 
 	return _c
 }
 
+// SetStatePath sets the "state_path" field.
+func (_c *DisplayRuleCreate) SetStatePath(v string) *DisplayRuleCreate {
+	_c.mutation.SetStatePath(v)
+	return _c
+}
+
+// SetNillableStatePath sets the "state_path" field if the given value is not nil.
+func (_c *DisplayRuleCreate) SetNillableStatePath(v *string) *DisplayRuleCreate {
+	if v != nil {
+		_c.SetStatePath(*v)
+	}
+	return _c
+}
+
 // SetCheckIntervalSeconds sets the "check_interval_seconds" field.
 func (_c *DisplayRuleCreate) SetCheckIntervalSeconds(v int) *DisplayRuleCreate {
 	_c.mutation.SetCheckIntervalSeconds(v)
@@ -172,6 +186,10 @@ func (_c *DisplayRuleCreate) defaults() {
 		v := displayrule.DefaultCondition
 		_c.mutation.SetCondition(v)
 	}
+	if _, ok := _c.mutation.StatePath(); !ok {
+		v := displayrule.DefaultStatePath
+		_c.mutation.SetStatePath(v)
+	}
 	if _, ok := _c.mutation.CheckIntervalSeconds(); !ok {
 		v := displayrule.DefaultCheckIntervalSeconds
 		_c.mutation.SetCheckIntervalSeconds(v)
@@ -198,6 +216,9 @@ func (_c *DisplayRuleCreate) check() error {
 	}
 	if _, ok := _c.mutation.Condition(); !ok {
 		return &ValidationError{Name: "condition", err: errors.New(`ent: missing required field "DisplayRule.condition"`)}
+	}
+	if _, ok := _c.mutation.StatePath(); !ok {
+		return &ValidationError{Name: "state_path", err: errors.New(`ent: missing required field "DisplayRule.state_path"`)}
 	}
 	if _, ok := _c.mutation.CheckIntervalSeconds(); !ok {
 		return &ValidationError{Name: "check_interval_seconds", err: errors.New(`ent: missing required field "DisplayRule.check_interval_seconds"`)}
@@ -260,6 +281,10 @@ func (_c *DisplayRuleCreate) createSpec() (*DisplayRule, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Condition(); ok {
 		_spec.SetField(displayrule.FieldCondition, field.TypeString, value)
 		_node.Condition = value
+	}
+	if value, ok := _c.mutation.StatePath(); ok {
+		_spec.SetField(displayrule.FieldStatePath, field.TypeString, value)
+		_node.StatePath = value
 	}
 	if value, ok := _c.mutation.CheckIntervalSeconds(); ok {
 		_spec.SetField(displayrule.FieldCheckIntervalSeconds, field.TypeInt, value)

@@ -78,6 +78,11 @@ func Condition(v string) predicate.DisplayRule {
 	return predicate.DisplayRule(sql.FieldEQ(FieldCondition, v))
 }
 
+// StatePath applies equality check predicate on the "state_path" field. It's identical to StatePathEQ.
+func StatePath(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEQ(FieldStatePath, v))
+}
+
 // CheckIntervalSeconds applies equality check predicate on the "check_interval_seconds" field. It's identical to CheckIntervalSecondsEQ.
 func CheckIntervalSeconds(v int) predicate.DisplayRule {
 	return predicate.DisplayRule(sql.FieldEQ(FieldCheckIntervalSeconds, v))
@@ -331,6 +336,71 @@ func ConditionEqualFold(v string) predicate.DisplayRule {
 // ConditionContainsFold applies the ContainsFold predicate on the "condition" field.
 func ConditionContainsFold(v string) predicate.DisplayRule {
 	return predicate.DisplayRule(sql.FieldContainsFold(FieldCondition, v))
+}
+
+// StatePathEQ applies the EQ predicate on the "state_path" field.
+func StatePathEQ(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEQ(FieldStatePath, v))
+}
+
+// StatePathNEQ applies the NEQ predicate on the "state_path" field.
+func StatePathNEQ(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldNEQ(FieldStatePath, v))
+}
+
+// StatePathIn applies the In predicate on the "state_path" field.
+func StatePathIn(vs ...string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldIn(FieldStatePath, vs...))
+}
+
+// StatePathNotIn applies the NotIn predicate on the "state_path" field.
+func StatePathNotIn(vs ...string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldNotIn(FieldStatePath, vs...))
+}
+
+// StatePathGT applies the GT predicate on the "state_path" field.
+func StatePathGT(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldGT(FieldStatePath, v))
+}
+
+// StatePathGTE applies the GTE predicate on the "state_path" field.
+func StatePathGTE(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldGTE(FieldStatePath, v))
+}
+
+// StatePathLT applies the LT predicate on the "state_path" field.
+func StatePathLT(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldLT(FieldStatePath, v))
+}
+
+// StatePathLTE applies the LTE predicate on the "state_path" field.
+func StatePathLTE(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldLTE(FieldStatePath, v))
+}
+
+// StatePathContains applies the Contains predicate on the "state_path" field.
+func StatePathContains(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldContains(FieldStatePath, v))
+}
+
+// StatePathHasPrefix applies the HasPrefix predicate on the "state_path" field.
+func StatePathHasPrefix(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldHasPrefix(FieldStatePath, v))
+}
+
+// StatePathHasSuffix applies the HasSuffix predicate on the "state_path" field.
+func StatePathHasSuffix(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldHasSuffix(FieldStatePath, v))
+}
+
+// StatePathEqualFold applies the EqualFold predicate on the "state_path" field.
+func StatePathEqualFold(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEqualFold(FieldStatePath, v))
+}
+
+// StatePathContainsFold applies the ContainsFold predicate on the "state_path" field.
+func StatePathContainsFold(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldContainsFold(FieldStatePath, v))
 }
 
 // CheckIntervalSecondsEQ applies the EQ predicate on the "check_interval_seconds" field.

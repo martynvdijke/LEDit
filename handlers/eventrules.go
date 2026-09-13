@@ -162,7 +162,46 @@ var (
 
 	nonCapableLogged = map[string]bool{}
 	nonCapableMu     sync.Mutex
+
+	// stateFetchLogged dedups fetch-failure logs to once per distinct target
+	// until a fetch succeeds again (outage window), mirroring nonCapableLogged.
+	stateFetchLogged = map[string]bool{}
+	stateFetchMu     sync.Mutex
 )
+
+// resolveStatePath scopes a source state map to a dotted sub-path. An empty
+// path returns the whole map (legacy behavior). A scalar leaf is wrapped as
+// {"value": leaf} so a condition path of "value" can address it. An
+// unresolvable path yields an empty map, making the condition evaluate false.
+func resolveStatePath(state map[string]any, path string) map[string]any {
+	if path == "" {
+		return state
+	}
+	v, ok := datasource.DotPath(state, path)
+	if !ok {
+		return map[string]any{}
+	}
+	if m, ok := v.(map[string]any); ok {
+		return m
+	}
+	return map[string]any{"value": v}
+}
+
+func logStateFetchOnce(cacheKey, rule string, err error) {
+	stateFetchMu.Lock()
+	first := !stateFetchLogged[cacheKey]
+	stateFetchLogged[cacheKey] = true
+	stateFetchMu.Unlock()
+	if first {
+		slog.Warn("event rule state fetch failed, evaluating empty state", "rule", rule, "cacheKey", cacheKey, "error", err)
+	}
+}
+
+func clearStateFetchLogged(cacheKey string) {
+	stateFetchMu.Lock()
+	delete(stateFetchLogged, cacheKey)
+	stateFetchMu.Unlock()
+}
 
 func StartEventRuleEngine(client *ent.Client) {
 	engineMu.Lock()
@@ -213,6 +252,9 @@ func ResetNonCapableLogged() {
 	nonCapableMu.Lock()
 	defer nonCapableMu.Unlock()
 	nonCapableLogged = map[string]bool{}
+	stateFetchMu.Lock()
+	defer stateFetchMu.Unlock()
+	stateFetchLogged = map[string]bool{}
 }
 
 type ruleState struct {
@@ -374,15 +416,20 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 					slog.Warn("event rule condition parse failed", "rule", rs.rule.Name, "error", err)
 					continue
 				}
-				fetchCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-				state, err := sp.CurrentState(fetchCtx)
-				cancel()
-				if err != nil {
-					slog.Warn("event rule state fetch failed", "rule", rs.rule.Name, "error", err)
-					continue
-				}
-				result := datasource.Evaluate(state, cond)
 				cacheKey := fmt.Sprintf("%s:%d", rs.rule.SourceType, rs.rule.SourceID)
+				fetchCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+				state, ferr := sp.CurrentState(fetchCtx)
+				cancel()
+				if ferr != nil {
+					logStateFetchOnce(cacheKey, rs.rule.Name, ferr)
+					// D5: a fetch failure evaluates as empty state (condition
+					// false) so cooldown/min-hold still governs un-pinning.
+					state = map[string]any{}
+				} else {
+					clearStateFetchLogged(cacheKey)
+				}
+				state = resolveStatePath(state, rs.rule.StatePath)
+				result := datasource.Evaluate(state, cond)
 				if result {
 					if !rs.pinned {
 						// enforce min-hold: cooldown already handled via cooldownUntil check before fetch, but also need min-hold after fire?
@@ -456,14 +503,18 @@ func EvaluateRulesOnce(client *ent.Client, states map[int]*ruleState) {
 		if err != nil {
 			continue
 		}
-		fetchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		state, err := sp.CurrentState(fetchCtx)
-		cancel()
-		if err != nil {
-			continue
-		}
-		result := datasource.Evaluate(state, cond)
 		cacheKey := fmt.Sprintf("%s:%d", rs.rule.SourceType, rs.rule.SourceID)
+		fetchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		state, ferr := sp.CurrentState(fetchCtx)
+		cancel()
+		if ferr != nil {
+			logStateFetchOnce(cacheKey, rs.rule.Name, ferr)
+			state = map[string]any{}
+		} else {
+			clearStateFetchLogged(cacheKey)
+		}
+		state = resolveStatePath(state, rs.rule.StatePath)
+		result := datasource.Evaluate(state, cond)
 		if result {
 			if !rs.pinned {
 				pinAll(cacheKey, rs.rule.Name)
@@ -502,7 +553,7 @@ func (s *Server) AdminEventRuleList(c *gin.Context) {
 // eventRuleFormVars supplies flat prepopulation strings for
 // eventrule_form.html so ent rows and error-replay maps render identically
 // (templates never branch on the obj type).
-func eventRuleFormVars(name, srcType, srcID, condition, interval, cooldown string, enabled bool) gin.H {
+func eventRuleFormVars(name, srcType, srcID, condition, statePath, interval, cooldown string, enabled bool) gin.H {
 	e := ""
 	if enabled {
 		e = "on"
@@ -513,6 +564,7 @@ func eventRuleFormVars(name, srcType, srcID, condition, interval, cooldown strin
 		"fSrcType":   srcType,
 		"fSrcID":     srcID,
 		"fCondition": condition,
+		"fStatePath": statePath,
 		"fInterval":  interval,
 		"fCooldown":  cooldown,
 	}
@@ -520,15 +572,35 @@ func eventRuleFormVars(name, srcType, srcID, condition, interval, cooldown strin
 
 func (s *Server) AdminEventRuleNew(c *gin.Context) {
 	opts := s.bindingOptions(c)
-	vars := eventRuleFormVars("", "", "", "{}", "30", "0", true)
+	vars := eventRuleFormVars("", "", "", "{}", "", "30", "0", true)
 	vars["options"] = opts
 	vars["options_json"] = bindingOptionsJSON(opts)
 	s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
 }
 
-func validateEventRule(s *Server, c *gin.Context, name, sourceType string, sourceID int, condition string, checkInterval, cooldown int) string {
+func validateStatePath(p string) string {
+	if p == "" {
+		return ""
+	}
+	if strings.HasPrefix(p, ".") || strings.HasSuffix(p, ".") || strings.Contains(p, "..") {
+		return "state_path must be a dotted path (e.g. weather.temp)"
+	}
+	for _, r := range p {
+		ok := r == '.' || r == '_' || r == '-' ||
+			(r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9')
+		if !ok {
+			return "state_path contains invalid characters"
+		}
+	}
+	return ""
+}
+
+func validateEventRule(s *Server, c *gin.Context, name, sourceType string, sourceID int, condition, statePath string, checkInterval, cooldown int) string {
 	if name == "" {
 		return "name is required"
+	}
+	if msg := validateStatePath(statePath); msg != "" {
+		return msg
 	}
 	// validate target exists in catalog
 	opts := s.bindingOptions(c)
@@ -564,6 +636,7 @@ func (s *Server) AdminEventRuleCreate(c *gin.Context) {
 	if condition == "" {
 		condition = "{}"
 	}
+	statePath := strings.TrimSpace(c.PostForm("state_path"))
 	checkInterval, _ := strconv.Atoi(c.PostForm("check_interval_seconds"))
 	if c.PostForm("check_interval_seconds") == "" {
 		checkInterval = 30
@@ -571,22 +644,22 @@ func (s *Server) AdminEventRuleCreate(c *gin.Context) {
 	cooldown, _ := strconv.Atoi(c.PostForm("cooldown_seconds"))
 	enabled := c.PostForm("enabled") == "on"
 
-	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, checkInterval, cooldown); msg != "" {
+	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, statePath, checkInterval, cooldown); msg != "" {
 		SetFlash(c, "danger", msg)
 		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
+		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
 		vars["error"] = msg
 		vars["options"] = opts
 		vars["options_json"] = bindingOptionsJSON(opts)
 		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
 		return
 	}
-	obj, err := s.DB.DisplayRule.Create().SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).Save(s.Ctx)
+	obj, err := s.DB.DisplayRule.Create().SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetStatePath(statePath).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).Save(s.Ctx)
 	if err != nil {
 		SetFlash(c, "danger", "Failed to create: "+err.Error())
 		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
 		vars["options"] = opts
 		vars["options_json"] = bindingOptionsJSON(opts)
 		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
@@ -608,7 +681,7 @@ func (s *Server) AdminEventRuleEdit(c *gin.Context) {
 		return
 	}
 	opts := s.bindingOptions(c)
-	vars := eventRuleFormVars(obj.Name, obj.SourceType, strconv.Itoa(obj.SourceID), obj.Condition, strconv.Itoa(obj.CheckIntervalSeconds), strconv.Itoa(obj.CooldownSeconds), obj.Enabled)
+	vars := eventRuleFormVars(obj.Name, obj.SourceType, strconv.Itoa(obj.SourceID), obj.Condition, obj.StatePath, strconv.Itoa(obj.CheckIntervalSeconds), strconv.Itoa(obj.CooldownSeconds), obj.Enabled)
 	vars["obj"] = obj
 	vars["edit"] = true
 	vars["id"] = id
@@ -626,6 +699,7 @@ func (s *Server) AdminEventRuleUpdate(c *gin.Context) {
 	if condition == "" {
 		condition = "{}"
 	}
+	statePath := strings.TrimSpace(c.PostForm("state_path"))
 	checkInterval, _ := strconv.Atoi(c.PostForm("check_interval_seconds"))
 	if c.PostForm("check_interval_seconds") == "" {
 		checkInterval = 30
@@ -633,11 +707,11 @@ func (s *Server) AdminEventRuleUpdate(c *gin.Context) {
 	cooldown, _ := strconv.Atoi(c.PostForm("cooldown_seconds"))
 	enabled := c.PostForm("enabled") == "on"
 
-	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, checkInterval, cooldown); msg != "" {
+	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, statePath, checkInterval, cooldown); msg != "" {
 		SetFlash(c, "danger", msg)
 		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
+		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
 		vars["edit"] = true
 		vars["id"] = id
 		vars["error"] = msg
@@ -646,10 +720,10 @@ func (s *Server) AdminEventRuleUpdate(c *gin.Context) {
 		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
 		return
 	}
-	if err := s.DB.DisplayRule.UpdateOneID(id).SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).Exec(s.Ctx); err != nil {
+	if err := s.DB.DisplayRule.UpdateOneID(id).SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetStatePath(statePath).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).Exec(s.Ctx); err != nil {
 		SetFlash(c, "danger", "Failed to update: "+err.Error())
 		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
 		vars["edit"] = true
 		vars["id"] = id
 		vars["options"] = opts

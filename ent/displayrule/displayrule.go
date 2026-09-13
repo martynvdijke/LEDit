@@ -21,6 +21,8 @@ const (
 	FieldSourceID = "source_id"
 	// FieldCondition holds the string denoting the condition field in the database.
 	FieldCondition = "condition"
+	// FieldStatePath holds the string denoting the state_path field in the database.
+	FieldStatePath = "state_path"
 	// FieldCheckIntervalSeconds holds the string denoting the check_interval_seconds field in the database.
 	FieldCheckIntervalSeconds = "check_interval_seconds"
 	// FieldCooldownSeconds holds the string denoting the cooldown_seconds field in the database.
@@ -37,6 +39,7 @@ var Columns = []string{
 	FieldSourceType,
 	FieldSourceID,
 	FieldCondition,
+	FieldStatePath,
 	FieldCheckIntervalSeconds,
 	FieldCooldownSeconds,
 }
@@ -73,6 +76,8 @@ var (
 	DefaultSourceID int
 	// DefaultCondition holds the default value on creation for the "condition" field.
 	DefaultCondition string
+	// DefaultStatePath holds the default value on creation for the "state_path" field.
+	DefaultStatePath string
 	// DefaultCheckIntervalSeconds holds the default value on creation for the "check_interval_seconds" field.
 	DefaultCheckIntervalSeconds int
 	// CheckIntervalSecondsValidator is a validator for the "check_interval_seconds" field. It is called by the builders before save.
@@ -114,6 +119,11 @@ func BySourceID(opts ...sql.OrderTermOption) OrderOption {
 // ByCondition orders the results by the condition field.
 func ByCondition(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCondition, opts...).ToFunc()
+}
+
+// ByStatePath orders the results by the state_path field.
+func ByStatePath(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStatePath, opts...).ToFunc()
 }
 
 // ByCheckIntervalSeconds orders the results by the check_interval_seconds field.

@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"strconv"
@@ -9,9 +10,83 @@ import (
 	"ledit/render"
 )
 
+var _ StateProvider = (*StockDS)(nil)
+
+var stockAPIBaseURL = "https://query1.finance.yahoo.com/v8/finance/chart/%s?interval=1d&range=5d"
+
 type StockDS struct {
 	Token string
 	URL   string
+}
+
+func (s *StockDS) stockURL(symbol string) string {
+	if s.URL != "" {
+		if strings.Contains(s.URL, "%s") {
+			return fmt.Sprintf(s.URL, symbol)
+		}
+		return s.URL
+	}
+	return fmt.Sprintf(stockAPIBaseURL, symbol)
+}
+
+func (s *StockDS) fetchStockPriceWithURL(symbol string) (price, change string) {
+	url := s.stockURL(symbol)
+	body, err := apiGet(url, "", map[string]string{"User-Agent": "Mozilla/5.0"})
+	if err != nil {
+		slog.Warn("stock price fetch failed", "source", "stock", "symbol", symbol, "error", err)
+		return "", ""
+	}
+	bodyStr := string(body)
+	priceRaw := extractJSONFloat(bodyStr, "regularMarketPrice")
+	prevClose := extractJSONFloat(bodyStr, "regularMarketPreviousClose")
+	if priceRaw == "" {
+		return "", ""
+	}
+	p, err := strconv.ParseFloat(priceRaw, 64)
+	if err != nil {
+		return "", ""
+	}
+	priceStr := fmt.Sprintf("%.2f", p)
+	if prevClose != "" {
+		pc, err := strconv.ParseFloat(prevClose, 64)
+		if err == nil && pc > 0 {
+			diff := p - pc
+			pct := (diff / pc) * 100
+			changeStr := fmt.Sprintf("%+.2f (%+.2f%%)", diff, pct)
+			return priceStr, changeStr
+		}
+	}
+	return priceStr, ""
+}
+
+func (s *StockDS) CurrentState(ctx context.Context) (map[string]any, error) {
+	symbols := "AAPL"
+	if s.Token != "" {
+		for sym := range strings.SplitSeq(s.Token, ",") {
+			sym = strings.TrimSpace(sym)
+			if sym != "" {
+				symbols = sym
+				break
+			}
+		}
+	}
+	priceStr, changeStr := s.fetchStockPriceWithURL(symbols)
+	if priceStr == "" {
+		return nil, fmt.Errorf("stock: no price for %s", symbols)
+	}
+	price, err := strconv.ParseFloat(priceStr, 64)
+	if err != nil {
+		return nil, err
+	}
+	var change float64
+	if changeStr != "" {
+		// changeStr is like "+5.00 (+2.56%)" -> take first number
+		first := strings.Fields(changeStr)[0]
+		if v, err := strconv.ParseFloat(first, 64); err == nil {
+			change = v
+		}
+	}
+	return map[string]any{"price": price, "change": change}, nil
 }
 
 func (s *StockDS) GetPNG(width, height int) (*render.RenderedImage, error) {
@@ -27,7 +102,7 @@ func (s *StockDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 		if sym == "" {
 			continue
 		}
-		price, change := fetchStockPrice(sym)
+		price, change := s.fetchStockPriceWithURL(sym)
 		label := strings.ToUpper(sym[:min(5, len(sym))])
 		changeStr := ""
 		if change != "" {
@@ -68,41 +143,7 @@ func (s *StockDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 }
 
 func fetchStockPrice(symbol string) (price, change string) {
-	url := fmt.Sprintf("https://query1.finance.yahoo.com/v8/finance/chart/%s?interval=1d&range=5d", symbol)
-	body, err := apiGet(url, "", map[string]string{
-		"User-Agent": "Mozilla/5.0",
-	})
-	if err != nil {
-		slog.Warn("stock price fetch failed", "source", "stock", "symbol", symbol, "error", err)
-		return "", ""
-	}
-
-	bodyStr := string(body)
-	priceRaw := extractJSONFloat(bodyStr, "regularMarketPrice")
-	prevClose := extractJSONFloat(bodyStr, "regularMarketPreviousClose")
-
-	if priceRaw == "" {
-		return "", ""
-	}
-
-	p, err := strconv.ParseFloat(priceRaw, 64)
-	if err != nil {
-		return "", ""
-	}
-
-	priceStr := fmt.Sprintf("%.2f", p)
-
-	if prevClose != "" {
-		pc, err := strconv.ParseFloat(prevClose, 64)
-		if err == nil && pc > 0 {
-			diff := p - pc
-			pct := (diff / pc) * 100
-			changeStr := fmt.Sprintf("%+.2f (%+.2f%%)", diff, pct)
-			return priceStr, changeStr
-		}
-	}
-
-	return priceStr, ""
+	return (&StockDS{}).fetchStockPriceWithURL(symbol)
 }
 
 func extractJSONFloat(body, key string) string {
@@ -119,6 +160,7 @@ func extractJSONFloat(body, key string) string {
 			}
 			if end > 0 {
 				val := strings.TrimSpace(body[start : start+end])
+				val = strings.Trim(val, "}")
 				return val
 			}
 		}

@@ -114,16 +114,10 @@ func TestEvaluator_ReloadPicksUpDisabledRule(t *testing.T) {
 	}
 }
 
-// TestEvaluator_UpstreamFailureLeavesPinState documents D6/risk-table intent:
-// a StateProvider fetch failure must NOT clear an active pin — last state
-// holds. EvaluateRulesOnce currently does `continue` on CurrentState error
-// without touching rs.pinned, so a pinned controller stays pinned. Future
-// successful evaluation can still unpin when the condition becomes false.
-func TestEvaluator_UpstreamFailureLeavesPinState(t *testing.T) {
+func TestEvaluator_UpstreamFailureEvaluatesEmptyState(t *testing.T) {
 	client := newEventRuleTestDB(t)
 	ctx := context.Background()
 
-	// Phase 1: pin with a healthy provider.
 	healthy := &testStateProvider{state: map[string]any{"cpu": float64(90)}}
 	orig := RuleTargetResolver
 	RuleTargetResolver = func(st string, _ int) (datasource.Datasource, bool) {
@@ -147,52 +141,58 @@ func TestEvaluator_UpstreamFailureLeavesPinState(t *testing.T) {
 		SaveX(ctx)
 
 	states := map[int]*ruleState{rule.ID: {rule: rule}}
+
+	// Phase A: healthy provider pins.
 	EvaluateRulesOnce(client, states)
 	if _, _, ok := fc.IsPinned(); !ok {
-		t.Fatal("expected pinned after true condition")
+		t.Fatal("phase A: expected pinned after true condition")
 	}
 
-	// Phase 2: swap resolver to a failing provider.
+	// Phase B: failing provider evaluates empty state -> false -> unpin.
 	RuleTargetResolver = func(st string, _ int) (datasource.Datasource, bool) {
 		if st == "systemstats" {
 			return &failingProvider{}, true
 		}
 		return nil, false
 	}
-	// Ensure cooldown is not suppressing evaluation.
 	states[rule.ID].cooldownUntil = time.Time{}
-
 	EvaluateRulesOnce(client, states)
-	// Per design D6: fetch failure must NOT clear pin — last state holds.
-	if _, _, ok := fc.IsPinned(); !ok {
-		t.Fatal("expected pin to survive upstream failure (last state holds)")
+	if _, _, ok := fc.IsPinned(); ok {
+		t.Fatal("phase B: expected NOT pinned after upstream failure evaluates empty state")
 	}
 
-	// Phase 3: restore healthy provider with false condition — should unpin.
-	healthy.state = map[string]any{"cpu": float64(10)}
+	// Phase C: re-pin with healthy, then failing with cooldown suppresses unpin.
 	RuleTargetResolver = func(st string, _ int) (datasource.Datasource, bool) {
 		if st == "systemstats" {
 			return healthy, true
 		}
 		return nil, false
 	}
+	healthy.state = map[string]any{"cpu": float64(90)}
+	states[rule.ID].cooldownUntil = time.Time{}
 	EvaluateRulesOnce(client, states)
-	if _, _, ok := fc.IsPinned(); ok {
-		t.Fatal("expected unpinned after condition becomes false")
+	if _, _, ok := fc.IsPinned(); !ok {
+		t.Fatal("phase C setup: expected re-pinned")
 	}
-
-	// Phase 4: when NOT yet pinned, failure should NOT pin.
-	// Reset to unpinned state with failure provider — should stay unpinned.
+	states[rule.ID].cooldownUntil = time.Now().Add(60 * time.Second)
 	RuleTargetResolver = func(st string, _ int) (datasource.Datasource, bool) {
 		if st == "systemstats" {
 			return &failingProvider{}, true
 		}
 		return nil, false
 	}
-	// states already has pinned=false after phase 3
+	EvaluateRulesOnce(client, states)
+	if _, _, ok := fc.IsPinned(); !ok {
+		t.Fatal("phase C: expected STILL pinned due to min-hold cooldown")
+	}
+
+	// Phase D: clear pinned state, failing provider stays unpinned.
+	unpinAll()
+	states[rule.ID].pinned = false
+	states[rule.ID].cooldownUntil = time.Time{}
 	EvaluateRulesOnce(client, states)
 	if _, _, ok := fc.IsPinned(); ok {
-		t.Fatal("expected to stay unpinned when upstream fails while unpinned")
+		t.Fatal("phase D: expected to stay unpinned when upstream fails while unpinned")
 	}
 }
 

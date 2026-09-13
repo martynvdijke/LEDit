@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -9,9 +10,54 @@ import (
 	"ledit/render"
 )
 
+var _ StateProvider = (*CryptoDS)(nil)
+
 type CryptoDS struct {
 	Token string
 	URL   string
+}
+
+func (c *CryptoDS) CurrentState(ctx context.Context) (map[string]any, error) {
+	ids := "bitcoin"
+	if c.Token != "" {
+		parts := strings.Split(c.Token, ",")
+		if len(parts) > 0 {
+			first := strings.TrimSpace(parts[0])
+			if first != "" {
+				ids = first
+			}
+		}
+	}
+	url := fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=usd&include_24hr_change=true", ids)
+	if c.URL != "" {
+		url = c.URL
+	}
+	body, err := apiGet(url, "", nil)
+	if err != nil {
+		return nil, err
+	}
+	var resp map[string]map[string]float64
+	if err := json.Unmarshal(body, &resp); err != nil {
+		return nil, err
+	}
+	inner, ok := resp[ids]
+	if !ok {
+		// try case-insensitive / fallback to first entry
+		for _, v := range resp {
+			inner = v
+			ok = true
+			break
+		}
+		if !ok {
+			return nil, fmt.Errorf("crypto: no data for %s", ids)
+		}
+	}
+	price := inner["usd"]
+	change := inner["usd_24h_change"]
+	return map[string]any{
+		"price":  price,
+		"change": change,
+	}, nil
 }
 
 func (c *CryptoDS) GetPNG(width, height int) (*render.RenderedImage, error) {

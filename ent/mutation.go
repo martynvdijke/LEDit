@@ -10155,6 +10155,7 @@ type DisplayRuleMutation struct {
 	source_id                 *int
 	addsource_id              *int
 	condition                 *string
+	state_path                *string
 	check_interval_seconds    *int
 	addcheck_interval_seconds *int
 	cooldown_seconds          *int
@@ -10463,6 +10464,42 @@ func (m *DisplayRuleMutation) ResetCondition() {
 	m.condition = nil
 }
 
+// SetStatePath sets the "state_path" field.
+func (m *DisplayRuleMutation) SetStatePath(s string) {
+	m.state_path = &s
+}
+
+// StatePath returns the value of the "state_path" field in the mutation.
+func (m *DisplayRuleMutation) StatePath() (r string, exists bool) {
+	v := m.state_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatePath returns the old "state_path" field's value of the DisplayRule entity.
+// If the DisplayRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DisplayRuleMutation) OldStatePath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatePath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatePath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatePath: %w", err)
+	}
+	return oldValue.StatePath, nil
+}
+
+// ResetStatePath resets all changes to the "state_path" field.
+func (m *DisplayRuleMutation) ResetStatePath() {
+	m.state_path = nil
+}
+
 // SetCheckIntervalSeconds sets the "check_interval_seconds" field.
 func (m *DisplayRuleMutation) SetCheckIntervalSeconds(i int) {
 	m.check_interval_seconds = &i
@@ -10609,7 +10646,7 @@ func (m *DisplayRuleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DisplayRuleMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.name != nil {
 		fields = append(fields, displayrule.FieldName)
 	}
@@ -10624,6 +10661,9 @@ func (m *DisplayRuleMutation) Fields() []string {
 	}
 	if m.condition != nil {
 		fields = append(fields, displayrule.FieldCondition)
+	}
+	if m.state_path != nil {
+		fields = append(fields, displayrule.FieldStatePath)
 	}
 	if m.check_interval_seconds != nil {
 		fields = append(fields, displayrule.FieldCheckIntervalSeconds)
@@ -10649,6 +10689,8 @@ func (m *DisplayRuleMutation) Field(name string) (ent.Value, bool) {
 		return m.SourceID()
 	case displayrule.FieldCondition:
 		return m.Condition()
+	case displayrule.FieldStatePath:
+		return m.StatePath()
 	case displayrule.FieldCheckIntervalSeconds:
 		return m.CheckIntervalSeconds()
 	case displayrule.FieldCooldownSeconds:
@@ -10672,6 +10714,8 @@ func (m *DisplayRuleMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldSourceID(ctx)
 	case displayrule.FieldCondition:
 		return m.OldCondition(ctx)
+	case displayrule.FieldStatePath:
+		return m.OldStatePath(ctx)
 	case displayrule.FieldCheckIntervalSeconds:
 		return m.OldCheckIntervalSeconds(ctx)
 	case displayrule.FieldCooldownSeconds:
@@ -10719,6 +10763,13 @@ func (m *DisplayRuleMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCondition(v)
+		return nil
+	case displayrule.FieldStatePath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatePath(v)
 		return nil
 	case displayrule.FieldCheckIntervalSeconds:
 		v, ok := value.(int)
@@ -10836,6 +10887,9 @@ func (m *DisplayRuleMutation) ResetField(name string) error {
 		return nil
 	case displayrule.FieldCondition:
 		m.ResetCondition()
+		return nil
+	case displayrule.FieldStatePath:
+		m.ResetStatePath()
 		return nil
 	case displayrule.FieldCheckIntervalSeconds:
 		m.ResetCheckIntervalSeconds()

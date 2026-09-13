@@ -61,6 +61,12 @@
                     <small class="text-muted">Condition evaluated against the source state map.</small>
                 </div>
 
+                <div class="mb-3">
+                    <label for="state_path" class="form-label">State path (optional)</label>
+                    <input type="text" class="form-control" id="state_path" name="state_path" placeholder="dot.path within the state map (e.g. weather)" style="max-width:260px" value="{{.fStatePath}}">
+                    <small class="text-muted">Scopes the condition to a sub-value of the source state map. Leave empty to evaluate against the whole map. Sources that report no state are skipped and the rule stays enabled.</small>
+                </div>
+
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <label for="check_interval_seconds" class="form-label">Check interval (seconds)</label>

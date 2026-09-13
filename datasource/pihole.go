@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -9,6 +10,8 @@ import (
 
 	"ledit/render"
 )
+
+var _ StateProvider = (*PiHoleDS)(nil)
 
 // PiHoleDS fetches Pi-hole summary statistics.
 //
@@ -131,6 +134,29 @@ func (p *PiHoleDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 		return nil, err
 	}
 	return img, nil
+}
+
+func (p *PiHoleDS) CurrentState(_ context.Context) (map[string]any, error) {
+	base := "http://pi.hole/admin/api.php?summary"
+	if p.URL != "" {
+		base = p.URL
+	}
+	fetchURL := piholeURL(base, p.Token)
+	body, err := apiGet(fetchURL, "", nil)
+	if err != nil {
+		return nil, err
+	}
+	var resp struct {
+		AdsBlockedToday    int     `json:"ads_blocked_today"`
+		AdsPercentageToday float64 `json:"ads_percentage_today"`
+	}
+	if err := json.Unmarshal(body, &resp); err != nil {
+		return nil, fmt.Errorf("pihole parse error: %w", err)
+	}
+	return map[string]any{
+		"blockedQueries": resp.AdsBlockedToday,
+		"percentage":     resp.AdsPercentageToday,
+	}, nil
 }
 
 func fallbackPihole(width, height int) *render.RenderedImage {

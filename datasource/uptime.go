@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -12,6 +13,8 @@ import (
 
 	"ledit/render"
 )
+
+var _ StateProvider = (*UptimeDS)(nil)
 
 // UptimeDS probes configured HTTP targets directly (no external API).
 type UptimeDS struct {
@@ -161,6 +164,59 @@ func clearUptimeCache() {
 // resetUptimeProbeForTest restores default probe; exported for tests if needed.
 func resetUptimeProbeForTest() {
 	// no-op reassignment hook; probeUptimeTarget is default
+}
+
+// cachedUptimeRows returns rows for config using the 30s TTL cache; shared by GetPNG and CurrentState.
+func cachedUptimeRows(config string) [][2]string {
+	targets := ParseUptimeTargets(config)
+	if len(targets) == 0 {
+		return nil
+	}
+	if len(targets) > 4 {
+		targets = targets[:4]
+	}
+	key := uptimeCacheKey(config)
+	uptimeCache.Lock()
+	if e, ok := uptimeCache.m[key]; ok && time.Since(e.at) < uptimeCacheTTL {
+		rows := e.rows
+		uptimeCache.Unlock()
+		return rows
+	}
+	uptimeCache.Unlock()
+	rows := BuildUptimeRows(targets, probeUptimeTarget)
+	uptimeCache.Lock()
+	uptimeCache.m[key] = uptimeCacheEntry{rows: rows, at: time.Now()}
+	uptimeCache.Unlock()
+	return rows
+}
+
+func (u *UptimeDS) CurrentState(_ context.Context) (map[string]any, error) {
+	targets := ParseUptimeTargets(u.Config)
+	if len(targets) == 0 {
+		return map[string]any{"status": "UNKNOWN", "up": 0, "total": 0}, nil
+	}
+	if len(targets) > 4 {
+		targets = targets[:4]
+	}
+	rows := cachedUptimeRows(u.Config)
+	// If cache returned nil (should not happen when targets >0), rebuild without cache
+	if rows == nil {
+		rows = BuildUptimeRows(targets, probeUptimeTarget)
+	}
+	up := 0
+	for _, r := range rows {
+		if strings.HasPrefix(r[1], "UP") {
+			up++
+		}
+	}
+	total := len(rows)
+	status := "DEGRADED"
+	if up == total && total > 0 {
+		status = "UP"
+	} else if up == 0 {
+		status = "DOWN"
+	}
+	return map[string]any{"status": status, "up": up, "total": total}, nil
 }
 
 // fallbackUptime renders unavailable.

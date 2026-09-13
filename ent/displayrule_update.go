@@ -104,6 +104,20 @@ func (_u *DisplayRuleUpdate) SetNillableCondition(v *string) *DisplayRuleUpdate 
 	return _u
 }
 
+// SetStatePath sets the "state_path" field.
+func (_u *DisplayRuleUpdate) SetStatePath(v string) *DisplayRuleUpdate {
+	_u.mutation.SetStatePath(v)
+	return _u
+}
+
+// SetNillableStatePath sets the "state_path" field if the given value is not nil.
+func (_u *DisplayRuleUpdate) SetNillableStatePath(v *string) *DisplayRuleUpdate {
+	if v != nil {
+		_u.SetStatePath(*v)
+	}
+	return _u
+}
+
 // SetCheckIntervalSeconds sets the "check_interval_seconds" field.
 func (_u *DisplayRuleUpdate) SetCheckIntervalSeconds(v int) *DisplayRuleUpdate {
 	_u.mutation.ResetCheckIntervalSeconds()
@@ -223,6 +237,9 @@ func (_u *DisplayRuleUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.Condition(); ok {
 		_spec.SetField(displayrule.FieldCondition, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.StatePath(); ok {
+		_spec.SetField(displayrule.FieldStatePath, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.CheckIntervalSeconds(); ok {
 		_spec.SetField(displayrule.FieldCheckIntervalSeconds, field.TypeInt, value)
 	}
@@ -328,6 +345,20 @@ func (_u *DisplayRuleUpdateOne) SetCondition(v string) *DisplayRuleUpdateOne {
 func (_u *DisplayRuleUpdateOne) SetNillableCondition(v *string) *DisplayRuleUpdateOne {
 	if v != nil {
 		_u.SetCondition(*v)
+	}
+	return _u
+}
+
+// SetStatePath sets the "state_path" field.
+func (_u *DisplayRuleUpdateOne) SetStatePath(v string) *DisplayRuleUpdateOne {
+	_u.mutation.SetStatePath(v)
+	return _u
+}
+
+// SetNillableStatePath sets the "state_path" field if the given value is not nil.
+func (_u *DisplayRuleUpdateOne) SetNillableStatePath(v *string) *DisplayRuleUpdateOne {
+	if v != nil {
+		_u.SetStatePath(*v)
 	}
 	return _u
 }
@@ -480,6 +511,9 @@ func (_u *DisplayRuleUpdateOne) sqlSave(ctx context.Context) (_node *DisplayRule
 	}
 	if value, ok := _u.mutation.Condition(); ok {
 		_spec.SetField(displayrule.FieldCondition, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.StatePath(); ok {
+		_spec.SetField(displayrule.FieldStatePath, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.CheckIntervalSeconds(); ok {
 		_spec.SetField(displayrule.FieldCheckIntervalSeconds, field.TypeInt, value)
