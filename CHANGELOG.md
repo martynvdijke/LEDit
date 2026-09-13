@@ -1,3 +1,16 @@
+# [1.41.0](https://github.com/martynvdijke/LEDit/compare/v1.40.0...v1.41.0) (2026-09-13)
+
+
+### Bug Fixes
+
+* stop brightness editor clobbering a directly set schedule input ([d043610](https://github.com/martynvdijke/LEDit/commit/d043610d95f4c1e4ed10dab7c68175b74b385a49))
+
+
+### Features
+
+* add ambient scenes driven by Home Assistant sensors ([a3f241a](https://github.com/martynvdijke/LEDit/commit/a3f241a672e7358bbc29e3451b505b8ece35b9f1))
+* add sunrise/sunset and holiday schedule windows ([d3002ae](https://github.com/martynvdijke/LEDit/commit/d3002aed99201bb22a8089190a2f39a09e6401f7))
+
 # [1.40.0](https://github.com/martynvdijke/LEDit/compare/v1.39.0...v1.40.0) (2026-09-13)
 
 
