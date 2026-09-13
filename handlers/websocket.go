@@ -988,6 +988,12 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			if err := json.Unmarshal(msg, &cmd); err != nil {
 				continue
 			}
+			// Optional best-effort device acknowledgement: {"ack":"<message_id>"}.
+			// Ignored for the unauthenticated preview feed (deviceID 0).
+			if ack := cmd["ack"]; ack != "" {
+				recordAck(fc.deviceID, ack)
+				continue
+			}
 			switch cmd["action"] {
 			case "next":
 				feed.Next()

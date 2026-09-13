@@ -36,6 +36,9 @@ type Crypto func(*sql.Selector)
 // DatasourcePlugin is the predicate function for datasourceplugin builders.
 type DatasourcePlugin func(*sql.Selector)
 
+// DeliveryLog is the predicate function for deliverylog builders.
+type DeliveryLog func(*sql.Selector)
+
 // DeviceGroup is the predicate function for devicegroup builders.
 type DeviceGroup func(*sql.Selector)
 

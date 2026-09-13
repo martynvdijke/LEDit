@@ -12,6 +12,7 @@ import (
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/datasourceplugin"
+	"ledit/ent/deliverylog"
 	"ledit/ent/devicegroup"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
@@ -232,6 +233,28 @@ func init() {
 	datasourcepluginDescCreatedAt := datasourcepluginFields[7].Descriptor()
 	// datasourceplugin.DefaultCreatedAt holds the default value on creation for the created_at field.
 	datasourceplugin.DefaultCreatedAt = datasourcepluginDescCreatedAt.Default.(func() time.Time)
+	deliverylogFields := schema.DeliveryLog{}.Fields()
+	_ = deliverylogFields
+	// deliverylogDescMessageID is the schema descriptor for message_id field.
+	deliverylogDescMessageID := deliverylogFields[0].Descriptor()
+	// deliverylog.DefaultMessageID holds the default value on creation for the message_id field.
+	deliverylog.DefaultMessageID = deliverylogDescMessageID.Default.(string)
+	// deliverylogDescKind is the schema descriptor for kind field.
+	deliverylogDescKind := deliverylogFields[1].Descriptor()
+	// deliverylog.DefaultKind holds the default value on creation for the kind field.
+	deliverylog.DefaultKind = deliverylogDescKind.Default.(string)
+	// deliverylogDescTarget is the schema descriptor for target field.
+	deliverylogDescTarget := deliverylogFields[3].Descriptor()
+	// deliverylog.DefaultTarget holds the default value on creation for the target field.
+	deliverylog.DefaultTarget = deliverylogDescTarget.Default.(string)
+	// deliverylogDescAttemptedAt is the schema descriptor for attempted_at field.
+	deliverylogDescAttemptedAt := deliverylogFields[5].Descriptor()
+	// deliverylog.DefaultAttemptedAt holds the default value on creation for the attempted_at field.
+	deliverylog.DefaultAttemptedAt = deliverylogDescAttemptedAt.Default.(func() time.Time)
+	// deliverylogDescError is the schema descriptor for error field.
+	deliverylogDescError := deliverylogFields[6].Descriptor()
+	// deliverylog.DefaultError holds the default value on creation for the error field.
+	deliverylog.DefaultError = deliverylogDescError.Default.(string)
 	devicegroupFields := schema.DeviceGroup{}.Fields()
 	_ = devicegroupFields
 	// devicegroupDescName is the schema descriptor for name field.

@@ -274,6 +274,9 @@ type notifEntry struct {
 	ExpiresAt time.Time `json:"expires_at,omitempty"`
 	// Color is an in-memory hint reserved for future theme support; DB persistence stays Title/Message-only.
 	Color string `json:"color,omitempty"`
+	// CreatedAt backs the unified Message read model; json:"-" keeps the
+	// existing notification API shape byte-identical.
+	CreatedAt time.Time `json:"-"`
 }
 
 // NotifOption configures AddNotification.
@@ -306,7 +309,7 @@ func addToMemoryQueue(title, message string) {
 	addToMemoryQueueWithOptions(title, message)
 }
 
-func addToMemoryQueueWithOptions(title, message string, opts ...NotifOption) {
+func addToMemoryQueueWithOptions(title, message string, opts ...NotifOption) notifEntry {
 	cfg := &notifConfig{}
 	for _, o := range opts {
 		o(cfg)
@@ -320,19 +323,23 @@ func addToMemoryQueueWithOptions(title, message string, opts ...NotifOption) {
 	priorityMu.Lock()
 	defer priorityMu.Unlock()
 	notifID++
-	t := time.Now().Format("15:04:05")
-	notifHistory = append(notifHistory, notifEntry{
+	now := time.Now()
+	t := now.Format("15:04:05")
+	entry := notifEntry{
 		ID:        notifID,
 		Title:     title,
 		Message:   message,
 		Time:      t,
 		ExpiresAt: exp,
 		Color:     cfg.color,
-	})
+		CreatedAt: now,
+	}
+	notifHistory = append(notifHistory, entry)
 	// Keep last 50
 	if len(notifHistory) > 50 {
 		notifHistory = notifHistory[len(notifHistory)-50:]
 	}
+	return entry
 }
 
 // getMemoryQueue returns a copy of the in-memory notification queue.
@@ -382,8 +389,9 @@ func (s *Server) AddNotification(title, message string, opts ...NotifOption) {
 	if s.DB != nil {
 		s.DB.Notification.Create().SetTitle(title).SetMessage(message).SetCreatedAt(time.Now()).SaveX(s.Ctx)
 	}
-	addToMemoryQueueWithOptions(title, message, opts...)
+	entry := addToMemoryQueueWithOptions(title, message, opts...)
 	GlobalBus.Emit(Event{Type: EventNotificationFired, Timestamp: time.Now(), Data: map[string]any{"title": title, "message": message}})
+	emitMessageFired(NotificationToMessage(entry))
 }
 
 // GetNotificationHistory returns merged DB + in-memory notification history (up to 50).

@@ -12,6 +12,9 @@ const (
 	EventNotificationFired     = "notification_fired"
 	EventDeviceLivenessChanged = "device_liveness_changed"
 	EventTest                  = "test"
+	// Unified message lifecycle (additive): carries a Message in Event.Data.
+	EventMessageFired    = "message_fired"
+	EventMessageResolved = "message_resolved"
 )
 
 type Event struct {

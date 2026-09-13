@@ -323,6 +323,8 @@ func (s *Server) setupRoutes() {
 	{
 		// Public only: health and TRMNL polling stay unauthenticated.
 		api.GET("/trmnl/stats", s.APITrmnlStats)
+		api.GET("/trmnl/messages", s.APITrmnlMessages)
+		api.POST("/trmnl/messages/refresh", s.APITrmnlMessagesRefresh)
 		api.GET("/health", s.APIHealth)
 
 		// Guest remote: scoped X-Guest-Token auth, deliberately outside the
@@ -341,6 +343,7 @@ func (s *Server) setupRoutes() {
 			authReads.GET("/analytics/weights", s.APIAnalyticsWeights)
 			authReads.GET("/notifications", s.APINotificationHistory)
 			authReads.GET("/incidents", s.APIIncidentList)
+			authReads.GET("/delivery-log", s.APIDeliveryLog)
 			authReads.GET("/playlists/resolve", s.HandlePlaylistResolve)
 			authReads.GET("/timelapse/frames", s.APITimelapseFrames)
 			authReads.POST("/timelapse/export", s.APITimelapseExport)
@@ -764,6 +767,9 @@ func (s *Server) setupRoutes() {
 		admin.POST("/incidents/resolve", s.AdminIncidentResolve)
 		admin.POST("/incidents/resolve-all", s.AdminIncidentResolveAll)
 		admin.POST("/incidents/test", s.AdminIncidentTest)
+
+		// Unified message delivery log + per-device ack state.
+		admin.GET("/delivery", s.AdminDeliveryLog)
 
 		// Webhook/MQTT/Telegram Settings
 		admin.GET("/webhook", s.AdminWebhookSettingsGET)

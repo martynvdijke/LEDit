@@ -16,6 +16,7 @@ import (
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/datasourceplugin"
+	"ledit/ent/deliverylog"
 	"ledit/ent/devicegroup"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
@@ -92,6 +93,7 @@ const (
 	TypeCountdown        = "Countdown"
 	TypeCrypto           = "Crypto"
 	TypeDatasourcePlugin = "DatasourcePlugin"
+	TypeDeliveryLog      = "DeliveryLog"
 	TypeDeviceGroup      = "DeviceGroup"
 	TypeDeviceSettings   = "DeviceSettings"
 	TypeDisplayRule      = "DisplayRule"
@@ -6750,6 +6752,656 @@ func (m *DatasourcePluginMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *DatasourcePluginMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown DatasourcePlugin edge %s", name)
+}
+
+// DeliveryLogMutation represents an operation that mutates the DeliveryLog nodes in the graph.
+type DeliveryLogMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	message_id    *string
+	kind          *string
+	surface       *deliverylog.Surface
+	target        *string
+	status        *deliverylog.Status
+	attempted_at  *time.Time
+	error         *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*DeliveryLog, error)
+	predicates    []predicate.DeliveryLog
+}
+
+var _ ent.Mutation = (*DeliveryLogMutation)(nil)
+
+// deliverylogOption allows management of the mutation configuration using functional options.
+type deliverylogOption func(*DeliveryLogMutation)
+
+// newDeliveryLogMutation creates new mutation for the DeliveryLog entity.
+func newDeliveryLogMutation(c config, op Op, opts ...deliverylogOption) *DeliveryLogMutation {
+	m := &DeliveryLogMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDeliveryLog,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDeliveryLogID sets the ID field of the mutation.
+func withDeliveryLogID(id int) deliverylogOption {
+	return func(m *DeliveryLogMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DeliveryLog
+		)
+		m.oldValue = func(ctx context.Context) (*DeliveryLog, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DeliveryLog.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDeliveryLog sets the old DeliveryLog of the mutation.
+func withDeliveryLog(node *DeliveryLog) deliverylogOption {
+	return func(m *DeliveryLogMutation) {
+		m.oldValue = func(context.Context) (*DeliveryLog, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DeliveryLogMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DeliveryLogMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DeliveryLogMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DeliveryLogMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DeliveryLog.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetMessageID sets the "message_id" field.
+func (m *DeliveryLogMutation) SetMessageID(s string) {
+	m.message_id = &s
+}
+
+// MessageID returns the value of the "message_id" field in the mutation.
+func (m *DeliveryLogMutation) MessageID() (r string, exists bool) {
+	v := m.message_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMessageID returns the old "message_id" field's value of the DeliveryLog entity.
+// If the DeliveryLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeliveryLogMutation) OldMessageID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMessageID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMessageID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMessageID: %w", err)
+	}
+	return oldValue.MessageID, nil
+}
+
+// ResetMessageID resets all changes to the "message_id" field.
+func (m *DeliveryLogMutation) ResetMessageID() {
+	m.message_id = nil
+}
+
+// SetKind sets the "kind" field.
+func (m *DeliveryLogMutation) SetKind(s string) {
+	m.kind = &s
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *DeliveryLogMutation) Kind() (r string, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the DeliveryLog entity.
+// If the DeliveryLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeliveryLogMutation) OldKind(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *DeliveryLogMutation) ResetKind() {
+	m.kind = nil
+}
+
+// SetSurface sets the "surface" field.
+func (m *DeliveryLogMutation) SetSurface(d deliverylog.Surface) {
+	m.surface = &d
+}
+
+// Surface returns the value of the "surface" field in the mutation.
+func (m *DeliveryLogMutation) Surface() (r deliverylog.Surface, exists bool) {
+	v := m.surface
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSurface returns the old "surface" field's value of the DeliveryLog entity.
+// If the DeliveryLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeliveryLogMutation) OldSurface(ctx context.Context) (v deliverylog.Surface, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSurface is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSurface requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSurface: %w", err)
+	}
+	return oldValue.Surface, nil
+}
+
+// ResetSurface resets all changes to the "surface" field.
+func (m *DeliveryLogMutation) ResetSurface() {
+	m.surface = nil
+}
+
+// SetTarget sets the "target" field.
+func (m *DeliveryLogMutation) SetTarget(s string) {
+	m.target = &s
+}
+
+// Target returns the value of the "target" field in the mutation.
+func (m *DeliveryLogMutation) Target() (r string, exists bool) {
+	v := m.target
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTarget returns the old "target" field's value of the DeliveryLog entity.
+// If the DeliveryLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeliveryLogMutation) OldTarget(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTarget is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTarget requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTarget: %w", err)
+	}
+	return oldValue.Target, nil
+}
+
+// ResetTarget resets all changes to the "target" field.
+func (m *DeliveryLogMutation) ResetTarget() {
+	m.target = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *DeliveryLogMutation) SetStatus(d deliverylog.Status) {
+	m.status = &d
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *DeliveryLogMutation) Status() (r deliverylog.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the DeliveryLog entity.
+// If the DeliveryLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeliveryLogMutation) OldStatus(ctx context.Context) (v deliverylog.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *DeliveryLogMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetAttemptedAt sets the "attempted_at" field.
+func (m *DeliveryLogMutation) SetAttemptedAt(t time.Time) {
+	m.attempted_at = &t
+}
+
+// AttemptedAt returns the value of the "attempted_at" field in the mutation.
+func (m *DeliveryLogMutation) AttemptedAt() (r time.Time, exists bool) {
+	v := m.attempted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAttemptedAt returns the old "attempted_at" field's value of the DeliveryLog entity.
+// If the DeliveryLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeliveryLogMutation) OldAttemptedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAttemptedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAttemptedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAttemptedAt: %w", err)
+	}
+	return oldValue.AttemptedAt, nil
+}
+
+// ResetAttemptedAt resets all changes to the "attempted_at" field.
+func (m *DeliveryLogMutation) ResetAttemptedAt() {
+	m.attempted_at = nil
+}
+
+// SetError sets the "error" field.
+func (m *DeliveryLogMutation) SetError(s string) {
+	m.error = &s
+}
+
+// Error returns the value of the "error" field in the mutation.
+func (m *DeliveryLogMutation) Error() (r string, exists bool) {
+	v := m.error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldError returns the old "error" field's value of the DeliveryLog entity.
+// If the DeliveryLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeliveryLogMutation) OldError(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldError: %w", err)
+	}
+	return oldValue.Error, nil
+}
+
+// ResetError resets all changes to the "error" field.
+func (m *DeliveryLogMutation) ResetError() {
+	m.error = nil
+}
+
+// Where appends a list predicates to the DeliveryLogMutation builder.
+func (m *DeliveryLogMutation) Where(ps ...predicate.DeliveryLog) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DeliveryLogMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DeliveryLogMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DeliveryLog, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DeliveryLogMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DeliveryLogMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DeliveryLog).
+func (m *DeliveryLogMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DeliveryLogMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.message_id != nil {
+		fields = append(fields, deliverylog.FieldMessageID)
+	}
+	if m.kind != nil {
+		fields = append(fields, deliverylog.FieldKind)
+	}
+	if m.surface != nil {
+		fields = append(fields, deliverylog.FieldSurface)
+	}
+	if m.target != nil {
+		fields = append(fields, deliverylog.FieldTarget)
+	}
+	if m.status != nil {
+		fields = append(fields, deliverylog.FieldStatus)
+	}
+	if m.attempted_at != nil {
+		fields = append(fields, deliverylog.FieldAttemptedAt)
+	}
+	if m.error != nil {
+		fields = append(fields, deliverylog.FieldError)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DeliveryLogMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case deliverylog.FieldMessageID:
+		return m.MessageID()
+	case deliverylog.FieldKind:
+		return m.Kind()
+	case deliverylog.FieldSurface:
+		return m.Surface()
+	case deliverylog.FieldTarget:
+		return m.Target()
+	case deliverylog.FieldStatus:
+		return m.Status()
+	case deliverylog.FieldAttemptedAt:
+		return m.AttemptedAt()
+	case deliverylog.FieldError:
+		return m.Error()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DeliveryLogMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case deliverylog.FieldMessageID:
+		return m.OldMessageID(ctx)
+	case deliverylog.FieldKind:
+		return m.OldKind(ctx)
+	case deliverylog.FieldSurface:
+		return m.OldSurface(ctx)
+	case deliverylog.FieldTarget:
+		return m.OldTarget(ctx)
+	case deliverylog.FieldStatus:
+		return m.OldStatus(ctx)
+	case deliverylog.FieldAttemptedAt:
+		return m.OldAttemptedAt(ctx)
+	case deliverylog.FieldError:
+		return m.OldError(ctx)
+	}
+	return nil, fmt.Errorf("unknown DeliveryLog field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DeliveryLogMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case deliverylog.FieldMessageID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMessageID(v)
+		return nil
+	case deliverylog.FieldKind:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
+		return nil
+	case deliverylog.FieldSurface:
+		v, ok := value.(deliverylog.Surface)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSurface(v)
+		return nil
+	case deliverylog.FieldTarget:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTarget(v)
+		return nil
+	case deliverylog.FieldStatus:
+		v, ok := value.(deliverylog.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case deliverylog.FieldAttemptedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAttemptedAt(v)
+		return nil
+	case deliverylog.FieldError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetError(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DeliveryLog field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DeliveryLogMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DeliveryLogMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DeliveryLogMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown DeliveryLog numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DeliveryLogMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DeliveryLogMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DeliveryLogMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown DeliveryLog nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DeliveryLogMutation) ResetField(name string) error {
+	switch name {
+	case deliverylog.FieldMessageID:
+		m.ResetMessageID()
+		return nil
+	case deliverylog.FieldKind:
+		m.ResetKind()
+		return nil
+	case deliverylog.FieldSurface:
+		m.ResetSurface()
+		return nil
+	case deliverylog.FieldTarget:
+		m.ResetTarget()
+		return nil
+	case deliverylog.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case deliverylog.FieldAttemptedAt:
+		m.ResetAttemptedAt()
+		return nil
+	case deliverylog.FieldError:
+		m.ResetError()
+		return nil
+	}
+	return fmt.Errorf("unknown DeliveryLog field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DeliveryLogMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DeliveryLogMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DeliveryLogMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DeliveryLogMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DeliveryLogMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DeliveryLogMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DeliveryLogMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown DeliveryLog unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DeliveryLogMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown DeliveryLog edge %s", name)
 }
 
 // DeviceGroupMutation represents an operation that mutates the DeviceGroup nodes in the graph.

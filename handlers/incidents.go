@@ -233,18 +233,43 @@ func pick(v, fallback string) string {
 	return v
 }
 
+// incidentEvent is a message lifecycle change produced by applyIncident.
+type incidentEvent struct {
+	Message Message
+	Fired   bool
+}
+
+// resolvedIncidentMessage builds the read model for a just-resolved incident.
+func resolvedIncidentMessage(inc *ent.Incident, resolvedAt time.Time) Message {
+	inc.Active = false
+	inc.ResolvedAt = &resolvedAt
+	return IncidentToMessage(inc)
+}
+
 // applyIncident creates, refreshes, or resolves a single normalized incident.
-func (s *Server) applyIncident(n normalizedIncident) {
+// It returns the message lifecycle events the caller must emit after
+// reloadIncidents so the active-message view is consistent.
+func (s *Server) applyIncident(n normalizedIncident) []incidentEvent {
 	ctx := s.Ctx
 	if n.Resolve {
-		if _, err := s.DB.Incident.Update().
+		existing, err := s.DB.Incident.Query().
 			Where(incident.FingerprintEQ(n.Fingerprint), incident.ActiveEQ(true)).
+			Only(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				slog.Error("incident resolve lookup failed", "source", "incident", "error", err)
+			}
+			return nil
+		}
+		now := time.Now()
+		if _, err := s.DB.Incident.UpdateOneID(existing.ID).
 			SetActive(false).
-			SetResolvedAt(time.Now()).
+			SetResolvedAt(now).
 			Save(ctx); err != nil {
 			slog.Error("incident resolve failed", "source", "incident", "error", err)
+			return nil
 		}
-		return
+		return []incidentEvent{{Message: resolvedIncidentMessage(existing, now), Fired: false}}
 	}
 	existing, err := s.DB.Incident.Query().
 		Where(incident.FingerprintEQ(n.Fingerprint)).
@@ -252,9 +277,9 @@ func (s *Server) applyIncident(n normalizedIncident) {
 	if err != nil {
 		if !ent.IsNotFound(err) {
 			slog.Error("incident lookup failed", "source", "incident", "error", err)
-			return
+			return nil
 		}
-		if _, err := s.DB.Incident.Create().
+		created, err := s.DB.Incident.Create().
 			SetFingerprint(n.Fingerprint).
 			SetTitle(n.Title).
 			SetMessage(n.Message).
@@ -263,12 +288,14 @@ func (s *Server) applyIncident(n normalizedIncident) {
 			SetActive(true).
 			SetCreatedAt(time.Now()).
 			SetExpiresAt(time.Now().Add(n.TTL)).
-			Save(ctx); err != nil {
+			Save(ctx)
+		if err != nil {
 			slog.Error("incident create failed", "source", "incident", "error", err)
+			return nil
 		}
-		return
+		return []incidentEvent{{Message: IncidentToMessage(created), Fired: true}}
 	}
-	if _, err := s.DB.Incident.UpdateOneID(existing.ID).
+	updated, err := s.DB.Incident.UpdateOneID(existing.ID).
 		SetTitle(n.Title).
 		SetMessage(n.Message).
 		SetSeverity(n.Severity).
@@ -276,8 +303,23 @@ func (s *Server) applyIncident(n normalizedIncident) {
 		SetActive(true).
 		ClearResolvedAt().
 		SetExpiresAt(time.Now().Add(n.TTL)).
-		Save(ctx); err != nil {
+		Save(ctx)
+	if err != nil {
 		slog.Error("incident update failed", "source", "incident", "error", err)
+		return nil
+	}
+	return []incidentEvent{{Message: IncidentToMessage(updated), Fired: true}}
+}
+
+// emitIncidentEvents publishes fired/resolved events after the incident cache is
+// refreshed so ActiveMessages reflects the new state.
+func emitIncidentEvents(events []incidentEvent) {
+	for _, ev := range events {
+		if ev.Fired {
+			emitMessageFired(ev.Message)
+		} else {
+			emitMessageResolved(ev.Message)
+		}
 	}
 }
 
@@ -312,10 +354,12 @@ func (s *Server) APIIncidentIngest(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
+	var incEvents []incidentEvent
 	for _, n := range items {
-		s.applyIncident(n)
+		incEvents = append(incEvents, s.applyIncident(n)...)
 	}
 	reloadIncidents(s.DB)
+	emitIncidentEvents(incEvents)
 	c.JSON(200, gin.H{"ok": true, "active_count": len(ActiveIncidents())})
 }
 
@@ -336,15 +380,25 @@ func (s *Server) APIIncidentResolve(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "invalid incident id"})
 		return
 	}
+	var resolved *ent.Incident
+	if inc, qerr := s.DB.Incident.Query().
+		Where(incident.IDEQ(id), incident.ActiveEQ(true)).
+		Only(s.Ctx); qerr == nil {
+		resolved = inc
+	}
+	now := time.Now()
 	if _, err := s.DB.Incident.Update().
 		Where(incident.IDEQ(id), incident.ActiveEQ(true)).
 		SetActive(false).
-		SetResolvedAt(time.Now()).
+		SetResolvedAt(now).
 		Save(s.Ctx); err != nil {
 		c.JSON(500, gin.H{"error": "failed to resolve incident"})
 		return
 	}
 	reloadIncidents(s.DB)
+	if resolved != nil {
+		emitMessageResolved(resolvedIncidentMessage(resolved, now))
+	}
 	c.JSON(200, gin.H{"ok": true})
 }
 
@@ -368,28 +422,43 @@ func (s *Server) AdminIncidentResolve(c *gin.Context) {
 		c.Redirect(302, "/admin/incidents")
 		return
 	}
+	var resolved *ent.Incident
+	if inc, qerr := s.DB.Incident.Query().
+		Where(incident.IDEQ(id), incident.ActiveEQ(true)).
+		Only(s.Ctx); qerr == nil {
+		resolved = inc
+	}
+	now := time.Now()
 	if _, err := s.DB.Incident.Update().
 		Where(incident.IDEQ(id), incident.ActiveEQ(true)).
 		SetActive(false).
-		SetResolvedAt(time.Now()).
+		SetResolvedAt(now).
 		Save(s.Ctx); err != nil {
 		SetFlash(c, "danger", "Failed to resolve incident")
 		c.Redirect(302, "/admin/incidents")
 		return
 	}
 	reloadIncidents(s.DB)
+	if resolved != nil {
+		emitMessageResolved(resolvedIncidentMessage(resolved, now))
+	}
 	SetFlash(c, "success", "Incident resolved")
 	c.Redirect(302, "/admin/incidents")
 }
 
 // AdminIncidentResolveAll resolves every active incident.
 func (s *Server) AdminIncidentResolveAll(c *gin.Context) {
+	now := time.Now()
+	active := ActiveIncidents()
 	s.DB.Incident.Update().
 		Where(incident.ActiveEQ(true)).
 		SetActive(false).
-		SetResolvedAt(time.Now()).
+		SetResolvedAt(now).
 		SaveX(s.Ctx)
 	reloadIncidents(s.DB)
+	for _, inc := range active {
+		emitMessageResolved(resolvedIncidentMessage(inc, now))
+	}
 	SetFlash(c, "success", "All incidents resolved")
 	c.Redirect(302, "/admin/incidents")
 }
@@ -397,7 +466,7 @@ func (s *Server) AdminIncidentResolveAll(c *gin.Context) {
 // AdminIncidentTest raises a short-lived demo incident.
 func (s *Server) AdminIncidentTest(c *gin.Context) {
 	now := time.Now()
-	if _, err := s.DB.Incident.Create().
+	created, err := s.DB.Incident.Create().
 		SetFingerprint("test:" + now.Format("20060102150405")).
 		SetTitle("TEST INCIDENT").
 		SetMessage("Raised from the incident console. Resolve it or let it expire.").
@@ -406,12 +475,14 @@ func (s *Server) AdminIncidentTest(c *gin.Context) {
 		SetActive(true).
 		SetCreatedAt(now).
 		SetExpiresAt(now.Add(5 * time.Minute)).
-		Save(s.Ctx); err != nil {
+		Save(s.Ctx)
+	if err != nil {
 		SetFlash(c, "danger", "Failed to raise test incident")
 		c.Redirect(302, "/admin/incidents")
 		return
 	}
 	reloadIncidents(s.DB)
+	emitMessageFired(IncidentToMessage(created))
 	SetFlash(c, "success", "Test incident raised")
 	c.Redirect(302, "/admin/incidents")
 }

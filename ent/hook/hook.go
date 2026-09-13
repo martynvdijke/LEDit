@@ -128,6 +128,18 @@ func (f DatasourcePluginFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DatasourcePluginMutation", m)
 }
 
+// The DeliveryLogFunc type is an adapter to allow the use of ordinary
+// function as DeliveryLog mutator.
+type DeliveryLogFunc func(context.Context, *ent.DeliveryLogMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DeliveryLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DeliveryLogMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DeliveryLogMutation", m)
+}
+
 // The DeviceGroupFunc type is an adapter to allow the use of ordinary
 // function as DeviceGroup mutator.
 type DeviceGroupFunc func(context.Context, *ent.DeviceGroupMutation) (ent.Value, error)

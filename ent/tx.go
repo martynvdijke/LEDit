@@ -32,6 +32,8 @@ type Tx struct {
 	Crypto *CryptoClient
 	// DatasourcePlugin is the client for interacting with the DatasourcePlugin builders.
 	DatasourcePlugin *DatasourcePluginClient
+	// DeliveryLog is the client for interacting with the DeliveryLog builders.
+	DeliveryLog *DeliveryLogClient
 	// DeviceGroup is the client for interacting with the DeviceGroup builders.
 	DeviceGroup *DeviceGroupClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
@@ -271,6 +273,7 @@ func (tx *Tx) init() {
 	tx.Countdown = NewCountdownClient(tx.config)
 	tx.Crypto = NewCryptoClient(tx.config)
 	tx.DatasourcePlugin = NewDatasourcePluginClient(tx.config)
+	tx.DeliveryLog = NewDeliveryLogClient(tx.config)
 	tx.DeviceGroup = NewDeviceGroupClient(tx.config)
 	tx.DeviceSettings = NewDeviceSettingsClient(tx.config)
 	tx.DisplayRule = NewDisplayRuleClient(tx.config)

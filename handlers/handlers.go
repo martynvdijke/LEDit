@@ -39,6 +39,7 @@ var pathToActive = map[string]string{
 	"/admin/analytics":       "analytics",
 	"/admin/settings/umami":  "umami",
 	"/admin/notifications":   "notifications",
+	"/admin/delivery":        "delivery",
 	"/admin/password":        "password",
 	"/admin/matrixlayouts":   "matrixlayouts",
 	"/admin/alarms":          "alarms",

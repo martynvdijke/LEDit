@@ -235,6 +235,23 @@ var (
 		Columns:    DatasourcePluginsColumns,
 		PrimaryKey: []*schema.Column{DatasourcePluginsColumns[0]},
 	}
+	// DeliveryLogsColumns holds the columns for the "delivery_logs" table.
+	DeliveryLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "message_id", Type: field.TypeString, Default: ""},
+		{Name: "kind", Type: field.TypeString, Default: ""},
+		{Name: "surface", Type: field.TypeEnum, Enums: []string{"ws", "trmnl", "mqtt", "webhook"}},
+		{Name: "target", Type: field.TypeString, Default: ""},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"delivered", "failed", "acked"}},
+		{Name: "attempted_at", Type: field.TypeTime},
+		{Name: "error", Type: field.TypeString, Default: ""},
+	}
+	// DeliveryLogsTable holds the schema information for the "delivery_logs" table.
+	DeliveryLogsTable = &schema.Table{
+		Name:       "delivery_logs",
+		Columns:    DeliveryLogsColumns,
+		PrimaryKey: []*schema.Column{DeliveryLogsColumns[0]},
+	}
 	// DeviceGroupsColumns holds the columns for the "device_groups" table.
 	DeviceGroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1391,6 +1408,7 @@ var (
 		CountdownsTable,
 		CryptosTable,
 		DatasourcePluginsTable,
+		DeliveryLogsTable,
 		DeviceGroupsTable,
 		DeviceSettingsTable,
 		DisplayRulesTable,

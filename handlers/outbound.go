@@ -15,6 +15,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"ledit/ent"
 )
@@ -166,8 +167,104 @@ func (m *MqttSink) Handle(e Event) error {
 				PublishOutbound(fmt.Sprintf("ledit/device/%d/online", id), val, true)
 			}
 		}
+	case EventMessageFired:
+		if msg, ok := messageFromEvent(e); ok {
+			publishMessageLifecycle(msg, true)
+		}
+	case EventMessageResolved:
+		if msg, ok := messageFromEvent(e); ok {
+			publishMessageLifecycle(msg, false)
+		}
 	}
 	return nil
+}
+
+// messageFromEvent extracts a Message from an event payload (value or pointer).
+func messageFromEvent(e Event) (Message, bool) {
+	switch v := e.Data.(type) {
+	case Message:
+		return v, true
+	case *Message:
+		if v != nil {
+			return *v, true
+		}
+	}
+	return Message{}, false
+}
+
+// maxMessageBodyBytes caps the Body published to MQTT.
+const maxMessageBodyBytes = 1024
+
+// truncateMessageBody clips a message body to 1KB, preserving valid UTF-8.
+func truncateMessageBody(m Message) Message {
+	if len(m.Body) <= maxMessageBodyBytes {
+		return m
+	}
+	b := m.Body[:maxMessageBodyBytes]
+	for len(b) > 0 && !utf8.ValidString(b) {
+		b = b[:len(b)-1]
+	}
+	m.Body = b + "…"
+	return m
+}
+
+func mqttConnected() bool {
+	return mqttCtrlGlobal != nil && mqttCtrlGlobal.client != nil && mqttCtrlGlobal.client.IsConnected()
+}
+
+// startMessageSweeper tombstones retained MQTT state for messages that expired
+// without an explicit resolve event. Single process-wide goroutine.
+var messageSweeperOnce sync.Once
+
+func startMessageSweeper() {
+	messageSweeperOnce.Do(func() {
+		go func() {
+			ticker := time.NewTicker(30 * time.Second)
+			defer ticker.Stop()
+			for range ticker.C {
+				if mqttConnected() {
+					reconcilePublishedMessages()
+				}
+			}
+		}()
+	})
+}
+
+// publishMessageLifecycle publishes fired/resolved to the dedicated per-message
+// retained topics plus the aggregated active topic. No-op when MQTT is
+// unconfigured or disconnected.
+func publishMessageLifecycle(m Message, fired bool) {
+	if !mqttConnected() {
+		return
+	}
+	base := "ledit/message/" + m.ID
+	if fired {
+		PublishOutbound(base+"/state", "fired", true)
+		payload, _ := json.Marshal(truncateMessageBody(m))
+		PublishOutbound(base+"/json", string(payload), true)
+	} else {
+		PublishOutbound(base+"/state", "resolved", true)
+		// Empty retained payload clears the per-message JSON.
+		PublishOutbound(base+"/json", "", true)
+	}
+	active := ActiveMessages()
+	if len(active) > 20 {
+		active = active[:20]
+	}
+	for i := range active {
+		active[i] = truncateMessageBody(active[i])
+	}
+	agg, _ := json.Marshal(active)
+	PublishOutbound("ledit/messages/active", string(agg), true)
+
+	recordDelivery(DeliveryLogEntry{
+		MessageID:   m.ID,
+		Kind:        m.Kind,
+		Surface:     "mqtt",
+		Target:      base + "/json",
+		Status:      "delivered",
+		AttemptedAt: time.Now(),
+	})
 }
 
 var GlobalMqttSink = NewMqttSink()
@@ -316,6 +413,23 @@ func (w *WebhookSink) sendToTarget(hook *ent.OutboundWebhook, e Event) {
 		}
 	}
 	w.addDelivery(Delivery{TargetID: hook.ID, Event: e.Type, Timestamp: time.Now(), Status: status, Error: lastErr})
+	logStatus := "delivered"
+	if status != "success" {
+		logStatus = "failed"
+	}
+	msgID, kind := "", ""
+	if m, ok := messageFromEvent(e); ok {
+		msgID, kind = m.ID, m.Kind
+	}
+	recordDelivery(DeliveryLogEntry{
+		MessageID:   msgID,
+		Kind:        kind,
+		Surface:     "webhook",
+		Target:      hook.URL,
+		Status:      logStatus,
+		AttemptedAt: time.Now(),
+		Error:       lastErr,
+	})
 }
 
 func (w *WebhookSink) addDelivery(d Delivery) {
@@ -411,6 +525,13 @@ func InitOutbound(s *Server) {
 		}
 		return nil
 	})
+	GlobalDeliveryLog = NewDeliveryLogWriter(func() *ent.Client {
+		if s != nil {
+			return s.DB
+		}
+		return nil
+	})
+	startMessageSweeper()
 	// init settings
 	st := EnsureOutboundSettings(s.DB)
 	if st != nil {

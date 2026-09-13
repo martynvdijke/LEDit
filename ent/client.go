@@ -21,6 +21,7 @@ import (
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/datasourceplugin"
+	"ledit/ent/deliverylog"
 	"ledit/ent/devicegroup"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
@@ -102,6 +103,8 @@ type Client struct {
 	Crypto *CryptoClient
 	// DatasourcePlugin is the client for interacting with the DatasourcePlugin builders.
 	DatasourcePlugin *DatasourcePluginClient
+	// DeliveryLog is the client for interacting with the DeliveryLog builders.
+	DeliveryLog *DeliveryLogClient
 	// DeviceGroup is the client for interacting with the DeviceGroup builders.
 	DeviceGroup *DeviceGroupClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
@@ -221,6 +224,7 @@ func (c *Client) init() {
 	c.Countdown = NewCountdownClient(c.config)
 	c.Crypto = NewCryptoClient(c.config)
 	c.DatasourcePlugin = NewDatasourcePluginClient(c.config)
+	c.DeliveryLog = NewDeliveryLogClient(c.config)
 	c.DeviceGroup = NewDeviceGroupClient(c.config)
 	c.DeviceSettings = NewDeviceSettingsClient(c.config)
 	c.DisplayRule = NewDisplayRuleClient(c.config)
@@ -372,6 +376,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Countdown:        NewCountdownClient(cfg),
 		Crypto:           NewCryptoClient(cfg),
 		DatasourcePlugin: NewDatasourcePluginClient(cfg),
+		DeliveryLog:      NewDeliveryLogClient(cfg),
 		DeviceGroup:      NewDeviceGroupClient(cfg),
 		DeviceSettings:   NewDeviceSettingsClient(cfg),
 		DisplayRule:      NewDisplayRuleClient(cfg),
@@ -450,6 +455,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Countdown:        NewCountdownClient(cfg),
 		Crypto:           NewCryptoClient(cfg),
 		DatasourcePlugin: NewDatasourcePluginClient(cfg),
+		DeliveryLog:      NewDeliveryLogClient(cfg),
 		DeviceGroup:      NewDeviceGroupClient(cfg),
 		DeviceSettings:   NewDeviceSettingsClient(cfg),
 		DisplayRule:      NewDisplayRuleClient(cfg),
@@ -530,10 +536,10 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
 		c.Calendar, c.ChartSample, c.Countdown, c.Crypto, c.DatasourcePlugin,
-		c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
-		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
-		c.GuestToken, c.HomeAssistant, c.Image, c.Incident, c.Jellyfin, c.LogEntry,
-		c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
+		c.DeliveryLog, c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings,
+		c.F1, c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar,
+		c.GreetingRule, c.GuestToken, c.HomeAssistant, c.Image, c.Incident, c.Jellyfin,
+		c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
 		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
 		c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Scene,
 		c.Schedule, c.Sonarr, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings,
@@ -550,10 +556,10 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
 		c.Calendar, c.ChartSample, c.Countdown, c.Crypto, c.DatasourcePlugin,
-		c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
-		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
-		c.GuestToken, c.HomeAssistant, c.Image, c.Incident, c.Jellyfin, c.LogEntry,
-		c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
+		c.DeliveryLog, c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings,
+		c.F1, c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar,
+		c.GreetingRule, c.GuestToken, c.HomeAssistant, c.Image, c.Incident, c.Jellyfin,
+		c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
 		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
 		c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Scene,
 		c.Schedule, c.Sonarr, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings,
@@ -587,6 +593,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Crypto.mutate(ctx, m)
 	case *DatasourcePluginMutation:
 		return c.DatasourcePlugin.mutate(ctx, m)
+	case *DeliveryLogMutation:
+		return c.DeliveryLog.mutate(ctx, m)
 	case *DeviceGroupMutation:
 		return c.DeviceGroup.mutate(ctx, m)
 	case *DeviceSettingsMutation:
@@ -2017,6 +2025,139 @@ func (c *DatasourcePluginClient) mutate(ctx context.Context, m *DatasourcePlugin
 		return (&DatasourcePluginDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown DatasourcePlugin mutation op: %q", m.Op())
+	}
+}
+
+// DeliveryLogClient is a client for the DeliveryLog schema.
+type DeliveryLogClient struct {
+	config
+}
+
+// NewDeliveryLogClient returns a client for the DeliveryLog from the given config.
+func NewDeliveryLogClient(c config) *DeliveryLogClient {
+	return &DeliveryLogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `deliverylog.Hooks(f(g(h())))`.
+func (c *DeliveryLogClient) Use(hooks ...Hook) {
+	c.hooks.DeliveryLog = append(c.hooks.DeliveryLog, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `deliverylog.Intercept(f(g(h())))`.
+func (c *DeliveryLogClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DeliveryLog = append(c.inters.DeliveryLog, interceptors...)
+}
+
+// Create returns a builder for creating a DeliveryLog entity.
+func (c *DeliveryLogClient) Create() *DeliveryLogCreate {
+	mutation := newDeliveryLogMutation(c.config, OpCreate)
+	return &DeliveryLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DeliveryLog entities.
+func (c *DeliveryLogClient) CreateBulk(builders ...*DeliveryLogCreate) *DeliveryLogCreateBulk {
+	return &DeliveryLogCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DeliveryLogClient) MapCreateBulk(slice any, setFunc func(*DeliveryLogCreate, int)) *DeliveryLogCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DeliveryLogCreateBulk{err: fmt.Errorf("calling to DeliveryLogClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DeliveryLogCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DeliveryLogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DeliveryLog.
+func (c *DeliveryLogClient) Update() *DeliveryLogUpdate {
+	mutation := newDeliveryLogMutation(c.config, OpUpdate)
+	return &DeliveryLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DeliveryLogClient) UpdateOne(_m *DeliveryLog) *DeliveryLogUpdateOne {
+	mutation := newDeliveryLogMutation(c.config, OpUpdateOne, withDeliveryLog(_m))
+	return &DeliveryLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DeliveryLogClient) UpdateOneID(id int) *DeliveryLogUpdateOne {
+	mutation := newDeliveryLogMutation(c.config, OpUpdateOne, withDeliveryLogID(id))
+	return &DeliveryLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DeliveryLog.
+func (c *DeliveryLogClient) Delete() *DeliveryLogDelete {
+	mutation := newDeliveryLogMutation(c.config, OpDelete)
+	return &DeliveryLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DeliveryLogClient) DeleteOne(_m *DeliveryLog) *DeliveryLogDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DeliveryLogClient) DeleteOneID(id int) *DeliveryLogDeleteOne {
+	builder := c.Delete().Where(deliverylog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DeliveryLogDeleteOne{builder}
+}
+
+// Query returns a query builder for DeliveryLog.
+func (c *DeliveryLogClient) Query() *DeliveryLogQuery {
+	return &DeliveryLogQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDeliveryLog},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DeliveryLog entity by its id.
+func (c *DeliveryLogClient) Get(ctx context.Context, id int) (*DeliveryLog, error) {
+	return c.Query().Where(deliverylog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DeliveryLogClient) GetX(ctx context.Context, id int) *DeliveryLog {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DeliveryLogClient) Hooks() []Hook {
+	return c.hooks.DeliveryLog
+}
+
+// Interceptors returns the client interceptors.
+func (c *DeliveryLogClient) Interceptors() []Interceptor {
+	return c.inters.DeliveryLog
+}
+
+func (c *DeliveryLogClient) mutate(ctx context.Context, m *DeliveryLogMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DeliveryLogCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DeliveryLogUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DeliveryLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DeliveryLogDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DeliveryLog mutation op: %q", m.Op())
 	}
 }
 
@@ -9277,25 +9418,25 @@ func (c *WebhookSettingsClient) mutate(ctx context.Context, m *WebhookSettingsMu
 type (
 	hooks struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
-		ChartSample, Countdown, Crypto, DatasourcePlugin, DeviceGroup, DeviceSettings,
-		DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI, GitHub,
-		GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image, Incident,
-		Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed,
-		Notification, NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole,
-		PixelArt, Playlist, Qrcode, Radarr, RssFeed, Scene, Schedule, Sonarr, Sports,
-		Stock, SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit,
+		ChartSample, Countdown, Crypto, DatasourcePlugin, DeliveryLog, DeviceGroup,
+		DeviceSettings, DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI,
+		GitHub, GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image,
+		Incident, Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout,
+		NewsFeed, Notification, NowPlayingSource, OutboundSettings, OutboundWebhook,
+		PiHole, PixelArt, Playlist, Qrcode, Radarr, RssFeed, Scene, Schedule, Sonarr,
+		Sports, Stock, SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit,
 		UmamiSettings, Untappd, Uptime, User, Video, WakeAlarm, Weather,
 		WebhookSettings []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
-		ChartSample, Countdown, Crypto, DatasourcePlugin, DeviceGroup, DeviceSettings,
-		DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI, GitHub,
-		GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image, Incident,
-		Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed,
-		Notification, NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole,
-		PixelArt, Playlist, Qrcode, Radarr, RssFeed, Scene, Schedule, Sonarr, Sports,
-		Stock, SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit,
+		ChartSample, Countdown, Crypto, DatasourcePlugin, DeliveryLog, DeviceGroup,
+		DeviceSettings, DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI,
+		GitHub, GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image,
+		Incident, Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout,
+		NewsFeed, Notification, NowPlayingSource, OutboundSettings, OutboundWebhook,
+		PiHole, PixelArt, Playlist, Qrcode, Radarr, RssFeed, Scene, Schedule, Sonarr,
+		Sports, Stock, SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit,
 		UmamiSettings, Untappd, Uptime, User, Video, WakeAlarm, Weather,
 		WebhookSettings []ent.Interceptor
 	}

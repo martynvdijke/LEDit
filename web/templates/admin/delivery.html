@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Message Delivery</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>Message Delivery</h1>
+            <p class="text-muted mt-2">
+                Bounded delivery log for every outbound surface (MQTT, webhook) and device
+                acknowledgement. Rows older than 7 days or beyond 1000 entries are pruned on insert.
+            </p>
+
+            <h3 class="mt-4">Device acknowledgements</h3>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>Last acked message</th>
+                        <th>Acked at</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .acks}}
+                    <tr>
+                        <td>{{.DeviceID}}</td>
+                        <td><code>{{.LastAckedID}}</code></td>
+                        <td>{{.LastAckedAt.Format "2006-01-02 15:04:05"}}</td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="3" class="text-muted">No acknowledgements recorded.</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+
+            <h3 class="mt-4">Recent delivery log</h3>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Message</th>
+                        <th>Kind</th>
+                        <th>Surface</th>
+                        <th>Target</th>
+                        <th>Status</th>
+                        <th>Attempted</th>
+                        <th>Error</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .deliveries}}
+                    <tr>
+                        <td><code>{{.MessageID}}</code></td>
+                        <td>{{.Kind}}</td>
+                        <td>
+                            {{if eq .Surface "mqtt"}}<span class="badge bg-primary">mqtt</span>
+                            {{else if eq .Surface "webhook"}}<span class="badge bg-secondary">webhook</span>
+                            {{else if eq .Surface "ws"}}<span class="badge bg-info text-dark">ws</span>
+                            {{else}}<span class="badge bg-light text-dark">{{.Surface}}</span>{{end}}
+                        </td>
+                        <td class="text-truncate" style="max-width: 18rem;">{{.Target}}</td>
+                        <td>
+                            {{if eq .Status "delivered"}}<span class="badge bg-success">delivered</span>
+                            {{else if eq .Status "acked"}}<span class="badge bg-info text-dark">acked</span>
+                            {{else}}<span class="badge bg-danger">failed</span>{{end}}
+                        </td>
+                        <td>{{.AttemptedAt.Format "2006-01-02 15:04:05"}}</td>
+                        <td class="text-muted">{{.Error}}</td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="7" class="text-muted">No delivery attempts recorded.</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>
