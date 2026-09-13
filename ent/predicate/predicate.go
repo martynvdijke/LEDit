@@ -75,6 +75,9 @@ type HomeAssistant func(*sql.Selector)
 // Image is the predicate function for image builders.
 type Image func(*sql.Selector)
 
+// Incident is the predicate function for incident builders.
+type Incident func(*sql.Selector)
+
 // Jellyfin is the predicate function for jellyfin builders.
 type Jellyfin func(*sql.Selector)
 

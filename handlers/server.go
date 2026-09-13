@@ -75,6 +75,7 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 
 	srv.setupRoutes()
 	StartEventRuleEngine(client)
+	StartIncidentManager(client)
 	StartGreetingWatcher(ctx, client, defaultHAFetcher(srv), srv)
 	InitOutbound(srv)
 
@@ -312,6 +313,7 @@ func (s *Server) setupRoutes() {
 			authReads.GET("/feed/current", s.APIFeedStatus)
 			authReads.GET("/analytics/weights", s.APIAnalyticsWeights)
 			authReads.GET("/notifications", s.APINotificationHistory)
+			authReads.GET("/incidents", s.APIIncidentList)
 			authReads.GET("/playlists/resolve", s.HandlePlaylistResolve)
 			authReads.GET("/timelapse/frames", s.APITimelapseFrames)
 			authReads.POST("/timelapse/export", s.APITimelapseExport)
@@ -325,11 +327,15 @@ func (s *Server) setupRoutes() {
 			apiMut.POST("/feed/pause", s.APIFeedPause)
 			apiMut.POST("/feed/resume", s.APIFeedResume)
 			apiMut.POST("/feed/alarm/dismiss", s.APIFeedAlarmDismiss)
+			apiMut.POST("/incidents/:id/resolve", s.APIIncidentResolve)
 		}
 		// Webhook routes: machine integrations authenticate via webhook key
 		// (X-API-Key header or ?token=), not admin sessions.
 		api.POST("/feed/priority", s.WebhookAuthMiddleware(), s.APIFeedPriority)
 		api.POST("/webhook/notify", s.WebhookAuthMiddleware(), s.APIWebhookNotify)
+		// Incident ingress: monitoring systems (Alertmanager/Grafana/Uptime
+		// Kuma/Sentry) raise and resolve display takeovers via the webhook key.
+		api.POST("/incident", s.WebhookAuthMiddleware(), s.APIIncidentIngest)
 		// Test-only helpers (enabled when LEDIT_AUTH_DISABLE=true for Playwright).
 		if os.Getenv("LEDIT_AUTH_DISABLE") == "true" || os.Getenv("LEDIT_AUTH_DISABLE") == "1" {
 			api.POST("/test/seed-timelapse", s.TestSeedTimelapse)
@@ -715,6 +721,12 @@ func (s *Server) setupRoutes() {
 		admin.GET("/settings/alerts", s.AdminAlertSettings)
 		admin.POST("/settings/alerts", s.AdminAlertSettingsSave)
 		admin.POST("/settings/alerts/test", s.AdminAlertSettingsTest)
+
+		// Incident console: active monitoring alerts, manual resolve/test.
+		admin.GET("/incidents", s.AdminIncidentList)
+		admin.POST("/incidents/resolve", s.AdminIncidentResolve)
+		admin.POST("/incidents/resolve-all", s.AdminIncidentResolveAll)
+		admin.POST("/incidents/test", s.AdminIncidentTest)
 
 		// Webhook/MQTT/Telegram Settings
 		admin.GET("/webhook", s.AdminWebhookSettingsGET)

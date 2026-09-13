@@ -34,6 +34,7 @@ import (
 	"ledit/ent/guesttoken"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/incident"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
@@ -126,6 +127,8 @@ type Client struct {
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// Incident is the client for interacting with the Incident builders.
+	Incident *IncidentClient
 	// Jellyfin is the client for interacting with the Jellyfin builders.
 	Jellyfin *JellyfinClient
 	// LogEntry is the client for interacting with the LogEntry builders.
@@ -228,6 +231,7 @@ func (c *Client) init() {
 	c.GuestToken = NewGuestTokenClient(c.config)
 	c.HomeAssistant = NewHomeAssistantClient(c.config)
 	c.Image = NewImageClient(c.config)
+	c.Incident = NewIncidentClient(c.config)
 	c.Jellyfin = NewJellyfinClient(c.config)
 	c.LogEntry = NewLogEntryClient(c.config)
 	c.LogSettings = NewLogSettingsClient(c.config)
@@ -377,6 +381,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		GuestToken:       NewGuestTokenClient(cfg),
 		HomeAssistant:    NewHomeAssistantClient(cfg),
 		Image:            NewImageClient(cfg),
+		Incident:         NewIncidentClient(cfg),
 		Jellyfin:         NewJellyfinClient(cfg),
 		LogEntry:         NewLogEntryClient(cfg),
 		LogSettings:      NewLogSettingsClient(cfg),
@@ -453,6 +458,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		GuestToken:       NewGuestTokenClient(cfg),
 		HomeAssistant:    NewHomeAssistantClient(cfg),
 		Image:            NewImageClient(cfg),
+		Incident:         NewIncidentClient(cfg),
 		Jellyfin:         NewJellyfinClient(cfg),
 		LogEntry:         NewLogEntryClient(cfg),
 		LogSettings:      NewLogSettingsClient(cfg),
@@ -520,11 +526,11 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Calendar, c.ChartSample, c.Countdown, c.Crypto, c.DatasourcePlugin,
 		c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
-		c.GuestToken, c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry, c.LogSettings,
-		c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
-		c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook, c.PiHole,
-		c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr,
-		c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide,
+		c.GuestToken, c.HomeAssistant, c.Image, c.Incident, c.Jellyfin, c.LogEntry,
+		c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
+		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
+		c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Schedule,
+		c.Sonarr, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide,
 		c.TimelapseFrame, c.Transit, c.UmamiSettings, c.Untappd, c.Uptime, c.User,
 		c.Video, c.WakeAlarm, c.Weather, c.WebhookSettings,
 	} {
@@ -540,11 +546,11 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Calendar, c.ChartSample, c.Countdown, c.Crypto, c.DatasourcePlugin,
 		c.DeviceGroup, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
 		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
-		c.GuestToken, c.HomeAssistant, c.Image, c.Jellyfin, c.LogEntry, c.LogSettings,
-		c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification,
-		c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook, c.PiHole,
-		c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Schedule, c.Sonarr,
-		c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide,
+		c.GuestToken, c.HomeAssistant, c.Image, c.Incident, c.Jellyfin, c.LogEntry,
+		c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
+		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
+		c.PiHole, c.PixelArt, c.Playlist, c.Qrcode, c.Radarr, c.RssFeed, c.Schedule,
+		c.Sonarr, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide,
 		c.TimelapseFrame, c.Transit, c.UmamiSettings, c.Untappd, c.Uptime, c.User,
 		c.Video, c.WakeAlarm, c.Weather, c.WebhookSettings,
 	} {
@@ -601,6 +607,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.HomeAssistant.mutate(ctx, m)
 	case *ImageMutation:
 		return c.Image.mutate(ctx, m)
+	case *IncidentMutation:
+		return c.Incident.mutate(ctx, m)
 	case *JellyfinMutation:
 		return c.Jellyfin.mutate(ctx, m)
 	case *LogEntryMutation:
@@ -4434,6 +4442,139 @@ func (c *ImageClient) mutate(ctx context.Context, m *ImageMutation) (Value, erro
 		return (&ImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Image mutation op: %q", m.Op())
+	}
+}
+
+// IncidentClient is a client for the Incident schema.
+type IncidentClient struct {
+	config
+}
+
+// NewIncidentClient returns a client for the Incident from the given config.
+func NewIncidentClient(c config) *IncidentClient {
+	return &IncidentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incident.Hooks(f(g(h())))`.
+func (c *IncidentClient) Use(hooks ...Hook) {
+	c.hooks.Incident = append(c.hooks.Incident, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incident.Intercept(f(g(h())))`.
+func (c *IncidentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Incident = append(c.inters.Incident, interceptors...)
+}
+
+// Create returns a builder for creating a Incident entity.
+func (c *IncidentClient) Create() *IncidentCreate {
+	mutation := newIncidentMutation(c.config, OpCreate)
+	return &IncidentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Incident entities.
+func (c *IncidentClient) CreateBulk(builders ...*IncidentCreate) *IncidentCreateBulk {
+	return &IncidentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentClient) MapCreateBulk(slice any, setFunc func(*IncidentCreate, int)) *IncidentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentCreateBulk{err: fmt.Errorf("calling to IncidentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Incident.
+func (c *IncidentClient) Update() *IncidentUpdate {
+	mutation := newIncidentMutation(c.config, OpUpdate)
+	return &IncidentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentClient) UpdateOne(_m *Incident) *IncidentUpdateOne {
+	mutation := newIncidentMutation(c.config, OpUpdateOne, withIncident(_m))
+	return &IncidentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentClient) UpdateOneID(id int) *IncidentUpdateOne {
+	mutation := newIncidentMutation(c.config, OpUpdateOne, withIncidentID(id))
+	return &IncidentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Incident.
+func (c *IncidentClient) Delete() *IncidentDelete {
+	mutation := newIncidentMutation(c.config, OpDelete)
+	return &IncidentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentClient) DeleteOne(_m *Incident) *IncidentDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentClient) DeleteOneID(id int) *IncidentDeleteOne {
+	builder := c.Delete().Where(incident.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentDeleteOne{builder}
+}
+
+// Query returns a query builder for Incident.
+func (c *IncidentClient) Query() *IncidentQuery {
+	return &IncidentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncident},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Incident entity by its id.
+func (c *IncidentClient) Get(ctx context.Context, id int) (*Incident, error) {
+	return c.Query().Where(incident.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentClient) GetX(ctx context.Context, id int) *Incident {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentClient) Hooks() []Hook {
+	return c.hooks.Incident
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentClient) Interceptors() []Interceptor {
+	return c.inters.Incident
+}
+
+func (c *IncidentClient) mutate(ctx context.Context, m *IncidentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Incident mutation op: %q", m.Op())
 	}
 }
 
@@ -8965,22 +9106,23 @@ type (
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		ChartSample, Countdown, Crypto, DatasourcePlugin, DeviceGroup, DeviceSettings,
 		DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI, GitHub,
-		GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image, Jellyfin,
-		LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
-		NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole, PixelArt,
-		Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon,
-		TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings, Untappd,
-		Uptime, User, Video, WakeAlarm, Weather, WebhookSettings []ent.Hook
+		GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image, Incident,
+		Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed,
+		Notification, NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole,
+		PixelArt, Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock,
+		SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings,
+		Untappd, Uptime, User, Video, WakeAlarm, Weather, WebhookSettings []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		ChartSample, Countdown, Crypto, DatasourcePlugin, DeviceGroup, DeviceSettings,
 		DisplayRule, EmailSettings, F1, GeneralSettings, GenericAPI, GitHub,
-		GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image, Jellyfin,
-		LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
-		NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole, PixelArt,
-		Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock, SunMoon,
-		TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings, Untappd,
-		Uptime, User, Video, WakeAlarm, Weather, WebhookSettings []ent.Interceptor
+		GoogleCalendar, GreetingRule, GuestToken, HomeAssistant, Image, Incident,
+		Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed,
+		Notification, NowPlayingSource, OutboundSettings, OutboundWebhook, PiHole,
+		PixelArt, Playlist, Qrcode, Radarr, RssFeed, Schedule, Sonarr, Sports, Stock,
+		SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings,
+		Untappd, Uptime, User, Video, WakeAlarm, Weather,
+		WebhookSettings []ent.Interceptor
 	}
 )

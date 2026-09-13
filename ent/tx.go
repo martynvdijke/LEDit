@@ -58,6 +58,8 @@ type Tx struct {
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// Incident is the client for interacting with the Incident builders.
+	Incident *IncidentClient
 	// Jellyfin is the client for interacting with the Jellyfin builders.
 	Jellyfin *JellyfinClient
 	// LogEntry is the client for interacting with the LogEntry builders.
@@ -280,6 +282,7 @@ func (tx *Tx) init() {
 	tx.GuestToken = NewGuestTokenClient(tx.config)
 	tx.HomeAssistant = NewHomeAssistantClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
+	tx.Incident = NewIncidentClient(tx.config)
 	tx.Jellyfin = NewJellyfinClient(tx.config)
 	tx.LogEntry = NewLogEntryClient(tx.config)
 	tx.LogSettings = NewLogSettingsClient(tx.config)

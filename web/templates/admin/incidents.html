@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Incidents</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Incidents</h1>
+                <div>
+                    <form method="POST" action="/admin/incidents/test" class="d-inline">
+                        <button type="submit" class="btn btn-outline-secondary">Raise test incident</button>
+                    </form>
+                    <form method="POST" action="/admin/incidents/resolve-all" class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger">Resolve all</button>
+                    </form>
+                </div>
+            </div>
+            <p class="text-muted mt-2">
+                An active incident takes over every display until it is resolved or its TTL expires.
+                Post to <code>/api/incident</code> with the webhook API key. Alertmanager v4 payloads
+                are accepted directly.
+            </p>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Severity</th>
+                        <th>Title</th>
+                        <th>Message</th>
+                        <th>Source</th>
+                        <th>Since</th>
+                        <th>Expires</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .incidents}}
+                    <tr>
+                        <td>
+                            {{if eq .Severity "critical"}}<span class="badge bg-danger">critical</span>
+                            {{else if eq .Severity "info"}}<span class="badge bg-info text-dark">info</span>
+                            {{else}}<span class="badge bg-warning text-dark">warning</span>{{end}}
+                        </td>
+                        <td>{{.Title}}</td>
+                        <td>{{.Message}}</td>
+                        <td>{{.Source}}</td>
+                        <td>{{.CreatedAt.Format "15:04:05"}}</td>
+                        <td>{{.ExpiresAt.Format "15:04:05"}}</td>
+                        <td>
+                            <form method="POST" action="/admin/incidents/resolve" class="d-inline">
+                                <input type="hidden" name="id" value="{{.ID}}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Resolve</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="7" class="text-muted">No active incidents.</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

@@ -29,6 +29,7 @@ import (
 	"ledit/ent/guesttoken"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/incident"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
@@ -152,6 +153,7 @@ func checkColumn(t, c string) error {
 			guesttoken.Table:       guesttoken.ValidColumn,
 			homeassistant.Table:    homeassistant.ValidColumn,
 			image.Table:            image.ValidColumn,
+			incident.Table:         incident.ValidColumn,
 			jellyfin.Table:         jellyfin.ValidColumn,
 			logentry.Table:         logentry.ValidColumn,
 			logsettings.Table:      logsettings.ValidColumn,

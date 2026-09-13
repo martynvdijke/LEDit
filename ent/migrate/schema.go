@@ -562,6 +562,26 @@ var (
 			},
 		},
 	}
+	// IncidentsColumns holds the columns for the "incidents" table.
+	IncidentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "fingerprint", Type: field.TypeString, Unique: true},
+		{Name: "title", Type: field.TypeString, Default: ""},
+		{Name: "message", Type: field.TypeString, Default: ""},
+		{Name: "severity", Type: field.TypeString, Default: "warning"},
+		{Name: "source", Type: field.TypeString, Default: ""},
+		{Name: "active", Type: field.TypeBool, Default: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "resolved_at", Type: field.TypeTime, Nullable: true},
+		{Name: "expires_at", Type: field.TypeTime},
+	}
+	// IncidentsTable holds the schema information for the "incidents" table.
+	IncidentsTable = &schema.Table{
+		Name:       "incidents",
+		Columns:    IncidentsColumns,
+		PrimaryKey: []*schema.Column{IncidentsColumns[0]},
+	}
 	// JellyfinsColumns holds the columns for the "jellyfins" table.
 	JellyfinsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1345,6 +1365,7 @@ var (
 		GuestTokensTable,
 		HomeAssistantsTable,
 		ImagesTable,
+		IncidentsTable,
 		JellyfinsTable,
 		LogEntriesTable,
 		LogSettingsTable,

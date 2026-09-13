@@ -24,6 +24,7 @@ import (
 	"ledit/ent/greetingrule"
 	"ledit/ent/guesttoken"
 	"ledit/ent/homeassistant"
+	"ledit/ent/incident"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logsettings"
 	"ledit/ent/matrixlayout"
@@ -620,6 +621,40 @@ func init() {
 	homeassistantDescURL := homeassistantFields[1].Descriptor()
 	// homeassistant.DefaultURL holds the default value on creation for the url field.
 	homeassistant.DefaultURL = homeassistantDescURL.Default.(string)
+	incidentFields := schema.Incident{}.Fields()
+	_ = incidentFields
+	// incidentDescTitle is the schema descriptor for title field.
+	incidentDescTitle := incidentFields[1].Descriptor()
+	// incident.DefaultTitle holds the default value on creation for the title field.
+	incident.DefaultTitle = incidentDescTitle.Default.(string)
+	// incidentDescMessage is the schema descriptor for message field.
+	incidentDescMessage := incidentFields[2].Descriptor()
+	// incident.DefaultMessage holds the default value on creation for the message field.
+	incident.DefaultMessage = incidentDescMessage.Default.(string)
+	// incidentDescSeverity is the schema descriptor for severity field.
+	incidentDescSeverity := incidentFields[3].Descriptor()
+	// incident.DefaultSeverity holds the default value on creation for the severity field.
+	incident.DefaultSeverity = incidentDescSeverity.Default.(string)
+	// incident.SeverityValidator is a validator for the "severity" field. It is called by the builders before save.
+	incident.SeverityValidator = incidentDescSeverity.Validators[0].(func(string) error)
+	// incidentDescSource is the schema descriptor for source field.
+	incidentDescSource := incidentFields[4].Descriptor()
+	// incident.DefaultSource holds the default value on creation for the source field.
+	incident.DefaultSource = incidentDescSource.Default.(string)
+	// incidentDescActive is the schema descriptor for active field.
+	incidentDescActive := incidentFields[5].Descriptor()
+	// incident.DefaultActive holds the default value on creation for the active field.
+	incident.DefaultActive = incidentDescActive.Default.(bool)
+	// incidentDescCreatedAt is the schema descriptor for created_at field.
+	incidentDescCreatedAt := incidentFields[6].Descriptor()
+	// incident.DefaultCreatedAt holds the default value on creation for the created_at field.
+	incident.DefaultCreatedAt = incidentDescCreatedAt.Default.(func() time.Time)
+	// incidentDescUpdatedAt is the schema descriptor for updated_at field.
+	incidentDescUpdatedAt := incidentFields[7].Descriptor()
+	// incident.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	incident.DefaultUpdatedAt = incidentDescUpdatedAt.Default.(func() time.Time)
+	// incident.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	incident.UpdateDefaultUpdatedAt = incidentDescUpdatedAt.UpdateDefault.(func() time.Time)
 	jellyfinFields := schema.Jellyfin{}.Fields()
 	_ = jellyfinFields
 	// jellyfinDescToken is the schema descriptor for token field.

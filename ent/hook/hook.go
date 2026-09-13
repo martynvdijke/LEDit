@@ -284,6 +284,18 @@ func (f ImageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ImageMutation", m)
 }
 
+// The IncidentFunc type is an adapter to allow the use of ordinary
+// function as Incident mutator.
+type IncidentFunc func(context.Context, *ent.IncidentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentMutation", m)
+}
+
 // The JellyfinFunc type is an adapter to allow the use of ordinary
 // function as Jellyfin mutator.
 type JellyfinFunc func(context.Context, *ent.JellyfinMutation) (ent.Value, error)

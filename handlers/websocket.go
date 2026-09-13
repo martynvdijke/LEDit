@@ -1021,6 +1021,27 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				continue
 			}
 
+			// Incident tier: a persistent monitoring takeover. Outranks alarms
+			// and pins, below transient notifications. Re-rendered every slot
+			// until the incident is resolved or expires.
+			if scene, ok := CurrentIncidentScene(); ok {
+				if incData, err := render.IncidentPNG(width, height, scene, time.Now()); err == nil {
+					msg := map[string]any{
+						"format": "PNG",
+						"image":  base64.StdEncoding.EncodeToString(incData),
+						"source": "INCIDENT",
+						"next":   "INCIDENT",
+					}
+					if frame, err := json.Marshal(msg); err == nil {
+						if err := conn.WriteMessage(websocket.TextMessage, frame); err != nil {
+							return
+						}
+					}
+				}
+				time.Sleep(timeout)
+				continue
+			}
+
 			// Wake alarm tier: outranks event pins, below notifications. The
 			// resolved wake source is rendered directly (it need not be in the
 			// connection's rotation list) and held across slot boundaries until
