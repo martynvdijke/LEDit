@@ -1,3 +1,10 @@
+# [1.37.0](https://github.com/martynvdijke/LEDit/compare/v1.36.0...v1.37.0) (2026-09-13)
+
+
+### Features
+
+* add incident mode display takeover ([7551ecb](https://github.com/martynvdijke/LEDit/commit/7551ecbf46d72681686682512a7fdf32e85c910e))
+
 # [1.36.0](https://github.com/martynvdijke/LEDit/compare/v1.35.0...v1.36.0) (2026-09-13)
 
 
