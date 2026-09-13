@@ -66,6 +66,34 @@ func (_c *DatasourcePluginCreate) SetNillableTimeoutMs(v *int) *DatasourcePlugin
 	return _c
 }
 
+// SetManifest sets the "manifest" field.
+func (_c *DatasourcePluginCreate) SetManifest(v string) *DatasourcePluginCreate {
+	_c.mutation.SetManifest(v)
+	return _c
+}
+
+// SetNillableManifest sets the "manifest" field if the given value is not nil.
+func (_c *DatasourcePluginCreate) SetNillableManifest(v *string) *DatasourcePluginCreate {
+	if v != nil {
+		_c.SetManifest(*v)
+	}
+	return _c
+}
+
+// SetConfig sets the "config" field.
+func (_c *DatasourcePluginCreate) SetConfig(v string) *DatasourcePluginCreate {
+	_c.mutation.SetConfig(v)
+	return _c
+}
+
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (_c *DatasourcePluginCreate) SetNillableConfig(v *string) *DatasourcePluginCreate {
+	if v != nil {
+		_c.SetConfig(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *DatasourcePluginCreate) SetCreatedAt(v time.Time) *DatasourcePluginCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -123,6 +151,14 @@ func (_c *DatasourcePluginCreate) defaults() {
 		v := datasourceplugin.DefaultTimeoutMs
 		_c.mutation.SetTimeoutMs(v)
 	}
+	if _, ok := _c.mutation.Manifest(); !ok {
+		v := datasourceplugin.DefaultManifest
+		_c.mutation.SetManifest(v)
+	}
+	if _, ok := _c.mutation.Config(); !ok {
+		v := datasourceplugin.DefaultConfig
+		_c.mutation.SetConfig(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := datasourceplugin.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -155,6 +191,12 @@ func (_c *DatasourcePluginCreate) check() error {
 		if err := datasourceplugin.TimeoutMsValidator(v); err != nil {
 			return &ValidationError{Name: "timeout_ms", err: fmt.Errorf(`ent: validator failed for field "DatasourcePlugin.timeout_ms": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.Manifest(); !ok {
+		return &ValidationError{Name: "manifest", err: errors.New(`ent: missing required field "DatasourcePlugin.manifest"`)}
+	}
+	if _, ok := _c.mutation.Config(); !ok {
+		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "DatasourcePlugin.config"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "DatasourcePlugin.created_at"`)}
@@ -204,6 +246,14 @@ func (_c *DatasourcePluginCreate) createSpec() (*DatasourcePlugin, *sqlgraph.Cre
 	if value, ok := _c.mutation.TimeoutMs(); ok {
 		_spec.SetField(datasourceplugin.FieldTimeoutMs, field.TypeInt, value)
 		_node.TimeoutMs = value
+	}
+	if value, ok := _c.mutation.Manifest(); ok {
+		_spec.SetField(datasourceplugin.FieldManifest, field.TypeString, value)
+		_node.Manifest = value
+	}
+	if value, ok := _c.mutation.Config(); ok {
+		_spec.SetField(datasourceplugin.FieldConfig, field.TypeString, value)
+		_node.Config = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(datasourceplugin.FieldCreatedAt, field.TypeTime, value)

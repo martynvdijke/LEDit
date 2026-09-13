@@ -219,8 +219,16 @@ func init() {
 			return nil
 		}
 	}()
+	// datasourcepluginDescManifest is the schema descriptor for manifest field.
+	datasourcepluginDescManifest := datasourcepluginFields[5].Descriptor()
+	// datasourceplugin.DefaultManifest holds the default value on creation for the manifest field.
+	datasourceplugin.DefaultManifest = datasourcepluginDescManifest.Default.(string)
+	// datasourcepluginDescConfig is the schema descriptor for config field.
+	datasourcepluginDescConfig := datasourcepluginFields[6].Descriptor()
+	// datasourceplugin.DefaultConfig holds the default value on creation for the config field.
+	datasourceplugin.DefaultConfig = datasourcepluginDescConfig.Default.(string)
 	// datasourcepluginDescCreatedAt is the schema descriptor for created_at field.
-	datasourcepluginDescCreatedAt := datasourcepluginFields[5].Descriptor()
+	datasourcepluginDescCreatedAt := datasourcepluginFields[7].Descriptor()
 	// datasourceplugin.DefaultCreatedAt holds the default value on creation for the created_at field.
 	datasourceplugin.DefaultCreatedAt = datasourcepluginDescCreatedAt.Default.(func() time.Time)
 	devicegroupFields := schema.DeviceGroup{}.Fields()

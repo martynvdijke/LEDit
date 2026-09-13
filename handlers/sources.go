@@ -206,6 +206,12 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	for _, n := range nowPlaying {
 		add("nowplaying", n.ID, "Now Playing: "+n.Name)
 	}
+	for _, p := range cachedPlugins() {
+		if !p.Enabled {
+			continue
+		}
+		add("plugin", p.ID, "Plugin: "+p.Name)
+	}
 	return opts
 }
 
@@ -421,6 +427,13 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 	idx.names[key("audio", 0)] = "Now Playing"
 	idx.byKey[key("audio", 1)] = &datasource.VisualizerDS{Mode: "bars"}
 	idx.names[key("audio", 1)] = "Audio Visualizer"
+	for _, p := range cachedPlugins() {
+		if !p.Enabled {
+			continue
+		}
+		idx.byKey[key("plugin", p.ID)] = pluginSource(p)
+		idx.names[key("plugin", p.ID)] = "Plugin: " + p.Name
+	}
 	return idx
 }
 

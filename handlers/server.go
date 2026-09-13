@@ -76,6 +76,7 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	srv.setupRoutes()
 	StartEventRuleEngine(client)
 	StartIncidentManager(client)
+	StartPluginManager(client)
 	StartGreetingWatcher(ctx, client, defaultHAFetcher(srv), srv)
 	InitOutbound(srv)
 
@@ -772,6 +773,8 @@ func (s *Server) setupRoutes() {
 		admin.GET("/plugins/:id/edit", s.AdminPluginEdit)
 		admin.POST("/plugins/:id/edit", s.AdminPluginUpdate)
 		admin.POST("/plugins/:id/delete", s.AdminPluginDelete)
+		admin.POST("/plugins/install", s.AdminPluginInstall)
+		admin.GET("/plugins/catalog", s.AdminPluginCatalog)
 		admin.GET("/api/plugins", s.APIPluginList)
 		admin.GET("/api/plugins/:id", s.APIPluginGet)
 		admin.POST("/api/plugins", s.APIPluginCreate)

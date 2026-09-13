@@ -84,4 +84,37 @@ test.describe('Datasource Plugins', () => {
     });
     expect(badExec.status()).toBe(400);
   });
+
+  test('manifest and config round-trip and join the source catalog', async ({ page, request }) => {
+    const pluginScript = path.resolve('tests/fixtures/mock_plugin.sh');
+    const name = `pw-plugin-cfg-${Date.now()}`;
+    const manifest = JSON.stringify({
+      name,
+      kind: 'exec',
+      fields: [{ key: 'zone', label: 'Zone', type: 'text', required: true }],
+    });
+
+    const createRes = await request.post('/admin/api/plugins', {
+      data: { name, kind: 'exec', target: pluginScript, enabled: true, timeout_ms: 2000, manifest, config: { zone: 'eu' } },
+    });
+    expect(createRes.status()).toBe(201);
+    const created = await createRes.json();
+    const pluginId = created.id as number;
+
+    // Schema-driven edit form renders the manifest field and stored config.
+    await page.goto(`/admin/plugins/${pluginId}/edit`);
+    await expect(page.locator('#manifest')).toContainText('"zone"');
+    const zoneInput = page.locator('#plugin-config-fields [data-key="zone"]');
+    await expect(zoneInput).toHaveValue('eu');
+
+    // Plugin is resolvable in the event-rule source picker (catalog wiring).
+    await page.goto('/admin/eventrules/new');
+    await page.waitForFunction(() => (window as any).BINDING_OPTS);
+    const catalog = await page.evaluate(() => (window as any).BINDING_OPTS.plugin || []);
+    expect(
+      catalog.some((e: { label: string; id: number }) => e.label.includes(name) && e.id === pluginId),
+    ).toBeTruthy();
+
+    await request.delete(`/admin/api/plugins/${pluginId}`).catch(() => {});
+  });
 });

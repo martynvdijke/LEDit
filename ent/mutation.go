@@ -6022,6 +6022,8 @@ type DatasourcePluginMutation struct {
 	enabled       *bool
 	timeout_ms    *int
 	addtimeout_ms *int
+	manifest      *string
+	_config       *string
 	created_at    *time.Time
 	clearedFields map[string]struct{}
 	done          bool
@@ -6327,6 +6329,78 @@ func (m *DatasourcePluginMutation) ResetTimeoutMs() {
 	m.addtimeout_ms = nil
 }
 
+// SetManifest sets the "manifest" field.
+func (m *DatasourcePluginMutation) SetManifest(s string) {
+	m.manifest = &s
+}
+
+// Manifest returns the value of the "manifest" field in the mutation.
+func (m *DatasourcePluginMutation) Manifest() (r string, exists bool) {
+	v := m.manifest
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldManifest returns the old "manifest" field's value of the DatasourcePlugin entity.
+// If the DatasourcePlugin object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DatasourcePluginMutation) OldManifest(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldManifest is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldManifest requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldManifest: %w", err)
+	}
+	return oldValue.Manifest, nil
+}
+
+// ResetManifest resets all changes to the "manifest" field.
+func (m *DatasourcePluginMutation) ResetManifest() {
+	m.manifest = nil
+}
+
+// SetConfig sets the "config" field.
+func (m *DatasourcePluginMutation) SetConfig(s string) {
+	m._config = &s
+}
+
+// Config returns the value of the "config" field in the mutation.
+func (m *DatasourcePluginMutation) Config() (r string, exists bool) {
+	v := m._config
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfig returns the old "config" field's value of the DatasourcePlugin entity.
+// If the DatasourcePlugin object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DatasourcePluginMutation) OldConfig(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfig requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
+	}
+	return oldValue.Config, nil
+}
+
+// ResetConfig resets all changes to the "config" field.
+func (m *DatasourcePluginMutation) ResetConfig() {
+	m._config = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *DatasourcePluginMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -6397,7 +6471,7 @@ func (m *DatasourcePluginMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DatasourcePluginMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.name != nil {
 		fields = append(fields, datasourceplugin.FieldName)
 	}
@@ -6412,6 +6486,12 @@ func (m *DatasourcePluginMutation) Fields() []string {
 	}
 	if m.timeout_ms != nil {
 		fields = append(fields, datasourceplugin.FieldTimeoutMs)
+	}
+	if m.manifest != nil {
+		fields = append(fields, datasourceplugin.FieldManifest)
+	}
+	if m._config != nil {
+		fields = append(fields, datasourceplugin.FieldConfig)
 	}
 	if m.created_at != nil {
 		fields = append(fields, datasourceplugin.FieldCreatedAt)
@@ -6434,6 +6514,10 @@ func (m *DatasourcePluginMutation) Field(name string) (ent.Value, bool) {
 		return m.Enabled()
 	case datasourceplugin.FieldTimeoutMs:
 		return m.TimeoutMs()
+	case datasourceplugin.FieldManifest:
+		return m.Manifest()
+	case datasourceplugin.FieldConfig:
+		return m.Config()
 	case datasourceplugin.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -6455,6 +6539,10 @@ func (m *DatasourcePluginMutation) OldField(ctx context.Context, name string) (e
 		return m.OldEnabled(ctx)
 	case datasourceplugin.FieldTimeoutMs:
 		return m.OldTimeoutMs(ctx)
+	case datasourceplugin.FieldManifest:
+		return m.OldManifest(ctx)
+	case datasourceplugin.FieldConfig:
+		return m.OldConfig(ctx)
 	case datasourceplugin.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -6500,6 +6588,20 @@ func (m *DatasourcePluginMutation) SetField(name string, value ent.Value) error 
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTimeoutMs(v)
+		return nil
+	case datasourceplugin.FieldManifest:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetManifest(v)
+		return nil
+	case datasourceplugin.FieldConfig:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfig(v)
 		return nil
 	case datasourceplugin.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -6586,6 +6688,12 @@ func (m *DatasourcePluginMutation) ResetField(name string) error {
 		return nil
 	case datasourceplugin.FieldTimeoutMs:
 		m.ResetTimeoutMs()
+		return nil
+	case datasourceplugin.FieldManifest:
+		m.ResetManifest()
+		return nil
+	case datasourceplugin.FieldConfig:
+		m.ResetConfig()
 		return nil
 	case datasourceplugin.FieldCreatedAt:
 		m.ResetCreatedAt()

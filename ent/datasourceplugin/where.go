@@ -74,6 +74,16 @@ func TimeoutMs(v int) predicate.DatasourcePlugin {
 	return predicate.DatasourcePlugin(sql.FieldEQ(FieldTimeoutMs, v))
 }
 
+// Manifest applies equality check predicate on the "manifest" field. It's identical to ManifestEQ.
+func Manifest(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldEQ(FieldManifest, v))
+}
+
+// Config applies equality check predicate on the "config" field. It's identical to ConfigEQ.
+func Config(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldEQ(FieldConfig, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.DatasourcePlugin {
 	return predicate.DatasourcePlugin(sql.FieldEQ(FieldCreatedAt, v))
@@ -277,6 +287,136 @@ func TimeoutMsLT(v int) predicate.DatasourcePlugin {
 // TimeoutMsLTE applies the LTE predicate on the "timeout_ms" field.
 func TimeoutMsLTE(v int) predicate.DatasourcePlugin {
 	return predicate.DatasourcePlugin(sql.FieldLTE(FieldTimeoutMs, v))
+}
+
+// ManifestEQ applies the EQ predicate on the "manifest" field.
+func ManifestEQ(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldEQ(FieldManifest, v))
+}
+
+// ManifestNEQ applies the NEQ predicate on the "manifest" field.
+func ManifestNEQ(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldNEQ(FieldManifest, v))
+}
+
+// ManifestIn applies the In predicate on the "manifest" field.
+func ManifestIn(vs ...string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldIn(FieldManifest, vs...))
+}
+
+// ManifestNotIn applies the NotIn predicate on the "manifest" field.
+func ManifestNotIn(vs ...string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldNotIn(FieldManifest, vs...))
+}
+
+// ManifestGT applies the GT predicate on the "manifest" field.
+func ManifestGT(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldGT(FieldManifest, v))
+}
+
+// ManifestGTE applies the GTE predicate on the "manifest" field.
+func ManifestGTE(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldGTE(FieldManifest, v))
+}
+
+// ManifestLT applies the LT predicate on the "manifest" field.
+func ManifestLT(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldLT(FieldManifest, v))
+}
+
+// ManifestLTE applies the LTE predicate on the "manifest" field.
+func ManifestLTE(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldLTE(FieldManifest, v))
+}
+
+// ManifestContains applies the Contains predicate on the "manifest" field.
+func ManifestContains(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldContains(FieldManifest, v))
+}
+
+// ManifestHasPrefix applies the HasPrefix predicate on the "manifest" field.
+func ManifestHasPrefix(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldHasPrefix(FieldManifest, v))
+}
+
+// ManifestHasSuffix applies the HasSuffix predicate on the "manifest" field.
+func ManifestHasSuffix(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldHasSuffix(FieldManifest, v))
+}
+
+// ManifestEqualFold applies the EqualFold predicate on the "manifest" field.
+func ManifestEqualFold(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldEqualFold(FieldManifest, v))
+}
+
+// ManifestContainsFold applies the ContainsFold predicate on the "manifest" field.
+func ManifestContainsFold(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldContainsFold(FieldManifest, v))
+}
+
+// ConfigEQ applies the EQ predicate on the "config" field.
+func ConfigEQ(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldEQ(FieldConfig, v))
+}
+
+// ConfigNEQ applies the NEQ predicate on the "config" field.
+func ConfigNEQ(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldNEQ(FieldConfig, v))
+}
+
+// ConfigIn applies the In predicate on the "config" field.
+func ConfigIn(vs ...string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldIn(FieldConfig, vs...))
+}
+
+// ConfigNotIn applies the NotIn predicate on the "config" field.
+func ConfigNotIn(vs ...string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldNotIn(FieldConfig, vs...))
+}
+
+// ConfigGT applies the GT predicate on the "config" field.
+func ConfigGT(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldGT(FieldConfig, v))
+}
+
+// ConfigGTE applies the GTE predicate on the "config" field.
+func ConfigGTE(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldGTE(FieldConfig, v))
+}
+
+// ConfigLT applies the LT predicate on the "config" field.
+func ConfigLT(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldLT(FieldConfig, v))
+}
+
+// ConfigLTE applies the LTE predicate on the "config" field.
+func ConfigLTE(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldLTE(FieldConfig, v))
+}
+
+// ConfigContains applies the Contains predicate on the "config" field.
+func ConfigContains(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldContains(FieldConfig, v))
+}
+
+// ConfigHasPrefix applies the HasPrefix predicate on the "config" field.
+func ConfigHasPrefix(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldHasPrefix(FieldConfig, v))
+}
+
+// ConfigHasSuffix applies the HasSuffix predicate on the "config" field.
+func ConfigHasSuffix(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldHasSuffix(FieldConfig, v))
+}
+
+// ConfigEqualFold applies the EqualFold predicate on the "config" field.
+func ConfigEqualFold(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldEqualFold(FieldConfig, v))
+}
+
+// ConfigContainsFold applies the ContainsFold predicate on the "config" field.
+func ConfigContainsFold(v string) predicate.DatasourcePlugin {
+	return predicate.DatasourcePlugin(sql.FieldContainsFold(FieldConfig, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

@@ -104,6 +104,34 @@ func (_u *DatasourcePluginUpdate) AddTimeoutMs(v int) *DatasourcePluginUpdate {
 	return _u
 }
 
+// SetManifest sets the "manifest" field.
+func (_u *DatasourcePluginUpdate) SetManifest(v string) *DatasourcePluginUpdate {
+	_u.mutation.SetManifest(v)
+	return _u
+}
+
+// SetNillableManifest sets the "manifest" field if the given value is not nil.
+func (_u *DatasourcePluginUpdate) SetNillableManifest(v *string) *DatasourcePluginUpdate {
+	if v != nil {
+		_u.SetManifest(*v)
+	}
+	return _u
+}
+
+// SetConfig sets the "config" field.
+func (_u *DatasourcePluginUpdate) SetConfig(v string) *DatasourcePluginUpdate {
+	_u.mutation.SetConfig(v)
+	return _u
+}
+
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (_u *DatasourcePluginUpdate) SetNillableConfig(v *string) *DatasourcePluginUpdate {
+	if v != nil {
+		_u.SetConfig(*v)
+	}
+	return _u
+}
+
 // Mutation returns the DatasourcePluginMutation object of the builder.
 func (_u *DatasourcePluginUpdate) Mutation() *DatasourcePluginMutation {
 	return _u.mutation
@@ -180,6 +208,12 @@ func (_u *DatasourcePluginUpdate) sqlSave(ctx context.Context) (_node int, err e
 	}
 	if value, ok := _u.mutation.AddedTimeoutMs(); ok {
 		_spec.AddField(datasourceplugin.FieldTimeoutMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.Manifest(); ok {
+		_spec.SetField(datasourceplugin.FieldManifest, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Config(); ok {
+		_spec.SetField(datasourceplugin.FieldConfig, field.TypeString, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -275,6 +309,34 @@ func (_u *DatasourcePluginUpdateOne) SetNillableTimeoutMs(v *int) *DatasourcePlu
 // AddTimeoutMs adds value to the "timeout_ms" field.
 func (_u *DatasourcePluginUpdateOne) AddTimeoutMs(v int) *DatasourcePluginUpdateOne {
 	_u.mutation.AddTimeoutMs(v)
+	return _u
+}
+
+// SetManifest sets the "manifest" field.
+func (_u *DatasourcePluginUpdateOne) SetManifest(v string) *DatasourcePluginUpdateOne {
+	_u.mutation.SetManifest(v)
+	return _u
+}
+
+// SetNillableManifest sets the "manifest" field if the given value is not nil.
+func (_u *DatasourcePluginUpdateOne) SetNillableManifest(v *string) *DatasourcePluginUpdateOne {
+	if v != nil {
+		_u.SetManifest(*v)
+	}
+	return _u
+}
+
+// SetConfig sets the "config" field.
+func (_u *DatasourcePluginUpdateOne) SetConfig(v string) *DatasourcePluginUpdateOne {
+	_u.mutation.SetConfig(v)
+	return _u
+}
+
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (_u *DatasourcePluginUpdateOne) SetNillableConfig(v *string) *DatasourcePluginUpdateOne {
+	if v != nil {
+		_u.SetConfig(*v)
+	}
 	return _u
 }
 
@@ -384,6 +446,12 @@ func (_u *DatasourcePluginUpdateOne) sqlSave(ctx context.Context) (_node *Dataso
 	}
 	if value, ok := _u.mutation.AddedTimeoutMs(); ok {
 		_spec.AddField(datasourceplugin.FieldTimeoutMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.Manifest(); ok {
+		_spec.SetField(datasourceplugin.FieldManifest, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Config(); ok {
+		_spec.SetField(datasourceplugin.FieldConfig, field.TypeString, value)
 	}
 	_node = &DatasourcePlugin{config: _u.config}
 	_spec.Assign = _node.assignValues

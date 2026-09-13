@@ -6,14 +6,96 @@
 <div class="container-fluid p-4">
 <h1>{{if .edit}}Edit Plugin{{else}}New Plugin{{end}}</h1>
 {{if .allowPrefix}}<div class="alert alert-info">Allowed exec prefix: {{.allowPrefix}}</div>{{end}}
-<p class="text-muted">No binary upload — exec target must already exist on host. HTTP must be localhost.</p>
+<p class="text-muted">No binary upload — exec target must already exist on host. HTTP must be localhost. Paste an optional manifest to drive the config fields below.</p>
 <form method="POST" action="{{if .edit}}/admin/plugins/{{.plugin.ID}}/edit{{else}}/admin/plugins/new{{end}}">
 <div class="mb-3"><label>Name</label><input name="name" class="form-control" value="{{if .plugin}}{{.plugin.Name}}{{end}}" required></div>
 <div class="mb-3"><label>Kind</label><select name="kind" class="form-control"><option value="exec" {{if .plugin}}{{if eq .plugin.Kind "exec"}}selected{{end}}{{end}}>exec</option><option value="http" {{if .plugin}}{{if eq .plugin.Kind "http"}}selected{{end}}{{end}}>http</option></select></div>
 <div class="mb-3"><label>Target (path or URL)</label><input name="target" class="form-control" value="{{if .plugin}}{{.plugin.Target}}{{end}}" required></div>
 <div class="mb-3"><label>Timeout ms</label><input name="timeout_ms" type="number" class="form-control" value="{{if .plugin}}{{.plugin.TimeoutMs}}{{else}}3000{{end}}"></div>
 <div class="mb-3 form-check"><input type="checkbox" name="enabled" class="form-check-input" {{if .plugin}}{{if .plugin.Enabled}}checked{{end}}{{end}}><label class="form-check-label">Enabled</label></div>
+
+<div class="card mb-3"><div class="card-body">
+<h5 class="card-title">Manifest</h5>
+<p class="text-muted mb-2">Optional JSON declaring config fields. Field types: text, password, number, bool, select.</p>
+<textarea name="manifest" id="manifest" class="form-control" rows="6" placeholder='{"name":"sensor","fields":[{"key":"host","type":"text","required":true}]}'>{{if .plugin}}{{.plugin.Manifest}}{{end}}</textarea>
+</div></div>
+
+<div class="card mb-3"><div class="card-body">
+<h5 class="card-title">Config</h5>
+<div id="plugin-config-fields"><p class="text-muted">No config fields declared. Edit the JSON config below.</p></div>
+<p class="text-muted mb-1">Raw JSON config (kept in sync with the fields above).</p>
+<textarea name="config" id="config" class="form-control" rows="4">{{if .plugin}}{{.plugin.Config}}{{end}}</textarea>
+</div></div>
+
 <button class="btn btn-primary">Save</button> <a href="/admin/plugins" class="btn btn-secondary">Cancel</a>
 </form>
 {{if .health}}<hr><h5>Health</h5><pre>{{.health}}</pre>{{end}}
-</div></div></body></html>
+</div></div>
+<script>
+(function () {
+  var manifestEl = document.getElementById('manifest');
+  var configEl = document.getElementById('config');
+  var fieldsEl = document.getElementById('plugin-config-fields');
+  if (!manifestEl || !fieldsEl) return;
+  function parse(s) { try { return JSON.parse(s || '{}'); } catch (e) { return null; } }
+  function sync() {
+    var m = parse(manifestEl.value);
+    if (!m || !m.fields) return;
+    var obj = {};
+    m.fields.forEach(function (f) {
+      var el = fieldsEl.querySelector('[data-key="' + f.key + '"]');
+      if (!el) return;
+      if (f.type === 'bool') { obj[f.key] = el.checked; }
+      else { var v = el.value; if (v === '') return; obj[f.key] = v; }
+    });
+    configEl.value = JSON.stringify(obj, null, 2);
+  }
+  function render() {
+    var m = parse(manifestEl.value);
+    fieldsEl.innerHTML = '';
+    if (!m || !m.fields || !m.fields.length) {
+      fieldsEl.innerHTML = '<p class="text-muted">No config fields declared. Edit the JSON config below.</p>';
+      return;
+    }
+    var cfg = parse(configEl.value) || {};
+    m.fields.forEach(function (f) {
+      var wrap = document.createElement('div');
+      wrap.className = 'mb-3';
+      var label = document.createElement('label');
+      label.textContent = (f.label || f.key) + (f.required ? ' *' : '');
+      wrap.appendChild(label);
+      var input;
+      if (f.type === 'bool') {
+        input = document.createElement('input');
+        input.type = 'checkbox';
+        input.className = 'form-check-input d-block';
+        input.checked = cfg[f.key] === true || cfg[f.key] === 'true';
+      } else if (f.type === 'select') {
+        input = document.createElement('select');
+        input.className = 'form-control';
+        (f.options || []).forEach(function (o) {
+          var op = document.createElement('option');
+          op.value = o; op.textContent = o;
+          if (cfg[f.key] === o) op.selected = true;
+          input.appendChild(op);
+        });
+      } else {
+        input = document.createElement('input');
+        input.className = 'form-control';
+        input.type = f.type === 'number' ? 'number' : (f.type === 'password' ? 'password' : 'text');
+        if (f.placeholder) input.placeholder = f.placeholder;
+        if (cfg[f.key] !== undefined) input.value = cfg[f.key];
+      }
+      input.dataset.key = f.key;
+      wrap.appendChild(input);
+      if (f.help) { var h = document.createElement('small'); h.className = 'text-muted d-block'; h.textContent = f.help; wrap.appendChild(h); }
+      fieldsEl.appendChild(wrap);
+    });
+  }
+  fieldsEl.addEventListener('input', sync);
+  fieldsEl.addEventListener('change', sync);
+  manifestEl.addEventListener('input', render);
+  render();
+})();
+</script>
+</body></html>

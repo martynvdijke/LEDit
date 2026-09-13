@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"net/url"
 	"os/exec"
+	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -78,6 +80,125 @@ type PluginInfo struct {
 	Target    string
 	Enabled   bool
 	TimeoutMs int
+}
+
+// PluginField is one config input declared by a plugin manifest.
+type PluginField struct {
+	Key         string   `json:"key"`
+	Label       string   `json:"label"`
+	Type        string   `json:"type"` // text|password|number|bool|select
+	Required    bool     `json:"required"`
+	Default     string   `json:"default"`
+	Options     []string `json:"options,omitempty"`
+	Placeholder string   `json:"placeholder,omitempty"`
+	Help        string   `json:"help,omitempty"`
+}
+
+// PluginManifest is the optional self-description stored on a plugin row.
+type PluginManifest struct {
+	Name        string        `json:"name"`
+	Version     string        `json:"version"`
+	Description string        `json:"description"`
+	Author      string        `json:"author"`
+	Kind        string        `json:"kind"`
+	Target      string        `json:"target"`
+	TimeoutMs   int           `json:"timeout_ms"`
+	Fields      []PluginField `json:"fields"`
+}
+
+// PluginFieldTypes is the set of config field types a manifest may declare.
+var PluginFieldTypes = map[string]bool{
+	"text": true, "password": true, "number": true, "bool": true, "select": true,
+}
+
+// ParsePluginManifest parses a manifest JSON string. Empty input returns (nil, nil).
+// Unknown fields are rejected so a typo does not silently drop a declaration.
+func ParsePluginManifest(raw string) (*PluginManifest, error) {
+	if strings.TrimSpace(raw) == "" {
+		return nil, nil
+	}
+	var m PluginManifest
+	if err := strictDecode([]byte(raw), &m); err != nil {
+		return nil, fmt.Errorf("invalid manifest: %w", err)
+	}
+	seen := map[string]bool{}
+	for i, f := range m.Fields {
+		if strings.TrimSpace(f.Key) == "" {
+			return nil, fmt.Errorf("manifest field %d has empty key", i)
+		}
+		if seen[f.Key] {
+			return nil, fmt.Errorf("manifest field %q is duplicated", f.Key)
+		}
+		seen[f.Key] = true
+		if !PluginFieldTypes[f.Type] {
+			return nil, fmt.Errorf("manifest field %q has unknown type %q", f.Key, f.Type)
+		}
+		if f.Type == "select" && len(f.Options) == 0 {
+			return nil, fmt.Errorf("manifest field %q is a select with no options", f.Key)
+		}
+	}
+	return &m, nil
+}
+
+// ValidatePluginConfig checks a raw JSON config object against a manifest. A nil
+// manifest (or one with no fields) accepts any JSON object; field-level rules
+// apply otherwise. Unknown keys are tolerated so a manifest can evolve.
+func ValidatePluginConfig(m *PluginManifest, raw json.RawMessage) error {
+	if len(bytes.TrimSpace(raw)) == 0 {
+		raw = json.RawMessage(`{}`)
+	}
+	var obj map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &obj); err != nil {
+		return fmt.Errorf("config must be a JSON object: %w", err)
+	}
+	if m == nil {
+		return nil
+	}
+	for _, f := range m.Fields {
+		v, ok := obj[f.Key]
+		if !ok || len(bytes.TrimSpace(v)) == 0 {
+			if f.Required {
+				return fmt.Errorf("config field %q is required", f.Key)
+			}
+			continue
+		}
+		var s string
+		if err := json.Unmarshal(v, &s); err == nil {
+			if f.Required && strings.TrimSpace(s) == "" {
+				return fmt.Errorf("config field %q is required", f.Key)
+			}
+			switch f.Type {
+			case "number":
+				if _, err := strconv.ParseFloat(strings.TrimSpace(s), 64); err != nil {
+					return fmt.Errorf("config field %q must be a number", f.Key)
+				}
+			case "bool":
+				if s != "true" && s != "false" {
+					return fmt.Errorf("config field %q must be a boolean", f.Key)
+				}
+			case "select":
+				if !slices.Contains(f.Options, s) {
+					return fmt.Errorf("config field %q must be one of %s", f.Key, strings.Join(f.Options, ", "))
+				}
+			}
+			continue
+		}
+		switch f.Type {
+		case "number":
+			var n float64
+			if err := json.Unmarshal(v, &n); err != nil {
+				return fmt.Errorf("config field %q must be a number", f.Key)
+			}
+		case "bool":
+			var b bool
+			if err := json.Unmarshal(v, &b); err != nil {
+				return fmt.Errorf("config field %q must be a boolean", f.Key)
+			}
+		case "select":
+			return fmt.Errorf("config field %q must be one of %s", f.Key, strings.Join(f.Options, ", "))
+		}
+	}
+	return nil
 }
 
 // pluginHealthEntry tracks last invocation.
@@ -395,6 +516,9 @@ type PluginSource struct {
 	Width    int
 	Height   int
 	DeviceID int
+	// Info, when set (and Fetcher nil), lets the adapter invoke the plugin
+	// directly on the production path.
+	Info *PluginInfo
 	// Fetcher allows injection for tests.
 	Fetcher func(ctx context.Context, id int, req PluginRequest) (*PluginResponse, transportResult, error)
 }
@@ -423,6 +547,16 @@ func (p *PluginSource) GetPNGWithContext(ctx context.Context, width, height int)
 		if err != nil {
 			return nil, err
 		}
+		if tr.err != nil {
+			return nil, tr.err
+		}
+	} else if p.Info != nil {
+		resp, tr = InvokePlugin(ctx, *p.Info, req)
+		errStr := ""
+		if tr.err != nil {
+			errStr = tr.err.Error()
+		}
+		RecordPluginHealth(p.PluginID, p.Info.Enabled, tr.latency, tr.exitCode, errStr, tr.stderr)
 		if tr.err != nil {
 			return nil, tr.err
 		}

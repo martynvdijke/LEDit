@@ -188,6 +188,8 @@ func datasourceConfigSig(d datasource.Datasource) string {
 	case *datasource.TransitDS:
 		return cfgSig(v.Token, v.URL, v.Provider, strconv.Itoa(v.MaxDepartures), v.RouteFilter,
 			strconv.Itoa(v.WalkTimeMin), v.Timezone, v.TimeMode)
+	case *datasource.PluginSource:
+		return cfgSig(strconv.Itoa(v.PluginID), string(v.Config))
 	default:
 		return ""
 	}

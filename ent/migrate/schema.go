@@ -225,6 +225,8 @@ var (
 		{Name: "target", Type: field.TypeString},
 		{Name: "enabled", Type: field.TypeBool, Default: false},
 		{Name: "timeout_ms", Type: field.TypeInt, Default: 3000},
+		{Name: "manifest", Type: field.TypeString, Size: 2147483647, Default: ""},
+		{Name: "config", Type: field.TypeString, Size: 2147483647, Default: "{}"},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// DatasourcePluginsTable holds the schema information for the "datasource_plugins" table.

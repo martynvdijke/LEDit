@@ -24,6 +24,10 @@ const (
 	FieldEnabled = "enabled"
 	// FieldTimeoutMs holds the string denoting the timeout_ms field in the database.
 	FieldTimeoutMs = "timeout_ms"
+	// FieldManifest holds the string denoting the manifest field in the database.
+	FieldManifest = "manifest"
+	// FieldConfig holds the string denoting the config field in the database.
+	FieldConfig = "config"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// Table holds the table name of the datasourceplugin in the database.
@@ -38,6 +42,8 @@ var Columns = []string{
 	FieldTarget,
 	FieldEnabled,
 	FieldTimeoutMs,
+	FieldManifest,
+	FieldConfig,
 	FieldCreatedAt,
 }
 
@@ -58,6 +64,10 @@ var (
 	DefaultTimeoutMs int
 	// TimeoutMsValidator is a validator for the "timeout_ms" field. It is called by the builders before save.
 	TimeoutMsValidator func(int) error
+	// DefaultManifest holds the default value on creation for the "manifest" field.
+	DefaultManifest string
+	// DefaultConfig holds the default value on creation for the "config" field.
+	DefaultConfig string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 )
@@ -116,6 +126,16 @@ func ByEnabled(opts ...sql.OrderTermOption) OrderOption {
 // ByTimeoutMs orders the results by the timeout_ms field.
 func ByTimeoutMs(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimeoutMs, opts...).ToFunc()
+}
+
+// ByManifest orders the results by the manifest field.
+func ByManifest(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldManifest, opts...).ToFunc()
+}
+
+// ByConfig orders the results by the config field.
+func ByConfig(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConfig, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

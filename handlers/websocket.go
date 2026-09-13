@@ -254,6 +254,14 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 	sources = append(sources, sourceWithName{Name: "Now Playing", Source: &datasource.AudioNowPlayingDS{}, cacheKey: "audio:0"})
 	sources = append(sources, sourceWithName{Name: "Audio Visualizer", Source: &datasource.VisualizerDS{Mode: "bars"}, cacheKey: "audio:1"})
 
+	// Enabled plugins render as "Plugin: <name>".
+	for _, p := range cachedPlugins() {
+		if !p.Enabled {
+			continue
+		}
+		sources = append(sources, sourceWithName{Name: "Plugin: " + p.Name, Source: pluginSource(p), cacheKey: fmt.Sprintf("plugin:%d", p.ID)})
+	}
+
 	// Enabled countdown timers stream as "Countdown: <name>".
 	countdowns, _ := settings.Edges.CountdownsOrErr()
 	for _, cd := range countdowns {

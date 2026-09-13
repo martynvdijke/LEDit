@@ -27,6 +27,10 @@ type DatasourcePlugin struct {
 	Enabled bool `json:"enabled,omitempty"`
 	// TimeoutMs holds the value of the "timeout_ms" field.
 	TimeoutMs int `json:"timeout_ms,omitempty"`
+	// Manifest holds the value of the "manifest" field.
+	Manifest string `json:"manifest,omitempty"`
+	// Config holds the value of the "config" field.
+	Config string `json:"config,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt    time.Time `json:"created_at,omitempty"`
 	selectValues sql.SelectValues
@@ -41,7 +45,7 @@ func (*DatasourcePlugin) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case datasourceplugin.FieldID, datasourceplugin.FieldTimeoutMs:
 			values[i] = new(sql.NullInt64)
-		case datasourceplugin.FieldName, datasourceplugin.FieldKind, datasourceplugin.FieldTarget:
+		case datasourceplugin.FieldName, datasourceplugin.FieldKind, datasourceplugin.FieldTarget, datasourceplugin.FieldManifest, datasourceplugin.FieldConfig:
 			values[i] = new(sql.NullString)
 		case datasourceplugin.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -95,6 +99,18 @@ func (_m *DatasourcePlugin) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field timeout_ms", values[i])
 			} else if value.Valid {
 				_m.TimeoutMs = int(value.Int64)
+			}
+		case datasourceplugin.FieldManifest:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field manifest", values[i])
+			} else if value.Valid {
+				_m.Manifest = value.String
+			}
+		case datasourceplugin.FieldConfig:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field config", values[i])
+			} else if value.Valid {
+				_m.Config = value.String
 			}
 		case datasourceplugin.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -152,6 +168,12 @@ func (_m *DatasourcePlugin) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("timeout_ms=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TimeoutMs))
+	builder.WriteString(", ")
+	builder.WriteString("manifest=")
+	builder.WriteString(_m.Manifest)
+	builder.WriteString(", ")
+	builder.WriteString("config=")
+	builder.WriteString(_m.Config)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

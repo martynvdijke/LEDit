@@ -18,6 +18,8 @@ func (DatasourcePlugin) Fields() []ent.Field {
 		field.String("target"),
 		field.Bool("enabled").Default(false),
 		field.Int("timeout_ms").Default(3000).Min(100).Max(60000),
+		field.Text("manifest").Default(""),
+		field.Text("config").Default("{}"),
 		field.Time("created_at").Default(time.Now).Immutable(),
 	}
 }
