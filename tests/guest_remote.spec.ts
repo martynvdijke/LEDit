@@ -55,6 +55,37 @@ test.describe('Guest remote', () => {
     await expect(page.locator('#notice')).toContainText(/invalid|authorised/i);
     await expect(page.locator('#btn-pause')).toBeDisabled();
   });
+
+  test('mirror shows live frames and gestures drive the wall', async ({ page, request }) => {
+    const created = await createGuestToken(request, 'E2E mirror');
+    await page.goto(`/remote#${created.secret}`);
+    await expect(page.locator('#paused-state')).toHaveText(/Playing|Paused/);
+
+    // The mirror connects to the public wall feed and renders frames.
+    await expect(page.locator('#mirror-status')).toHaveText('Live', { timeout: 10000 });
+    await expect(page.locator('#wall-mirror')).toHaveAttribute(
+      'src',
+      /^data:image\/png;base64,/,
+      { timeout: 10000 },
+    );
+    await expect(page.locator('#mirror-source')).not.toHaveText('--');
+
+    // Tap the mirror to pause, tap again to resume.
+    await page.locator('#mirror-frame').click();
+    await expect(page.locator('#paused-state')).toHaveText('Paused');
+    await page.locator('#mirror-frame').click();
+    await expect(page.locator('#paused-state')).toHaveText('Playing');
+
+    // Horizontal swipe advances the feed.
+    const box = await page.locator('#mirror-frame').boundingBox();
+    if (!box) throw new Error('mirror frame not visible');
+    const midY = box.y + box.height / 2;
+    await page.mouse.move(box.x + box.width / 2, midY);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 100, midY, { steps: 5 });
+    await page.mouse.up();
+    await expect(page.locator('#notice')).toContainText('Done');
+  });
 });
 
 test.describe('Guest remote on a phone viewport', () => {

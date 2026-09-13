@@ -52,12 +52,50 @@
         .notice { min-height: 1.3rem; margin: 12px 0 0; font-size: 0.92rem; }
         .notice.error { color: #ff9a9a; }
         .notice.ok { color: #8fe6b0; }
+        #mirror-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            margin: 0 0 16px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #0d1d15;
+            border: 1px solid #1f3a2c;
+            touch-action: pan-y;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #wall-mirror, #wall-video { width: 100%; height: 100%; object-fit: contain; display: block; }
+        #mirror-overlay {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 10px;
+            font-size: 0.82rem;
+            background: linear-gradient(transparent, rgba(8, 19, 13, 0.85));
+        }
+        #mirror-source { color: #8fe6b0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #mirror-status { color: #9fb5a8; white-space: nowrap; }
+        #mirror-frame.reconnecting #mirror-status { color: #ffd479; }
     </style>
 </head>
 <body>
     <main>
         <h1>LEDit Remote</h1>
         <p id="paused-state" aria-live="polite">Connecting…</p>
+
+        <div id="mirror-frame" role="img" aria-label="Live wall mirror">
+            <img id="wall-mirror" alt="" hidden>
+            <video id="wall-video" playsinline muted hidden></video>
+            <div id="mirror-overlay">
+                <span id="mirror-source">--</span>
+                <span id="mirror-status">Connecting…</span>
+            </div>
+        </div>
 
         <div class="grid">
             <button type="button" id="btn-pause">Pause</button>

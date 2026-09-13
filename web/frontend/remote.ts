@@ -31,6 +31,15 @@ const btnNext = document.getElementById('btn-next') as HTMLButtonElement | null;
 const messageForm = document.getElementById('message-form') as HTMLFormElement | null;
 const messageInput = document.getElementById('message-text') as HTMLInputElement | null;
 const btnMessage = document.getElementById('btn-message') as HTMLButtonElement | null;
+const mirrorFrame = document.getElementById('mirror-frame') as HTMLDivElement | null;
+const wallMirror = document.getElementById('wall-mirror') as HTMLImageElement | null;
+const wallVideo = document.getElementById('wall-video') as HTMLVideoElement | null;
+const mirrorSource = document.getElementById('mirror-source') as HTMLSpanElement | null;
+const mirrorStatus = document.getElementById('mirror-status') as HTMLSpanElement | null;
+
+// Last known control state, used to decide what a mirror tap should do.
+let currentScopes: Scope[] = [];
+let currentPaused = false;
 
 function setNotice(text: string, kind: 'ok' | 'error' | '') {
   if (!noticeEl) return;
@@ -59,6 +68,8 @@ async function api(path: string, method = 'GET', body?: unknown): Promise<Respon
 }
 
 function applyStatus(status: GuestStatus) {
+  currentScopes = status.scopes;
+  currentPaused = status.paused;
   if (pausedEl) {
     pausedEl.textContent = status.paused ? 'Paused' : 'Playing';
   }
@@ -128,6 +139,99 @@ async function action(path: string) {
     setNotice('Action failed.', 'error');
   }
 }
+
+// --- Wall mirror ---------------------------------------------------------
+// The wall frames are already public at /ws/feed (the same feed the main page
+// renders), so the remote mirrors them directly with no guest auth. Only the
+// control commands below are scope-gated.
+
+interface FeedFrame {
+  format?: string;
+  image?: string;
+  source?: string;
+}
+
+let mirrorWS: WebSocket | null = null;
+let mirrorAttempts = 0;
+
+function setMirrorStatus(text: string, reconnecting = false) {
+  if (mirrorStatus) mirrorStatus.textContent = text;
+  mirrorFrame?.classList.toggle('reconnecting', reconnecting);
+}
+
+function showFrame(frame: FeedFrame) {
+  if (!frame.format || !frame.image) return;
+  if (mirrorSource && frame.source) mirrorSource.textContent = frame.source;
+  if (frame.format === 'MP4' && wallVideo && wallMirror) {
+    wallMirror.hidden = true;
+    wallVideo.hidden = false;
+    wallVideo.src = `data:video/mp4;base64,${frame.image}`;
+    void wallVideo.play().catch(() => {});
+    return;
+  }
+  if (wallMirror && wallVideo) {
+    wallVideo.hidden = true;
+    wallMirror.hidden = false;
+    wallMirror.src = `data:image/${frame.format.toLowerCase()};base64,${frame.image}`;
+  }
+}
+
+function connectMirror() {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  mirrorWS = new WebSocket(`${protocol}//${window.location.host}/ws/feed`);
+  mirrorWS.onopen = () => {
+    mirrorAttempts = 0;
+    setMirrorStatus('Live');
+  };
+  mirrorWS.onmessage = (event) => {
+    try {
+      showFrame(JSON.parse(event.data) as FeedFrame);
+    } catch {
+      /* ignore malformed frames */
+    }
+  };
+  mirrorWS.onclose = () => {
+    setMirrorStatus('Reconnecting…', true);
+    if (mirrorAttempts >= 5) {
+      setMirrorStatus('Offline', true);
+      return;
+    }
+    const delay = Math.min(1000 * 2 ** mirrorAttempts, 30000);
+    mirrorAttempts += 1;
+    setTimeout(connectMirror, delay);
+  };
+  mirrorWS.onerror = () => mirrorWS?.close();
+}
+
+// --- Gestures ------------------------------------------------------------
+// Tap toggles pause/resume; a horizontal swipe advances. Both reuse action()
+// so scope gating, 401/429 handling and rate limits stay identical to buttons.
+
+let gestureStart: { x: number; y: number; t: number } | null = null;
+
+mirrorFrame?.addEventListener('pointerdown', (event) => {
+  gestureStart = { x: event.clientX, y: event.clientY, t: Date.now() };
+});
+
+mirrorFrame?.addEventListener('pointerup', (event) => {
+  if (!gestureStart) return;
+  const dx = event.clientX - gestureStart.x;
+  const dy = event.clientY - gestureStart.y;
+  const elapsed = Date.now() - gestureStart.t;
+  gestureStart = null;
+
+  if (Math.abs(dx) >= 40 && Math.abs(dx) > Math.abs(dy)) {
+    if (currentScopes.includes('next')) void action('/api/guest/next');
+    return;
+  }
+  if (elapsed <= 250 && Math.abs(dx) <= 10 && Math.abs(dy) <= 10) {
+    if (currentScopes.includes('pause')) {
+      void action(currentPaused ? '/api/guest/resume' : '/api/guest/pause');
+    }
+  }
+});
+
+connectMirror();
 
 btnPause?.addEventListener('click', () => void action('/api/guest/pause'));
 btnResume?.addEventListener('click', () => void action('/api/guest/resume'));
