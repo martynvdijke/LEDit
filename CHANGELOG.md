@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/martynvdijke/LEDit/compare/v1.41.0...v1.42.0) (2026-09-13)
+
+
+### Features
+
+* deliver messages across trmnl, mqtt and webhook ([6f3a10f](https://github.com/martynvdijke/LEDit/commit/6f3a10f7cb00e5b1f0e0c5991ceb30b6141cf104))
+
 # [1.41.0](https://github.com/martynvdijke/LEDit/compare/v1.40.0...v1.41.0) (2026-09-13)
 
 
