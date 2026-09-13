@@ -82,6 +82,20 @@ type feedConn struct {
 	cacheKeyPrefix string // e.g. "device:<id>:" — "" keeps legacy cache keys
 	deviceID       int
 	frames         func() // optional per-frame hook (device frame counter); nil for browser/preview
+	overlay        render.OverlaySpec
+}
+
+// overlaySpecForDevice maps persisted device columns to the render overlay spec.
+func overlaySpecForDevice(d *ent.DeviceSettings) render.OverlaySpec {
+	return render.OverlaySpec{
+		Enabled:    d.OverlayEnabled,
+		Position:   d.OverlayPosition,
+		Height:     d.OverlayHeight,
+		Text:       d.OverlayText,
+		SpeedPx:    d.OverlaySpeedPx,
+		Background: d.OverlayBg,
+		Foreground: d.OverlayFg,
+	}
 }
 
 func splitCacheKey(k string) []string { return strings.SplitN(k, ":", 2) }
@@ -788,6 +802,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 	defer unregisterDeviceFeed(device.ID)
 	serveFeed(conn, feedConn{
 		deviceID: device.ID,
+		overlay:  overlaySpecForDevice(device),
 		frames: func() {
 			if err := h.Client.DeviceSettings.UpdateOneID(device.ID).AddFramesServed(1).Exec(context.Background()); err != nil {
 				slog.Warn("failed to increment device frames_served", "device", device.Name, "error", err)
@@ -865,7 +880,7 @@ func (h *WSHub) HandleDevicePreviewWS(c *gin.Context) {
 
 	// Each preview gets its own feed controller: pause/skip/next in the
 	// preview tab only affects that tab, never the physical device.
-	serveFeed(conn, feedConn{cacheKeyPrefix: fmt.Sprintf("device:%d:", id), deviceID: id}, sources, randomFlag, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs, nil)
+	serveFeed(conn, feedConn{cacheKeyPrefix: fmt.Sprintf("device:%d:", id), deviceID: id, overlay: overlaySpecForDevice(device)}, sources, randomFlag, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs, nil)
 }
 
 // brightnessProvider seam for tests.
@@ -965,6 +980,21 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			return brightnessProviderForTest()
 		}
 		return 100
+	}
+	// Overlay compositing happens at send time only, after the LKG cache lookup,
+	// so the cached content frame stays overlay-free and all devices sharing a
+	// cache key still get their own strip. Skipped for transition ramp and
+	// notification frames (v1).
+	applyOverlay := func(data []byte) []byte {
+		if !fc.overlay.Enabled {
+			return data
+		}
+		out, err := render.CompositeOverlayPNG(data, fc.overlay, time.Now())
+		if err != nil {
+			slog.Warn("overlay composite failed, sending raw frame", "device", fc.deviceID, "error", err)
+			return data
+		}
+		return out
 	}
 	// Timelapse per-connection rate-limit state.
 	var tlLastCapture time.Time
@@ -1147,7 +1177,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				}
 			}
 
-			finalData := img.Data
+			finalData := applyOverlay(img.Data)
 			if lvl != 100 {
 				finalData = dimPNGBytes(finalData, lvl)
 			}
@@ -1239,7 +1269,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 								Health.RecordSuccess(fmt.Sprintf("device:%d", fc.deviceID), 0)
 							}
 							lvl2 := getLevel()
-							d2 := rendered.Data
+							d2 := applyOverlay(rendered.Data)
 							if lvl2 != 100 {
 								d2 = dimPNGBytes(d2, lvl2)
 							}

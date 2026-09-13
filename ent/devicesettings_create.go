@@ -329,6 +329,104 @@ func (_c *DeviceSettingsCreate) SetNillableGroupID(v *int) *DeviceSettingsCreate
 	return _c
 }
 
+// SetOverlayEnabled sets the "overlay_enabled" field.
+func (_c *DeviceSettingsCreate) SetOverlayEnabled(v bool) *DeviceSettingsCreate {
+	_c.mutation.SetOverlayEnabled(v)
+	return _c
+}
+
+// SetNillableOverlayEnabled sets the "overlay_enabled" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableOverlayEnabled(v *bool) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetOverlayEnabled(*v)
+	}
+	return _c
+}
+
+// SetOverlayPosition sets the "overlay_position" field.
+func (_c *DeviceSettingsCreate) SetOverlayPosition(v string) *DeviceSettingsCreate {
+	_c.mutation.SetOverlayPosition(v)
+	return _c
+}
+
+// SetNillableOverlayPosition sets the "overlay_position" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableOverlayPosition(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetOverlayPosition(*v)
+	}
+	return _c
+}
+
+// SetOverlayHeight sets the "overlay_height" field.
+func (_c *DeviceSettingsCreate) SetOverlayHeight(v int) *DeviceSettingsCreate {
+	_c.mutation.SetOverlayHeight(v)
+	return _c
+}
+
+// SetNillableOverlayHeight sets the "overlay_height" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableOverlayHeight(v *int) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetOverlayHeight(*v)
+	}
+	return _c
+}
+
+// SetOverlayText sets the "overlay_text" field.
+func (_c *DeviceSettingsCreate) SetOverlayText(v string) *DeviceSettingsCreate {
+	_c.mutation.SetOverlayText(v)
+	return _c
+}
+
+// SetNillableOverlayText sets the "overlay_text" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableOverlayText(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetOverlayText(*v)
+	}
+	return _c
+}
+
+// SetOverlaySpeedPx sets the "overlay_speed_px" field.
+func (_c *DeviceSettingsCreate) SetOverlaySpeedPx(v int) *DeviceSettingsCreate {
+	_c.mutation.SetOverlaySpeedPx(v)
+	return _c
+}
+
+// SetNillableOverlaySpeedPx sets the "overlay_speed_px" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableOverlaySpeedPx(v *int) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetOverlaySpeedPx(*v)
+	}
+	return _c
+}
+
+// SetOverlayBg sets the "overlay_bg" field.
+func (_c *DeviceSettingsCreate) SetOverlayBg(v string) *DeviceSettingsCreate {
+	_c.mutation.SetOverlayBg(v)
+	return _c
+}
+
+// SetNillableOverlayBg sets the "overlay_bg" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableOverlayBg(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetOverlayBg(*v)
+	}
+	return _c
+}
+
+// SetOverlayFg sets the "overlay_fg" field.
+func (_c *DeviceSettingsCreate) SetOverlayFg(v string) *DeviceSettingsCreate {
+	_c.mutation.SetOverlayFg(v)
+	return _c
+}
+
+// SetNillableOverlayFg sets the "overlay_fg" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableOverlayFg(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetOverlayFg(*v)
+	}
+	return _c
+}
+
 // SetGroup sets the "group" edge to the DeviceGroup entity.
 func (_c *DeviceSettingsCreate) SetGroup(v *DeviceGroup) *DeviceSettingsCreate {
 	return _c.SetGroupID(v.ID)
@@ -429,6 +527,34 @@ func (_c *DeviceSettingsCreate) defaults() {
 		v := devicesettings.DefaultBrightnessSchedules
 		_c.mutation.SetBrightnessSchedules(v)
 	}
+	if _, ok := _c.mutation.OverlayEnabled(); !ok {
+		v := devicesettings.DefaultOverlayEnabled
+		_c.mutation.SetOverlayEnabled(v)
+	}
+	if _, ok := _c.mutation.OverlayPosition(); !ok {
+		v := devicesettings.DefaultOverlayPosition
+		_c.mutation.SetOverlayPosition(v)
+	}
+	if _, ok := _c.mutation.OverlayHeight(); !ok {
+		v := devicesettings.DefaultOverlayHeight
+		_c.mutation.SetOverlayHeight(v)
+	}
+	if _, ok := _c.mutation.OverlayText(); !ok {
+		v := devicesettings.DefaultOverlayText
+		_c.mutation.SetOverlayText(v)
+	}
+	if _, ok := _c.mutation.OverlaySpeedPx(); !ok {
+		v := devicesettings.DefaultOverlaySpeedPx
+		_c.mutation.SetOverlaySpeedPx(v)
+	}
+	if _, ok := _c.mutation.OverlayBg(); !ok {
+		v := devicesettings.DefaultOverlayBg
+		_c.mutation.SetOverlayBg(v)
+	}
+	if _, ok := _c.mutation.OverlayFg(); !ok {
+		v := devicesettings.DefaultOverlayFg
+		_c.mutation.SetOverlayFg(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -487,6 +613,32 @@ func (_c *DeviceSettingsCreate) check() error {
 		if err := devicesettings.IdleScreensaverValidator(v); err != nil {
 			return &ValidationError{Name: "idle_screensaver", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.idle_screensaver": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.OverlayEnabled(); !ok {
+		return &ValidationError{Name: "overlay_enabled", err: errors.New(`ent: missing required field "DeviceSettings.overlay_enabled"`)}
+	}
+	if _, ok := _c.mutation.OverlayPosition(); !ok {
+		return &ValidationError{Name: "overlay_position", err: errors.New(`ent: missing required field "DeviceSettings.overlay_position"`)}
+	}
+	if v, ok := _c.mutation.OverlayPosition(); ok {
+		if err := devicesettings.OverlayPositionValidator(v); err != nil {
+			return &ValidationError{Name: "overlay_position", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.overlay_position": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.OverlayHeight(); !ok {
+		return &ValidationError{Name: "overlay_height", err: errors.New(`ent: missing required field "DeviceSettings.overlay_height"`)}
+	}
+	if _, ok := _c.mutation.OverlayText(); !ok {
+		return &ValidationError{Name: "overlay_text", err: errors.New(`ent: missing required field "DeviceSettings.overlay_text"`)}
+	}
+	if _, ok := _c.mutation.OverlaySpeedPx(); !ok {
+		return &ValidationError{Name: "overlay_speed_px", err: errors.New(`ent: missing required field "DeviceSettings.overlay_speed_px"`)}
+	}
+	if _, ok := _c.mutation.OverlayBg(); !ok {
+		return &ValidationError{Name: "overlay_bg", err: errors.New(`ent: missing required field "DeviceSettings.overlay_bg"`)}
+	}
+	if _, ok := _c.mutation.OverlayFg(); !ok {
+		return &ValidationError{Name: "overlay_fg", err: errors.New(`ent: missing required field "DeviceSettings.overlay_fg"`)}
 	}
 	return nil
 }
@@ -597,6 +749,34 @@ func (_c *DeviceSettingsCreate) createSpec() (*DeviceSettings, *sqlgraph.CreateS
 	if value, ok := _c.mutation.IdleScreensaver(); ok {
 		_spec.SetField(devicesettings.FieldIdleScreensaver, field.TypeString, value)
 		_node.IdleScreensaver = &value
+	}
+	if value, ok := _c.mutation.OverlayEnabled(); ok {
+		_spec.SetField(devicesettings.FieldOverlayEnabled, field.TypeBool, value)
+		_node.OverlayEnabled = value
+	}
+	if value, ok := _c.mutation.OverlayPosition(); ok {
+		_spec.SetField(devicesettings.FieldOverlayPosition, field.TypeString, value)
+		_node.OverlayPosition = value
+	}
+	if value, ok := _c.mutation.OverlayHeight(); ok {
+		_spec.SetField(devicesettings.FieldOverlayHeight, field.TypeInt, value)
+		_node.OverlayHeight = value
+	}
+	if value, ok := _c.mutation.OverlayText(); ok {
+		_spec.SetField(devicesettings.FieldOverlayText, field.TypeString, value)
+		_node.OverlayText = value
+	}
+	if value, ok := _c.mutation.OverlaySpeedPx(); ok {
+		_spec.SetField(devicesettings.FieldOverlaySpeedPx, field.TypeInt, value)
+		_node.OverlaySpeedPx = value
+	}
+	if value, ok := _c.mutation.OverlayBg(); ok {
+		_spec.SetField(devicesettings.FieldOverlayBg, field.TypeString, value)
+		_node.OverlayBg = value
+	}
+	if value, ok := _c.mutation.OverlayFg(); ok {
+		_spec.SetField(devicesettings.FieldOverlayFg, field.TypeString, value)
+		_node.OverlayFg = value
 	}
 	if nodes := _c.mutation.GroupIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

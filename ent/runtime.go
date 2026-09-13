@@ -330,6 +330,36 @@ func init() {
 	devicesettingsDescIdleScreensaver := devicesettingsFields[20].Descriptor()
 	// devicesettings.IdleScreensaverValidator is a validator for the "idle_screensaver" field. It is called by the builders before save.
 	devicesettings.IdleScreensaverValidator = devicesettingsDescIdleScreensaver.Validators[0].(func(string) error)
+	// devicesettingsDescOverlayEnabled is the schema descriptor for overlay_enabled field.
+	devicesettingsDescOverlayEnabled := devicesettingsFields[22].Descriptor()
+	// devicesettings.DefaultOverlayEnabled holds the default value on creation for the overlay_enabled field.
+	devicesettings.DefaultOverlayEnabled = devicesettingsDescOverlayEnabled.Default.(bool)
+	// devicesettingsDescOverlayPosition is the schema descriptor for overlay_position field.
+	devicesettingsDescOverlayPosition := devicesettingsFields[23].Descriptor()
+	// devicesettings.DefaultOverlayPosition holds the default value on creation for the overlay_position field.
+	devicesettings.DefaultOverlayPosition = devicesettingsDescOverlayPosition.Default.(string)
+	// devicesettings.OverlayPositionValidator is a validator for the "overlay_position" field. It is called by the builders before save.
+	devicesettings.OverlayPositionValidator = devicesettingsDescOverlayPosition.Validators[0].(func(string) error)
+	// devicesettingsDescOverlayHeight is the schema descriptor for overlay_height field.
+	devicesettingsDescOverlayHeight := devicesettingsFields[24].Descriptor()
+	// devicesettings.DefaultOverlayHeight holds the default value on creation for the overlay_height field.
+	devicesettings.DefaultOverlayHeight = devicesettingsDescOverlayHeight.Default.(int)
+	// devicesettingsDescOverlayText is the schema descriptor for overlay_text field.
+	devicesettingsDescOverlayText := devicesettingsFields[25].Descriptor()
+	// devicesettings.DefaultOverlayText holds the default value on creation for the overlay_text field.
+	devicesettings.DefaultOverlayText = devicesettingsDescOverlayText.Default.(string)
+	// devicesettingsDescOverlaySpeedPx is the schema descriptor for overlay_speed_px field.
+	devicesettingsDescOverlaySpeedPx := devicesettingsFields[26].Descriptor()
+	// devicesettings.DefaultOverlaySpeedPx holds the default value on creation for the overlay_speed_px field.
+	devicesettings.DefaultOverlaySpeedPx = devicesettingsDescOverlaySpeedPx.Default.(int)
+	// devicesettingsDescOverlayBg is the schema descriptor for overlay_bg field.
+	devicesettingsDescOverlayBg := devicesettingsFields[27].Descriptor()
+	// devicesettings.DefaultOverlayBg holds the default value on creation for the overlay_bg field.
+	devicesettings.DefaultOverlayBg = devicesettingsDescOverlayBg.Default.(string)
+	// devicesettingsDescOverlayFg is the schema descriptor for overlay_fg field.
+	devicesettingsDescOverlayFg := devicesettingsFields[28].Descriptor()
+	// devicesettings.DefaultOverlayFg holds the default value on creation for the overlay_fg field.
+	devicesettings.DefaultOverlayFg = devicesettingsDescOverlayFg.Default.(string)
 	displayruleFields := schema.DisplayRule{}.Fields()
 	_ = displayruleFields
 	// displayruleDescName is the schema descriptor for name field.

@@ -56,6 +56,20 @@ const (
 	FieldIdleScreensaver = "idle_screensaver"
 	// FieldGroupID holds the string denoting the group_id field in the database.
 	FieldGroupID = "group_id"
+	// FieldOverlayEnabled holds the string denoting the overlay_enabled field in the database.
+	FieldOverlayEnabled = "overlay_enabled"
+	// FieldOverlayPosition holds the string denoting the overlay_position field in the database.
+	FieldOverlayPosition = "overlay_position"
+	// FieldOverlayHeight holds the string denoting the overlay_height field in the database.
+	FieldOverlayHeight = "overlay_height"
+	// FieldOverlayText holds the string denoting the overlay_text field in the database.
+	FieldOverlayText = "overlay_text"
+	// FieldOverlaySpeedPx holds the string denoting the overlay_speed_px field in the database.
+	FieldOverlaySpeedPx = "overlay_speed_px"
+	// FieldOverlayBg holds the string denoting the overlay_bg field in the database.
+	FieldOverlayBg = "overlay_bg"
+	// FieldOverlayFg holds the string denoting the overlay_fg field in the database.
+	FieldOverlayFg = "overlay_fg"
 	// EdgeGroup holds the string denoting the group edge name in mutations.
 	EdgeGroup = "group"
 	// Table holds the table name of the devicesettings in the database.
@@ -94,6 +108,13 @@ var Columns = []string{
 	FieldBrightnessSensorConfig,
 	FieldIdleScreensaver,
 	FieldGroupID,
+	FieldOverlayEnabled,
+	FieldOverlayPosition,
+	FieldOverlayHeight,
+	FieldOverlayText,
+	FieldOverlaySpeedPx,
+	FieldOverlayBg,
+	FieldOverlayFg,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "device_settings"
@@ -152,6 +173,22 @@ var (
 	DefaultBrightnessSchedules string
 	// IdleScreensaverValidator is a validator for the "idle_screensaver" field. It is called by the builders before save.
 	IdleScreensaverValidator func(string) error
+	// DefaultOverlayEnabled holds the default value on creation for the "overlay_enabled" field.
+	DefaultOverlayEnabled bool
+	// DefaultOverlayPosition holds the default value on creation for the "overlay_position" field.
+	DefaultOverlayPosition string
+	// OverlayPositionValidator is a validator for the "overlay_position" field. It is called by the builders before save.
+	OverlayPositionValidator func(string) error
+	// DefaultOverlayHeight holds the default value on creation for the "overlay_height" field.
+	DefaultOverlayHeight int
+	// DefaultOverlayText holds the default value on creation for the "overlay_text" field.
+	DefaultOverlayText string
+	// DefaultOverlaySpeedPx holds the default value on creation for the "overlay_speed_px" field.
+	DefaultOverlaySpeedPx int
+	// DefaultOverlayBg holds the default value on creation for the "overlay_bg" field.
+	DefaultOverlayBg string
+	// DefaultOverlayFg holds the default value on creation for the "overlay_fg" field.
+	DefaultOverlayFg string
 )
 
 // OrderOption defines the ordering options for the DeviceSettings queries.
@@ -270,6 +307,41 @@ func ByIdleScreensaver(opts ...sql.OrderTermOption) OrderOption {
 // ByGroupID orders the results by the group_id field.
 func ByGroupID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldGroupID, opts...).ToFunc()
+}
+
+// ByOverlayEnabled orders the results by the overlay_enabled field.
+func ByOverlayEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayEnabled, opts...).ToFunc()
+}
+
+// ByOverlayPosition orders the results by the overlay_position field.
+func ByOverlayPosition(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayPosition, opts...).ToFunc()
+}
+
+// ByOverlayHeight orders the results by the overlay_height field.
+func ByOverlayHeight(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayHeight, opts...).ToFunc()
+}
+
+// ByOverlayText orders the results by the overlay_text field.
+func ByOverlayText(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayText, opts...).ToFunc()
+}
+
+// ByOverlaySpeedPx orders the results by the overlay_speed_px field.
+func ByOverlaySpeedPx(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlaySpeedPx, opts...).ToFunc()
+}
+
+// ByOverlayBg orders the results by the overlay_bg field.
+func ByOverlayBg(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayBg, opts...).ToFunc()
+}
+
+// ByOverlayFg orders the results by the overlay_fg field.
+func ByOverlayFg(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayFg, opts...).ToFunc()
 }
 
 // ByGroupField orders the results by group field.

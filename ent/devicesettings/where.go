@@ -165,6 +165,41 @@ func GroupID(v int) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldGroupID, v))
 }
 
+// OverlayEnabled applies equality check predicate on the "overlay_enabled" field. It's identical to OverlayEnabledEQ.
+func OverlayEnabled(v bool) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayEnabled, v))
+}
+
+// OverlayPosition applies equality check predicate on the "overlay_position" field. It's identical to OverlayPositionEQ.
+func OverlayPosition(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayPosition, v))
+}
+
+// OverlayHeight applies equality check predicate on the "overlay_height" field. It's identical to OverlayHeightEQ.
+func OverlayHeight(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayHeight, v))
+}
+
+// OverlayText applies equality check predicate on the "overlay_text" field. It's identical to OverlayTextEQ.
+func OverlayText(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayText, v))
+}
+
+// OverlaySpeedPx applies equality check predicate on the "overlay_speed_px" field. It's identical to OverlaySpeedPxEQ.
+func OverlaySpeedPx(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlaySpeedPx, v))
+}
+
+// OverlayBg applies equality check predicate on the "overlay_bg" field. It's identical to OverlayBgEQ.
+func OverlayBg(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayBg, v))
+}
+
+// OverlayFg applies equality check predicate on the "overlay_fg" field. It's identical to OverlayFgEQ.
+func OverlayFg(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayFg, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldName, v))
@@ -1283,6 +1318,356 @@ func GroupIDIsNil() predicate.DeviceSettings {
 // GroupIDNotNil applies the NotNil predicate on the "group_id" field.
 func GroupIDNotNil() predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldNotNull(FieldGroupID))
+}
+
+// OverlayEnabledEQ applies the EQ predicate on the "overlay_enabled" field.
+func OverlayEnabledEQ(v bool) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayEnabled, v))
+}
+
+// OverlayEnabledNEQ applies the NEQ predicate on the "overlay_enabled" field.
+func OverlayEnabledNEQ(v bool) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOverlayEnabled, v))
+}
+
+// OverlayPositionEQ applies the EQ predicate on the "overlay_position" field.
+func OverlayPositionEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayPosition, v))
+}
+
+// OverlayPositionNEQ applies the NEQ predicate on the "overlay_position" field.
+func OverlayPositionNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOverlayPosition, v))
+}
+
+// OverlayPositionIn applies the In predicate on the "overlay_position" field.
+func OverlayPositionIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOverlayPosition, vs...))
+}
+
+// OverlayPositionNotIn applies the NotIn predicate on the "overlay_position" field.
+func OverlayPositionNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOverlayPosition, vs...))
+}
+
+// OverlayPositionGT applies the GT predicate on the "overlay_position" field.
+func OverlayPositionGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOverlayPosition, v))
+}
+
+// OverlayPositionGTE applies the GTE predicate on the "overlay_position" field.
+func OverlayPositionGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOverlayPosition, v))
+}
+
+// OverlayPositionLT applies the LT predicate on the "overlay_position" field.
+func OverlayPositionLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOverlayPosition, v))
+}
+
+// OverlayPositionLTE applies the LTE predicate on the "overlay_position" field.
+func OverlayPositionLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOverlayPosition, v))
+}
+
+// OverlayPositionContains applies the Contains predicate on the "overlay_position" field.
+func OverlayPositionContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldOverlayPosition, v))
+}
+
+// OverlayPositionHasPrefix applies the HasPrefix predicate on the "overlay_position" field.
+func OverlayPositionHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldOverlayPosition, v))
+}
+
+// OverlayPositionHasSuffix applies the HasSuffix predicate on the "overlay_position" field.
+func OverlayPositionHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldOverlayPosition, v))
+}
+
+// OverlayPositionEqualFold applies the EqualFold predicate on the "overlay_position" field.
+func OverlayPositionEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldOverlayPosition, v))
+}
+
+// OverlayPositionContainsFold applies the ContainsFold predicate on the "overlay_position" field.
+func OverlayPositionContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldOverlayPosition, v))
+}
+
+// OverlayHeightEQ applies the EQ predicate on the "overlay_height" field.
+func OverlayHeightEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayHeight, v))
+}
+
+// OverlayHeightNEQ applies the NEQ predicate on the "overlay_height" field.
+func OverlayHeightNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOverlayHeight, v))
+}
+
+// OverlayHeightIn applies the In predicate on the "overlay_height" field.
+func OverlayHeightIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOverlayHeight, vs...))
+}
+
+// OverlayHeightNotIn applies the NotIn predicate on the "overlay_height" field.
+func OverlayHeightNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOverlayHeight, vs...))
+}
+
+// OverlayHeightGT applies the GT predicate on the "overlay_height" field.
+func OverlayHeightGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOverlayHeight, v))
+}
+
+// OverlayHeightGTE applies the GTE predicate on the "overlay_height" field.
+func OverlayHeightGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOverlayHeight, v))
+}
+
+// OverlayHeightLT applies the LT predicate on the "overlay_height" field.
+func OverlayHeightLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOverlayHeight, v))
+}
+
+// OverlayHeightLTE applies the LTE predicate on the "overlay_height" field.
+func OverlayHeightLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOverlayHeight, v))
+}
+
+// OverlayTextEQ applies the EQ predicate on the "overlay_text" field.
+func OverlayTextEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayText, v))
+}
+
+// OverlayTextNEQ applies the NEQ predicate on the "overlay_text" field.
+func OverlayTextNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOverlayText, v))
+}
+
+// OverlayTextIn applies the In predicate on the "overlay_text" field.
+func OverlayTextIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOverlayText, vs...))
+}
+
+// OverlayTextNotIn applies the NotIn predicate on the "overlay_text" field.
+func OverlayTextNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOverlayText, vs...))
+}
+
+// OverlayTextGT applies the GT predicate on the "overlay_text" field.
+func OverlayTextGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOverlayText, v))
+}
+
+// OverlayTextGTE applies the GTE predicate on the "overlay_text" field.
+func OverlayTextGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOverlayText, v))
+}
+
+// OverlayTextLT applies the LT predicate on the "overlay_text" field.
+func OverlayTextLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOverlayText, v))
+}
+
+// OverlayTextLTE applies the LTE predicate on the "overlay_text" field.
+func OverlayTextLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOverlayText, v))
+}
+
+// OverlayTextContains applies the Contains predicate on the "overlay_text" field.
+func OverlayTextContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldOverlayText, v))
+}
+
+// OverlayTextHasPrefix applies the HasPrefix predicate on the "overlay_text" field.
+func OverlayTextHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldOverlayText, v))
+}
+
+// OverlayTextHasSuffix applies the HasSuffix predicate on the "overlay_text" field.
+func OverlayTextHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldOverlayText, v))
+}
+
+// OverlayTextEqualFold applies the EqualFold predicate on the "overlay_text" field.
+func OverlayTextEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldOverlayText, v))
+}
+
+// OverlayTextContainsFold applies the ContainsFold predicate on the "overlay_text" field.
+func OverlayTextContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldOverlayText, v))
+}
+
+// OverlaySpeedPxEQ applies the EQ predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlaySpeedPx, v))
+}
+
+// OverlaySpeedPxNEQ applies the NEQ predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOverlaySpeedPx, v))
+}
+
+// OverlaySpeedPxIn applies the In predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOverlaySpeedPx, vs...))
+}
+
+// OverlaySpeedPxNotIn applies the NotIn predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOverlaySpeedPx, vs...))
+}
+
+// OverlaySpeedPxGT applies the GT predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOverlaySpeedPx, v))
+}
+
+// OverlaySpeedPxGTE applies the GTE predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOverlaySpeedPx, v))
+}
+
+// OverlaySpeedPxLT applies the LT predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOverlaySpeedPx, v))
+}
+
+// OverlaySpeedPxLTE applies the LTE predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOverlaySpeedPx, v))
+}
+
+// OverlayBgEQ applies the EQ predicate on the "overlay_bg" field.
+func OverlayBgEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayBg, v))
+}
+
+// OverlayBgNEQ applies the NEQ predicate on the "overlay_bg" field.
+func OverlayBgNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOverlayBg, v))
+}
+
+// OverlayBgIn applies the In predicate on the "overlay_bg" field.
+func OverlayBgIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOverlayBg, vs...))
+}
+
+// OverlayBgNotIn applies the NotIn predicate on the "overlay_bg" field.
+func OverlayBgNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOverlayBg, vs...))
+}
+
+// OverlayBgGT applies the GT predicate on the "overlay_bg" field.
+func OverlayBgGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOverlayBg, v))
+}
+
+// OverlayBgGTE applies the GTE predicate on the "overlay_bg" field.
+func OverlayBgGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOverlayBg, v))
+}
+
+// OverlayBgLT applies the LT predicate on the "overlay_bg" field.
+func OverlayBgLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOverlayBg, v))
+}
+
+// OverlayBgLTE applies the LTE predicate on the "overlay_bg" field.
+func OverlayBgLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOverlayBg, v))
+}
+
+// OverlayBgContains applies the Contains predicate on the "overlay_bg" field.
+func OverlayBgContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldOverlayBg, v))
+}
+
+// OverlayBgHasPrefix applies the HasPrefix predicate on the "overlay_bg" field.
+func OverlayBgHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldOverlayBg, v))
+}
+
+// OverlayBgHasSuffix applies the HasSuffix predicate on the "overlay_bg" field.
+func OverlayBgHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldOverlayBg, v))
+}
+
+// OverlayBgEqualFold applies the EqualFold predicate on the "overlay_bg" field.
+func OverlayBgEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldOverlayBg, v))
+}
+
+// OverlayBgContainsFold applies the ContainsFold predicate on the "overlay_bg" field.
+func OverlayBgContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldOverlayBg, v))
+}
+
+// OverlayFgEQ applies the EQ predicate on the "overlay_fg" field.
+func OverlayFgEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayFg, v))
+}
+
+// OverlayFgNEQ applies the NEQ predicate on the "overlay_fg" field.
+func OverlayFgNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOverlayFg, v))
+}
+
+// OverlayFgIn applies the In predicate on the "overlay_fg" field.
+func OverlayFgIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOverlayFg, vs...))
+}
+
+// OverlayFgNotIn applies the NotIn predicate on the "overlay_fg" field.
+func OverlayFgNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOverlayFg, vs...))
+}
+
+// OverlayFgGT applies the GT predicate on the "overlay_fg" field.
+func OverlayFgGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOverlayFg, v))
+}
+
+// OverlayFgGTE applies the GTE predicate on the "overlay_fg" field.
+func OverlayFgGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOverlayFg, v))
+}
+
+// OverlayFgLT applies the LT predicate on the "overlay_fg" field.
+func OverlayFgLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOverlayFg, v))
+}
+
+// OverlayFgLTE applies the LTE predicate on the "overlay_fg" field.
+func OverlayFgLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOverlayFg, v))
+}
+
+// OverlayFgContains applies the Contains predicate on the "overlay_fg" field.
+func OverlayFgContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldOverlayFg, v))
+}
+
+// OverlayFgHasPrefix applies the HasPrefix predicate on the "overlay_fg" field.
+func OverlayFgHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldOverlayFg, v))
+}
+
+// OverlayFgHasSuffix applies the HasSuffix predicate on the "overlay_fg" field.
+func OverlayFgHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldOverlayFg, v))
+}
+
+// OverlayFgEqualFold applies the EqualFold predicate on the "overlay_fg" field.
+func OverlayFgEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldOverlayFg, v))
+}
+
+// OverlayFgContainsFold applies the ContainsFold predicate on the "overlay_fg" field.
+func OverlayFgContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldOverlayFg, v))
 }
 
 // HasGroup applies the HasEdge predicate on the "group" edge.

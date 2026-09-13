@@ -281,6 +281,13 @@ var (
 		{Name: "brightness_override", Type: field.TypeInt, Nullable: true},
 		{Name: "brightness_sensor_config", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "idle_screensaver", Type: field.TypeString, Nullable: true},
+		{Name: "overlay_enabled", Type: field.TypeBool, Default: false},
+		{Name: "overlay_position", Type: field.TypeString, Default: "bottom"},
+		{Name: "overlay_height", Type: field.TypeInt, Default: 8},
+		{Name: "overlay_text", Type: field.TypeString, Default: ""},
+		{Name: "overlay_speed_px", Type: field.TypeInt, Default: 0},
+		{Name: "overlay_bg", Type: field.TypeString, Default: "#000000"},
+		{Name: "overlay_fg", Type: field.TypeString, Default: "#ffffff"},
 		{Name: "group_id", Type: field.TypeInt, Nullable: true},
 		{Name: "general_settings_device_settings", Type: field.TypeInt, Nullable: true},
 	}
@@ -292,13 +299,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "device_settings_device_groups_devices",
-				Columns:    []*schema.Column{DeviceSettingsColumns[22]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[29]},
 				RefColumns: []*schema.Column{DeviceGroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "device_settings_general_settings_device_settings",
-				Columns:    []*schema.Column{DeviceSettingsColumns[23]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[30]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

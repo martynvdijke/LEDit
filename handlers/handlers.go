@@ -18,6 +18,7 @@ import (
 	"ledit/ent/devicesettings"
 	"ledit/ent/generalsettings"
 	"ledit/ent/playlist"
+	"ledit/render"
 )
 
 var pathToActive = map[string]string{
@@ -701,6 +702,38 @@ func (s *Server) AdminDeviceSettingsNew(c *gin.Context) {
 	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"playlists": playlists, "selectedPlaylistID": 0, "selectedScheduledIDs": []int{}, "selectedFallbackID": 0})
 }
 
+// parseOverlayForm reads and validates overlay_* form fields for a device of
+// the given height. Empty values fall back to the schema defaults.
+func parseOverlayForm(c *gin.Context, deviceHeight int) (render.OverlaySpec, error) {
+	h, _ := strconv.Atoi(c.PostForm("overlay_height"))
+	if h == 0 {
+		h = render.DefaultOverlaySpec().Height
+	}
+	speed, _ := strconv.Atoi(c.PostForm("overlay_speed_px"))
+	spec := render.OverlaySpec{
+		Enabled:    c.PostForm("overlay_enabled") == "on",
+		Position:   c.PostForm("overlay_position"),
+		Height:     h,
+		Text:       strings.TrimSpace(c.PostForm("overlay_text")),
+		SpeedPx:    speed,
+		Background: strings.TrimSpace(c.PostForm("overlay_bg")),
+		Foreground: strings.TrimSpace(c.PostForm("overlay_fg")),
+	}
+	if spec.Position == "" {
+		spec.Position = "bottom"
+	}
+	if spec.Background == "" {
+		spec.Background = "#000000"
+	}
+	if spec.Foreground == "" {
+		spec.Foreground = "#ffffff"
+	}
+	if err := render.ValidateOverlaySpec(spec, deviceHeight); err != nil {
+		return spec, err
+	}
+	return spec, nil
+}
+
 func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 	name := c.PostForm("name")
 	ip := c.PostForm("ip")
@@ -829,6 +862,13 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		return
 	}
 
+	overlay, err := parseOverlayForm(c, height)
+	if err != nil {
+		SetFlash(c, "danger", err.Error())
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+
 	builder := s.DB.DeviceSettings.Create().
 		SetName(name).SetIP(ip).SetPort(port).
 		SetUsername(username).SetPassword(password).
@@ -836,7 +876,14 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		SetToken(generateDeviceToken()).SetRefreshInterval(refreshInterval).
 		SetContentMode(contentMode).
 		SetBrightnessEnabled(brightnessEnabled).
-		SetBrightnessSchedules(brightnessSchedulesRaw)
+		SetBrightnessSchedules(brightnessSchedulesRaw).
+		SetOverlayEnabled(overlay.Enabled).
+		SetOverlayPosition(overlay.Position).
+		SetOverlayHeight(overlay.Height).
+		SetOverlayText(overlay.Text).
+		SetOverlaySpeedPx(overlay.SpeedPx).
+		SetOverlayBg(overlay.Background).
+		SetOverlayFg(overlay.Foreground)
 	if idleRaw != "" {
 		builder.SetIdleScreensaver(idleRaw)
 	}
@@ -1017,6 +1064,13 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		return
 	}
 
+	overlay, err := parseOverlayForm(c, height)
+	if err != nil {
+		SetFlash(c, "danger", err.Error())
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+
 	upd := s.DB.DeviceSettings.UpdateOneID(id).
 		SetName(name).SetIP(ip).SetPort(port).
 		SetUsername(username).SetPassword(password).
@@ -1024,7 +1078,14 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		SetRefreshInterval(refreshInterval).
 		SetContentMode(contentMode).
 		SetBrightnessEnabled(brightnessEnabled).
-		SetBrightnessSchedules(brightnessSchedulesRaw)
+		SetBrightnessSchedules(brightnessSchedulesRaw).
+		SetOverlayEnabled(overlay.Enabled).
+		SetOverlayPosition(overlay.Position).
+		SetOverlayHeight(overlay.Height).
+		SetOverlayText(overlay.Text).
+		SetOverlaySpeedPx(overlay.SpeedPx).
+		SetOverlayBg(overlay.Background).
+		SetOverlayFg(overlay.Foreground)
 	if idleRaw2 != "" {
 		upd.SetIdleScreensaver(idleRaw2)
 	} else {

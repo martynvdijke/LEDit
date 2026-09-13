@@ -51,6 +51,20 @@ func (DeviceSettings) Fields() []ent.Field {
 			}
 		}),
 		field.Int("group_id").Optional().Nillable(),
+		field.Bool("overlay_enabled").Default(false),
+		field.String("overlay_position").Default("bottom").Validate(func(s string) error {
+			switch s {
+			case "top", "bottom":
+				return nil
+			default:
+				return errors.New("overlay_position must be one of top, bottom")
+			}
+		}),
+		field.Int("overlay_height").Default(8),
+		field.String("overlay_text").Default(""),
+		field.Int("overlay_speed_px").Default(0),
+		field.String("overlay_bg").Default("#000000"),
+		field.String("overlay_fg").Default("#ffffff"),
 	}
 }
 

@@ -67,6 +67,19 @@
                     <div class="mb-2"><label class="form-label">Override (0-100, empty=auto)</label><div class="d-flex gap-2"><input type="number" class="form-control" id="brightness_override" name="brightness_override" min="0" max="100" value="{{if .obj}}{{if .obj.BrightnessOverride}}{{.obj.BrightnessOverride}}{{end}}{{end}}" style="max-width:120px"><button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('brightness_override').value=''">Auto</button></div></div>
                     <div class="mb-2"><label class="form-label">Sensor config (JSON, optional)</label><textarea class="form-control" id="brightness_sensor_config" name="brightness_sensor_config" rows="2" placeholder='{"entity_id":"sensor.illuminance","lux_levels":[{"maxLux":100,"level":30}]}'>{{if .obj}}{{if .obj.BrightnessSensorConfig}}{{.obj.BrightnessSensorConfig}}{{end}}{{end}}</textarea></div>
                 </div>
+                <div class="card mb-3 p-3">
+                    <h5>Overlay <small class="text-muted">persistent text strip drawn over every source at send time</small></h5>
+                    <div class="form-check mb-2"><input type="checkbox" class="form-check-input" id="overlay_enabled" name="overlay_enabled" {{if .obj}}{{if .obj.OverlayEnabled}}checked{{end}}{{end}}><label class="form-check-label" for="overlay_enabled">Enable overlay</label></div>
+                    <div class="mb-2"><label class="form-label" for="overlay_text">Text (max 200)</label><input type="text" class="form-control" id="overlay_text" name="overlay_text" maxlength="200" value="{{if .obj}}{{.obj.OverlayText}}{{end}}"></div>
+                    <div class="d-flex gap-3 flex-wrap" id="overlay-fields">
+                        <div class="mb-2"><label class="form-label">Position</label><select class="form-select" name="overlay_position"><option value="bottom" {{if .obj}}{{if eq .obj.OverlayPosition "top"}}{{else}}selected{{end}}{{else}}selected{{end}}>Bottom</option><option value="top" {{if .obj}}{{if eq .obj.OverlayPosition "top"}}selected{{end}}{{end}}>Top</option></select></div>
+                        <div class="mb-2"><label class="form-label">Height (px)</label><input type="number" class="form-control" name="overlay_height" min="4" max="32" value="{{if .obj}}{{.obj.OverlayHeight}}{{else}}8{{end}}" style="max-width:120px"></div>
+                        <div class="mb-2"><label class="form-label">Speed (px/s, 0=static)</label><input type="number" class="form-control" name="overlay_speed_px" min="0" max="200" value="{{if .obj}}{{.obj.OverlaySpeedPx}}{{else}}0{{end}}" style="max-width:160px"></div>
+                        <div class="mb-2"><label class="form-label">Background</label><input type="color" class="form-control form-control-color" name="overlay_bg" value="{{if .obj}}{{.obj.OverlayBg}}{{else}}#000000{{end}}"></div>
+                        <div class="mb-2"><label class="form-label">Text color</label><input type="color" class="form-control form-control-color" name="overlay_fg" value="{{if .obj}}{{.obj.OverlayFg}}{{else}}#ffffff{{end}}"></div>
+                    </div>
+                    <div class="form-text small text-muted">Height max is min(32, matrix height / 2). Overlay enabled with empty text is rejected.</div>
+                </div>
                 <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
                 <a href="/admin/devices" class="btn btn-secondary">Cancel</a>
             </form>
@@ -82,6 +95,14 @@
     var addBtn = document.getElementById('add-candidate');
     var listEl = document.getElementById('candidates-list');
     var form = document.getElementById('device-form');
+
+    var overlayToggle = document.getElementById('overlay_enabled');
+    var overlayFields = document.getElementById('overlay-fields');
+    if (overlayToggle && overlayFields) {
+        var syncOverlay = function(){ overlayFields.style.display = overlayToggle.checked ? '' : 'none'; };
+        overlayToggle.addEventListener('change', syncOverlay);
+        syncOverlay();
+    }
 
     var candidates = [];
     try {
