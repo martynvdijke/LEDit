@@ -1,3 +1,11 @@
+# [1.40.0](https://github.com/martynvdijke/LEDit/compare/v1.39.0...v1.40.0) (2026-09-13)
+
+
+### Features
+
+* add bezel-aware multi-panel canvas ([5aa98c4](https://github.com/martynvdijke/LEDit/commit/5aa98c4b760ef4d1de7454c153740537e5f6a1b6))
+* make common datasources report state for event rules ([c29ef6b](https://github.com/martynvdijke/LEDit/commit/c29ef6b3d9e1a91e2e244a03025f9b685c5d6761))
+
 # [1.39.0](https://github.com/martynvdijke/LEDit/compare/v1.38.0...v1.39.0) (2026-09-13)
 
 
