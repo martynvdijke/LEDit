@@ -7621,6 +7621,10 @@ type DeviceSettingsMutation struct {
 	addwidth                 *int
 	height                   *int
 	addheight                *int
+	panel_cols               *int
+	addpanel_cols            *int
+	panel_gap                *int
+	addpanel_gap             *int
 	enabled                  *bool
 	token                    *string
 	refresh_interval         *int
@@ -8065,6 +8069,118 @@ func (m *DeviceSettingsMutation) AddedHeight() (r int, exists bool) {
 func (m *DeviceSettingsMutation) ResetHeight() {
 	m.height = nil
 	m.addheight = nil
+}
+
+// SetPanelCols sets the "panel_cols" field.
+func (m *DeviceSettingsMutation) SetPanelCols(i int) {
+	m.panel_cols = &i
+	m.addpanel_cols = nil
+}
+
+// PanelCols returns the value of the "panel_cols" field in the mutation.
+func (m *DeviceSettingsMutation) PanelCols() (r int, exists bool) {
+	v := m.panel_cols
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPanelCols returns the old "panel_cols" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldPanelCols(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPanelCols is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPanelCols requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPanelCols: %w", err)
+	}
+	return oldValue.PanelCols, nil
+}
+
+// AddPanelCols adds i to the "panel_cols" field.
+func (m *DeviceSettingsMutation) AddPanelCols(i int) {
+	if m.addpanel_cols != nil {
+		*m.addpanel_cols += i
+	} else {
+		m.addpanel_cols = &i
+	}
+}
+
+// AddedPanelCols returns the value that was added to the "panel_cols" field in this mutation.
+func (m *DeviceSettingsMutation) AddedPanelCols() (r int, exists bool) {
+	v := m.addpanel_cols
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPanelCols resets all changes to the "panel_cols" field.
+func (m *DeviceSettingsMutation) ResetPanelCols() {
+	m.panel_cols = nil
+	m.addpanel_cols = nil
+}
+
+// SetPanelGap sets the "panel_gap" field.
+func (m *DeviceSettingsMutation) SetPanelGap(i int) {
+	m.panel_gap = &i
+	m.addpanel_gap = nil
+}
+
+// PanelGap returns the value of the "panel_gap" field in the mutation.
+func (m *DeviceSettingsMutation) PanelGap() (r int, exists bool) {
+	v := m.panel_gap
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPanelGap returns the old "panel_gap" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldPanelGap(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPanelGap is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPanelGap requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPanelGap: %w", err)
+	}
+	return oldValue.PanelGap, nil
+}
+
+// AddPanelGap adds i to the "panel_gap" field.
+func (m *DeviceSettingsMutation) AddPanelGap(i int) {
+	if m.addpanel_gap != nil {
+		*m.addpanel_gap += i
+	} else {
+		m.addpanel_gap = &i
+	}
+}
+
+// AddedPanelGap returns the value that was added to the "panel_gap" field in this mutation.
+func (m *DeviceSettingsMutation) AddedPanelGap() (r int, exists bool) {
+	v := m.addpanel_gap
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPanelGap resets all changes to the "panel_gap" field.
+func (m *DeviceSettingsMutation) ResetPanelGap() {
+	m.panel_gap = nil
+	m.addpanel_gap = nil
 }
 
 // SetEnabled sets the "enabled" field.
@@ -9154,7 +9270,7 @@ func (m *DeviceSettingsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DeviceSettingsMutation) Fields() []string {
-	fields := make([]string, 0, 29)
+	fields := make([]string, 0, 31)
 	if m.name != nil {
 		fields = append(fields, devicesettings.FieldName)
 	}
@@ -9175,6 +9291,12 @@ func (m *DeviceSettingsMutation) Fields() []string {
 	}
 	if m.height != nil {
 		fields = append(fields, devicesettings.FieldHeight)
+	}
+	if m.panel_cols != nil {
+		fields = append(fields, devicesettings.FieldPanelCols)
+	}
+	if m.panel_gap != nil {
+		fields = append(fields, devicesettings.FieldPanelGap)
 	}
 	if m.enabled != nil {
 		fields = append(fields, devicesettings.FieldEnabled)
@@ -9264,6 +9386,10 @@ func (m *DeviceSettingsMutation) Field(name string) (ent.Value, bool) {
 		return m.Width()
 	case devicesettings.FieldHeight:
 		return m.Height()
+	case devicesettings.FieldPanelCols:
+		return m.PanelCols()
+	case devicesettings.FieldPanelGap:
+		return m.PanelGap()
 	case devicesettings.FieldEnabled:
 		return m.Enabled()
 	case devicesettings.FieldToken:
@@ -9331,6 +9457,10 @@ func (m *DeviceSettingsMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldWidth(ctx)
 	case devicesettings.FieldHeight:
 		return m.OldHeight(ctx)
+	case devicesettings.FieldPanelCols:
+		return m.OldPanelCols(ctx)
+	case devicesettings.FieldPanelGap:
+		return m.OldPanelGap(ctx)
 	case devicesettings.FieldEnabled:
 		return m.OldEnabled(ctx)
 	case devicesettings.FieldToken:
@@ -9432,6 +9562,20 @@ func (m *DeviceSettingsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetHeight(v)
+		return nil
+	case devicesettings.FieldPanelCols:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPanelCols(v)
+		return nil
+	case devicesettings.FieldPanelGap:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPanelGap(v)
 		return nil
 	case devicesettings.FieldEnabled:
 		v, ok := value.(bool)
@@ -9604,6 +9748,12 @@ func (m *DeviceSettingsMutation) AddedFields() []string {
 	if m.addheight != nil {
 		fields = append(fields, devicesettings.FieldHeight)
 	}
+	if m.addpanel_cols != nil {
+		fields = append(fields, devicesettings.FieldPanelCols)
+	}
+	if m.addpanel_gap != nil {
+		fields = append(fields, devicesettings.FieldPanelGap)
+	}
 	if m.addrefresh_interval != nil {
 		fields = append(fields, devicesettings.FieldRefreshInterval)
 	}
@@ -9639,6 +9789,10 @@ func (m *DeviceSettingsMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedWidth()
 	case devicesettings.FieldHeight:
 		return m.AddedHeight()
+	case devicesettings.FieldPanelCols:
+		return m.AddedPanelCols()
+	case devicesettings.FieldPanelGap:
+		return m.AddedPanelGap()
 	case devicesettings.FieldRefreshInterval:
 		return m.AddedRefreshInterval()
 	case devicesettings.FieldFramesServed:
@@ -9682,6 +9836,20 @@ func (m *DeviceSettingsMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddHeight(v)
+		return nil
+	case devicesettings.FieldPanelCols:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPanelCols(v)
+		return nil
+	case devicesettings.FieldPanelGap:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPanelGap(v)
 		return nil
 	case devicesettings.FieldRefreshInterval:
 		v, ok := value.(int)
@@ -9824,6 +9992,12 @@ func (m *DeviceSettingsMutation) ResetField(name string) error {
 		return nil
 	case devicesettings.FieldHeight:
 		m.ResetHeight()
+		return nil
+	case devicesettings.FieldPanelCols:
+		m.ResetPanelCols()
+		return nil
+	case devicesettings.FieldPanelGap:
+		m.ResetPanelGap()
 		return nil
 	case devicesettings.FieldEnabled:
 		m.ResetEnabled()

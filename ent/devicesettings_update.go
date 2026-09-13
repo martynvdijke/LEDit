@@ -148,6 +148,48 @@ func (_u *DeviceSettingsUpdate) AddHeight(v int) *DeviceSettingsUpdate {
 	return _u
 }
 
+// SetPanelCols sets the "panel_cols" field.
+func (_u *DeviceSettingsUpdate) SetPanelCols(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetPanelCols()
+	_u.mutation.SetPanelCols(v)
+	return _u
+}
+
+// SetNillablePanelCols sets the "panel_cols" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillablePanelCols(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetPanelCols(*v)
+	}
+	return _u
+}
+
+// AddPanelCols adds value to the "panel_cols" field.
+func (_u *DeviceSettingsUpdate) AddPanelCols(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddPanelCols(v)
+	return _u
+}
+
+// SetPanelGap sets the "panel_gap" field.
+func (_u *DeviceSettingsUpdate) SetPanelGap(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetPanelGap()
+	_u.mutation.SetPanelGap(v)
+	return _u
+}
+
+// SetNillablePanelGap sets the "panel_gap" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillablePanelGap(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetPanelGap(*v)
+	}
+	return _u
+}
+
+// AddPanelGap adds value to the "panel_gap" field.
+func (_u *DeviceSettingsUpdate) AddPanelGap(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddPanelGap(v)
+	return _u
+}
+
 // SetEnabled sets the "enabled" field.
 func (_u *DeviceSettingsUpdate) SetEnabled(v bool) *DeviceSettingsUpdate {
 	_u.mutation.SetEnabled(v)
@@ -652,6 +694,18 @@ func (_u *DeviceSettingsUpdate) sqlSave(ctx context.Context) (_node int, err err
 	if value, ok := _u.mutation.AddedHeight(); ok {
 		_spec.AddField(devicesettings.FieldHeight, field.TypeInt, value)
 	}
+	if value, ok := _u.mutation.PanelCols(); ok {
+		_spec.SetField(devicesettings.FieldPanelCols, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPanelCols(); ok {
+		_spec.AddField(devicesettings.FieldPanelCols, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.PanelGap(); ok {
+		_spec.SetField(devicesettings.FieldPanelGap, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPanelGap(); ok {
+		_spec.AddField(devicesettings.FieldPanelGap, field.TypeInt, value)
+	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(devicesettings.FieldEnabled, field.TypeBool, value)
 	}
@@ -919,6 +973,48 @@ func (_u *DeviceSettingsUpdateOne) SetNillableHeight(v *int) *DeviceSettingsUpda
 // AddHeight adds value to the "height" field.
 func (_u *DeviceSettingsUpdateOne) AddHeight(v int) *DeviceSettingsUpdateOne {
 	_u.mutation.AddHeight(v)
+	return _u
+}
+
+// SetPanelCols sets the "panel_cols" field.
+func (_u *DeviceSettingsUpdateOne) SetPanelCols(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetPanelCols()
+	_u.mutation.SetPanelCols(v)
+	return _u
+}
+
+// SetNillablePanelCols sets the "panel_cols" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillablePanelCols(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetPanelCols(*v)
+	}
+	return _u
+}
+
+// AddPanelCols adds value to the "panel_cols" field.
+func (_u *DeviceSettingsUpdateOne) AddPanelCols(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddPanelCols(v)
+	return _u
+}
+
+// SetPanelGap sets the "panel_gap" field.
+func (_u *DeviceSettingsUpdateOne) SetPanelGap(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetPanelGap()
+	_u.mutation.SetPanelGap(v)
+	return _u
+}
+
+// SetNillablePanelGap sets the "panel_gap" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillablePanelGap(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetPanelGap(*v)
+	}
+	return _u
+}
+
+// AddPanelGap adds value to the "panel_gap" field.
+func (_u *DeviceSettingsUpdateOne) AddPanelGap(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddPanelGap(v)
 	return _u
 }
 
@@ -1455,6 +1551,18 @@ func (_u *DeviceSettingsUpdateOne) sqlSave(ctx context.Context) (_node *DeviceSe
 	}
 	if value, ok := _u.mutation.AddedHeight(); ok {
 		_spec.AddField(devicesettings.FieldHeight, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.PanelCols(); ok {
+		_spec.SetField(devicesettings.FieldPanelCols, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPanelCols(); ok {
+		_spec.AddField(devicesettings.FieldPanelCols, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.PanelGap(); ok {
+		_spec.SetField(devicesettings.FieldPanelGap, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPanelGap(); ok {
+		_spec.AddField(devicesettings.FieldPanelGap, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(devicesettings.FieldEnabled, field.TypeBool, value)

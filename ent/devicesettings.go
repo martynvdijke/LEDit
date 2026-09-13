@@ -32,6 +32,10 @@ type DeviceSettings struct {
 	Width int `json:"width,omitempty"`
 	// Height holds the value of the "height" field.
 	Height int `json:"height,omitempty"`
+	// Number of physical LED panels chained horizontally into this device's framebuffer
+	PanelCols int `json:"panel_cols,omitempty"`
+	// Bezel gap in pixels between adjacent panels, hidden by the physical wall
+	PanelGap int `json:"panel_gap,omitempty"`
 	// Enabled holds the value of the "enabled" field.
 	Enabled bool `json:"enabled,omitempty"`
 	// Token holds the value of the "token" field.
@@ -110,7 +114,7 @@ func (*DeviceSettings) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case devicesettings.FieldEnabled, devicesettings.FieldBrightnessEnabled, devicesettings.FieldOverlayEnabled:
 			values[i] = new(sql.NullBool)
-		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed, devicesettings.FieldPlaylistID, devicesettings.FieldFallbackPlaylistID, devicesettings.FieldBrightnessOverride, devicesettings.FieldGroupID, devicesettings.FieldOverlayHeight, devicesettings.FieldOverlaySpeedPx:
+		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldPanelCols, devicesettings.FieldPanelGap, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed, devicesettings.FieldPlaylistID, devicesettings.FieldFallbackPlaylistID, devicesettings.FieldBrightnessOverride, devicesettings.FieldGroupID, devicesettings.FieldOverlayHeight, devicesettings.FieldOverlaySpeedPx:
 			values[i] = new(sql.NullInt64)
 		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken, devicesettings.FieldContentMode, devicesettings.FieldScheduledPlaylistIds, devicesettings.FieldBrightnessSchedules, devicesettings.FieldBrightnessSensorConfig, devicesettings.FieldIdleScreensaver, devicesettings.FieldOverlayPosition, devicesettings.FieldOverlayText, devicesettings.FieldOverlayBg, devicesettings.FieldOverlayFg:
 			values[i] = new(sql.NullString)
@@ -180,6 +184,18 @@ func (_m *DeviceSettings) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field height", values[i])
 			} else if value.Valid {
 				_m.Height = int(value.Int64)
+			}
+		case devicesettings.FieldPanelCols:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field panel_cols", values[i])
+			} else if value.Valid {
+				_m.PanelCols = int(value.Int64)
+			}
+		case devicesettings.FieldPanelGap:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field panel_gap", values[i])
+			} else if value.Valid {
+				_m.PanelGap = int(value.Int64)
 			}
 		case devicesettings.FieldEnabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -388,6 +404,12 @@ func (_m *DeviceSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("height=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Height))
+	builder.WriteString(", ")
+	builder.WriteString("panel_cols=")
+	builder.WriteString(fmt.Sprintf("%v", _m.PanelCols))
+	builder.WriteString(", ")
+	builder.WriteString("panel_gap=")
+	builder.WriteString(fmt.Sprintf("%v", _m.PanelGap))
 	builder.WriteString(", ")
 	builder.WriteString("enabled=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Enabled))

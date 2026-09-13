@@ -119,6 +119,34 @@ func (_c *DeviceSettingsCreate) SetNillableHeight(v *int) *DeviceSettingsCreate 
 	return _c
 }
 
+// SetPanelCols sets the "panel_cols" field.
+func (_c *DeviceSettingsCreate) SetPanelCols(v int) *DeviceSettingsCreate {
+	_c.mutation.SetPanelCols(v)
+	return _c
+}
+
+// SetNillablePanelCols sets the "panel_cols" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillablePanelCols(v *int) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetPanelCols(*v)
+	}
+	return _c
+}
+
+// SetPanelGap sets the "panel_gap" field.
+func (_c *DeviceSettingsCreate) SetPanelGap(v int) *DeviceSettingsCreate {
+	_c.mutation.SetPanelGap(v)
+	return _c
+}
+
+// SetNillablePanelGap sets the "panel_gap" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillablePanelGap(v *int) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetPanelGap(*v)
+	}
+	return _c
+}
+
 // SetEnabled sets the "enabled" field.
 func (_c *DeviceSettingsCreate) SetEnabled(v bool) *DeviceSettingsCreate {
 	_c.mutation.SetEnabled(v)
@@ -495,6 +523,14 @@ func (_c *DeviceSettingsCreate) defaults() {
 		v := devicesettings.DefaultHeight
 		_c.mutation.SetHeight(v)
 	}
+	if _, ok := _c.mutation.PanelCols(); !ok {
+		v := devicesettings.DefaultPanelCols
+		_c.mutation.SetPanelCols(v)
+	}
+	if _, ok := _c.mutation.PanelGap(); !ok {
+		v := devicesettings.DefaultPanelGap
+		_c.mutation.SetPanelGap(v)
+	}
 	if _, ok := _c.mutation.Enabled(); !ok {
 		v := devicesettings.DefaultEnabled
 		_c.mutation.SetEnabled(v)
@@ -579,6 +615,12 @@ func (_c *DeviceSettingsCreate) check() error {
 	}
 	if _, ok := _c.mutation.Height(); !ok {
 		return &ValidationError{Name: "height", err: errors.New(`ent: missing required field "DeviceSettings.height"`)}
+	}
+	if _, ok := _c.mutation.PanelCols(); !ok {
+		return &ValidationError{Name: "panel_cols", err: errors.New(`ent: missing required field "DeviceSettings.panel_cols"`)}
+	}
+	if _, ok := _c.mutation.PanelGap(); !ok {
+		return &ValidationError{Name: "panel_gap", err: errors.New(`ent: missing required field "DeviceSettings.panel_gap"`)}
 	}
 	if _, ok := _c.mutation.Enabled(); !ok {
 		return &ValidationError{Name: "enabled", err: errors.New(`ent: missing required field "DeviceSettings.enabled"`)}
@@ -693,6 +735,14 @@ func (_c *DeviceSettingsCreate) createSpec() (*DeviceSettings, *sqlgraph.CreateS
 	if value, ok := _c.mutation.Height(); ok {
 		_spec.SetField(devicesettings.FieldHeight, field.TypeInt, value)
 		_node.Height = value
+	}
+	if value, ok := _c.mutation.PanelCols(); ok {
+		_spec.SetField(devicesettings.FieldPanelCols, field.TypeInt, value)
+		_node.PanelCols = value
+	}
+	if value, ok := _c.mutation.PanelGap(); ok {
+		_spec.SetField(devicesettings.FieldPanelGap, field.TypeInt, value)
+		_node.PanelGap = value
 	}
 	if value, ok := _c.mutation.Enabled(); ok {
 		_spec.SetField(devicesettings.FieldEnabled, field.TypeBool, value)

@@ -26,6 +26,10 @@ const (
 	FieldWidth = "width"
 	// FieldHeight holds the string denoting the height field in the database.
 	FieldHeight = "height"
+	// FieldPanelCols holds the string denoting the panel_cols field in the database.
+	FieldPanelCols = "panel_cols"
+	// FieldPanelGap holds the string denoting the panel_gap field in the database.
+	FieldPanelGap = "panel_gap"
 	// FieldEnabled holds the string denoting the enabled field in the database.
 	FieldEnabled = "enabled"
 	// FieldToken holds the string denoting the token field in the database.
@@ -93,6 +97,8 @@ var Columns = []string{
 	FieldPassword,
 	FieldWidth,
 	FieldHeight,
+	FieldPanelCols,
+	FieldPanelGap,
 	FieldEnabled,
 	FieldToken,
 	FieldRefreshInterval,
@@ -153,6 +159,10 @@ var (
 	DefaultWidth int
 	// DefaultHeight holds the default value on creation for the "height" field.
 	DefaultHeight int
+	// DefaultPanelCols holds the default value on creation for the "panel_cols" field.
+	DefaultPanelCols int
+	// DefaultPanelGap holds the default value on creation for the "panel_gap" field.
+	DefaultPanelGap int
 	// DefaultEnabled holds the default value on creation for the "enabled" field.
 	DefaultEnabled bool
 	// DefaultToken holds the default value on creation for the "token" field.
@@ -232,6 +242,16 @@ func ByWidth(opts ...sql.OrderTermOption) OrderOption {
 // ByHeight orders the results by the height field.
 func ByHeight(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldHeight, opts...).ToFunc()
+}
+
+// ByPanelCols orders the results by the panel_cols field.
+func ByPanelCols(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPanelCols, opts...).ToFunc()
+}
+
+// ByPanelGap orders the results by the panel_gap field.
+func ByPanelGap(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPanelGap, opts...).ToFunc()
 }
 
 // ByEnabled orders the results by the enabled field.

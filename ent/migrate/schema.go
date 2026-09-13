@@ -269,6 +269,8 @@ var (
 		{Name: "password", Type: field.TypeString, Default: ""},
 		{Name: "width", Type: field.TypeInt, Default: 64},
 		{Name: "height", Type: field.TypeInt, Default: 64},
+		{Name: "panel_cols", Type: field.TypeInt, Default: 1},
+		{Name: "panel_gap", Type: field.TypeInt, Default: 0},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
 		{Name: "token", Type: field.TypeString, Default: ""},
 		{Name: "refresh_interval", Type: field.TypeInt, Default: 60},
@@ -301,13 +303,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "device_settings_device_groups_devices",
-				Columns:    []*schema.Column{DeviceSettingsColumns[29]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[31]},
 				RefColumns: []*schema.Column{DeviceGroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "device_settings_general_settings_device_settings",
-				Columns:    []*schema.Column{DeviceSettingsColumns[30]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[32]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

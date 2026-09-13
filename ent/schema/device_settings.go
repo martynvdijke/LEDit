@@ -22,6 +22,8 @@ func (DeviceSettings) Fields() []ent.Field {
 		field.String("password").Default(""),
 		field.Int("width").Default(64),
 		field.Int("height").Default(64),
+		field.Int("panel_cols").Default(1).Comment("Number of physical LED panels chained horizontally into this device's framebuffer"),
+		field.Int("panel_gap").Default(0).Comment("Bezel gap in pixels between adjacent panels, hidden by the physical wall"),
 		field.Bool("enabled").Default(true),
 		field.String("token").Default(""),
 		field.Int("refresh_interval").Default(60),

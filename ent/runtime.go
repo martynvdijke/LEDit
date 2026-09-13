@@ -301,72 +301,80 @@ func init() {
 	devicesettingsDescHeight := devicesettingsFields[6].Descriptor()
 	// devicesettings.DefaultHeight holds the default value on creation for the height field.
 	devicesettings.DefaultHeight = devicesettingsDescHeight.Default.(int)
+	// devicesettingsDescPanelCols is the schema descriptor for panel_cols field.
+	devicesettingsDescPanelCols := devicesettingsFields[7].Descriptor()
+	// devicesettings.DefaultPanelCols holds the default value on creation for the panel_cols field.
+	devicesettings.DefaultPanelCols = devicesettingsDescPanelCols.Default.(int)
+	// devicesettingsDescPanelGap is the schema descriptor for panel_gap field.
+	devicesettingsDescPanelGap := devicesettingsFields[8].Descriptor()
+	// devicesettings.DefaultPanelGap holds the default value on creation for the panel_gap field.
+	devicesettings.DefaultPanelGap = devicesettingsDescPanelGap.Default.(int)
 	// devicesettingsDescEnabled is the schema descriptor for enabled field.
-	devicesettingsDescEnabled := devicesettingsFields[7].Descriptor()
+	devicesettingsDescEnabled := devicesettingsFields[9].Descriptor()
 	// devicesettings.DefaultEnabled holds the default value on creation for the enabled field.
 	devicesettings.DefaultEnabled = devicesettingsDescEnabled.Default.(bool)
 	// devicesettingsDescToken is the schema descriptor for token field.
-	devicesettingsDescToken := devicesettingsFields[8].Descriptor()
+	devicesettingsDescToken := devicesettingsFields[10].Descriptor()
 	// devicesettings.DefaultToken holds the default value on creation for the token field.
 	devicesettings.DefaultToken = devicesettingsDescToken.Default.(string)
 	// devicesettingsDescRefreshInterval is the schema descriptor for refresh_interval field.
-	devicesettingsDescRefreshInterval := devicesettingsFields[9].Descriptor()
+	devicesettingsDescRefreshInterval := devicesettingsFields[11].Descriptor()
 	// devicesettings.DefaultRefreshInterval holds the default value on creation for the refresh_interval field.
 	devicesettings.DefaultRefreshInterval = devicesettingsDescRefreshInterval.Default.(int)
 	// devicesettingsDescFramesServed is the schema descriptor for frames_served field.
-	devicesettingsDescFramesServed := devicesettingsFields[11].Descriptor()
+	devicesettingsDescFramesServed := devicesettingsFields[13].Descriptor()
 	// devicesettings.DefaultFramesServed holds the default value on creation for the frames_served field.
 	devicesettings.DefaultFramesServed = devicesettingsDescFramesServed.Default.(int)
 	// devicesettingsDescContentMode is the schema descriptor for content_mode field.
-	devicesettingsDescContentMode := devicesettingsFields[12].Descriptor()
+	devicesettingsDescContentMode := devicesettingsFields[14].Descriptor()
 	// devicesettings.DefaultContentMode holds the default value on creation for the content_mode field.
 	devicesettings.DefaultContentMode = devicesettingsDescContentMode.Default.(string)
 	// devicesettings.ContentModeValidator is a validator for the "content_mode" field. It is called by the builders before save.
 	devicesettings.ContentModeValidator = devicesettingsDescContentMode.Validators[0].(func(string) error)
 	// devicesettingsDescScheduledPlaylistIds is the schema descriptor for scheduled_playlist_ids field.
-	devicesettingsDescScheduledPlaylistIds := devicesettingsFields[14].Descriptor()
+	devicesettingsDescScheduledPlaylistIds := devicesettingsFields[16].Descriptor()
 	// devicesettings.DefaultScheduledPlaylistIds holds the default value on creation for the scheduled_playlist_ids field.
 	devicesettings.DefaultScheduledPlaylistIds = devicesettingsDescScheduledPlaylistIds.Default.(string)
 	// devicesettingsDescBrightnessEnabled is the schema descriptor for brightness_enabled field.
-	devicesettingsDescBrightnessEnabled := devicesettingsFields[16].Descriptor()
+	devicesettingsDescBrightnessEnabled := devicesettingsFields[18].Descriptor()
 	// devicesettings.DefaultBrightnessEnabled holds the default value on creation for the brightness_enabled field.
 	devicesettings.DefaultBrightnessEnabled = devicesettingsDescBrightnessEnabled.Default.(bool)
 	// devicesettingsDescBrightnessSchedules is the schema descriptor for brightness_schedules field.
-	devicesettingsDescBrightnessSchedules := devicesettingsFields[17].Descriptor()
+	devicesettingsDescBrightnessSchedules := devicesettingsFields[19].Descriptor()
 	// devicesettings.DefaultBrightnessSchedules holds the default value on creation for the brightness_schedules field.
 	devicesettings.DefaultBrightnessSchedules = devicesettingsDescBrightnessSchedules.Default.(string)
 	// devicesettingsDescIdleScreensaver is the schema descriptor for idle_screensaver field.
-	devicesettingsDescIdleScreensaver := devicesettingsFields[20].Descriptor()
+	devicesettingsDescIdleScreensaver := devicesettingsFields[22].Descriptor()
 	// devicesettings.IdleScreensaverValidator is a validator for the "idle_screensaver" field. It is called by the builders before save.
 	devicesettings.IdleScreensaverValidator = devicesettingsDescIdleScreensaver.Validators[0].(func(string) error)
 	// devicesettingsDescOverlayEnabled is the schema descriptor for overlay_enabled field.
-	devicesettingsDescOverlayEnabled := devicesettingsFields[22].Descriptor()
+	devicesettingsDescOverlayEnabled := devicesettingsFields[24].Descriptor()
 	// devicesettings.DefaultOverlayEnabled holds the default value on creation for the overlay_enabled field.
 	devicesettings.DefaultOverlayEnabled = devicesettingsDescOverlayEnabled.Default.(bool)
 	// devicesettingsDescOverlayPosition is the schema descriptor for overlay_position field.
-	devicesettingsDescOverlayPosition := devicesettingsFields[23].Descriptor()
+	devicesettingsDescOverlayPosition := devicesettingsFields[25].Descriptor()
 	// devicesettings.DefaultOverlayPosition holds the default value on creation for the overlay_position field.
 	devicesettings.DefaultOverlayPosition = devicesettingsDescOverlayPosition.Default.(string)
 	// devicesettings.OverlayPositionValidator is a validator for the "overlay_position" field. It is called by the builders before save.
 	devicesettings.OverlayPositionValidator = devicesettingsDescOverlayPosition.Validators[0].(func(string) error)
 	// devicesettingsDescOverlayHeight is the schema descriptor for overlay_height field.
-	devicesettingsDescOverlayHeight := devicesettingsFields[24].Descriptor()
+	devicesettingsDescOverlayHeight := devicesettingsFields[26].Descriptor()
 	// devicesettings.DefaultOverlayHeight holds the default value on creation for the overlay_height field.
 	devicesettings.DefaultOverlayHeight = devicesettingsDescOverlayHeight.Default.(int)
 	// devicesettingsDescOverlayText is the schema descriptor for overlay_text field.
-	devicesettingsDescOverlayText := devicesettingsFields[25].Descriptor()
+	devicesettingsDescOverlayText := devicesettingsFields[27].Descriptor()
 	// devicesettings.DefaultOverlayText holds the default value on creation for the overlay_text field.
 	devicesettings.DefaultOverlayText = devicesettingsDescOverlayText.Default.(string)
 	// devicesettingsDescOverlaySpeedPx is the schema descriptor for overlay_speed_px field.
-	devicesettingsDescOverlaySpeedPx := devicesettingsFields[26].Descriptor()
+	devicesettingsDescOverlaySpeedPx := devicesettingsFields[28].Descriptor()
 	// devicesettings.DefaultOverlaySpeedPx holds the default value on creation for the overlay_speed_px field.
 	devicesettings.DefaultOverlaySpeedPx = devicesettingsDescOverlaySpeedPx.Default.(int)
 	// devicesettingsDescOverlayBg is the schema descriptor for overlay_bg field.
-	devicesettingsDescOverlayBg := devicesettingsFields[27].Descriptor()
+	devicesettingsDescOverlayBg := devicesettingsFields[29].Descriptor()
 	// devicesettings.DefaultOverlayBg holds the default value on creation for the overlay_bg field.
 	devicesettings.DefaultOverlayBg = devicesettingsDescOverlayBg.Default.(string)
 	// devicesettingsDescOverlayFg is the schema descriptor for overlay_fg field.
-	devicesettingsDescOverlayFg := devicesettingsFields[28].Descriptor()
+	devicesettingsDescOverlayFg := devicesettingsFields[30].Descriptor()
 	// devicesettings.DefaultOverlayFg holds the default value on creation for the overlay_fg field.
 	devicesettings.DefaultOverlayFg = devicesettingsDescOverlayFg.Default.(string)
 	displayruleFields := schema.DisplayRule{}.Fields()

@@ -90,6 +90,16 @@ func Height(v int) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldHeight, v))
 }
 
+// PanelCols applies equality check predicate on the "panel_cols" field. It's identical to PanelColsEQ.
+func PanelCols(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldPanelCols, v))
+}
+
+// PanelGap applies equality check predicate on the "panel_gap" field. It's identical to PanelGapEQ.
+func PanelGap(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldPanelGap, v))
+}
+
 // Enabled applies equality check predicate on the "enabled" field. It's identical to EnabledEQ.
 func Enabled(v bool) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldEnabled, v))
@@ -578,6 +588,86 @@ func HeightLT(v int) predicate.DeviceSettings {
 // HeightLTE applies the LTE predicate on the "height" field.
 func HeightLTE(v int) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldLTE(FieldHeight, v))
+}
+
+// PanelColsEQ applies the EQ predicate on the "panel_cols" field.
+func PanelColsEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldPanelCols, v))
+}
+
+// PanelColsNEQ applies the NEQ predicate on the "panel_cols" field.
+func PanelColsNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldPanelCols, v))
+}
+
+// PanelColsIn applies the In predicate on the "panel_cols" field.
+func PanelColsIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldPanelCols, vs...))
+}
+
+// PanelColsNotIn applies the NotIn predicate on the "panel_cols" field.
+func PanelColsNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldPanelCols, vs...))
+}
+
+// PanelColsGT applies the GT predicate on the "panel_cols" field.
+func PanelColsGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldPanelCols, v))
+}
+
+// PanelColsGTE applies the GTE predicate on the "panel_cols" field.
+func PanelColsGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldPanelCols, v))
+}
+
+// PanelColsLT applies the LT predicate on the "panel_cols" field.
+func PanelColsLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldPanelCols, v))
+}
+
+// PanelColsLTE applies the LTE predicate on the "panel_cols" field.
+func PanelColsLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldPanelCols, v))
+}
+
+// PanelGapEQ applies the EQ predicate on the "panel_gap" field.
+func PanelGapEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldPanelGap, v))
+}
+
+// PanelGapNEQ applies the NEQ predicate on the "panel_gap" field.
+func PanelGapNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldPanelGap, v))
+}
+
+// PanelGapIn applies the In predicate on the "panel_gap" field.
+func PanelGapIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldPanelGap, vs...))
+}
+
+// PanelGapNotIn applies the NotIn predicate on the "panel_gap" field.
+func PanelGapNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldPanelGap, vs...))
+}
+
+// PanelGapGT applies the GT predicate on the "panel_gap" field.
+func PanelGapGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldPanelGap, v))
+}
+
+// PanelGapGTE applies the GTE predicate on the "panel_gap" field.
+func PanelGapGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldPanelGap, v))
+}
+
+// PanelGapLT applies the LT predicate on the "panel_gap" field.
+func PanelGapLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldPanelGap, v))
+}
+
+// PanelGapLTE applies the LTE predicate on the "panel_gap" field.
+func PanelGapLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldPanelGap, v))
 }
 
 // EnabledEQ applies the EQ predicate on the "enabled" field.

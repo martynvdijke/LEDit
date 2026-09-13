@@ -83,6 +83,8 @@ type feedConn struct {
 	deviceID       int
 	frames         func() // optional per-frame hook (device frame counter); nil for browser/preview
 	overlay        render.OverlaySpec
+	panelCols      int // physical panels chained horizontally (0/1 = single panel)
+	panelGap       int // hidden bezel pixels between panels (0 = none)
 }
 
 // overlaySpecForDevice maps persisted device columns to the render overlay spec.
@@ -809,8 +811,10 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 	registerDeviceFeed(device.ID, fc)
 	defer unregisterDeviceFeed(device.ID)
 	serveFeed(conn, feedConn{
-		deviceID: device.ID,
-		overlay:  overlaySpecForDevice(device),
+		deviceID:  device.ID,
+		overlay:   overlaySpecForDevice(device),
+		panelCols: device.PanelCols,
+		panelGap:  device.PanelGap,
 		frames: func() {
 			if err := h.Client.DeviceSettings.UpdateOneID(device.ID).AddFramesServed(1).Exec(context.Background()); err != nil {
 				slog.Warn("failed to increment device frames_served", "device", device.Name, "error", err)
@@ -888,7 +892,7 @@ func (h *WSHub) HandleDevicePreviewWS(c *gin.Context) {
 
 	// Each preview gets its own feed controller: pause/skip/next in the
 	// preview tab only affects that tab, never the physical device.
-	serveFeed(conn, feedConn{cacheKeyPrefix: fmt.Sprintf("device:%d:", id), deviceID: id, overlay: overlaySpecForDevice(device)}, sources, randomFlag, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs, nil)
+	serveFeed(conn, feedConn{cacheKeyPrefix: fmt.Sprintf("device:%d:", id), deviceID: id, overlay: overlaySpecForDevice(device), panelCols: device.PanelCols, panelGap: device.PanelGap}, sources, randomFlag, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs, nil)
 }
 
 // brightnessProvider seam for tests.
@@ -939,6 +943,24 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 	}
 	if transitionMs <= 0 {
 		transitionMs = 500
+	}
+
+	// Logical canvas width: a horizontally chained device renders every source
+	// at the width that includes the hidden bezel gaps, then slices the gaps
+	// out at send time so content crossing the seam isn't interrupted by the
+	// physical bezel. No-op (renderWidth == width, slicePanels identity) for
+	// single-panel devices, keeping their output byte-identical.
+	renderWidth := render.PanelLogicalWidth(width, fc.panelCols, fc.panelGap)
+	slicePanels := func(data []byte) []byte {
+		if fc.panelCols < 2 || fc.panelGap <= 0 {
+			return data
+		}
+		out, err := render.SlicePanelGapsPNG(data, fc.panelCols, fc.panelGap)
+		if err != nil {
+			slog.Warn("panel slice failed, sending logical frame", "device", fc.deviceID, "error", err)
+			return data
+		}
+		return out
 	}
 
 	var prevPNG []byte
@@ -1033,10 +1055,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			// and pins, below transient notifications. Re-rendered every slot
 			// until the incident is resolved or expires.
 			if scene, ok := CurrentIncidentScene(); ok {
-				if incData, err := render.IncidentPNG(width, height, scene, time.Now()); err == nil {
+				if incData, err := render.IncidentPNG(renderWidth, height, scene, time.Now()); err == nil {
 					msg := map[string]any{
 						"format": "PNG",
-						"image":  base64.StdEncoding.EncodeToString(incData),
+						"image":  base64.StdEncoding.EncodeToString(slicePanels(incData)),
 						"source": "INCIDENT",
 						"next":   "INCIDENT",
 					}
@@ -1105,14 +1127,14 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			// Render through the last-known-good cache: successful renders are
 			// cached, failures serve the cached frame marked stale. Health is
 			// recorded per source (and per device for device feeds).
-			cacheKey := lkgCacheKey(fc.cacheKeyPrefix+sw.cacheKey, width, height)
+			cacheKey := lkgCacheKey(fc.cacheKeyPrefix+sw.cacheKey, renderWidth, height)
 			// set chart context for sampler (type:id)
 			if parts := splitCacheKey(sw.cacheKey); len(parts) == 2 {
 				datasource.SetChartContext(parts[0], parts[1])
 			}
 			img, stale, err := defaultLKG.GetPNG(cacheKey, datasourceConfigSig(sw.Source), func() (*render.RenderedImage, error) {
 				start := time.Now()
-				img, err := sw.Source.GetPNG(width, height)
+				img, err := sw.Source.GetPNG(renderWidth, height)
 				dur := time.Since(start)
 				if err != nil {
 					Health.RecordFailure(sw.cacheKey, err, dur)
@@ -1174,7 +1196,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 						}
 						rampMsg := map[string]any{
 							"format": "PNG",
-							"image":  base64.StdEncoding.EncodeToString(buf.Bytes()),
+							"image":  base64.StdEncoding.EncodeToString(slicePanels(buf.Bytes())),
 							"source": sw.Name,
 							"next":   nextName,
 						}
@@ -1210,9 +1232,12 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			if lvl != 100 {
 				finalData = dimPNGBytes(finalData, lvl)
 			}
+			// Physical frame actually sent: logical canvas minus the bezel gaps.
+			// finalData/prevPNG stay logical so transition decode dims match.
+			sendData := slicePanels(finalData)
 			msg := map[string]any{
 				"format": img.Format,
-				"image":  base64.StdEncoding.EncodeToString(finalData),
+				"image":  base64.StdEncoding.EncodeToString(sendData),
 				"source": sw.Name,
 				"next":   nextName,
 			}
@@ -1249,9 +1274,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 					if len(parts) == 2 {
 						srcID, _ = strconv.Atoi(parts[1])
 					}
-					// Copy bytes to avoid mutation after send.
-					cp := make([]byte, len(finalData))
-					copy(cp, finalData)
+					// Copy bytes to avoid mutation after send. Capture the
+					// physical frame (post-slice) so timelapse matches the wall.
+					cp := make([]byte, len(sendData))
+					copy(cp, sendData)
 					EnqueueTimelapseCapture(captureJob{
 						DeviceID:    fc.deviceID,
 						CapturedAt:  now,
@@ -1287,7 +1313,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 					curIdx := anim.NextFrame(now)
 					if curIdx != lastIdx {
 						// Bypass LKG for animated re-renders (4.2).
-						rendered, rerr := sw.Source.GetPNG(width, height)
+						rendered, rerr := sw.Source.GetPNG(renderWidth, height)
 						if rerr != nil {
 							slog.Warn("animated re-render failed, keeping last good frame", "source_name", sw.Name, "error", rerr)
 							// keep lastIdx unchanged so next tick retries; continue ticking
@@ -1304,7 +1330,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 							}
 							msg2 := map[string]any{
 								"format": rendered.Format,
-								"image":  base64.StdEncoding.EncodeToString(d2),
+								"image":  base64.StdEncoding.EncodeToString(slicePanels(d2)),
 								"source": sw.Name,
 								"next":   nextName,
 							}

@@ -751,6 +751,11 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 	if height == 0 {
 		height = 64
 	}
+	panelCols, _ := strconv.Atoi(c.PostForm("panel_cols"))
+	if panelCols == 0 {
+		panelCols = 1
+	}
+	panelGap, _ := strconv.Atoi(c.PostForm("panel_gap"))
 	enabled := c.PostForm("enabled") == "on"
 	refreshInterval, _ := strconv.Atoi(c.PostForm("refresh_interval"))
 	if refreshInterval <= 0 {
@@ -862,6 +867,12 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		return
 	}
 
+	if err := render.ValidatePanelSpec(panelCols, panelGap, width, height); err != nil {
+		SetFlash(c, "danger", err.Error())
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+
 	overlay, err := parseOverlayForm(c, height)
 	if err != nil {
 		SetFlash(c, "danger", err.Error())
@@ -873,6 +884,7 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		SetName(name).SetIP(ip).SetPort(port).
 		SetUsername(username).SetPassword(password).
 		SetWidth(width).SetHeight(height).SetEnabled(enabled).
+		SetPanelCols(panelCols).SetPanelGap(panelGap).
 		SetToken(generateDeviceToken()).SetRefreshInterval(refreshInterval).
 		SetContentMode(contentMode).
 		SetBrightnessEnabled(brightnessEnabled).
@@ -948,6 +960,11 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 	password := c.PostForm("password")
 	width, _ := strconv.Atoi(c.PostForm("width"))
 	height, _ := strconv.Atoi(c.PostForm("height"))
+	panelCols, _ := strconv.Atoi(c.PostForm("panel_cols"))
+	if panelCols == 0 {
+		panelCols = 1
+	}
+	panelGap, _ := strconv.Atoi(c.PostForm("panel_gap"))
 	enabled := c.PostForm("enabled") == "on"
 	refreshInterval, _ := strconv.Atoi(c.PostForm("refresh_interval"))
 	if refreshInterval <= 0 {
@@ -1064,6 +1081,12 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		return
 	}
 
+	if err := render.ValidatePanelSpec(panelCols, panelGap, width, height); err != nil {
+		SetFlash(c, "danger", err.Error())
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+
 	overlay, err := parseOverlayForm(c, height)
 	if err != nil {
 		SetFlash(c, "danger", err.Error())
@@ -1075,6 +1098,7 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		SetName(name).SetIP(ip).SetPort(port).
 		SetUsername(username).SetPassword(password).
 		SetWidth(width).SetHeight(height).SetEnabled(enabled).
+		SetPanelCols(panelCols).SetPanelGap(panelGap).
 		SetRefreshInterval(refreshInterval).
 		SetContentMode(contentMode).
 		SetBrightnessEnabled(brightnessEnabled).

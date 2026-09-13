@@ -79,6 +79,38 @@ test.describe('Device lifecycle', () => {
     expect(dims.h).toBe(64);
   });
 
+  test('chained panels render a logical canvas and slice to physical dims', async ({ page, wsFeed }) => {
+    const name = pwName('Panels');
+    await page.goto('/admin/devices/new');
+    await page.fill('#name', name);
+    await page.fill('#ip', '127.0.0.1');
+    await page.fill('#width', '128');
+    await page.fill('#height', '32');
+    await page.fill('#refresh_interval', '1');
+    await page.fill('#panel_cols', '2');
+    await page.fill('#panel_gap', '8');
+    await page.locator('#enabled').check();
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/admin\/devices$/);
+    const id = await getDeviceId(page, name);
+    expect(id).not.toBe('');
+    await page.goto('/');
+    const feed = await wsFeed(`/ws/device/${id}/preview`);
+    let frame = await feed.nextFrame(8000);
+    for (let i = 0; i < 5 && !frame.image; i++) frame = await feed.nextFrame(8000);
+    expect(frame.format).toBe('PNG');
+    // Physical frame must be the declared 128x32, not the 136-wide logical canvas.
+    const dims = await page.evaluate((b64) => {
+      const bin = atob(b64 as string);
+      const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+      const w = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19];
+      const h = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23];
+      return { w, h };
+    }, frame.image);
+    expect(dims.w).toBe(128);
+    expect(dims.h).toBe(32);
+  });
+
   test('delete and token-reject check', async ({ page, request }) => {
     const name = pwName('ToDelete');
     await page.goto('/admin/devices/new');
