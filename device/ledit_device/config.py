@@ -28,6 +28,19 @@ def env_int(name, default):
         return default
 
 
+def env_bool(name, default=False):
+    """Parse a boolean-ish env var (1/true/yes/on, case-insensitive)."""
+    val = os.getenv(name)
+    if val is None:
+        return default
+    return val.strip().lower() in ("1", "true", "yes", "on")
+
+
+def spectrum_enabled():
+    """Opt-in audio spectrum tap (default off)."""
+    return env_bool("LEDIT_SPECTRUM", False)
+
+
 def token():
     t = os.getenv("LEDIT_TOKEN", "").strip()
     if not t:

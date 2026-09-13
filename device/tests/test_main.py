@@ -25,7 +25,7 @@ def test_main_builds_url_and_wiring(monkeypatch):
         # URL built from token and server (slash stripped)
         ws_cls.assert_called_once()
         args, kwargs = ws_cls.call_args
-        assert args[0] == "ws://example:8080/ws/device/abc"
+        assert args[0] == "ws://example:8080/ws/device/abc?protocol=2"
         assert kwargs["on_message"] == mock_client_instance.on_message
         assert kwargs["on_error"] == mock_client_instance.on_error
         assert kwargs["on_close"] == mock_client_instance.on_close

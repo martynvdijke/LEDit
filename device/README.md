@@ -60,9 +60,43 @@ All configuration is via environment variables:
 | `LEDIT_CHAIN`           | `1`                   | Chained panels                   |
 | `LEDIT_PARALLEL`        | `1`                   | Parallel chains                  |
 | `LEDIT_HARDWARE_MAPPING`| `regular`             | rpi-rgb-led-matrix mapping       |
-| `LEDIT_BRIGHTNESS`      | `80`                  | 0–100                            |
+| `LEDIT_BRIGHTNESS`      | `80`                  | Startup brightness, 0–100 (live hint overrides) |
 | `LEDIT_GPIO_SLOWDOWN`   | `1`                   | Set >1 on Pi 4 / fast boards     |
 | `LEDIT_PREVIEW_DIR`     | *(unset)*             | Save frames as PNGs (no hardware)|
+| `LEDIT_SPECTRUM`        | `0`                   | Opt in to the audio spectrum tap (`1`/`true`) |
+| `LEDIT_BUTTON_SHORT_MS` | `500`                 | Nominal short-press window (ms)  |
+| `LEDIT_BUTTON_LONG_MS`  | `800`                 | Hold threshold; press ≥ this emits `hold` (ms) |
+| `LEDIT_BUTTON_HOLD_REPEAT_MS` | `0`             | Repeat `hold` every N ms while held (`0` = once) |
+
+## Protocol v2 (brightness, spectrum, buttons)
+
+The client connects with `?protocol=2`. Servers that understand it reply with a
+`{"type":"welcome","protocol":2,"capabilities":["brightness","spectrum","hold"]}`
+message; if no welcome arrives the client stays in v1 mode with no brightness
+hints and no spectrum. All v2 fields are optional and additive — old servers
+and old `wscat` clients keep working unchanged.
+
+- **Brightness**: frames may carry a `brightness` integer (0–100). When present
+  and in range the client applies it to the running `rpi-rgb-led-matrix`
+  instance live, without recreating the matrix. Until the first hint the
+  `LEDIT_BRIGHTNESS` startup value is used. Absent or out-of-range values leave
+  brightness unchanged.
+- **Spectrum (opt-in, default off)**: with `LEDIT_SPECTRUM=1`, when the server
+  advertises `spectrum` and the current frame source is the audio visualizer
+  (`audio:visualizer`, or the built-in display name `Audio Visualizer`), the
+  client captures microphone audio best-effort and sends
+  `{"type":"spectrum","bins":[...]}` (16 bins, 0–255) at ~20 Hz. No microphone
+  or optional audio library simply means no spectrum is sent — never a crash.
+  Requires `numpy`; `sounddevice` is used opportunistically when installed.
+- **Buttons**: a short press (released before `LEDIT_BUTTON_LONG_MS`) sends the
+  existing `{"action":"next"}` / `{"action":"pause"}` on release. A press held
+  to or beyond `LEDIT_BUTTON_LONG_MS` sends `{"action":"hold"}`, optionally
+  repeating every `LEDIT_BUTTON_HOLD_REPEAT_MS` while held. Debounce is
+  preserved.
+- **v1 compatibility**: a v1 server (no welcome) or a v1 device (no `protocol`
+  param) degrades to v1 behaviour. Frames never change key names or the PNG
+  format.
+
 
 ## OpenTelemetry
 

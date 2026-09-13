@@ -2,6 +2,7 @@
 
 import os
 import sys
+import threading
 
 from .config import env_int, log
 
@@ -37,6 +38,14 @@ class Display:
     def show(self, image):  # pragma: no cover
         raise NotImplementedError  # pragma: no cover
 
+    def set_brightness(self, level):  # pragma: no cover
+        """Apply a live brightness hint (0-100). No-op on file/preview surfaces.
+
+        Overridden by :class:`MatrixDisplay`; out-of-range values are ignored by
+        the hardware implementation.
+        """
+        return
+
 
 class MatrixDisplay(Display):  # pragma: no cover - hardware
     def __init__(self):  # pragma: no cover
@@ -52,6 +61,7 @@ class MatrixDisplay(Display):  # pragma: no cover - hardware
         options.gpio_slowdown = env_int("LEDIT_GPIO_SLOWDOWN", 1)  # pragma: no cover
         options.pwm_bits = 11  # pragma: no cover
         self.matrix = RGBMatrix(options=options)  # pragma: no cover
+        self._brightness_lock = threading.Lock()  # pragma: no cover
 
     @property
     def width(self):  # pragma: no cover
@@ -65,6 +75,28 @@ class MatrixDisplay(Display):  # pragma: no cover - hardware
         canvas = self.matrix.CreateFrameCanvas()  # pragma: no cover
         canvas.SetImage(image)  # pragma: no cover
         self.matrix.SwapOnVSync(canvas)  # pragma: no cover
+
+    def set_brightness(self, level):
+        """Update the hardware PWM brightness live, without recreating matrix.
+
+        Ignores non-integer and out-of-range values; a no-op when the driver
+        does not expose a writable ``brightness`` attribute.
+        """
+        if isinstance(level, bool) or not isinstance(level, int):
+            return
+        if level < 0 or level > 100:
+            return
+        lock = getattr(self, "_brightness_lock", None)
+        if lock is None:
+            return
+        with lock:
+            matrix = getattr(self, "matrix", None)
+            if matrix is None or not hasattr(matrix, "brightness"):
+                return
+            try:
+                matrix.brightness = level
+            except Exception:  # noqa: BLE001 - driver may reject; best effort
+                pass
 
 
 class FileDisplay(Display):

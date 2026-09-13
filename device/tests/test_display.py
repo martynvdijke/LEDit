@@ -99,3 +99,52 @@ def test_make_display_fallback(monkeypatch):
 
         disp = make_display()
         assert isinstance(disp, FileDisplay)
+
+
+def _matrix_display(monkeypatch):
+    import sys
+
+    mock_rgbmatrix = mock.MagicMock()
+    mock_options_cls = mock.MagicMock()
+    mock_rgbmatrix.RGBMatrixOptions = mock_options_cls
+    matrix = mock.MagicMock(width=32, height=16)
+    matrix.brightness = 80
+    mock_rgbmatrix.RGBMatrix.return_value = matrix
+    monkeypatch.setitem(sys.modules, "rgbmatrix", mock_rgbmatrix)
+    from ledit_device.display import MatrixDisplay
+
+    md = MatrixDisplay()
+    return md, matrix
+
+
+def test_matrix_set_brightness_updates_without_recreating(monkeypatch):
+    md, matrix = _matrix_display(monkeypatch)
+    md.set_brightness(30)
+    assert matrix.brightness == 30
+    # Same underlying matrix object, never recreated.
+    assert md.matrix is matrix
+    md.set_brightness(70)
+    assert matrix.brightness == 70
+    assert md.matrix is matrix
+
+
+def test_matrix_set_brightness_ignores_invalid(monkeypatch):
+    md, matrix = _matrix_display(monkeypatch)
+    md.set_brightness(30)
+    for bad in (150, -10, 101, "40", 40.5, True, None):
+        md.set_brightness(bad)
+    assert matrix.brightness == 30
+
+
+def test_matrix_set_brightness_noop_without_attribute(monkeypatch):
+    md, matrix = _matrix_display(monkeypatch)
+    # A driver matrix without a writable brightness attribute must not raise.
+    md.matrix = mock.MagicMock(spec=[])
+    md.set_brightness(50)
+
+
+def test_file_display_set_brightness_is_noop(tmp_path):
+    fd = FileDisplay(str(tmp_path), 8, 8)
+    # Base no-op keeps FileDisplay usable when the client applies hints.
+    fd.set_brightness(20)
+

@@ -5,7 +5,7 @@ Run as ``python -m ledit_device`` or via the ``ledit-device`` console script.
 
 import websocket  # websocket-client
 
-from .client import Client
+from .client import Client, build_ws_url
 from .config import log, server_url, token
 from .display import make_display
 from .telemetry import init_telemetry
@@ -14,9 +14,10 @@ from .telemetry import init_telemetry
 def main():
     telemetry = init_telemetry()
     buttons = None
+    client = None
     try:
         token_value = token()
-        url = "%s/ws/device/%s" % (server_url(), token_value)
+        url = build_ws_url(server_url(), token_value)
 
         display = make_display()
         client = Client(display)
@@ -45,6 +46,11 @@ def main():
         # run_forever with reconnect=True keeps the device online across drops.
         ws.run_forever(ping_interval=30, ping_timeout=10, reconnect=5)
     finally:
+        if client is not None:  # pragma: no cover
+            try:  # pragma: no cover
+                client.close()  # pragma: no cover
+            except Exception:  # pragma: no cover
+                pass  # pragma: no cover
         if buttons is not None:  # pragma: no cover
             try:  # pragma: no cover
                 buttons.close()  # pragma: no cover

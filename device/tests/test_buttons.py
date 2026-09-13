@@ -168,3 +168,99 @@ def test_setup_alias(monkeypatch, caplog):
     with caplog.at_level(logging.INFO, logger="ledit_device.buttons"):
         bh.setup()
     assert any("disabled" in r.message.lower() for r in caplog.records)
+
+
+def _gesture_handler(monkeypatch, short_ms=300, long_ms=600, repeat_ms=0):
+    monkeypatch.setenv("LEDIT_BTN_NEXT_PIN", "5")
+    monkeypatch.setenv("LEDIT_BUTTON_SHORT_MS", str(short_ms))
+    monkeypatch.setenv("LEDIT_BUTTON_LONG_MS", str(long_ms))
+    monkeypatch.setenv("LEDIT_BUTTON_HOLD_REPEAT_MS", str(repeat_ms))
+    sent = []
+    bh = ButtonHandler(sender=lambda m: sent.append(json.loads(m)))
+    return bh, sent
+
+
+def test_short_press_emits_next_on_release(monkeypatch):
+    bh, sent = _gesture_handler(monkeypatch)
+    bh.press_next_down()
+    time.sleep(0.05)
+    bh.press_next_up()
+    assert sent == [{"action": "next"}]
+    bh.close()
+
+
+def test_short_press_pause(monkeypatch):
+    bh, sent = _gesture_handler(monkeypatch)
+    bh.press_pause_down()
+    time.sleep(0.05)
+    bh.press_pause_up()
+    assert sent == [{"action": "pause"}]
+    bh.close()
+
+
+def test_long_press_emits_hold_not_next(monkeypatch):
+    bh, sent = _gesture_handler(monkeypatch)
+    bh.press_next_down()
+    time.sleep(0.65)
+    bh.press_next_up()
+    actions = [m["action"] for m in sent]
+    assert "hold" in actions
+    assert "next" not in actions
+    bh.close()
+
+
+def test_configurable_thresholds_respected(monkeypatch):
+    bh, sent = _gesture_handler(monkeypatch, short_ms=300, long_ms=600)
+    # 400ms press: below the long threshold -> short next.
+    bh.press_next_down()
+    time.sleep(0.4)
+    bh.press_next_up()
+    assert sent == [{"action": "next"}]
+
+    # 700ms hold: at/after the long threshold -> hold.
+    bh._last_press.clear()
+    bh.press_next_down()
+    time.sleep(0.7)
+    bh.press_next_up()
+    assert any(m["action"] == "hold" for m in sent)
+    bh.close()
+
+
+def test_hold_repeat(monkeypatch):
+    bh, sent = _gesture_handler(monkeypatch, short_ms=100, long_ms=200, repeat_ms=50)
+    bh.press_next_down()
+    time.sleep(0.5)
+    bh.press_next_up()
+    holds = [m for m in sent if m["action"] == "hold"]
+    assert len(holds) >= 2
+    bh.close()
+
+
+def test_default_hold_sender_used(monkeypatch):
+    monkeypatch.setenv("LEDIT_BTN_NEXT_PIN", "5")
+    monkeypatch.setenv("LEDIT_BUTTON_SHORT_MS", "50")
+    monkeypatch.setenv("LEDIT_BUTTON_LONG_MS", "100")
+    sent = []
+    bh = ButtonHandler(sender=lambda m: sent.append(json.loads(m)))
+    bh.press_next_down()
+    time.sleep(0.15)
+    bh.press_next_up()
+    assert {"action": "hold"} in sent
+    bh.close()
+
+
+def test_down_debounce(monkeypatch):
+    bh, sent = _gesture_handler(monkeypatch)
+    bh.press_next_down()
+    bh.press_next_down()  # within debounce -> ignored
+    bh.press_next_up()
+    assert sent == [{"action": "next"}]
+    bh.close()
+
+
+def test_close_cancels_pending_timers(monkeypatch):
+    bh, sent = _gesture_handler(monkeypatch, long_ms=50)
+    bh.press_next_down()
+    bh.close()
+    time.sleep(0.1)
+    assert sent == []

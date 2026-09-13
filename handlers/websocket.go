@@ -2,10 +2,20 @@
 //
 // Brightness is WS-only and applied server-side as a linear RGB multiplier
 // before PNG encode (after transition blending via ApplyBrightnessNRGBA /
-// dimPNGBytes). TRMNL devices are unaffected. A future protocol extension
-// reserving a `{brightness:int}` message for client-side dimming is
-// contemplated but not yet implemented; the server-side multiplier remains
-// the source of truth.
+// dimPNGBytes). TRMNL devices are unaffected.
+//
+// Device protocol v2 (negotiated with ?protocol=2; missing/unknown values fall
+// back to v1) adds, additively:
+//   - a server welcome: {"type":"welcome","protocol":2,
+//     "capabilities":["brightness","spectrum","hold"]}
+//   - an optional "brightness" int (0-100) on frame messages, present only when
+//     the effective level changed since the last frame on that connection
+//   - client spectrum ingestion: {"type":"spectrum","bins":[int,...]} with
+//     16-32 bins in 0-255, re-rendering the visualizer from real audio
+//   - a {"action":"hold"} control event (reserved no-op for now)
+//
+// The server-side RGB multiplier remains the source of truth; v1 frames are
+// byte-identical to before.
 package handlers
 
 import (
@@ -18,6 +28,7 @@ import (
 	"image/draw"
 	"image/png"
 	"log/slog"
+	"math"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -85,6 +96,7 @@ type feedConn struct {
 	overlay        render.OverlaySpec
 	panelCols      int // physical panels chained horizontally (0/1 = single panel)
 	panelGap       int // hidden bezel pixels between panels (0 = none)
+	protocol       int // negotiated device protocol (0/1 = v1, 2 = v2); zero value keeps v1
 }
 
 // overlaySpecForDevice maps persisted device columns to the render overlay spec.
@@ -689,6 +701,25 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 	}
 	defer conn.Close()
 
+	// Protocol negotiation (v2): a `?protocol=2` query param opts the device
+	// into v2. Anything missing/malformed/unknown stays v1 — never error or
+	// drop the connection.
+	protocol := 0
+	if c.Query("protocol") == "2" {
+		protocol = 2
+	}
+	if protocol >= 2 {
+		welcome, _ := json.Marshal(map[string]any{
+			"type":         "welcome",
+			"protocol":     2,
+			"capabilities": []string{"brightness", "spectrum", "hold"},
+		})
+		if err := conn.WriteMessage(websocket.TextMessage, welcome); err != nil {
+			slog.Warn("failed to send device welcome", "device", device.Name, "error", err)
+			return
+		}
+	}
+
 	// Mark the device as seen; clear on disconnect so status reflects
 	// connectivity.
 	if err := h.Client.DeviceSettings.UpdateOneID(device.ID).SetLastSeenAt(time.Now()).Exec(context.Background()); err != nil {
@@ -815,6 +846,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		overlay:   overlaySpecForDevice(device),
 		panelCols: device.PanelCols,
 		panelGap:  device.PanelGap,
+		protocol:  protocol,
 		frames: func() {
 			if err := h.Client.DeviceSettings.UpdateOneID(device.ID).AddFramesServed(1).Exec(context.Background()); err != nil {
 				slog.Warn("failed to increment device frames_served", "device", device.Name, "error", err)
@@ -923,6 +955,25 @@ func dimPNGBytes(data []byte, level int) []byte {
 // brightnessFn returns effective level 0-100; nil means 100.
 type brightnessFn func() int
 
+// parseSpectrumBins validates a v2 spectrum payload: 16-32 whole-number bins
+// each in 0-255. Anything else is rejected so a malformed device frame cannot
+// poison the visualizer.
+func parseSpectrumBins(raw any) ([]int, bool) {
+	arr, ok := raw.([]any)
+	if !ok || len(arr) < 16 || len(arr) > 32 {
+		return nil, false
+	}
+	bins := make([]int, len(arr))
+	for i, v := range arr {
+		f, ok := v.(float64)
+		if !ok || f != math.Trunc(f) || f < 0 || f > 255 {
+			return nil, false
+		}
+		bins[i] = int(f)
+	}
+	return bins, true
+}
+
 // serveFeed runs the source-cycle loop for a single WebSocket connection,
 // rendering each datasource at the given resolution and advancing on the given
 // timeout. Notifications are broadcast to every connection exactly once.
@@ -969,6 +1020,9 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 
 	var prevPNG []byte
 	var prevOK bool
+	// Last brightness hint sent on this connection. -1 forces the first v2 frame
+	// to carry the level; v1 never sends one.
+	lastSentBrightness := -1
 
 	// Read control messages in a goroutine
 	done := make(chan struct{})
@@ -984,30 +1038,41 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			if err != nil {
 				return
 			}
-			var cmd map[string]string
+			var cmd map[string]any
 			if err := json.Unmarshal(msg, &cmd); err != nil {
 				continue
 			}
 			// Optional best-effort device acknowledgement: {"ack":"<message_id>"}.
 			// Ignored for the unauthenticated preview feed (deviceID 0).
-			if ack := cmd["ack"]; ack != "" {
+			if ack, _ := cmd["ack"].(string); ack != "" {
 				recordAck(fc.deviceID, ack)
 				continue
 			}
-			switch cmd["action"] {
+			// v2 client spectrum tap: {"type":"spectrum","bins":[...]} at ~20Hz.
+			// Validated (16-32 ints, 0-255); malformed frames are ignored. v1
+			// connections never ingest spectrum.
+			if typ, _ := cmd["type"].(string); typ == "spectrum" {
+				if fc.protocol >= 2 {
+					if bins, ok := parseSpectrumBins(cmd["bins"]); ok {
+						datasource.SetVisualizerBins(bins)
+					}
+				}
+				continue
+			}
+			action, _ := cmd["action"].(string)
+			switch action {
 			case "next":
 				feed.Next()
 			case "pause":
 				feed.Pause()
 			case "resume":
 				feed.Resume()
-				// Future protocol v2: client-side audio tap
-				// Device would send {type:"spectrum", bins:[...]} at ~20Hz for server re-render.
-				// Reserved here; not parsed in v1 (metadata-driven visualizer only).
-				// case "spectrum":
-				//      handleSpectrumBins(cmd["bins"])
 			case "dismiss_alarm":
 				feed.DismissAlarm()
+			case "hold":
+				// v2 long-press gesture: reserved no-op for now. Must not error
+				// so future server-side handling can be added additively.
+				slog.Debug("device hold gesture", "device", fc.deviceID)
 			}
 		}
 	}()
@@ -1020,6 +1085,25 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			return brightnessProviderForTest()
 		}
 		return 100
+	}
+	// addBrightnessHint attaches the v2 brightness field only when the effective
+	// level changed since the last frame sent on this connection. v1 frames are
+	// never modified. Out-of-range levels are clamped.
+	addBrightnessHint := func(msg map[string]any, lvl int) {
+		if fc.protocol < 2 {
+			return
+		}
+		if lvl < 0 {
+			lvl = 0
+		}
+		if lvl > 100 {
+			lvl = 100
+		}
+		if lvl == lastSentBrightness {
+			return
+		}
+		msg["brightness"] = lvl
+		lastSentBrightness = lvl
 	}
 	// Overlay compositing happens at send time only, after the LKG cache lookup,
 	// so the cached content frame stays overlay-free and all devices sharing a
@@ -1262,6 +1346,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				"source": sw.Name,
 				"next":   nextName,
 			}
+			addBrightnessHint(msg, lvl)
 			if stale {
 				msg["stale"] = true
 				msg["stale_age"] = defaultLKG.StaleAge(cacheKey)
@@ -1355,6 +1440,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 								"source": sw.Name,
 								"next":   nextName,
 							}
+							addBrightnessHint(msg2, lvl2)
 							data2, _ := json.Marshal(msg2)
 							if err := conn.WriteMessage(websocket.TextMessage, data2); err != nil {
 								if fc.deviceID > 0 {
