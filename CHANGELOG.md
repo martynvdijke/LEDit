@@ -1,3 +1,10 @@
+# [1.38.0](https://github.com/martynvdijke/LEDit/compare/v1.37.0...v1.38.0) (2026-09-13)
+
+
+### Features
+
+* add plugin manifest, config and catalog ([1ea0cd5](https://github.com/martynvdijke/LEDit/commit/1ea0cd533832248fc4c1820e6e85a97986a67633))
+
 # [1.37.0](https://github.com/martynvdijke/LEDit/compare/v1.36.0...v1.37.0) (2026-09-13)
 
 
