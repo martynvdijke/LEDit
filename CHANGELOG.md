@@ -1,3 +1,10 @@
+# [1.39.0](https://github.com/martynvdijke/LEDit/compare/v1.38.0...v1.39.0) (2026-09-13)
+
+
+### Features
+
+* mirror the wall and add gesture control to the guest remote ([04db7b1](https://github.com/martynvdijke/LEDit/commit/04db7b1793fd0e61cba76347e3751b10632559f7))
+
 # [1.38.0](https://github.com/martynvdijke/LEDit/compare/v1.37.0...v1.38.0) (2026-09-13)
 
 
