@@ -1,3 +1,10 @@
+# [1.43.0](https://github.com/martynvdijke/LEDit/compare/v1.42.0...v1.43.0) (2026-09-13)
+
+
+### Features
+
+* add device protocol v2 with brightness, spectrum and gestures ([ac949d9](https://github.com/martynvdijke/LEDit/commit/ac949d9fd229c09d2dc56c876240f5725c1889c4))
+
 # [1.42.0](https://github.com/martynvdijke/LEDit/compare/v1.41.0...v1.42.0) (2026-09-13)
 
 
