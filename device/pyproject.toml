@@ -28,6 +28,11 @@ ledit-device = "ledit_device.__main__:main"
 [tool.setuptools]
 packages = ["ledit_device"]
 
+[tool.pytest.ini_options]
+markers = [
+    "integration: hits an ephemeral LEDit server (run via task test:integration)",
+]
+
 [tool.coverage.run]
 omit = ["device/tests/*"]
 branch = true

@@ -17,33 +17,25 @@ from .harness import start_server, stop_server, seed_settings, create_device, ge
 def test_invalid_token_rejected(tmp_path):
     try:
         import websockets
+        from websockets.exceptions import InvalidStatus
     except ImportError:
         pytest.skip("websockets not installed")
     srv = None
     try:
         srv = start_server(tmp_path / "srv")
         ws_url = srv["ws_url"]
-        # invalid token should be rejected within 2s - either 401 before upgrade or close immediately
-        async def run():
-            import websockets
-            try:
-                async with websockets.connect(f"{ws_url}/ws/device/invalid-token-xyz", open_timeout=2) as ws:
-                    # if connected, server should close quickly or send error
-                    try:
-                        raw = await asyncio.wait_for(ws.recv(), timeout=2)
-                        # D might send error json then close
-                        data = json.loads(raw) if raw else {}
-                        # consider rejection if error field or close follows
-                        await asyncio.wait_for(ws.recv(), timeout=2)
-                        assert False, "should have been closed"
-                    except (asyncio.TimeoutError, websockets.exceptions.ConnectionClosed):
-                        pass  # closed is expected
-            except Exception as e:
-                # connection failed to establish is also rejection
-                msg = str(e).lower()
-                assert "401" in msg or "403" in msg or "handshake" in msg or "invalid" in msg or True
 
-        asyncio.run(asyncio.wait_for(run(), timeout=4))
+        # The server answers a bad token with HTTP 401 *before* the upgrade, so
+        # the client handshake must fail with that status rather than connect.
+        async def run():
+            with pytest.raises(InvalidStatus) as excinfo:
+                async with websockets.connect(
+                    f"{ws_url}/ws/device/invalid-token-xyz", open_timeout=2
+                ):
+                    pass
+            assert excinfo.value.response.status_code == 401
+
+        asyncio.run(asyncio.wait_for(run(), timeout=5))
     finally:
         if srv:
             stop_server(srv["proc"])
