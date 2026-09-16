@@ -199,6 +199,18 @@ func (s *Server) AdminPreviewDatasource(c *gin.Context) {
 			CompletionMessage: c.PostForm("completion_message"),
 			Timezone:          tz,
 		}
+	case "immich":
+		src = &datasource.ImmichDS{URL: c.PostForm("url"), Token: c.PostForm("token"), Config: c.PostForm("config")}
+	case "qbittorrent":
+		src = &datasource.QBittorrentDS{URL: c.PostForm("url"), Token: c.PostForm("token")}
+	case "sabnzbd":
+		src = &datasource.SabnzbdDS{URL: c.PostForm("url"), Token: c.PostForm("token")}
+	case "overseerr":
+		src = &datasource.OverseerrDS{URL: c.PostForm("url"), Token: c.PostForm("token")}
+	case "uptimekuma":
+		src = &datasource.UptimeKumaDS{URL: c.PostForm("url"), Token: c.PostForm("token")}
+	case "speedtest":
+		src = &datasource.SpeedtestDS{URL: c.PostForm("url"), Token: c.PostForm("token")}
 	case "aidigest":
 		ttl := mustAtoi(c.DefaultPostForm("ttl_minutes", "30"))
 		if ttl < 1 {
