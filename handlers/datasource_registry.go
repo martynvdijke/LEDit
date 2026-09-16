@@ -339,6 +339,94 @@ func init() {
 				return u.AddJellyfins(obj.(*ent.Jellyfin))
 			},
 		},
+		"qbittorrent": {
+			TypeName: "QBittorrent",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Qbittorrent.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Qbittorrent.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Qbittorrent.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error {
+				return db.Qbittorrent.DeleteOneID(id).Exec(ctx)
+			},
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddQbittorrents(obj.(*ent.Qbittorrent))
+			},
+		},
+		"sabnzbd": {
+			TypeName: "SABnzbd",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Sabnzbd.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Sabnzbd.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Sabnzbd.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Sabnzbd.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddSabnzbd(obj.(*ent.Sabnzbd))
+			},
+		},
+		"overseerr": {
+			TypeName: "Overseerr",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Overseerr.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Overseerr.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Overseerr.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Overseerr.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddOverseerrs(obj.(*ent.Overseerr))
+			},
+		},
+		"uptimekuma": {
+			TypeName: "Uptime Kuma",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.UptimeKuma.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.UptimeKuma.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.UptimeKuma.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error {
+				return db.UptimeKuma.DeleteOneID(id).Exec(ctx)
+			},
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddUptimeKumas(obj.(*ent.UptimeKuma))
+			},
+		},
+		"speedtest": {
+			TypeName: "Speedtest",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Speedtest.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Speedtest.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Speedtest.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Speedtest.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddSpeedtests(obj.(*ent.Speedtest))
+			},
+		},
+		"immich": {
+			TypeName: "Immich",
+			Get:      func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Immich.Get(ctx, id) },
+			Delete:   func(db *ent.Client, ctx context.Context, id int) error { return db.Immich.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddImmichs(obj.(*ent.Immich))
+			},
+			CreateFields: func(db *ent.Client, ctx context.Context, f map[string]string) (any, error) {
+				return db.Immich.Create().SetURL(f["url"]).SetToken(f["token"]).SetConfig(f["config"]).Save(ctx)
+			},
+			UpdateFields: func(db *ent.Client, ctx context.Context, id int, f map[string]string) error {
+				return db.Immich.UpdateOneID(id).SetURL(f["url"]).SetToken(f["token"]).SetConfig(f["config"]).Exec(ctx)
+			},
+		},
 		"pixelart": {
 			TypeName: "Pixel Art",
 			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) {
@@ -554,7 +642,7 @@ func (s *Server) editFieldDS(c *gin.Context, endpoint string, extra gin.H) {
 	}
 	if entry.CreateFields != nil {
 		data["has_name"] = endpoint != "genericapi"
-		data["has_config"] = endpoint == "genericapi" || endpoint == "uptime"
+		data["has_config"] = endpoint == "genericapi" || endpoint == "uptime" || endpoint == "immich"
 	}
 	for k, v := range extra {
 		data[k] = v

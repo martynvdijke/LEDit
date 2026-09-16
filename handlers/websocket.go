@@ -256,6 +256,30 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 	for _, jf := range jellyfins {
 		sources = append(sources, sourceWithName{Name: "Jellyfin", Source: &datasource.JellyfinDS{Token: jf.Token, URL: jf.URL}, cacheKey: fmt.Sprintf("jellyfin:%d", jf.ID)})
 	}
+	immichs, _ := settings.Edges.ImmichsOrErr()
+	for _, im := range immichs {
+		sources = append(sources, sourceWithName{Name: "Immich", Source: &datasource.ImmichDS{URL: im.URL, Token: im.Token, Config: im.Config}, cacheKey: fmt.Sprintf("immich:%d", im.ID)})
+	}
+	qbittorrents, _ := settings.Edges.QbittorrentsOrErr()
+	for _, qb := range qbittorrents {
+		sources = append(sources, sourceWithName{Name: "QBittorrent", Source: &datasource.QBittorrentDS{Token: qb.Token, URL: qb.URL}, cacheKey: fmt.Sprintf("qbittorrent:%d", qb.ID)})
+	}
+	sabnzbs, _ := settings.Edges.SabnzbdOrErr()
+	for _, sb := range sabnzbs {
+		sources = append(sources, sourceWithName{Name: "SABnzbd", Source: &datasource.SabnzbdDS{Token: sb.Token, URL: sb.URL}, cacheKey: fmt.Sprintf("sabnzbd:%d", sb.ID)})
+	}
+	overseerrs, _ := settings.Edges.OverseerrsOrErr()
+	for _, ov := range overseerrs {
+		sources = append(sources, sourceWithName{Name: "Overseerr", Source: &datasource.OverseerrDS{Token: ov.Token, URL: ov.URL}, cacheKey: fmt.Sprintf("overseerr:%d", ov.ID)})
+	}
+	uptimekumas, _ := settings.Edges.UptimeKumasOrErr()
+	for _, uk := range uptimekumas {
+		sources = append(sources, sourceWithName{Name: "Uptime Kuma", Source: &datasource.UptimeKumaDS{Token: uk.Token, URL: uk.URL}, cacheKey: fmt.Sprintf("uptimekuma:%d", uk.ID)})
+	}
+	speedtests, _ := settings.Edges.SpeedtestsOrErr()
+	for _, st := range speedtests {
+		sources = append(sources, sourceWithName{Name: "Speedtest", Source: &datasource.SpeedtestDS{Token: st.Token, URL: st.URL}, cacheKey: fmt.Sprintf("speedtest:%d", st.ID)})
+	}
 
 	nowPlaying, _ := settings.Edges.NowPlayingSourcesOrErr()
 	for _, np := range nowPlaying {
@@ -322,6 +346,19 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 			continue
 		}
 		sources = append(sources, sourceWithName{Name: "matrix:" + ml.Name, Source: mds, cacheKey: fmt.Sprintf("matrix:%d", ml.ID)})
+	}
+
+	// Enabled compositions stream as a single "composition:<name>" source.
+	comps, _ := settings.Edges.CompositionsOrErr()
+	for _, comp := range comps {
+		if !comp.Enabled {
+			continue
+		}
+		cds := h.buildCompositorDS(settings, comp, 0)
+		if cds == nil {
+			continue
+		}
+		sources = append(sources, sourceWithName{Name: "composition:" + comp.Name, Source: cds, cacheKey: fmt.Sprintf("composition:%d", comp.ID)})
 	}
 
 	if settings.Random {
@@ -658,7 +695,7 @@ func (h *WSHub) HandleWS(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().Only(c.Request.Context())
+	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().Only(c.Request.Context())
 	if err != nil {
 		slog.Error("Failed to load settings for WebSocket", "error", err, "source", "websocket")
 		return
@@ -731,7 +768,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		}
 	}()
 
-	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().Only(c.Request.Context())
+	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().Only(c.Request.Context())
 	if err != nil {
 		slog.Error("Failed to load settings for device WebSocket", "error", err, "source", "websocket", "device", device.Name)
 		return
@@ -889,7 +926,7 @@ func (h *WSHub) HandleDevicePreviewWS(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().Only(c.Request.Context())
+	settings, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().Only(c.Request.Context())
 	if err != nil {
 		slog.Error("Failed to load settings for device preview WebSocket", "error", err, "source", "websocket", "device", device.Name)
 		return

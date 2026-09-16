@@ -42,9 +42,13 @@ var pathToActive = map[string]string{
 	"/admin/delivery":        "delivery",
 	"/admin/password":        "password",
 	"/admin/matrixlayouts":   "matrixlayouts",
+	"/admin/compositions":    "compositions",
+	"/admin/layouts":         "layouts",
 	"/admin/alarms":          "alarms",
 	"/admin/scenes":          "scenes",
 	"/admin/guest-remotes":   "guest-remotes",
+	"/admin/inbound":         "inbound",
+	"/admin/photo-frame":     "photo-frame",
 	"/admin/webhook":         "webhook",
 	"/admin/mqtt":            "mqtt",
 	"/admin/telegram":        "telegram",
@@ -144,7 +148,7 @@ func (s *Server) IndexHandler(c *gin.Context) {
 }
 
 func (s *Server) AdminDashboard(c *gin.Context) {
-	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithEmailSettings().WithAiSettings().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithPixelArts().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().Only(s.Ctx)
+	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().WithImages().WithVideos().WithCrypto().WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithEmailSettings().WithAiSettings().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithPixelArts().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().Only(s.Ctx)
 
 	stats := gin.H{
 		"has_settings": err == nil,
@@ -167,6 +171,7 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		newsFeedItems, _ := settings.Edges.NewsFeedsOrErr()
 		genericAPIItems, _ := settings.Edges.GenericApisOrErr()
 		matrixLayoutItems, _ := settings.Edges.MatrixLayoutsOrErr()
+		compositionItems, _ := settings.Edges.CompositionsOrErr()
 		countdownItems, _ := settings.Edges.CountdownsOrErr()
 		aiDigestItems, _ := settings.Edges.AiDigestsOrErr()
 		pixelArtItems, _ := settings.Edges.PixelArtsOrErr()
@@ -177,6 +182,12 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		sportsItems, _ := settings.Edges.SportsOrErr()
 		sunMoonItems, _ := settings.Edges.SunmoonsOrErr()
 		jellyfinItems, _ := settings.Edges.JellyfinsOrErr()
+		immichItems, _ := settings.Edges.ImmichsOrErr()
+		qbittorrentItems, _ := settings.Edges.QbittorrentsOrErr()
+		sabnzbdItems, _ := settings.Edges.SabnzbdOrErr()
+		overseerrItems, _ := settings.Edges.OverseerrsOrErr()
+		uptimekumaItems, _ := settings.Edges.UptimeKumasOrErr()
+		speedtestItems, _ := settings.Edges.SpeedtestsOrErr()
 
 		type sourceEntry struct {
 			ID       int
@@ -242,6 +253,9 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		for _, ml := range matrixLayoutItems {
 			sources = append(sources, sourceEntry{ID: ml.ID, Type: "Matrix Layout", Endpoint: "matrixlayout", Name: ml.Name})
 		}
+		for _, comp := range compositionItems {
+			sources = append(sources, sourceEntry{ID: comp.ID, Type: "Composition", Endpoint: "composition", Name: comp.Name})
+		}
 		for _, cd := range countdownItems {
 			sources = append(sources, sourceEntry{ID: cd.ID, Type: "Countdown", Endpoint: "countdowns", Name: cd.Name})
 		}
@@ -274,6 +288,24 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		}
 		for _, jf := range jellyfinItems {
 			sources = append(sources, sourceEntry{ID: jf.ID, Type: "Jellyfin", Endpoint: "jellyfin", Token: jf.Token, URL: jf.URL})
+		}
+		for _, x := range immichItems {
+			sources = append(sources, sourceEntry{ID: x.ID, Type: "Immich", Endpoint: "immich", Token: x.Token, URL: x.URL, Name: fmt.Sprintf("Immich #%d", x.ID)})
+		}
+		for _, x := range qbittorrentItems {
+			sources = append(sources, sourceEntry{ID: x.ID, Type: "QBittorrent", Endpoint: "qbittorrent", Token: x.Token, URL: x.URL, Name: fmt.Sprintf("QBittorrent #%d", x.ID)})
+		}
+		for _, x := range sabnzbdItems {
+			sources = append(sources, sourceEntry{ID: x.ID, Type: "SABnzbd", Endpoint: "sabnzbd", Token: x.Token, URL: x.URL, Name: fmt.Sprintf("SABnzbd #%d", x.ID)})
+		}
+		for _, x := range overseerrItems {
+			sources = append(sources, sourceEntry{ID: x.ID, Type: "Overseerr", Endpoint: "overseerr", Token: x.Token, URL: x.URL, Name: fmt.Sprintf("Overseerr #%d", x.ID)})
+		}
+		for _, x := range uptimekumaItems {
+			sources = append(sources, sourceEntry{ID: x.ID, Type: "Uptime Kuma", Endpoint: "uptimekuma", Token: x.Token, URL: x.URL, Name: fmt.Sprintf("Uptime Kuma #%d", x.ID)})
+		}
+		for _, x := range speedtestItems {
+			sources = append(sources, sourceEntry{ID: x.ID, Type: "Speedtest", Endpoint: "speedtest", Token: x.Token, URL: x.URL, Name: fmt.Sprintf("Speedtest #%d", x.ID)})
 		}
 
 		// Attach live health status (from the in-memory registry) to each
@@ -326,6 +358,7 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 			"newsfeed_count":          len(newsFeedItems),
 			"genericapi_count":        len(genericAPIItems),
 			"matrixlayout_count":      len(matrixLayoutItems),
+			"composition_count":       len(compositionItems),
 			"countdown_count":         len(countdownItems),
 			"aidigest_count":          len(aiDigestItems),
 			"pixelart_count":          len(pixelArtItems),
@@ -336,12 +369,18 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 			"sports_count":            len(sportsItems),
 			"sunmoon_count":           len(sunMoonItems),
 			"jellyfin_count":          len(jellyfinItems),
+			"immich_count":            len(immichItems),
+			"qbittorrent_count":       len(qbittorrentItems),
+			"sabnzbd_count":           len(sabnzbdItems),
+			"overseerr_count":         len(overseerrItems),
+			"uptimekuma_count":        len(uptimekumaItems),
+			"speedtest_count":         len(speedtestItems),
 			"health_green":            healthGreen,
 			"health_yellow":           healthYellow,
 			"health_red":              healthRed,
 			"avg_ewma_ms":             avgEWMA,
 			"cache_hit_ratio_percent": cacheRatio,
-			"total_sources":           len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems) + len(countdownItems) + len(aiDigestItems) + len(pixelArtItems) + len(transitItems) + len(uptimeItems) + len(piholeItems) + len(githubItems) + len(sportsItems) + len(sunMoonItems) + len(jellyfinItems),
+			"total_sources":           len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems) + len(compositionItems) + len(countdownItems) + len(aiDigestItems) + len(pixelArtItems) + len(transitItems) + len(uptimeItems) + len(piholeItems) + len(githubItems) + len(sportsItems) + len(sunMoonItems) + len(jellyfinItems) + len(immichItems) + len(qbittorrentItems) + len(sabnzbdItems) + len(overseerrItems) + len(uptimekumaItems) + len(speedtestItems),
 		}
 	}
 	stats["pinned_by"] = GlobalFeed.Status()["pinned_by"]
@@ -1049,6 +1088,140 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		return
 	}
 
+	transport := c.DefaultPostForm("transport", "websocket")
+	switch transport {
+	case "websocket", "wled", "artnet":
+	default:
+		SetFlash(c, "danger", "transport must be one of websocket, wled, artnet")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	wledRealtimeMode := c.DefaultPostForm("wled_realtime_mode", "ddp")
+	switch wledRealtimeMode {
+	case "ddp", "e131", "http":
+	default:
+		SetFlash(c, "danger", "wled_realtime_mode must be one of ddp, e131, http")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	outputColorOrder := c.DefaultPostForm("output_color_order", "RGB")
+	switch outputColorOrder {
+	case "RGB", "GRB", "BGR":
+	default:
+		SetFlash(c, "danger", "output_color_order must be one of RGB, GRB, BGR")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	outputMatrixLayout := c.DefaultPostForm("output_matrix_layout", "row-major")
+	switch outputMatrixLayout {
+	case "row-major", "serpentine":
+	default:
+		SetFlash(c, "danger", "output_matrix_layout must be one of row-major, serpentine")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	outputFpsRaw := strings.TrimSpace(c.PostForm("output_fps"))
+	outputFps := 20
+	if outputFpsRaw != "" {
+		v, err := strconv.Atoi(outputFpsRaw)
+		if err != nil {
+			SetFlash(c, "danger", "output_fps: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v < 1 {
+			SetFlash(c, "danger", "output_fps: must be >= 1")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v > 60 {
+			v = 60 // max 60 fps
+		}
+		outputFps = v
+	}
+	outputGammaRaw := strings.TrimSpace(c.PostForm("output_gamma"))
+	outputGamma := 1.0
+	if outputGammaRaw != "" {
+		v, err := strconv.ParseFloat(outputGammaRaw, 64)
+		if err != nil {
+			SetFlash(c, "danger", "output_gamma: must be a number")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v <= 0 || v > 4.0 {
+			SetFlash(c, "danger", "output_gamma: must be > 0 and <= 4.0")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		outputGamma = v
+	}
+	wledHost := strings.TrimSpace(c.PostForm("wled_host"))
+	artnetHost := strings.TrimSpace(c.PostForm("artnet_host"))
+	wledPortRaw := strings.TrimSpace(c.PostForm("wled_port"))
+	wledPort := 4048
+	if wledPortRaw != "" {
+		v, err := strconv.Atoi(wledPortRaw)
+		if err != nil {
+			SetFlash(c, "danger", "wled_port: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v < 1 || v > 65535 {
+			SetFlash(c, "danger", "wled_port: must be 1..65535")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		wledPort = v
+	}
+	artnetPortRaw := strings.TrimSpace(c.PostForm("artnet_port"))
+	artnetPort := 6454
+	if artnetPortRaw != "" {
+		v, err := strconv.Atoi(artnetPortRaw)
+		if err != nil {
+			SetFlash(c, "danger", "artnet_port: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v < 1 || v > 65535 {
+			SetFlash(c, "danger", "artnet_port: must be 1..65535")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		artnetPort = v
+	}
+	wledChannelRaw := strings.TrimSpace(c.PostForm("wled_channel"))
+	wledChannel := 0
+	if wledChannelRaw != "" {
+		v, err := strconv.Atoi(wledChannelRaw)
+		if err != nil {
+			SetFlash(c, "danger", "wled_channel: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v < 0 {
+			SetFlash(c, "danger", "wled_channel: must be >= 0")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		wledChannel = v
+	}
+	artnetUniverseRaw := strings.TrimSpace(c.PostForm("artnet_universe"))
+	artnetUniverse := 0
+	if artnetUniverseRaw != "" {
+		v, err := strconv.Atoi(artnetUniverseRaw)
+		if err != nil {
+			SetFlash(c, "danger", "artnet_universe: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v < 0 {
+			SetFlash(c, "danger", "artnet_universe: must be >= 0")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		artnetUniverse = v
+	}
+
 	builder := s.DB.DeviceSettings.Create().
 		SetName(name).SetIP(ip).SetPort(port).
 		SetUsername(username).SetPassword(password).
@@ -1064,7 +1237,11 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		SetOverlayText(overlay.Text).
 		SetOverlaySpeedPx(overlay.SpeedPx).
 		SetOverlayBg(overlay.Background).
-		SetOverlayFg(overlay.Foreground)
+		SetOverlayFg(overlay.Foreground).
+		SetTransport(transport).
+		SetWledHost(wledHost).SetWledPort(wledPort).SetWledRealtimeMode(wledRealtimeMode).SetWledChannel(wledChannel).
+		SetArtnetHost(artnetHost).SetArtnetPort(artnetPort).SetArtnetUniverse(artnetUniverse).
+		SetOutputFps(outputFps).SetOutputColorOrder(outputColorOrder).SetOutputGamma(outputGamma).SetOutputMatrixLayout(outputMatrixLayout)
 	if idleRaw != "" {
 		builder.SetIdleScreensaver(idleRaw)
 	}
@@ -1267,6 +1444,140 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		return
 	}
 
+	transport := c.DefaultPostForm("transport", "websocket")
+	switch transport {
+	case "websocket", "wled", "artnet":
+	default:
+		SetFlash(c, "danger", "transport must be one of websocket, wled, artnet")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	wledRealtimeMode := c.DefaultPostForm("wled_realtime_mode", "ddp")
+	switch wledRealtimeMode {
+	case "ddp", "e131", "http":
+	default:
+		SetFlash(c, "danger", "wled_realtime_mode must be one of ddp, e131, http")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	outputColorOrder := c.DefaultPostForm("output_color_order", "RGB")
+	switch outputColorOrder {
+	case "RGB", "GRB", "BGR":
+	default:
+		SetFlash(c, "danger", "output_color_order must be one of RGB, GRB, BGR")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	outputMatrixLayout := c.DefaultPostForm("output_matrix_layout", "row-major")
+	switch outputMatrixLayout {
+	case "row-major", "serpentine":
+	default:
+		SetFlash(c, "danger", "output_matrix_layout must be one of row-major, serpentine")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	outputFpsRaw := strings.TrimSpace(c.PostForm("output_fps"))
+	outputFps := 20
+	if outputFpsRaw != "" {
+		v, err := strconv.Atoi(outputFpsRaw)
+		if err != nil {
+			SetFlash(c, "danger", "output_fps: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v < 1 {
+			SetFlash(c, "danger", "output_fps: must be >= 1")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v > 60 {
+			v = 60 // max 60 fps
+		}
+		outputFps = v
+	}
+	outputGammaRaw := strings.TrimSpace(c.PostForm("output_gamma"))
+	outputGamma := 1.0
+	if outputGammaRaw != "" {
+		v, err := strconv.ParseFloat(outputGammaRaw, 64)
+		if err != nil {
+			SetFlash(c, "danger", "output_gamma: must be a number")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v <= 0 || v > 4.0 {
+			SetFlash(c, "danger", "output_gamma: must be > 0 and <= 4.0")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		outputGamma = v
+	}
+	wledHost := strings.TrimSpace(c.PostForm("wled_host"))
+	artnetHost := strings.TrimSpace(c.PostForm("artnet_host"))
+	wledPortRaw := strings.TrimSpace(c.PostForm("wled_port"))
+	wledPort := 4048
+	if wledPortRaw != "" {
+		v, err := strconv.Atoi(wledPortRaw)
+		if err != nil {
+			SetFlash(c, "danger", "wled_port: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v < 1 || v > 65535 {
+			SetFlash(c, "danger", "wled_port: must be 1..65535")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		wledPort = v
+	}
+	artnetPortRaw := strings.TrimSpace(c.PostForm("artnet_port"))
+	artnetPort := 6454
+	if artnetPortRaw != "" {
+		v, err := strconv.Atoi(artnetPortRaw)
+		if err != nil {
+			SetFlash(c, "danger", "artnet_port: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v < 1 || v > 65535 {
+			SetFlash(c, "danger", "artnet_port: must be 1..65535")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		artnetPort = v
+	}
+	wledChannelRaw := strings.TrimSpace(c.PostForm("wled_channel"))
+	wledChannel := 0
+	if wledChannelRaw != "" {
+		v, err := strconv.Atoi(wledChannelRaw)
+		if err != nil {
+			SetFlash(c, "danger", "wled_channel: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v < 0 {
+			SetFlash(c, "danger", "wled_channel: must be >= 0")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		wledChannel = v
+	}
+	artnetUniverseRaw := strings.TrimSpace(c.PostForm("artnet_universe"))
+	artnetUniverse := 0
+	if artnetUniverseRaw != "" {
+		v, err := strconv.Atoi(artnetUniverseRaw)
+		if err != nil {
+			SetFlash(c, "danger", "artnet_universe: must be an integer")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		if v < 0 {
+			SetFlash(c, "danger", "artnet_universe: must be >= 0")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+		artnetUniverse = v
+	}
+
 	upd := s.DB.DeviceSettings.UpdateOneID(id).
 		SetName(name).SetIP(ip).SetPort(port).
 		SetUsername(username).SetPassword(password).
@@ -1282,7 +1593,11 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		SetOverlayText(overlay.Text).
 		SetOverlaySpeedPx(overlay.SpeedPx).
 		SetOverlayBg(overlay.Background).
-		SetOverlayFg(overlay.Foreground)
+		SetOverlayFg(overlay.Foreground).
+		SetTransport(transport).
+		SetWledHost(wledHost).SetWledPort(wledPort).SetWledRealtimeMode(wledRealtimeMode).SetWledChannel(wledChannel).
+		SetArtnetHost(artnetHost).SetArtnetPort(artnetPort).SetArtnetUniverse(artnetUniverse).
+		SetOutputFps(outputFps).SetOutputColorOrder(outputColorOrder).SetOutputGamma(outputGamma).SetOutputMatrixLayout(outputMatrixLayout)
 	if idleRaw2 != "" {
 		upd.SetIdleScreensaver(idleRaw2)
 	} else {

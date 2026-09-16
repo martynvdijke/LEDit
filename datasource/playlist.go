@@ -28,6 +28,9 @@ const MaxPlaylistItems = 64
 // (handlers/datasource_registry.go). Keys are exactly as they appear in
 // sourceIndex.byKey ("<endpoint>:<id>").
 var KnownSourceTypes = map[string]bool{
+	"clock":          true,
+	"composition":    true,
+	"plugin":         true,
 	"analog-clock":   true,
 	"matrix-rain":    true,
 	"systemstats":    true,
@@ -61,6 +64,12 @@ var KnownSourceTypes = map[string]bool{
 	"jellyfin":       true,
 	"qrcode":         true,
 	"nowplaying":     true,
+	"immich":         true,
+	"qbittorrent":    true,
+	"sabnzbd":        true,
+	"overseerr":      true,
+	"uptimekuma":     true,
+	"speedtest":      true,
 }
 
 // IsValidSourceType reports whether sourceType is a known endpoint key.

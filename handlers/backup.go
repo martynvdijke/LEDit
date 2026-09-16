@@ -16,9 +16,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"ledit/ent"
 )
 
-const BundleVersion = "1.0"
+const BundleVersion = "1.1"
 
 const (
 	maxUncompressedSize = 100 * 1024 * 1024
@@ -74,12 +76,13 @@ var importOrder = []string{
 	"wakealarm",
 	"scenes",
 	"matrixlayout",
+	"composition",
 	"pixelart",
 }
 
 var secretFields = map[string]bool{
 	"api_key": true, "api_token": true, "token": true, "token_hash": true, "token_prefix": true,
-	"password": true, "secret": true, "signing_secret": true,
+	"password": true, "secret": true, "signing_secret": true, "config": true,
 }
 
 func stripSecrets(m map[string]any, includeSecrets bool) map[string]any {
@@ -208,6 +211,11 @@ func (s *Server) ExportBundle(includeSecrets, includeMedia bool) (Bundle, error)
 	if list, err := s.DB.MatrixLayout.Query().All(ctx); err == nil {
 		if len(list) > 0 {
 			entities["matrixlayout"] = toMapSlice(list)
+		}
+	}
+	if list, err := s.DB.Composition.Query().All(ctx); err == nil {
+		if len(list) > 0 {
+			entities["composition"] = toMapSlice(list)
 		}
 	}
 	if list, err := s.DB.PixelArt.Query().All(ctx); err == nil {
@@ -557,12 +565,63 @@ func (s *Server) importType(typ string, arr []map[string]any, includeSecrets boo
 			if contentMode == "" {
 				contentMode = "global"
 			}
+			transport, _ := m["transport"].(string)
+			if transport == "" {
+				transport = "websocket"
+			}
+			wledHost, _ := m["wled_host"].(string)
+			wledPort := toInt(m["wled_port"])
+			if wledPort == 0 {
+				wledPort = 4048
+			}
+			wledRealtimeMode, _ := m["wled_realtime_mode"].(string)
+			if wledRealtimeMode == "" {
+				wledRealtimeMode = "ddp"
+			}
+			wledChannel := toInt(m["wled_channel"])
+			artnetHost, _ := m["artnet_host"].(string)
+			artnetPort := toInt(m["artnet_port"])
+			if artnetPort == 0 {
+				artnetPort = 6454
+			}
+			artnetUniverse := toInt(m["artnet_universe"])
+			outputFps := toInt(m["output_fps"])
+			if outputFps == 0 {
+				outputFps = 20
+			}
+			outputColorOrder, _ := m["output_color_order"].(string)
+			if outputColorOrder == "" {
+				outputColorOrder = "RGB"
+			}
+			outputGamma := 1.0
+			if v, ok := m["output_gamma"]; ok && v != nil {
+				switch x := v.(type) {
+				case float64:
+					outputGamma = x
+				case int:
+					outputGamma = float64(x)
+				case string:
+					if f, err := strconv.ParseFloat(x, 64); err == nil {
+						outputGamma = f
+					}
+				}
+			}
+			outputMatrixLayout, _ := m["output_matrix_layout"].(string)
+			if outputMatrixLayout == "" {
+				outputMatrixLayout = "row-major"
+			}
+			applyDeviceTransport := func(upd *ent.DeviceSettingsUpdateOne, cre *ent.DeviceSettingsCreate) {
+				if upd != nil {
+					upd.SetTransport(transport).SetWledHost(wledHost).SetWledPort(wledPort).SetWledRealtimeMode(wledRealtimeMode).SetWledChannel(wledChannel).SetArtnetHost(artnetHost).SetArtnetPort(artnetPort).SetArtnetUniverse(artnetUniverse).SetOutputFps(outputFps).SetOutputColorOrder(outputColorOrder).SetOutputGamma(outputGamma).SetOutputMatrixLayout(outputMatrixLayout)
+				}
+				if cre != nil {
+					cre.SetTransport(transport).SetWledHost(wledHost).SetWledPort(wledPort).SetWledRealtimeMode(wledRealtimeMode).SetWledChannel(wledChannel).SetArtnetHost(artnetHost).SetArtnetPort(artnetPort).SetArtnetUniverse(artnetUniverse).SetOutputFps(outputFps).SetOutputColorOrder(outputColorOrder).SetOutputGamma(outputGamma).SetOutputMatrixLayout(outputMatrixLayout)
+				}
+			}
 			if id != 0 {
 				if ex, err := s.DB.DeviceSettings.Get(ctx, id); err == nil {
-					upd := s.DB.DeviceSettings.UpdateOne(ex).SetName(name)
-					// content_mode may not have setter; ignore if missing via reflection? Assume exists
-					// Use generic: try to set via code; if fails compile already handled
-					// For now just name
+					upd := s.DB.DeviceSettings.UpdateOne(ex).SetName(name).SetContentMode(contentMode)
+					applyDeviceTransport(upd, nil)
 					if includeSecrets && token != "" {
 						upd.SetToken(token)
 					}
@@ -572,7 +631,8 @@ func (s *Server) importType(typ string, arr []map[string]any, includeSecrets boo
 					continue
 				}
 			}
-			cre := s.DB.DeviceSettings.Create().SetName(name)
+			cre := s.DB.DeviceSettings.Create().SetName(name).SetContentMode(contentMode)
+			applyDeviceTransport(nil, cre)
 			if token != "" {
 				cre.SetToken(token)
 			} else {
@@ -745,6 +805,57 @@ func (s *Server) importType(typ string, arr []map[string]any, includeSecrets boo
 				return err
 			}
 		}
+	case "composition":
+		for _, m := range arr {
+			id := toInt(m["id"])
+			name, _ := m["name"].(string)
+			mode, _ := m["mode"].(string)
+			if mode == "" {
+				mode = "grid"
+			}
+			rows := toInt(m["rows"])
+			if rows == 0 {
+				rows = 1
+			}
+			cols := toInt(m["cols"])
+			if cols == 0 {
+				cols = 1
+			}
+			background, _ := m["background"].(string)
+			if background == "" {
+				background = "#282a36"
+			}
+			regions, _ := m["regions"].(string)
+			if regions == "" {
+				regions = "[]"
+			}
+			enabled := true
+			if v, ok := m["enabled"].(bool); ok {
+				enabled = v
+			}
+			gap := toInt(m["gap"])
+			padding := toInt(m["padding"])
+			ttl := toInt(m["ttl_seconds"])
+			if id != 0 {
+				if ex, err := s.DB.Composition.Get(ctx, id); err == nil {
+					if _, err := s.DB.Composition.UpdateOne(ex).
+						SetName(name).SetMode(mode).SetRows(rows).SetCols(cols).
+						SetGap(gap).SetPadding(padding).SetBackground(background).
+						SetRegions(regions).SetEnabled(enabled).SetTTLSeconds(ttl).
+						Save(ctx); err != nil {
+						return err
+					}
+					continue
+				}
+			}
+			if _, err := s.DB.Composition.Create().
+				SetName(name).SetMode(mode).SetRows(rows).SetCols(cols).
+				SetGap(gap).SetPadding(padding).SetBackground(background).
+				SetRegions(regions).SetEnabled(enabled).SetTTLSeconds(ttl).
+				Save(ctx); err != nil {
+				return err
+			}
+		}
 	case "pixelart":
 		for _, m := range arr {
 			id := toInt(m["id"])
@@ -771,6 +882,136 @@ func (s *Server) importType(typ string, arr []map[string]any, includeSecrets boo
 				cre.SetAPIToken(apiToken)
 			}
 			if _, err := cre.Save(ctx); err != nil {
+				return err
+			}
+		}
+	case "immich":
+		for _, m := range arr {
+			id := toInt(m["id"])
+			url, _ := m["url"].(string)
+			token, _ := m["token"].(string)
+			config, _ := m["config"].(string)
+			if id != 0 {
+				if ex, err := s.DB.Immich.Get(ctx, id); err == nil {
+					upd := s.DB.Immich.UpdateOne(ex).SetURL(url).SetConfig(config)
+					if includeSecrets || token != "" {
+						if token != "" || includeSecrets {
+							upd.SetToken(token)
+						}
+					}
+					if _, err := upd.Save(ctx); err != nil {
+						return err
+					}
+					continue
+				}
+			}
+			cre := s.DB.Immich.Create().SetURL(url).SetToken(token).SetConfig(config)
+			if _, err := cre.Save(ctx); err != nil {
+				return err
+			}
+		}
+	case "qbittorrent":
+		for _, m := range arr {
+			id := toInt(m["id"])
+			url, _ := m["url"].(string)
+			token, _ := m["token"].(string)
+			if id != 0 {
+				if ex, err := s.DB.Qbittorrent.Get(ctx, id); err == nil {
+					upd := s.DB.Qbittorrent.UpdateOne(ex).SetURL(url)
+					if token != "" || includeSecrets {
+						upd.SetToken(token)
+					}
+					if _, err := upd.Save(ctx); err != nil {
+						return err
+					}
+					continue
+				}
+			}
+			if _, err := s.DB.Qbittorrent.Create().SetURL(url).SetToken(token).Save(ctx); err != nil {
+				return err
+			}
+		}
+	case "sabnzbd":
+		for _, m := range arr {
+			id := toInt(m["id"])
+			url, _ := m["url"].(string)
+			token, _ := m["token"].(string)
+			if id != 0 {
+				if ex, err := s.DB.Sabnzbd.Get(ctx, id); err == nil {
+					upd := s.DB.Sabnzbd.UpdateOne(ex).SetURL(url)
+					if token != "" || includeSecrets {
+						upd.SetToken(token)
+					}
+					if _, err := upd.Save(ctx); err != nil {
+						return err
+					}
+					continue
+				}
+			}
+			if _, err := s.DB.Sabnzbd.Create().SetURL(url).SetToken(token).Save(ctx); err != nil {
+				return err
+			}
+		}
+	case "overseerr":
+		for _, m := range arr {
+			id := toInt(m["id"])
+			url, _ := m["url"].(string)
+			token, _ := m["token"].(string)
+			if id != 0 {
+				if ex, err := s.DB.Overseerr.Get(ctx, id); err == nil {
+					upd := s.DB.Overseerr.UpdateOne(ex).SetURL(url)
+					if token != "" || includeSecrets {
+						upd.SetToken(token)
+					}
+					if _, err := upd.Save(ctx); err != nil {
+						return err
+					}
+					continue
+				}
+			}
+			if _, err := s.DB.Overseerr.Create().SetURL(url).SetToken(token).Save(ctx); err != nil {
+				return err
+			}
+		}
+	case "uptimekuma":
+		for _, m := range arr {
+			id := toInt(m["id"])
+			url, _ := m["url"].(string)
+			token, _ := m["token"].(string)
+			if id != 0 {
+				if ex, err := s.DB.UptimeKuma.Get(ctx, id); err == nil {
+					upd := s.DB.UptimeKuma.UpdateOne(ex).SetURL(url)
+					if token != "" || includeSecrets {
+						upd.SetToken(token)
+					}
+					if _, err := upd.Save(ctx); err != nil {
+						return err
+					}
+					continue
+				}
+			}
+			if _, err := s.DB.UptimeKuma.Create().SetURL(url).SetToken(token).Save(ctx); err != nil {
+				return err
+			}
+		}
+	case "speedtest":
+		for _, m := range arr {
+			id := toInt(m["id"])
+			url, _ := m["url"].(string)
+			token, _ := m["token"].(string)
+			if id != 0 {
+				if ex, err := s.DB.Speedtest.Get(ctx, id); err == nil {
+					upd := s.DB.Speedtest.UpdateOne(ex).SetURL(url)
+					if token != "" || includeSecrets {
+						upd.SetToken(token)
+					}
+					if _, err := upd.Save(ctx); err != nil {
+						return err
+					}
+					continue
+				}
+			}
+			if _, err := s.DB.Speedtest.Create().SetURL(url).SetToken(token).Save(ctx); err != nil {
 				return err
 			}
 		}

@@ -109,6 +109,7 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	mqttCtrl = StartMQTT(srv)
 	SetGlobalMqttCtrl(mqttCtrl)
 	tgBot = StartTelegram(srv)
+	StartInboundAdapters(srv)
 	InitChartRecording(client)
 	_ = PurgeOldSamples(ctx, client)
 	StartChartPurgeLoop(ctx, client)
@@ -310,6 +311,10 @@ func (s *Server) setupRoutes() {
 	s.Router.GET("/", s.IndexHandler)
 	// Guest remote shell (public, no server-rendered feed data).
 	s.Router.GET("/remote", s.RemotePage)
+	// Guest photo frame shell (public, secret arrives via URL fragment and is
+	// exchanged for a short-lived HttpOnly cookie by /frame/session).
+	s.Router.GET("/frame", s.FramePage)
+	s.Router.POST("/frame/session", s.FrameSession)
 	s.Router.GET("/ws/feed", s.WSHub.HandleWS)
 	s.Router.GET("/ws/device/:token", s.WSHub.HandleDeviceWS)
 	// Device-accurate preview: admin session (not the device token), never
@@ -334,6 +339,7 @@ func (s *Server) setupRoutes() {
 		api.POST("/guest/resume", s.GuestAuthMiddleware("pause"), s.APIGuestResume)
 		api.POST("/guest/next", s.GuestAuthMiddleware("next"), s.APIGuestNext)
 		api.POST("/guest/message", s.GuestAuthMiddleware("message"), s.APIGuestMessage)
+		api.POST("/guest/photo", s.GuestAuthMiddleware("photo"), s.APIGuestPhotoUpload)
 
 		// Authenticated reads: feed and notifications require session or bearer token.
 		authReads := api.Group("")
@@ -359,6 +365,8 @@ func (s *Server) setupRoutes() {
 			apiMut.POST("/feed/alarm/dismiss", s.APIFeedAlarmDismiss)
 			apiMut.POST("/incidents/:id/resolve", s.APIIncidentResolve)
 			apiMut.POST("/scenes/:id/preview", s.APIScenePreview)
+			apiMut.POST("/guest/photo/:id/approve", s.APIGuestPhotoApprove)
+			apiMut.POST("/guest/photo/:id/reject", s.APIGuestPhotoReject)
 		}
 		// Webhook routes: machine integrations authenticate via webhook key
 		// (X-API-Key header or ?token=), not admin sessions.
@@ -367,6 +375,14 @@ func (s *Server) setupRoutes() {
 		// Incident ingress: monitoring systems (Alertmanager/Grafana/Uptime
 		// Kuma/Sentry) raise and resolve display takeovers via the webhook key.
 		api.POST("/incident", s.WebhookAuthMiddleware(), s.APIIncidentIngest)
+		// Inbound messaging: each adapter authenticates with its own signature
+		// scheme (Discord Ed25519, Slack HMAC) or per-adapter secret (push
+		// bridges), so these sit outside the session/webhook-key groups.
+		api.POST("/inbound/discord", s.InboundDiscord)
+		api.POST("/inbound/slack", s.InboundSlack)
+		api.POST("/inbound/ntfy", s.InboundPush("ntfy"))
+		api.POST("/inbound/gotify", s.InboundPush("gotify"))
+		api.POST("/inbound/pushover", s.InboundPush("pushover"))
 		// Test-only helpers (enabled when LEDIT_AUTH_DISABLE=true for Playwright).
 		if os.Getenv("LEDIT_AUTH_DISABLE") == "true" || os.Getenv("LEDIT_AUTH_DISABLE") == "1" {
 			api.POST("/test/seed-timelapse", s.TestSeedTimelapse)
@@ -617,6 +633,50 @@ func (s *Server) setupRoutes() {
 		admin.GET("/datasources/jellyfin/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "jellyfin") })
 		admin.POST("/datasources/jellyfin/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "jellyfin") })
 		admin.POST("/datasources/jellyfin/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "jellyfin") })
+		// Immich
+		admin.GET("/datasources/immich/new", func(c *gin.Context) {
+			s.renderPage(c, 200, "datasource_form.html", gin.H{"type": "Immich", "endpoint": "immich", "has_config": true})
+		})
+		admin.POST("/datasources/immich/new", func(c *gin.Context) { s.createFieldDS(c, "immich") })
+		admin.GET("/datasources/immich/:id/edit", func(c *gin.Context) { s.editFieldDS(c, "immich", nil) })
+		admin.POST("/datasources/immich/:id/edit", func(c *gin.Context) { s.updateFieldDS(c, "immich") })
+		admin.POST("/datasources/immich/:id/delete", func(c *gin.Context) { s.deleteFieldDS(c, "immich") })
+
+		// QBittorrent
+		admin.GET("/datasources/qbittorrent/new", func(c *gin.Context) { s.renderForm(c, "QBittorrent", "qbittorrent", false, nil) })
+		admin.POST("/datasources/qbittorrent/new", func(c *gin.Context) { s.createTokenURLDS(c, "qbittorrent") })
+		admin.GET("/datasources/qbittorrent/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "qbittorrent") })
+		admin.POST("/datasources/qbittorrent/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "qbittorrent") })
+		admin.POST("/datasources/qbittorrent/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "qbittorrent") })
+
+		// SABnzbd
+		admin.GET("/datasources/sabnzbd/new", func(c *gin.Context) { s.renderForm(c, "SABnzbd", "sabnzbd", false, nil) })
+		admin.POST("/datasources/sabnzbd/new", func(c *gin.Context) { s.createTokenURLDS(c, "sabnzbd") })
+		admin.GET("/datasources/sabnzbd/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "sabnzbd") })
+		admin.POST("/datasources/sabnzbd/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "sabnzbd") })
+		admin.POST("/datasources/sabnzbd/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "sabnzbd") })
+
+		// Overseerr
+		admin.GET("/datasources/overseerr/new", func(c *gin.Context) { s.renderForm(c, "Overseerr", "overseerr", false, nil) })
+		admin.POST("/datasources/overseerr/new", func(c *gin.Context) { s.createTokenURLDS(c, "overseerr") })
+		admin.GET("/datasources/overseerr/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "overseerr") })
+		admin.POST("/datasources/overseerr/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "overseerr") })
+		admin.POST("/datasources/overseerr/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "overseerr") })
+
+		// Uptime Kuma
+		admin.GET("/datasources/uptimekuma/new", func(c *gin.Context) { s.renderForm(c, "Uptime Kuma", "uptimekuma", false, nil) })
+		admin.POST("/datasources/uptimekuma/new", func(c *gin.Context) { s.createTokenURLDS(c, "uptimekuma") })
+		admin.GET("/datasources/uptimekuma/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "uptimekuma") })
+		admin.POST("/datasources/uptimekuma/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "uptimekuma") })
+		admin.POST("/datasources/uptimekuma/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "uptimekuma") })
+
+		// Speedtest
+		admin.GET("/datasources/speedtest/new", func(c *gin.Context) { s.renderForm(c, "Speedtest", "speedtest", false, nil) })
+		admin.POST("/datasources/speedtest/new", func(c *gin.Context) { s.createTokenURLDS(c, "speedtest") })
+		admin.GET("/datasources/speedtest/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, "speedtest") })
+		admin.POST("/datasources/speedtest/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, "speedtest") })
+		admin.POST("/datasources/speedtest/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, "speedtest") })
+
 		admin.POST("/datasources/genericapi/test", s.AdminGenericAPITest)
 
 		// QR Code
@@ -706,10 +766,34 @@ func (s *Server) setupRoutes() {
 		admin.POST("/matrixlayouts/:id/edit", s.AdminMatrixLayoutUpdate)
 		admin.POST("/matrixlayouts/:id/delete", s.AdminMatrixLayoutDelete)
 
+		// Compositions
+		admin.GET("/compositions", s.AdminCompositionList)
+		admin.GET("/compositions/new", s.AdminCompositionNew)
+		admin.POST("/compositions/new", s.AdminCompositionCreate)
+		admin.GET("/compositions/:id/edit", s.AdminCompositionEdit)
+		admin.POST("/compositions/:id/edit", s.AdminCompositionUpdate)
+		admin.POST("/compositions/:id/delete", s.AdminCompositionDelete)
+
+		// Visual layout editor (composites stored as compositions)
+		admin.GET("/layouts", s.AdminLayoutList)
+		admin.GET("/layouts/new", s.AdminLayoutNew)
+		admin.POST("/layouts/new", s.AdminLayoutCreate)
+		admin.GET("/layouts/:id/edit", s.AdminLayoutEdit)
+		admin.POST("/layouts/:id/edit", s.AdminLayoutUpdate)
+		admin.POST("/layouts/:id/delete", s.AdminLayoutDelete)
+
+		// Inbound messaging adapters + guest photo moderation
+		admin.GET("/inbound", s.AdminInbound)
+		admin.POST("/inbound/:kind", s.AdminInboundSave)
+		admin.POST("/inbound/:kind/test", s.AdminInboundTest)
+		admin.GET("/photo-frame", s.AdminGuestPhotos)
+
 		// On-demand previews (live previews + PNG template export)
 		admin.GET("/preview", s.AdminPreview)
 		admin.POST("/preview/datasource", s.AdminPreviewDatasource)
 		admin.POST("/preview/matrix", s.AdminPreviewMatrix)
+		admin.POST("/preview/composition", s.AdminCompositionPreview)
+		admin.POST("/preview/layout", s.AdminLayoutPreview)
 
 		// Text Slides (Phase 4)
 		admin.GET("/textslides/new", s.AdminTextSlideNew)

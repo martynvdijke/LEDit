@@ -68,7 +68,7 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
 		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
 		WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
-		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithQrcodes().WithNowPlayingSources().Only(c.Request.Context())
+		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithQrcodes().WithNowPlayingSources().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().Only(c.Request.Context())
 	if err != nil || settings == nil {
 		return opts
 	}
@@ -155,6 +155,10 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	for _, ml := range layouts {
 		add("matrix", ml.ID, "Matrix: "+ml.Name)
 	}
+	compositions, _ := settings.Edges.CompositionsOrErr()
+	for _, comp := range compositions {
+		add("composition", comp.ID, "Composition: "+comp.Name)
+	}
 	countdowns, _ := settings.Edges.CountdownsOrErr()
 	for _, cd := range countdowns {
 		add("countdown", cd.ID, "Countdown: "+cd.Name)
@@ -190,6 +194,30 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	jellyfins, _ := settings.Edges.JellyfinsOrErr()
 	for _, jf := range jellyfins {
 		add("jellyfin", jf.ID, "Jellyfin #"+strconv.Itoa(jf.ID))
+	}
+	immichs, _ := settings.Edges.ImmichsOrErr()
+	for _, im := range immichs {
+		add("immich", im.ID, "Immich #"+strconv.Itoa(im.ID))
+	}
+	qbittorrents, _ := settings.Edges.QbittorrentsOrErr()
+	for _, qb := range qbittorrents {
+		add("qbittorrent", qb.ID, "QBittorrent #"+strconv.Itoa(qb.ID))
+	}
+	sabnzbs, _ := settings.Edges.SabnzbdOrErr()
+	for _, sb := range sabnzbs {
+		add("sabnzbd", sb.ID, "SABnzbd #"+strconv.Itoa(sb.ID))
+	}
+	overseerrs, _ := settings.Edges.OverseerrsOrErr()
+	for _, ov := range overseerrs {
+		add("overseerr", ov.ID, "Overseerr #"+strconv.Itoa(ov.ID))
+	}
+	uptimekumas, _ := settings.Edges.UptimeKumasOrErr()
+	for _, uk := range uptimekumas {
+		add("uptimekuma", uk.ID, "Uptime Kuma #"+strconv.Itoa(uk.ID))
+	}
+	speedtests, _ := settings.Edges.SpeedtestsOrErr()
+	for _, st := range speedtests {
+		add("speedtest", st.ID, "Speedtest #"+strconv.Itoa(st.ID))
 	}
 	// Audio group — stylized visualizer, synced to tempo, not live FFT
 	add("audio", 0, "Now Playing — Stylized visualizer — synced to tempo, not live FFT")
@@ -409,6 +437,36 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 		idx.byKey[key("jellyfin", jf.ID)] = &datasource.JellyfinDS{Token: jf.Token, URL: jf.URL}
 		idx.names[key("jellyfin", jf.ID)] = "Jellyfin"
 	}
+	immichs, _ := settings.Edges.ImmichsOrErr()
+	for _, im := range immichs {
+		idx.byKey[key("immich", im.ID)] = &datasource.ImmichDS{URL: im.URL, Token: im.Token, Config: im.Config}
+		idx.names[key("immich", im.ID)] = "Immich"
+	}
+	qbittorrents, _ := settings.Edges.QbittorrentsOrErr()
+	for _, qb := range qbittorrents {
+		idx.byKey[key("qbittorrent", qb.ID)] = &datasource.QBittorrentDS{Token: qb.Token, URL: qb.URL}
+		idx.names[key("qbittorrent", qb.ID)] = "QBittorrent"
+	}
+	sabnzbs, _ := settings.Edges.SabnzbdOrErr()
+	for _, sb := range sabnzbs {
+		idx.byKey[key("sabnzbd", sb.ID)] = &datasource.SabnzbdDS{Token: sb.Token, URL: sb.URL}
+		idx.names[key("sabnzbd", sb.ID)] = "SABnzbd"
+	}
+	overseerrs, _ := settings.Edges.OverseerrsOrErr()
+	for _, ov := range overseerrs {
+		idx.byKey[key("overseerr", ov.ID)] = &datasource.OverseerrDS{Token: ov.Token, URL: ov.URL}
+		idx.names[key("overseerr", ov.ID)] = "Overseerr"
+	}
+	uptimekumas, _ := settings.Edges.UptimeKumasOrErr()
+	for _, uk := range uptimekumas {
+		idx.byKey[key("uptimekuma", uk.ID)] = &datasource.UptimeKumaDS{Token: uk.Token, URL: uk.URL}
+		idx.names[key("uptimekuma", uk.ID)] = "Uptime Kuma"
+	}
+	speedtests, _ := settings.Edges.SpeedtestsOrErr()
+	for _, st := range speedtests {
+		idx.byKey[key("speedtest", st.ID)] = &datasource.SpeedtestDS{Token: st.Token, URL: st.URL}
+		idx.names[key("speedtest", st.ID)] = "Speedtest"
+	}
 	qrcodes, _ := settings.Edges.QrcodesOrErr()
 	for _, q := range qrcodes {
 		idx.byKey[key("qrcode", q.ID)] = &datasource.QRSource{
@@ -434,7 +492,54 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 		idx.byKey[key("plugin", p.ID)] = pluginSource(p)
 		idx.names[key("plugin", p.ID)] = "Plugin: " + p.Name
 	}
+	// Enabled compositions index like any other source, so they can be nested
+	// as a child of another composition (depth-capped inside the helper).
+	comps, _ := settings.Edges.CompositionsOrErr()
+	for _, c := range comps {
+		if !c.Enabled {
+			continue
+		}
+		idx.byKey[key("composition", c.ID)] = buildIndexedCompositor(c, comps, idx, 0)
+		idx.names[key("composition", c.ID)] = "Composition: " + c.Name
+	}
 	return idx
+}
+
+// buildIndexedCompositor builds a CompositorDS whose children resolve against
+// the source index. Nested compositions recurse lazily with a depth cap so a
+// self-referential layout degrades to a placeholder instead of recursing.
+func buildIndexedCompositor(c *ent.Composition, all []*ent.Composition, idx *sourceIndex, depth int) *datasource.CompositorDS {
+	if depth > 2 {
+		return nil
+	}
+	cds := &datasource.CompositorDS{
+		Name:       c.Name,
+		Mode:       c.Mode,
+		Background: c.Background,
+		Rows:       c.Rows,
+		Cols:       c.Cols,
+		Gap:        c.Gap,
+		Padding:    c.Padding,
+		Regions:    datasource.ParseRegions(c.Regions),
+		Depth:      depth,
+	}
+	cds.Resolve = func(sourceType string, sourceID int) (datasource.Datasource, string, error) {
+		if sourceType == "composition" {
+			for _, nested := range all {
+				if nested.ID != sourceID {
+					continue
+				}
+				inner := buildIndexedCompositor(nested, all, idx, depth+1)
+				if inner == nil {
+					return nil, "", fmt.Errorf("composition nesting too deep")
+				}
+				return inner, nested.Name, nil
+			}
+			return nil, "", fmt.Errorf("composition %d not found", sourceID)
+		}
+		return idx.Resolve(sourceType, sourceID)
+	}
+	return cds
 }
 
 // Resolve looks up a datasource by endpoint type and DB id.
@@ -483,4 +588,59 @@ func (h *WSHub) buildMatrixDS(settings *ent.GeneralSettings, ml *ent.MatrixLayou
 		return idx.Resolve(sourceType, sourceID)
 	}
 	return mds
+}
+
+// buildCompositorDS constructs a CompositorDS for a composition whose regions
+// resolve against the current source index. Nested compositions resolve through
+// the index (which is itself depth-capped) and nested "matrix" layouts recurse
+// with the same depth cap as buildMatrixDS. Returns nil when unusable.
+func (h *WSHub) buildCompositorDS(settings *ent.GeneralSettings, c *ent.Composition, depth int) *datasource.CompositorDS {
+	if depth > 2 {
+		slog.Warn("composition nesting too deep, skipping", "composition", c.Name, "depth", depth)
+		return nil
+	}
+	idx := buildSourceIndex(settings, h.aiConfig(context.Background()))
+	cds := &datasource.CompositorDS{
+		Name:       c.Name,
+		Mode:       c.Mode,
+		Background: c.Background,
+		Rows:       c.Rows,
+		Cols:       c.Cols,
+		Gap:        c.Gap,
+		Padding:    c.Padding,
+		Regions:    datasource.ParseRegions(c.Regions),
+		Depth:      depth,
+	}
+	cds.Resolve = func(sourceType string, sourceID int) (datasource.Datasource, string, error) {
+		if sourceType == "matrix" {
+			nested, err := h.Client.MatrixLayout.Get(context.Background(), sourceID)
+			if err != nil {
+				return nil, "", err
+			}
+			inner := h.buildMatrixDS(settings, nested, depth+1)
+			if inner == nil {
+				return nil, "", fmt.Errorf("matrix nesting too deep")
+			}
+			return inner, nested.Name, nil
+		}
+		if sourceType == "composition" {
+			for _, nested := range mustCompositions(settings) {
+				if nested.ID != sourceID {
+					continue
+				}
+				inner := h.buildCompositorDS(settings, nested, depth+1)
+				if inner == nil {
+					return nil, "", fmt.Errorf("composition nesting too deep")
+				}
+				return inner, nested.Name, nil
+			}
+		}
+		return idx.Resolve(sourceType, sourceID)
+	}
+	return cds
+}
+
+func mustCompositions(settings *ent.GeneralSettings) []*ent.Composition {
+	comps, _ := settings.Edges.CompositionsOrErr()
+	return comps
 }

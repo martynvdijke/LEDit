@@ -177,6 +177,8 @@ func datasourceConfigSig(d datasource.Datasource) string {
 		return cfgSig(v.Token, v.URL, v.Config)
 	case *datasource.MatrixDS:
 		return cfgSig(v.Name, strconv.Itoa(v.Rows), strconv.Itoa(v.Cols), strconv.Itoa(v.Gap), v.Background, datasource.BindingsJSON(v.Bindings))
+	case *datasource.CompositorDS:
+		return cfgSig(v.Name, v.Mode, v.Background, strconv.Itoa(v.Rows), strconv.Itoa(v.Cols), strconv.Itoa(v.Gap), strconv.Itoa(v.Padding), datasource.RegionsJSON(v.Regions))
 	case *datasource.AnalogClockDS, *datasource.MatrixRainDS:
 		return cfgSig()
 	case *datasource.CountdownDS:
@@ -190,6 +192,18 @@ func datasourceConfigSig(d datasource.Datasource) string {
 			strconv.Itoa(v.WalkTimeMin), v.Timezone, v.TimeMode)
 	case *datasource.PluginSource:
 		return cfgSig(strconv.Itoa(v.PluginID), string(v.Config))
+	case *datasource.ImmichDS:
+		return cfgSig(v.URL, v.Token, v.Config)
+	case *datasource.QBittorrentDS:
+		return cfgSig(v.URL, v.Token)
+	case *datasource.SabnzbdDS:
+		return cfgSig(v.URL, v.Token)
+	case *datasource.OverseerrDS:
+		return cfgSig(v.URL, v.Token)
+	case *datasource.UptimeKumaDS:
+		return cfgSig(v.URL, v.Token)
+	case *datasource.SpeedtestDS:
+		return cfgSig(v.URL, v.Token)
 	default:
 		return ""
 	}

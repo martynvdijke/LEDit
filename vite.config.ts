@@ -19,6 +19,8 @@ export default defineConfig({
         analytics: resolve(__dirname, 'web/frontend/analytics.ts'),
         nowplaying_form: resolve(__dirname, 'web/frontend/nowplaying_form.ts'),
         remote: resolve(__dirname, 'web/frontend/remote.ts'),
+        layout_editor: resolve(__dirname, 'web/frontend/layout_editor.ts'),
+        frame: resolve(__dirname, 'web/frontend/frame.ts'),
       },
       output: {
         entryFileNames: '[name].js',
