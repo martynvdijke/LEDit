@@ -49,6 +49,8 @@ var pathToActive = map[string]string{
 	"/admin/guest-remotes":   "guest-remotes",
 	"/admin/inbound":         "inbound",
 	"/admin/photo-frame":     "photo-frame",
+	"/admin/discovery":       "discovery",
+	"/admin/firmware":        "firmware",
 	"/admin/webhook":         "webhook",
 	"/admin/mqtt":            "mqtt",
 	"/admin/telegram":        "telegram",
@@ -1274,6 +1276,7 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil {
 		s.DB.GeneralSettings.UpdateOne(settings).AddDeviceSettings(obj).Exec(s.Ctx)
 	}
+	RestartTransportDevice(s, obj.ID)
 	SetFlash(c, "success", "Device created")
 	c.Redirect(http.StatusFound, "/admin/devices")
 }
@@ -1635,6 +1638,7 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		// D6: a manual brightness override reclaims the wall from ambient automation.
 		SuppressActiveScene()
 	}
+	RestartTransportDevice(s, id)
 	SetFlash(c, "success", "Device updated")
 	c.Redirect(http.StatusFound, "/admin/devices")
 }
@@ -1643,6 +1647,7 @@ func (s *Server) AdminDeviceSettingsDelete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	s.DB.DeviceSettings.DeleteOneID(id).Exec(s.Ctx)
 	ClearDeviceMqtt(id)
+	StopTransportDevice(id)
 	SetFlash(c, "success", "Device deleted")
 	c.Redirect(http.StatusFound, "/admin/devices")
 }

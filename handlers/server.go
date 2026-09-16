@@ -110,6 +110,8 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	SetGlobalMqttCtrl(mqttCtrl)
 	tgBot = StartTelegram(srv)
 	StartInboundAdapters(srv)
+	StartTransportDevices(srv)
+	StartDiscovery(srv)
 	InitChartRecording(client)
 	_ = PurgeOldSamples(ctx, client)
 	StartChartPurgeLoop(ctx, client)
@@ -353,6 +355,7 @@ func (s *Server) setupRoutes() {
 			authReads.GET("/playlists/resolve", s.HandlePlaylistResolve)
 			authReads.GET("/timelapse/frames", s.APITimelapseFrames)
 			authReads.POST("/timelapse/export", s.APITimelapseExport)
+			authReads.GET("/device/discovery", s.AdminDeviceDiscovery)
 		}
 
 		// Mutations: every write requires admin role.
@@ -367,6 +370,8 @@ func (s *Server) setupRoutes() {
 			apiMut.POST("/scenes/:id/preview", s.APIScenePreview)
 			apiMut.POST("/guest/photo/:id/approve", s.APIGuestPhotoApprove)
 			apiMut.POST("/guest/photo/:id/reject", s.APIGuestPhotoReject)
+			apiMut.POST("/device/discovery/:fingerprint/enroll", s.AdminDeviceEnroll)
+			apiMut.POST("/device/discovery/:fingerprint/cancel", s.AdminDeviceEnrollmentCancel)
 		}
 		// Webhook routes: machine integrations authenticate via webhook key
 		// (X-API-Key header or ?token=), not admin sessions.
@@ -383,9 +388,17 @@ func (s *Server) setupRoutes() {
 		api.POST("/inbound/ntfy", s.InboundPush("ntfy"))
 		api.POST("/inbound/gotify", s.InboundPush("gotify"))
 		api.POST("/inbound/pushover", s.InboundPush("pushover"))
+		// Device fleet endpoints: authenticate with the per-device token
+		// (X-Device-Token header or ?token=), not sessions or the webhook key.
+		api.GET("/device/provision", s.DeviceProvision)
+		api.POST("/device/provision", s.DeviceProvision)
+		api.GET("/device/firmware", s.DeviceFirmwareManifest)
+		api.GET("/device/firmware/:version/artifact", s.DeviceFirmwareArtifact)
+		api.POST("/device/firmware/report", s.DeviceFirmwareReport)
 		// Test-only helpers (enabled when LEDIT_AUTH_DISABLE=true for Playwright).
 		if os.Getenv("LEDIT_AUTH_DISABLE") == "true" || os.Getenv("LEDIT_AUTH_DISABLE") == "1" {
 			api.POST("/test/seed-timelapse", s.TestSeedTimelapse)
+			api.POST("/test/seed-discovery", s.TestSeedDiscovery)
 			api.POST("/test/enable-auth", s.TestEnableAuth)
 			api.POST("/test/disable-auth", s.TestDisableAuth)
 		}
@@ -787,6 +800,13 @@ func (s *Server) setupRoutes() {
 		admin.POST("/inbound/:kind", s.AdminInboundSave)
 		admin.POST("/inbound/:kind/test", s.AdminInboundTest)
 		admin.GET("/photo-frame", s.AdminGuestPhotos)
+
+		// Device discovery + fleet firmware
+		admin.GET("/discovery", s.AdminDiscoveredDevices)
+		admin.GET("/firmware", s.AdminFirmware)
+		admin.POST("/firmware/settings", s.AdminFirmwareSettings)
+		admin.POST("/firmware/releases", s.AdminFirmwareReleaseCreate)
+		admin.POST("/firmware/releases/:id/delete", s.AdminFirmwareReleaseDelete)
 
 		// On-demand previews (live previews + PNG template export)
 		admin.GET("/preview", s.AdminPreview)

@@ -54,7 +54,9 @@ All configuration is via environment variables:
 | Variable                | Default               | Purpose                          |
 | ----------------------- | --------------------- | -------------------------------- |
 | `LEDIT_SERVER`          | `ws://localhost:8080` | WebSocket URL of the server      |
-| `LEDIT_TOKEN`           | *(required)*          | Device token (admin → Devices)   |
+| `LEDIT_TOKEN`           | *(required)*          | Device token (admin → Devices); may be omitted after auto-provisioning (persisted to `~/.config/ledit/token`) |
+| `LEDIT_UPDATE_INTERVAL` | `3600`                | Firmware OTA poll interval (seconds); `0` disables |
+| `LEDIT_UPDATE_CHANNEL`  | *(empty)*             | OTA channel (empty = server default channel) |
 | `LEDIT_COLS`            | `64`                  | Panel width                      |
 | `LEDIT_ROWS`            | `64`                  | Panel height                     |
 | `LEDIT_CHAIN`           | `1`                   | Chained panels                   |
@@ -129,6 +131,43 @@ LEDIT_TOKEN=<token> OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317 ledit-device
 1. Open the LEDit admin UI → **Devices**.
 2. Create a device (name + matrix size + refresh interval).
 3. Copy the generated **token** (and full connection URL) from the table.
+
+## Discovery and auto-provisioning
+
+Unprovisioned devices can advertise themselves via mDNS and be enrolled from the server without manually copying a token.
+
+- **Advertisement**: DNS-SD service `_ledit._tcp.local` with TXT records `id` (stable fingerprint), `model`, `version`, `proto`, `nonce`. The token is never advertised.
+- **Fingerprint**: `fingerprint()` reads `/etc/machine-id` when available, otherwise a random ID persisted at `~/.config/ledit/device_id`. Stable across reboots.
+- **Nonce**: `new_nonce()` generates a fresh value per boot and is included in the TXT records.
+- **Optional dependency**: `zeroconf` is required only for discovery. Install with `pip install 'ledit-device[discovery]'`. If missing, advertising/provisioning is skipped with a warning and manual `LEDIT_TOKEN` mode is unaffected.
+- **API**: `discovery.start_advertising()` / `discovery.stop_advertising()` and `discovery.provision(server_url, fingerprint, nonce, interval, timeout)` which polls `GET /api/device/provision?fingerprint=…&nonce=…`.
+
+**Enabling flow**:
+
+1. Start the device without `LEDIT_TOKEN` (with the discovery extra installed). It begins advertising.
+2. In the server admin UI go to **Admin → Discovery** — the device appears as pending.
+3. Enroll it. The server binds the fingerprint+nonce to a token.
+4. The device polls `GET /api/device/provision` until the token is returned (once), persists it to `~/.config/ledit/token` (configurable via `LEDIT_CONFIG_DIR`), and then connects to `/ws/device/<token>`. Subsequent boots use the persisted token and `LEDIT_TOKEN` may be omitted.
+
+## Firmware OTA
+
+`firmware.check_and_update(server_url, token, current_version, channel)` polls the server manifest, downloads the artifact, verifies `sha256`, and stages the update atomically.
+
+- Polls `GET /api/device/firmware?version=<current>&channel=<channel>` (channel from `LEDIT_UPDATE_CHANNEL`).
+- Downloads from the manifest `url` (or `/api/device/firmware/<version>/artifact`), verifies `sha256` (and `size` when provided).
+- Stages to `~/.config/ledit/staging/` (or `LEDIT_STAGING_DIR`) as `firmware-<version>.bin` with an `activate` marker; the running process is never overwritten. A failed or interrupted update leaves the previous version bootable.
+- Non-fatal on network/parse errors — logs a warning and returns.
+- Polling interval is `LEDIT_UPDATE_INTERVAL` (default 3600 s); set `0` to disable.
+
+## Inbound webhook signing
+
+When a signing secret is configured in **Admin → Webhook settings**, inbound webhook requests must be signed. This is separate from LEDit's *outbound* webhooks (which sign the body only).
+
+- Headers:
+  - `X-LEDit-Timestamp: <unix seconds>`
+  - `X-LEDit-Signature: sha256=<hex>` where hex is `HMAC-SHA256(secret, "<timestamp>.<raw-body>")` — the timestamp string, a literal `.`, and the raw request body.
+- Verification: missing, stale (>300 s, configurable via `signing_window_seconds`), or mismatched signatures get a generic `401`.
+- When no signing secret is set, the legacy `X-API-Key` / `?token=` auth is unchanged. If both a signing secret and an API key/token are configured, both are required.
 
 ## Run
 

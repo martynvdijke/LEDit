@@ -28,6 +28,8 @@ import (
 	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
+	"ledit/ent/firmwarerelease"
+	"ledit/ent/firmwaresettings"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
 	"ledit/ent/github"
@@ -126,6 +128,10 @@ type Client struct {
 	EmailSettings *EmailSettingsClient
 	// F1 is the client for interacting with the F1 builders.
 	F1 *F1Client
+	// FirmwareRelease is the client for interacting with the FirmwareRelease builders.
+	FirmwareRelease *FirmwareReleaseClient
+	// FirmwareSettings is the client for interacting with the FirmwareSettings builders.
+	FirmwareSettings *FirmwareSettingsClient
 	// GeneralSettings is the client for interacting with the GeneralSettings builders.
 	GeneralSettings *GeneralSettingsClient
 	// GenericAPI is the client for interacting with the GenericAPI builders.
@@ -258,6 +264,8 @@ func (c *Client) init() {
 	c.DisplayRule = NewDisplayRuleClient(c.config)
 	c.EmailSettings = NewEmailSettingsClient(c.config)
 	c.F1 = NewF1Client(c.config)
+	c.FirmwareRelease = NewFirmwareReleaseClient(c.config)
+	c.FirmwareSettings = NewFirmwareSettingsClient(c.config)
 	c.GeneralSettings = NewGeneralSettingsClient(c.config)
 	c.GenericAPI = NewGenericAPIClient(c.config)
 	c.GitHub = NewGitHubClient(c.config)
@@ -419,6 +427,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		DisplayRule:      NewDisplayRuleClient(cfg),
 		EmailSettings:    NewEmailSettingsClient(cfg),
 		F1:               NewF1Client(cfg),
+		FirmwareRelease:  NewFirmwareReleaseClient(cfg),
+		FirmwareSettings: NewFirmwareSettingsClient(cfg),
 		GeneralSettings:  NewGeneralSettingsClient(cfg),
 		GenericAPI:       NewGenericAPIClient(cfg),
 		GitHub:           NewGitHubClient(cfg),
@@ -507,6 +517,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		DisplayRule:      NewDisplayRuleClient(cfg),
 		EmailSettings:    NewEmailSettingsClient(cfg),
 		F1:               NewF1Client(cfg),
+		FirmwareRelease:  NewFirmwareReleaseClient(cfg),
+		FirmwareSettings: NewFirmwareSettingsClient(cfg),
 		GeneralSettings:  NewGeneralSettingsClient(cfg),
 		GenericAPI:       NewGenericAPIClient(cfg),
 		GitHub:           NewGitHubClient(cfg),
@@ -591,16 +603,17 @@ func (c *Client) Use(hooks ...Hook) {
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
 		c.Calendar, c.ChartSample, c.Composition, c.Countdown, c.Crypto,
 		c.DatasourcePlugin, c.DeliveryLog, c.DeviceGroup, c.DeviceSettings,
-		c.DisplayRule, c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI,
-		c.GitHub, c.GoogleCalendar, c.GreetingRule, c.GuestPhoto, c.GuestToken,
-		c.HomeAssistant, c.Image, c.Immich, c.InboundAdapter, c.Incident, c.Jellyfin,
-		c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
-		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
-		c.Overseerr, c.PiHole, c.PixelArt, c.Playlist, c.Qbittorrent, c.Qrcode,
-		c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene, c.Schedule, c.Sonarr, c.Speedtest,
-		c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide,
-		c.TimelapseFrame, c.Transit, c.UmamiSettings, c.Untappd, c.Uptime,
-		c.UptimeKuma, c.User, c.Video, c.WakeAlarm, c.Weather, c.WebhookSettings,
+		c.DisplayRule, c.EmailSettings, c.F1, c.FirmwareRelease, c.FirmwareSettings,
+		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
+		c.GuestPhoto, c.GuestToken, c.HomeAssistant, c.Image, c.Immich,
+		c.InboundAdapter, c.Incident, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD,
+		c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification, c.NowPlayingSource,
+		c.OutboundSettings, c.OutboundWebhook, c.Overseerr, c.PiHole, c.PixelArt,
+		c.Playlist, c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene,
+		c.Schedule, c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon,
+		c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit, c.UmamiSettings,
+		c.Untappd, c.Uptime, c.UptimeKuma, c.User, c.Video, c.WakeAlarm, c.Weather,
+		c.WebhookSettings,
 	} {
 		n.Use(hooks...)
 	}
@@ -613,16 +626,17 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.AIDigest, c.AISettings, c.AdminSettings, c.AlertSettings, c.ApiToken,
 		c.Calendar, c.ChartSample, c.Composition, c.Countdown, c.Crypto,
 		c.DatasourcePlugin, c.DeliveryLog, c.DeviceGroup, c.DeviceSettings,
-		c.DisplayRule, c.EmailSettings, c.F1, c.GeneralSettings, c.GenericAPI,
-		c.GitHub, c.GoogleCalendar, c.GreetingRule, c.GuestPhoto, c.GuestToken,
-		c.HomeAssistant, c.Image, c.Immich, c.InboundAdapter, c.Incident, c.Jellyfin,
-		c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
-		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
-		c.Overseerr, c.PiHole, c.PixelArt, c.Playlist, c.Qbittorrent, c.Qrcode,
-		c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene, c.Schedule, c.Sonarr, c.Speedtest,
-		c.Sports, c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide,
-		c.TimelapseFrame, c.Transit, c.UmamiSettings, c.Untappd, c.Uptime,
-		c.UptimeKuma, c.User, c.Video, c.WakeAlarm, c.Weather, c.WebhookSettings,
+		c.DisplayRule, c.EmailSettings, c.F1, c.FirmwareRelease, c.FirmwareSettings,
+		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
+		c.GuestPhoto, c.GuestToken, c.HomeAssistant, c.Image, c.Immich,
+		c.InboundAdapter, c.Incident, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD,
+		c.MQTTSettings, c.MatrixLayout, c.NewsFeed, c.Notification, c.NowPlayingSource,
+		c.OutboundSettings, c.OutboundWebhook, c.Overseerr, c.PiHole, c.PixelArt,
+		c.Playlist, c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene,
+		c.Schedule, c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon,
+		c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit, c.UmamiSettings,
+		c.Untappd, c.Uptime, c.UptimeKuma, c.User, c.Video, c.WakeAlarm, c.Weather,
+		c.WebhookSettings,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -665,6 +679,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.EmailSettings.mutate(ctx, m)
 	case *F1Mutation:
 		return c.F1.mutate(ctx, m)
+	case *FirmwareReleaseMutation:
+		return c.FirmwareRelease.mutate(ctx, m)
+	case *FirmwareSettingsMutation:
+		return c.FirmwareSettings.mutate(ctx, m)
 	case *GeneralSettingsMutation:
 		return c.GeneralSettings.mutate(ctx, m)
 	case *GenericAPIMutation:
@@ -3064,6 +3082,272 @@ func (c *F1Client) mutate(ctx context.Context, m *F1Mutation) (Value, error) {
 		return (&F1Delete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown F1 mutation op: %q", m.Op())
+	}
+}
+
+// FirmwareReleaseClient is a client for the FirmwareRelease schema.
+type FirmwareReleaseClient struct {
+	config
+}
+
+// NewFirmwareReleaseClient returns a client for the FirmwareRelease from the given config.
+func NewFirmwareReleaseClient(c config) *FirmwareReleaseClient {
+	return &FirmwareReleaseClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `firmwarerelease.Hooks(f(g(h())))`.
+func (c *FirmwareReleaseClient) Use(hooks ...Hook) {
+	c.hooks.FirmwareRelease = append(c.hooks.FirmwareRelease, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `firmwarerelease.Intercept(f(g(h())))`.
+func (c *FirmwareReleaseClient) Intercept(interceptors ...Interceptor) {
+	c.inters.FirmwareRelease = append(c.inters.FirmwareRelease, interceptors...)
+}
+
+// Create returns a builder for creating a FirmwareRelease entity.
+func (c *FirmwareReleaseClient) Create() *FirmwareReleaseCreate {
+	mutation := newFirmwareReleaseMutation(c.config, OpCreate)
+	return &FirmwareReleaseCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of FirmwareRelease entities.
+func (c *FirmwareReleaseClient) CreateBulk(builders ...*FirmwareReleaseCreate) *FirmwareReleaseCreateBulk {
+	return &FirmwareReleaseCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *FirmwareReleaseClient) MapCreateBulk(slice any, setFunc func(*FirmwareReleaseCreate, int)) *FirmwareReleaseCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &FirmwareReleaseCreateBulk{err: fmt.Errorf("calling to FirmwareReleaseClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*FirmwareReleaseCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &FirmwareReleaseCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for FirmwareRelease.
+func (c *FirmwareReleaseClient) Update() *FirmwareReleaseUpdate {
+	mutation := newFirmwareReleaseMutation(c.config, OpUpdate)
+	return &FirmwareReleaseUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *FirmwareReleaseClient) UpdateOne(_m *FirmwareRelease) *FirmwareReleaseUpdateOne {
+	mutation := newFirmwareReleaseMutation(c.config, OpUpdateOne, withFirmwareRelease(_m))
+	return &FirmwareReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *FirmwareReleaseClient) UpdateOneID(id int) *FirmwareReleaseUpdateOne {
+	mutation := newFirmwareReleaseMutation(c.config, OpUpdateOne, withFirmwareReleaseID(id))
+	return &FirmwareReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for FirmwareRelease.
+func (c *FirmwareReleaseClient) Delete() *FirmwareReleaseDelete {
+	mutation := newFirmwareReleaseMutation(c.config, OpDelete)
+	return &FirmwareReleaseDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *FirmwareReleaseClient) DeleteOne(_m *FirmwareRelease) *FirmwareReleaseDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *FirmwareReleaseClient) DeleteOneID(id int) *FirmwareReleaseDeleteOne {
+	builder := c.Delete().Where(firmwarerelease.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &FirmwareReleaseDeleteOne{builder}
+}
+
+// Query returns a query builder for FirmwareRelease.
+func (c *FirmwareReleaseClient) Query() *FirmwareReleaseQuery {
+	return &FirmwareReleaseQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeFirmwareRelease},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a FirmwareRelease entity by its id.
+func (c *FirmwareReleaseClient) Get(ctx context.Context, id int) (*FirmwareRelease, error) {
+	return c.Query().Where(firmwarerelease.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *FirmwareReleaseClient) GetX(ctx context.Context, id int) *FirmwareRelease {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *FirmwareReleaseClient) Hooks() []Hook {
+	return c.hooks.FirmwareRelease
+}
+
+// Interceptors returns the client interceptors.
+func (c *FirmwareReleaseClient) Interceptors() []Interceptor {
+	return c.inters.FirmwareRelease
+}
+
+func (c *FirmwareReleaseClient) mutate(ctx context.Context, m *FirmwareReleaseMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&FirmwareReleaseCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&FirmwareReleaseUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&FirmwareReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&FirmwareReleaseDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown FirmwareRelease mutation op: %q", m.Op())
+	}
+}
+
+// FirmwareSettingsClient is a client for the FirmwareSettings schema.
+type FirmwareSettingsClient struct {
+	config
+}
+
+// NewFirmwareSettingsClient returns a client for the FirmwareSettings from the given config.
+func NewFirmwareSettingsClient(c config) *FirmwareSettingsClient {
+	return &FirmwareSettingsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `firmwaresettings.Hooks(f(g(h())))`.
+func (c *FirmwareSettingsClient) Use(hooks ...Hook) {
+	c.hooks.FirmwareSettings = append(c.hooks.FirmwareSettings, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `firmwaresettings.Intercept(f(g(h())))`.
+func (c *FirmwareSettingsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.FirmwareSettings = append(c.inters.FirmwareSettings, interceptors...)
+}
+
+// Create returns a builder for creating a FirmwareSettings entity.
+func (c *FirmwareSettingsClient) Create() *FirmwareSettingsCreate {
+	mutation := newFirmwareSettingsMutation(c.config, OpCreate)
+	return &FirmwareSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of FirmwareSettings entities.
+func (c *FirmwareSettingsClient) CreateBulk(builders ...*FirmwareSettingsCreate) *FirmwareSettingsCreateBulk {
+	return &FirmwareSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *FirmwareSettingsClient) MapCreateBulk(slice any, setFunc func(*FirmwareSettingsCreate, int)) *FirmwareSettingsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &FirmwareSettingsCreateBulk{err: fmt.Errorf("calling to FirmwareSettingsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*FirmwareSettingsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &FirmwareSettingsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for FirmwareSettings.
+func (c *FirmwareSettingsClient) Update() *FirmwareSettingsUpdate {
+	mutation := newFirmwareSettingsMutation(c.config, OpUpdate)
+	return &FirmwareSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *FirmwareSettingsClient) UpdateOne(_m *FirmwareSettings) *FirmwareSettingsUpdateOne {
+	mutation := newFirmwareSettingsMutation(c.config, OpUpdateOne, withFirmwareSettings(_m))
+	return &FirmwareSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *FirmwareSettingsClient) UpdateOneID(id int) *FirmwareSettingsUpdateOne {
+	mutation := newFirmwareSettingsMutation(c.config, OpUpdateOne, withFirmwareSettingsID(id))
+	return &FirmwareSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for FirmwareSettings.
+func (c *FirmwareSettingsClient) Delete() *FirmwareSettingsDelete {
+	mutation := newFirmwareSettingsMutation(c.config, OpDelete)
+	return &FirmwareSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *FirmwareSettingsClient) DeleteOne(_m *FirmwareSettings) *FirmwareSettingsDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *FirmwareSettingsClient) DeleteOneID(id int) *FirmwareSettingsDeleteOne {
+	builder := c.Delete().Where(firmwaresettings.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &FirmwareSettingsDeleteOne{builder}
+}
+
+// Query returns a query builder for FirmwareSettings.
+func (c *FirmwareSettingsClient) Query() *FirmwareSettingsQuery {
+	return &FirmwareSettingsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeFirmwareSettings},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a FirmwareSettings entity by its id.
+func (c *FirmwareSettingsClient) Get(ctx context.Context, id int) (*FirmwareSettings, error) {
+	return c.Query().Where(firmwaresettings.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *FirmwareSettingsClient) GetX(ctx context.Context, id int) *FirmwareSettings {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *FirmwareSettingsClient) Hooks() []Hook {
+	return c.hooks.FirmwareSettings
+}
+
+// Interceptors returns the client interceptors.
+func (c *FirmwareSettingsClient) Interceptors() []Interceptor {
+	return c.inters.FirmwareSettings
+}
+
+func (c *FirmwareSettingsClient) mutate(ctx context.Context, m *FirmwareSettingsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&FirmwareSettingsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&FirmwareSettingsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&FirmwareSettingsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&FirmwareSettingsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown FirmwareSettings mutation op: %q", m.Op())
 	}
 }
 
@@ -10804,27 +11088,29 @@ type (
 	hooks struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		ChartSample, Composition, Countdown, Crypto, DatasourcePlugin, DeliveryLog,
-		DeviceGroup, DeviceSettings, DisplayRule, EmailSettings, F1, GeneralSettings,
-		GenericAPI, GitHub, GoogleCalendar, GreetingRule, GuestPhoto, GuestToken,
-		HomeAssistant, Image, Immich, InboundAdapter, Incident, Jellyfin, LogEntry,
-		LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
-		NowPlayingSource, OutboundSettings, OutboundWebhook, Overseerr, PiHole,
-		PixelArt, Playlist, Qbittorrent, Qrcode, Radarr, RssFeed, Sabnzbd, Scene,
-		Schedule, Sonarr, Speedtest, Sports, Stock, SunMoon, TelegramSettings,
-		TextSlide, TimelapseFrame, Transit, UmamiSettings, Untappd, Uptime, UptimeKuma,
-		User, Video, WakeAlarm, Weather, WebhookSettings []ent.Hook
+		DeviceGroup, DeviceSettings, DisplayRule, EmailSettings, F1, FirmwareRelease,
+		FirmwareSettings, GeneralSettings, GenericAPI, GitHub, GoogleCalendar,
+		GreetingRule, GuestPhoto, GuestToken, HomeAssistant, Image, Immich,
+		InboundAdapter, Incident, Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings,
+		MatrixLayout, NewsFeed, Notification, NowPlayingSource, OutboundSettings,
+		OutboundWebhook, Overseerr, PiHole, PixelArt, Playlist, Qbittorrent, Qrcode,
+		Radarr, RssFeed, Sabnzbd, Scene, Schedule, Sonarr, Speedtest, Sports, Stock,
+		SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings,
+		Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm, Weather,
+		WebhookSettings []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
 		ChartSample, Composition, Countdown, Crypto, DatasourcePlugin, DeliveryLog,
-		DeviceGroup, DeviceSettings, DisplayRule, EmailSettings, F1, GeneralSettings,
-		GenericAPI, GitHub, GoogleCalendar, GreetingRule, GuestPhoto, GuestToken,
-		HomeAssistant, Image, Immich, InboundAdapter, Incident, Jellyfin, LogEntry,
-		LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
-		NowPlayingSource, OutboundSettings, OutboundWebhook, Overseerr, PiHole,
-		PixelArt, Playlist, Qbittorrent, Qrcode, Radarr, RssFeed, Sabnzbd, Scene,
-		Schedule, Sonarr, Speedtest, Sports, Stock, SunMoon, TelegramSettings,
-		TextSlide, TimelapseFrame, Transit, UmamiSettings, Untappd, Uptime, UptimeKuma,
-		User, Video, WakeAlarm, Weather, WebhookSettings []ent.Interceptor
+		DeviceGroup, DeviceSettings, DisplayRule, EmailSettings, F1, FirmwareRelease,
+		FirmwareSettings, GeneralSettings, GenericAPI, GitHub, GoogleCalendar,
+		GreetingRule, GuestPhoto, GuestToken, HomeAssistant, Image, Immich,
+		InboundAdapter, Incident, Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings,
+		MatrixLayout, NewsFeed, Notification, NowPlayingSource, OutboundSettings,
+		OutboundWebhook, Overseerr, PiHole, PixelArt, Playlist, Qbittorrent, Qrcode,
+		Radarr, RssFeed, Sabnzbd, Scene, Schedule, Sonarr, Speedtest, Sports, Stock,
+		SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings,
+		Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm, Weather,
+		WebhookSettings []ent.Interceptor
 	}
 )

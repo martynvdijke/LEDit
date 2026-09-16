@@ -352,6 +352,12 @@ var (
 		{Name: "output_color_order", Type: field.TypeString, Default: "RGB"},
 		{Name: "output_gamma", Type: field.TypeFloat64, Default: 1},
 		{Name: "output_matrix_layout", Type: field.TypeString, Default: "row-major"},
+		{Name: "fingerprint", Type: field.TypeString, Default: ""},
+		{Name: "approved_at", Type: field.TypeTime, Nullable: true},
+		{Name: "firmware_version", Type: field.TypeString, Default: ""},
+		{Name: "firmware_version_pin", Type: field.TypeString, Nullable: true},
+		{Name: "last_update_status", Type: field.TypeString, Default: ""},
+		{Name: "last_update_at", Type: field.TypeTime, Nullable: true},
 		{Name: "group_id", Type: field.TypeInt, Nullable: true},
 		{Name: "general_settings_device_settings", Type: field.TypeInt, Nullable: true},
 	}
@@ -363,13 +369,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "device_settings_device_groups_devices",
-				Columns:    []*schema.Column{DeviceSettingsColumns[43]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[49]},
 				RefColumns: []*schema.Column{DeviceGroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "device_settings_general_settings_device_settings",
-				Columns:    []*schema.Column{DeviceSettingsColumns[44]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[50]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -447,6 +453,47 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 		},
+	}
+	// FirmwareReleasesColumns holds the columns for the "firmware_releases" table.
+	FirmwareReleasesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "version", Type: field.TypeString},
+		{Name: "channel", Type: field.TypeString, Default: "stable"},
+		{Name: "sha256", Type: field.TypeString},
+		{Name: "size_bytes", Type: field.TypeInt, Default: 0},
+		{Name: "artifact_path", Type: field.TypeString},
+		{Name: "notes", Type: field.TypeString, Default: ""},
+		{Name: "mandatory", Type: field.TypeBool, Default: false},
+		{Name: "min_version", Type: field.TypeString, Default: ""},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// FirmwareReleasesTable holds the schema information for the "firmware_releases" table.
+	FirmwareReleasesTable = &schema.Table{
+		Name:       "firmware_releases",
+		Columns:    FirmwareReleasesColumns,
+		PrimaryKey: []*schema.Column{FirmwareReleasesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "firmwarerelease_channel_version",
+				Unique:  true,
+				Columns: []*schema.Column{FirmwareReleasesColumns[2], FirmwareReleasesColumns[1]},
+			},
+		},
+	}
+	// FirmwareSettingsColumns holds the columns for the "firmware_settings" table.
+	FirmwareSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "channel", Type: field.TypeString, Default: "stable"},
+		{Name: "target_version", Type: field.TypeString, Default: ""},
+		{Name: "rollout_percent", Type: field.TypeInt, Default: 0},
+		{Name: "paused", Type: field.TypeBool, Default: false},
+	}
+	// FirmwareSettingsTable holds the schema information for the "firmware_settings" table.
+	FirmwareSettingsTable = &schema.Table{
+		Name:       "firmware_settings",
+		Columns:    FirmwareSettingsColumns,
+		PrimaryKey: []*schema.Column{FirmwareSettingsColumns[0]},
 	}
 	// GeneralSettingsColumns holds the columns for the "general_settings" table.
 	GeneralSettingsColumns = []*schema.Column{
@@ -1596,6 +1643,8 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "api_key", Type: field.TypeString, Default: ""},
 		{Name: "default_ttl", Type: field.TypeInt, Default: 30},
+		{Name: "signing_secret", Type: field.TypeString, Default: ""},
+		{Name: "signing_window_seconds", Type: field.TypeInt, Default: 300},
 		{Name: "general_settings_webhooksettings", Type: field.TypeInt, Nullable: true},
 	}
 	// WebhookSettingsTable holds the schema information for the "webhook_settings" table.
@@ -1606,7 +1655,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "webhook_settings_general_settings_webhooksettings",
-				Columns:    []*schema.Column{WebhookSettingsColumns[3]},
+				Columns:    []*schema.Column{WebhookSettingsColumns[5]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -1631,6 +1680,8 @@ var (
 		DisplayRulesTable,
 		EmailSettingsTable,
 		F1sTable,
+		FirmwareReleasesTable,
+		FirmwareSettingsTable,
 		GeneralSettingsTable,
 		GenericApIsTable,
 		GitHubsTable,

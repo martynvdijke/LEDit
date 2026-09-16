@@ -17,8 +17,15 @@ func (s *Server) AdminWebhookSettingsGET(c *gin.Context) {
 	if err != nil {
 		settings = nil
 	}
+	window := 300
+	if settings != nil && settings.SigningWindowSeconds > 0 {
+		window = settings.SigningWindowSeconds
+	}
+	signingSet := settings != nil && settings.SigningSecret != ""
 	s.renderPage(c, http.StatusOK, "webhook.html", gin.H{
-		"settings": settings,
+		"settings":         settings,
+		"signingWindow":    window,
+		"signingSecretSet": signingSet,
 	})
 }
 
@@ -37,11 +44,50 @@ func (s *Server) AdminWebhookSettingsPOST(c *gin.Context) {
 	if ttl > 3600 {
 		ttl = 3600
 	}
+	signingWindowStr := strings.TrimSpace(c.PostForm("signing_window_seconds"))
+	signingWindow := 300
+	if signingWindowStr != "" {
+		v, err := strconv.Atoi(signingWindowStr)
+		if err != nil || v < 1 || v > 86400 {
+			settings, _ := s.DB.WebhookSettings.Query().Only(s.Ctx)
+			window := 300
+			if settings != nil && settings.SigningWindowSeconds > 0 {
+				window = settings.SigningWindowSeconds
+			}
+			signingSet := settings != nil && settings.SigningSecret != ""
+			s.renderPage(c, http.StatusOK, "webhook.html", gin.H{
+				"settings":         settings,
+				"signingWindow":    window,
+				"signingSecretSet": signingSet,
+				"error":            "signing_window_seconds must be between 1 and 86400",
+			})
+			return
+		}
+		signingWindow = v
+	}
+	signingSecret := c.PostForm("signing_secret")
+	clearSecret := c.PostForm("clear_signing_secret") == "on" || c.PostForm("clear_signing_secret") == "1"
+
 	exists, _ := s.DB.WebhookSettings.Query().Exist(s.Ctx)
 	if !exists {
-		s.DB.WebhookSettings.Create().SetAPIKey(apiKey).SetDefaultTTL(ttl).SaveX(s.Ctx)
+		cre := s.DB.WebhookSettings.Create().SetAPIKey(apiKey).SetDefaultTTL(ttl).SetSigningWindowSeconds(signingWindow)
+		if clearSecret {
+			cre.SetSigningSecret("")
+		} else if strings.TrimSpace(signingSecret) != "" {
+			cre.SetSigningSecret(strings.TrimSpace(signingSecret))
+		} else {
+			cre.SetSigningSecret("")
+		}
+		cre.SaveX(s.Ctx)
 	} else {
-		s.DB.WebhookSettings.Update().SetAPIKey(apiKey).SetDefaultTTL(ttl).SaveX(s.Ctx)
+		upd := s.DB.WebhookSettings.Update().SetAPIKey(apiKey).SetDefaultTTL(ttl).SetSigningWindowSeconds(signingWindow)
+		if clearSecret {
+			upd.SetSigningSecret("")
+		} else if strings.TrimSpace(signingSecret) != "" {
+			upd.SetSigningSecret(strings.TrimSpace(signingSecret))
+		}
+		// else leave unchanged
+		upd.SaveX(s.Ctx)
 	}
 	SetFlash(c, "success", "Webhook settings saved")
 	c.Redirect(http.StatusFound, "/admin/webhook")

@@ -270,6 +270,36 @@ func OutputMatrixLayout(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputMatrixLayout, v))
 }
 
+// Fingerprint applies equality check predicate on the "fingerprint" field. It's identical to FingerprintEQ.
+func Fingerprint(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldFingerprint, v))
+}
+
+// ApprovedAt applies equality check predicate on the "approved_at" field. It's identical to ApprovedAtEQ.
+func ApprovedAt(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldApprovedAt, v))
+}
+
+// FirmwareVersion applies equality check predicate on the "firmware_version" field. It's identical to FirmwareVersionEQ.
+func FirmwareVersion(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionPin applies equality check predicate on the "firmware_version_pin" field. It's identical to FirmwareVersionPinEQ.
+func FirmwareVersionPin(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldFirmwareVersionPin, v))
+}
+
+// LastUpdateStatus applies equality check predicate on the "last_update_status" field. It's identical to LastUpdateStatusEQ.
+func LastUpdateStatus(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateAt applies equality check predicate on the "last_update_at" field. It's identical to LastUpdateAtEQ.
+func LastUpdateAt(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldLastUpdateAt, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldName, v))
@@ -2448,6 +2478,376 @@ func OutputMatrixLayoutEqualFold(v string) predicate.DeviceSettings {
 // OutputMatrixLayoutContainsFold applies the ContainsFold predicate on the "output_matrix_layout" field.
 func OutputMatrixLayoutContainsFold(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldContainsFold(FieldOutputMatrixLayout, v))
+}
+
+// FingerprintEQ applies the EQ predicate on the "fingerprint" field.
+func FingerprintEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldFingerprint, v))
+}
+
+// FingerprintNEQ applies the NEQ predicate on the "fingerprint" field.
+func FingerprintNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldFingerprint, v))
+}
+
+// FingerprintIn applies the In predicate on the "fingerprint" field.
+func FingerprintIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldFingerprint, vs...))
+}
+
+// FingerprintNotIn applies the NotIn predicate on the "fingerprint" field.
+func FingerprintNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldFingerprint, vs...))
+}
+
+// FingerprintGT applies the GT predicate on the "fingerprint" field.
+func FingerprintGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldFingerprint, v))
+}
+
+// FingerprintGTE applies the GTE predicate on the "fingerprint" field.
+func FingerprintGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldFingerprint, v))
+}
+
+// FingerprintLT applies the LT predicate on the "fingerprint" field.
+func FingerprintLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldFingerprint, v))
+}
+
+// FingerprintLTE applies the LTE predicate on the "fingerprint" field.
+func FingerprintLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldFingerprint, v))
+}
+
+// FingerprintContains applies the Contains predicate on the "fingerprint" field.
+func FingerprintContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldFingerprint, v))
+}
+
+// FingerprintHasPrefix applies the HasPrefix predicate on the "fingerprint" field.
+func FingerprintHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldFingerprint, v))
+}
+
+// FingerprintHasSuffix applies the HasSuffix predicate on the "fingerprint" field.
+func FingerprintHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldFingerprint, v))
+}
+
+// FingerprintEqualFold applies the EqualFold predicate on the "fingerprint" field.
+func FingerprintEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldFingerprint, v))
+}
+
+// FingerprintContainsFold applies the ContainsFold predicate on the "fingerprint" field.
+func FingerprintContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldFingerprint, v))
+}
+
+// ApprovedAtEQ applies the EQ predicate on the "approved_at" field.
+func ApprovedAtEQ(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldApprovedAt, v))
+}
+
+// ApprovedAtNEQ applies the NEQ predicate on the "approved_at" field.
+func ApprovedAtNEQ(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldApprovedAt, v))
+}
+
+// ApprovedAtIn applies the In predicate on the "approved_at" field.
+func ApprovedAtIn(vs ...time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldApprovedAt, vs...))
+}
+
+// ApprovedAtNotIn applies the NotIn predicate on the "approved_at" field.
+func ApprovedAtNotIn(vs ...time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldApprovedAt, vs...))
+}
+
+// ApprovedAtGT applies the GT predicate on the "approved_at" field.
+func ApprovedAtGT(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldApprovedAt, v))
+}
+
+// ApprovedAtGTE applies the GTE predicate on the "approved_at" field.
+func ApprovedAtGTE(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldApprovedAt, v))
+}
+
+// ApprovedAtLT applies the LT predicate on the "approved_at" field.
+func ApprovedAtLT(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldApprovedAt, v))
+}
+
+// ApprovedAtLTE applies the LTE predicate on the "approved_at" field.
+func ApprovedAtLTE(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldApprovedAt, v))
+}
+
+// ApprovedAtIsNil applies the IsNil predicate on the "approved_at" field.
+func ApprovedAtIsNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIsNull(FieldApprovedAt))
+}
+
+// ApprovedAtNotNil applies the NotNil predicate on the "approved_at" field.
+func ApprovedAtNotNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotNull(FieldApprovedAt))
+}
+
+// FirmwareVersionEQ applies the EQ predicate on the "firmware_version" field.
+func FirmwareVersionEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionNEQ applies the NEQ predicate on the "firmware_version" field.
+func FirmwareVersionNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionIn applies the In predicate on the "firmware_version" field.
+func FirmwareVersionIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldFirmwareVersion, vs...))
+}
+
+// FirmwareVersionNotIn applies the NotIn predicate on the "firmware_version" field.
+func FirmwareVersionNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldFirmwareVersion, vs...))
+}
+
+// FirmwareVersionGT applies the GT predicate on the "firmware_version" field.
+func FirmwareVersionGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionGTE applies the GTE predicate on the "firmware_version" field.
+func FirmwareVersionGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionLT applies the LT predicate on the "firmware_version" field.
+func FirmwareVersionLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionLTE applies the LTE predicate on the "firmware_version" field.
+func FirmwareVersionLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionContains applies the Contains predicate on the "firmware_version" field.
+func FirmwareVersionContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionHasPrefix applies the HasPrefix predicate on the "firmware_version" field.
+func FirmwareVersionHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionHasSuffix applies the HasSuffix predicate on the "firmware_version" field.
+func FirmwareVersionHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionEqualFold applies the EqualFold predicate on the "firmware_version" field.
+func FirmwareVersionEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionContainsFold applies the ContainsFold predicate on the "firmware_version" field.
+func FirmwareVersionContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldFirmwareVersion, v))
+}
+
+// FirmwareVersionPinEQ applies the EQ predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldFirmwareVersionPin, v))
+}
+
+// FirmwareVersionPinNEQ applies the NEQ predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldFirmwareVersionPin, v))
+}
+
+// FirmwareVersionPinIn applies the In predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldFirmwareVersionPin, vs...))
+}
+
+// FirmwareVersionPinNotIn applies the NotIn predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldFirmwareVersionPin, vs...))
+}
+
+// FirmwareVersionPinGT applies the GT predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldFirmwareVersionPin, v))
+}
+
+// FirmwareVersionPinGTE applies the GTE predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldFirmwareVersionPin, v))
+}
+
+// FirmwareVersionPinLT applies the LT predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldFirmwareVersionPin, v))
+}
+
+// FirmwareVersionPinLTE applies the LTE predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldFirmwareVersionPin, v))
+}
+
+// FirmwareVersionPinContains applies the Contains predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldFirmwareVersionPin, v))
+}
+
+// FirmwareVersionPinHasPrefix applies the HasPrefix predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldFirmwareVersionPin, v))
+}
+
+// FirmwareVersionPinHasSuffix applies the HasSuffix predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldFirmwareVersionPin, v))
+}
+
+// FirmwareVersionPinIsNil applies the IsNil predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinIsNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIsNull(FieldFirmwareVersionPin))
+}
+
+// FirmwareVersionPinNotNil applies the NotNil predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinNotNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotNull(FieldFirmwareVersionPin))
+}
+
+// FirmwareVersionPinEqualFold applies the EqualFold predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldFirmwareVersionPin, v))
+}
+
+// FirmwareVersionPinContainsFold applies the ContainsFold predicate on the "firmware_version_pin" field.
+func FirmwareVersionPinContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldFirmwareVersionPin, v))
+}
+
+// LastUpdateStatusEQ applies the EQ predicate on the "last_update_status" field.
+func LastUpdateStatusEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateStatusNEQ applies the NEQ predicate on the "last_update_status" field.
+func LastUpdateStatusNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateStatusIn applies the In predicate on the "last_update_status" field.
+func LastUpdateStatusIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldLastUpdateStatus, vs...))
+}
+
+// LastUpdateStatusNotIn applies the NotIn predicate on the "last_update_status" field.
+func LastUpdateStatusNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldLastUpdateStatus, vs...))
+}
+
+// LastUpdateStatusGT applies the GT predicate on the "last_update_status" field.
+func LastUpdateStatusGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateStatusGTE applies the GTE predicate on the "last_update_status" field.
+func LastUpdateStatusGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateStatusLT applies the LT predicate on the "last_update_status" field.
+func LastUpdateStatusLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateStatusLTE applies the LTE predicate on the "last_update_status" field.
+func LastUpdateStatusLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateStatusContains applies the Contains predicate on the "last_update_status" field.
+func LastUpdateStatusContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateStatusHasPrefix applies the HasPrefix predicate on the "last_update_status" field.
+func LastUpdateStatusHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateStatusHasSuffix applies the HasSuffix predicate on the "last_update_status" field.
+func LastUpdateStatusHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateStatusEqualFold applies the EqualFold predicate on the "last_update_status" field.
+func LastUpdateStatusEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateStatusContainsFold applies the ContainsFold predicate on the "last_update_status" field.
+func LastUpdateStatusContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldLastUpdateStatus, v))
+}
+
+// LastUpdateAtEQ applies the EQ predicate on the "last_update_at" field.
+func LastUpdateAtEQ(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldLastUpdateAt, v))
+}
+
+// LastUpdateAtNEQ applies the NEQ predicate on the "last_update_at" field.
+func LastUpdateAtNEQ(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldLastUpdateAt, v))
+}
+
+// LastUpdateAtIn applies the In predicate on the "last_update_at" field.
+func LastUpdateAtIn(vs ...time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldLastUpdateAt, vs...))
+}
+
+// LastUpdateAtNotIn applies the NotIn predicate on the "last_update_at" field.
+func LastUpdateAtNotIn(vs ...time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldLastUpdateAt, vs...))
+}
+
+// LastUpdateAtGT applies the GT predicate on the "last_update_at" field.
+func LastUpdateAtGT(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldLastUpdateAt, v))
+}
+
+// LastUpdateAtGTE applies the GTE predicate on the "last_update_at" field.
+func LastUpdateAtGTE(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldLastUpdateAt, v))
+}
+
+// LastUpdateAtLT applies the LT predicate on the "last_update_at" field.
+func LastUpdateAtLT(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldLastUpdateAt, v))
+}
+
+// LastUpdateAtLTE applies the LTE predicate on the "last_update_at" field.
+func LastUpdateAtLTE(v time.Time) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldLastUpdateAt, v))
+}
+
+// LastUpdateAtIsNil applies the IsNil predicate on the "last_update_at" field.
+func LastUpdateAtIsNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIsNull(FieldLastUpdateAt))
+}
+
+// LastUpdateAtNotNil applies the NotNil predicate on the "last_update_at" field.
+func LastUpdateAtNotNil() predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotNull(FieldLastUpdateAt))
 }
 
 // HasGroup applies the HasEdge predicate on the "group" edge.

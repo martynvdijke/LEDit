@@ -23,6 +23,8 @@ import (
 	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
+	"ledit/ent/firmwarerelease"
+	"ledit/ent/firmwaresettings"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
 	"ledit/ent/github"
@@ -158,6 +160,8 @@ func checkColumn(t, c string) error {
 			displayrule.Table:      displayrule.ValidColumn,
 			emailsettings.Table:    emailsettings.ValidColumn,
 			f1.Table:               f1.ValidColumn,
+			firmwarerelease.Table:  firmwarerelease.ValidColumn,
+			firmwaresettings.Table: firmwaresettings.ValidColumn,
 			generalsettings.Table:  generalsettings.ValidColumn,
 			genericapi.Table:       genericapi.ValidColumn,
 			github.Table:           github.ValidColumn,

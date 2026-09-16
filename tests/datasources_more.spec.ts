@@ -134,7 +134,7 @@ test('sidebar disclosure Add datasource contains all seven new links', async ({ 
   await page.goto('/');
   await page.locator('summary', { hasText: 'Add datasource' }).click();
   await expect(page.getByRole('link', { name: 'Transit' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Uptime' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Uptime', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Pi-hole' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'GitHub' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Sports' })).toBeVisible();
@@ -142,7 +142,7 @@ test('sidebar disclosure Add datasource contains all seven new links', async ({ 
   await expect(page.getByRole('link', { name: 'Jellyfin' })).toBeVisible();
   // Also verify hrefs point to /new pages
   await expect(page.getByRole('link', { name: 'Transit' })).toHaveAttribute('href', '/admin/datasources/transit/new');
-  await expect(page.getByRole('link', { name: 'Uptime' })).toHaveAttribute('href', '/admin/datasources/uptime/new');
+  await expect(page.getByRole('link', { name: 'Uptime', exact: true })).toHaveAttribute('href', '/admin/datasources/uptime/new');
   await expect(page.getByRole('link', { name: 'Pi-hole' })).toHaveAttribute('href', '/admin/datasources/pihole/new');
   await expect(page.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', '/admin/datasources/github/new');
   await expect(page.getByRole('link', { name: 'Sports' })).toHaveAttribute('href', '/admin/datasources/sports/new');

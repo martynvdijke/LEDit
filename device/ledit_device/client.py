@@ -78,6 +78,14 @@ def _capture_spectrum_bins():
         return None
 
 
+def _hello_payload():
+    try:
+        from . import __version__
+    except Exception:
+        __version__ = "0.0.0"
+    return {"type": "hello", "version": __version__, "capabilities": ["ota"]}
+
+
 class Client:
     def __init__(self, display, spectrum_capture=None, spectrum_interval=None):
         self.display = display
@@ -116,6 +124,11 @@ class Client:
         self._spectrum_stop = threading.Event()
         self._spectrum_thread = None
         self._spectrum_lock = threading.Lock()
+
+        # OTA firmware polling (off render loop)
+        self._ota_thread = None
+        self._ota_stop = threading.Event()
+        self._ota_lock = threading.Lock()
 
     # -- rendering -----------------------------------------------------------
 
@@ -160,6 +173,59 @@ class Client:
         self._protocol = 2
         self._capabilities = {c for c in caps if isinstance(c, str)}
         log("info", "server protocol v2: capabilities=%s" % sorted(self._capabilities))
+        self._maybe_start_ota()
+
+    def _maybe_start_ota(self):
+        # OTA gated on server capability and interval > 0
+        if "ota" not in self._capabilities and "firmware" not in self._capabilities:
+            return
+        interval = config.update_interval()
+        if interval == 0:
+            return
+        self._ensure_ota_thread()
+
+    def _ensure_ota_thread(self):
+        with self._ota_lock:
+            if self._ota_thread is not None and self._ota_thread.is_alive():
+                return
+            self._ota_stop.clear()
+            self._ota_thread = threading.Thread(target=self._ota_loop, name="ledit-ota", daemon=True)
+            self._ota_thread.start()
+
+    def _ota_loop(self):
+        # Import lazily to avoid cost when OTA disabled
+        try:
+            from . import firmware as _fw
+            from . import __version__ as _ver
+        except Exception:
+            return
+        # current version
+        try:
+            from . import __version__
+            cur = __version__
+        except Exception:
+            cur = "0.0.0"
+        while not self._ota_stop.is_set():
+            try:
+                tok = config.token_optional()
+                if tok:
+                    srv = config.server_url()
+                    ch = config.update_channel() or None
+                    _fw.check_and_update(srv, tok, cur, channel=ch)
+            except Exception:
+                log("warning", "ota poll failed")
+            interval = config.update_interval()
+            if interval == 0:
+                return
+            # sleep with stop check
+            self._ota_stop.wait(timeout=interval)
+
+    def on_open(self, ws):
+        self._ws = ws
+        try:
+            ws.send(json.dumps(_hello_payload()))
+        except Exception:
+            pass
 
     def _track_source(self, data):
         src = data.get("source")
@@ -234,9 +300,13 @@ class Client:
         """Stop the spectrum thread (called on shutdown)."""
         self._spectrum_active.clear()
         self._spectrum_stop.set()
+        self._ota_stop.set()
         thread = self._spectrum_thread
         if thread is not None and thread.is_alive():
             thread.join(timeout=0.2)
+        ota = self._ota_thread
+        if ota is not None and ota.is_alive():
+            ota.join(timeout=0.2)
 
     # -- websocket callbacks -------------------------------------------------
 

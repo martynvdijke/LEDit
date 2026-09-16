@@ -13,6 +13,27 @@
             <h1>{{if .edit}}Edit{{else}}New{{end}} Device</h1>
             <form method="POST" action="/admin/devices{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4" id="device-form">
                 <div class="mb-3"><label for="name" class="form-label">Name</label><input type="text" class="form-control" id="name" name="name" value="{{if .obj}}{{.obj.Name}}{{end}}"></div>
+                {{if .edit}}{{if .obj}}
+                <div class="card mb-3" data-device-info>
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">Device information</h6>
+                        <dl class="row mb-0 small">
+                            <dt class="col-sm-4">Fingerprint</dt>
+                            <dd class="col-sm-8">{{if .obj.Fingerprint}}<code>{{.obj.Fingerprint}}</code>{{else}}&mdash;{{end}}</dd>
+                            <dt class="col-sm-4">Firmware version</dt>
+                            <dd class="col-sm-8">{{if .obj.FirmwareVersion}}{{.obj.FirmwareVersion}}{{else}}unknown{{end}}</dd>
+                            {{if .obj.FirmwareVersionPin}}
+                            <dt class="col-sm-4">Pinned version</dt>
+                            <dd class="col-sm-8">{{.obj.FirmwareVersionPin}}</dd>
+                            {{end}}
+                            <dt class="col-sm-4">Last update</dt>
+                            <dd class="col-sm-8">{{if .obj.LastUpdateStatus}}{{.obj.LastUpdateStatus}}{{else}}&mdash;{{end}}{{if .obj.LastUpdateAt}} &middot; {{.obj.LastUpdateAt.Format "2006-01-02 15:04"}}{{end}}</dd>
+                            <dt class="col-sm-4">Last seen</dt>
+                            <dd class="col-sm-8">{{if .obj.LastSeenAt}}{{.obj.LastSeenAt.Format "2006-01-02 15:04"}}{{else}}never{{end}}</dd>
+                        </dl>
+                    </div>
+                </div>
+                {{end}}{{end}}
                 <div class="mb-3"><label for="ip" class="form-label">IP Address</label><input type="text" class="form-control" id="ip" name="ip" value="{{if .obj}}{{.obj.IP}}{{end}}"></div>
                 <div class="mb-3"><label for="port" class="form-label">Port</label><input type="number" class="form-control" id="port" name="port" value="{{if .obj}}{{.obj.Port}}{{else}}6270{{end}}"></div>
                 <div class="mb-3"><label for="width" class="form-label">Matrix Width</label><input type="number" class="form-control" id="width" name="width" value="{{if .obj}}{{.obj.Width}}{{else}}64{{end}}"></div>

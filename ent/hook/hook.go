@@ -212,6 +212,30 @@ func (f F1Func) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.F1Mutation", m)
 }
 
+// The FirmwareReleaseFunc type is an adapter to allow the use of ordinary
+// function as FirmwareRelease mutator.
+type FirmwareReleaseFunc func(context.Context, *ent.FirmwareReleaseMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f FirmwareReleaseFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.FirmwareReleaseMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FirmwareReleaseMutation", m)
+}
+
+// The FirmwareSettingsFunc type is an adapter to allow the use of ordinary
+// function as FirmwareSettings mutator.
+type FirmwareSettingsFunc func(context.Context, *ent.FirmwareSettingsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f FirmwareSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.FirmwareSettingsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FirmwareSettingsMutation", m)
+}
+
 // The GeneralSettingsFunc type is an adapter to allow the use of ordinary
 // function as GeneralSettings mutator.
 type GeneralSettingsFunc func(context.Context, *ent.GeneralSettingsMutation) (ent.Value, error)

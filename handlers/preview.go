@@ -32,7 +32,9 @@ func (s *Server) loadSettingsWithAll(c *gin.Context) (*ent.GeneralSettings, erro
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
 		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
 		WithImages().WithVideos().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
-		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithNowPlayingSources().WithTransits().Only(c.Request.Context())
+		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithNowPlayingSources().WithTransits().
+		WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithQrcodes().
+		WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().Only(c.Request.Context())
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +127,7 @@ func (s *Server) AdminPreview(c *gin.Context) {
 		c.Header("X-LEDit-Stale", "1")
 		c.Header("X-LEDit-Stale-Age", strconv.FormatInt(defaultLKG.StaleAge(cacheKey), 10))
 	}
-	c.Data(http.StatusOK, "image/png", img.Data)
+	s.writeImageResponse(c, img)
 }
 
 // AdminPreviewDatasource renders a datasource from unsaved form values for the
@@ -241,7 +243,7 @@ func (s *Server) AdminPreviewDatasource(c *gin.Context) {
 		return
 	}
 	c.Header("Cache-Control", "no-store")
-	c.Data(http.StatusOK, "image/png", img.Data)
+	s.writeImageResponse(c, img)
 }
 
 // AdminPreviewMatrix renders a matrix layout from unsaved editor form values
@@ -298,7 +300,30 @@ func (s *Server) AdminPreviewMatrix(c *gin.Context) {
 		return
 	}
 	c.Header("Cache-Control", "no-store")
-	c.Data(http.StatusOK, "image/png", img.Data)
+	s.writeImageResponse(c, img)
+}
+
+func (s *Server) writeImageResponse(c *gin.Context, img *render.RenderedImage) {
+	format := strings.ToLower(strings.TrimSpace(c.Query("format")))
+	if format == "" || format == "png" {
+		c.Data(http.StatusOK, "image/png", img.Data)
+		return
+	}
+	if format == "webp" {
+		nrgba, err := render.DecodeNRGBA(img.Data)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		data, err := render.EncodeWebP(nrgba)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.Data(http.StatusOK, "image/webp", data)
+		return
+	}
+	c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported format", "accepted": []string{"png", "webp"}})
 }
 
 func mustAtoi(s string) int {

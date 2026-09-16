@@ -108,6 +108,14 @@ func (DeviceSettings) Fields() []ent.Field {
 				return fmt.Errorf("output_matrix_layout must be one of row-major, serpentine")
 			}
 		}),
+		// discovery / enrollment
+		field.String("fingerprint").Default(""),
+		field.Time("approved_at").Optional().Nillable(),
+		// firmware OTA
+		field.String("firmware_version").Default(""),
+		field.String("firmware_version_pin").Optional().Nillable(),
+		field.String("last_update_status").Default(""),
+		field.Time("last_update_at").Optional().Nillable(),
 	}
 }
 

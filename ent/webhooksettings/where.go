@@ -63,6 +63,16 @@ func DefaultTTL(v int) predicate.WebhookSettings {
 	return predicate.WebhookSettings(sql.FieldEQ(FieldDefaultTTL, v))
 }
 
+// SigningSecret applies equality check predicate on the "signing_secret" field. It's identical to SigningSecretEQ.
+func SigningSecret(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldEQ(FieldSigningSecret, v))
+}
+
+// SigningWindowSeconds applies equality check predicate on the "signing_window_seconds" field. It's identical to SigningWindowSecondsEQ.
+func SigningWindowSeconds(v int) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldEQ(FieldSigningWindowSeconds, v))
+}
+
 // APIKeyEQ applies the EQ predicate on the "api_key" field.
 func APIKeyEQ(v string) predicate.WebhookSettings {
 	return predicate.WebhookSettings(sql.FieldEQ(FieldAPIKey, v))
@@ -166,6 +176,111 @@ func DefaultTTLLT(v int) predicate.WebhookSettings {
 // DefaultTTLLTE applies the LTE predicate on the "default_ttl" field.
 func DefaultTTLLTE(v int) predicate.WebhookSettings {
 	return predicate.WebhookSettings(sql.FieldLTE(FieldDefaultTTL, v))
+}
+
+// SigningSecretEQ applies the EQ predicate on the "signing_secret" field.
+func SigningSecretEQ(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldEQ(FieldSigningSecret, v))
+}
+
+// SigningSecretNEQ applies the NEQ predicate on the "signing_secret" field.
+func SigningSecretNEQ(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldNEQ(FieldSigningSecret, v))
+}
+
+// SigningSecretIn applies the In predicate on the "signing_secret" field.
+func SigningSecretIn(vs ...string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldIn(FieldSigningSecret, vs...))
+}
+
+// SigningSecretNotIn applies the NotIn predicate on the "signing_secret" field.
+func SigningSecretNotIn(vs ...string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldNotIn(FieldSigningSecret, vs...))
+}
+
+// SigningSecretGT applies the GT predicate on the "signing_secret" field.
+func SigningSecretGT(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldGT(FieldSigningSecret, v))
+}
+
+// SigningSecretGTE applies the GTE predicate on the "signing_secret" field.
+func SigningSecretGTE(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldGTE(FieldSigningSecret, v))
+}
+
+// SigningSecretLT applies the LT predicate on the "signing_secret" field.
+func SigningSecretLT(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldLT(FieldSigningSecret, v))
+}
+
+// SigningSecretLTE applies the LTE predicate on the "signing_secret" field.
+func SigningSecretLTE(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldLTE(FieldSigningSecret, v))
+}
+
+// SigningSecretContains applies the Contains predicate on the "signing_secret" field.
+func SigningSecretContains(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldContains(FieldSigningSecret, v))
+}
+
+// SigningSecretHasPrefix applies the HasPrefix predicate on the "signing_secret" field.
+func SigningSecretHasPrefix(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldHasPrefix(FieldSigningSecret, v))
+}
+
+// SigningSecretHasSuffix applies the HasSuffix predicate on the "signing_secret" field.
+func SigningSecretHasSuffix(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldHasSuffix(FieldSigningSecret, v))
+}
+
+// SigningSecretEqualFold applies the EqualFold predicate on the "signing_secret" field.
+func SigningSecretEqualFold(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldEqualFold(FieldSigningSecret, v))
+}
+
+// SigningSecretContainsFold applies the ContainsFold predicate on the "signing_secret" field.
+func SigningSecretContainsFold(v string) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldContainsFold(FieldSigningSecret, v))
+}
+
+// SigningWindowSecondsEQ applies the EQ predicate on the "signing_window_seconds" field.
+func SigningWindowSecondsEQ(v int) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldEQ(FieldSigningWindowSeconds, v))
+}
+
+// SigningWindowSecondsNEQ applies the NEQ predicate on the "signing_window_seconds" field.
+func SigningWindowSecondsNEQ(v int) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldNEQ(FieldSigningWindowSeconds, v))
+}
+
+// SigningWindowSecondsIn applies the In predicate on the "signing_window_seconds" field.
+func SigningWindowSecondsIn(vs ...int) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldIn(FieldSigningWindowSeconds, vs...))
+}
+
+// SigningWindowSecondsNotIn applies the NotIn predicate on the "signing_window_seconds" field.
+func SigningWindowSecondsNotIn(vs ...int) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldNotIn(FieldSigningWindowSeconds, vs...))
+}
+
+// SigningWindowSecondsGT applies the GT predicate on the "signing_window_seconds" field.
+func SigningWindowSecondsGT(v int) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldGT(FieldSigningWindowSeconds, v))
+}
+
+// SigningWindowSecondsGTE applies the GTE predicate on the "signing_window_seconds" field.
+func SigningWindowSecondsGTE(v int) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldGTE(FieldSigningWindowSeconds, v))
+}
+
+// SigningWindowSecondsLT applies the LT predicate on the "signing_window_seconds" field.
+func SigningWindowSecondsLT(v int) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldLT(FieldSigningWindowSeconds, v))
+}
+
+// SigningWindowSecondsLTE applies the LTE predicate on the "signing_window_seconds" field.
+func SigningWindowSecondsLTE(v int) predicate.WebhookSettings {
+	return predicate.WebhookSettings(sql.FieldLTE(FieldSigningWindowSeconds, v))
 }
 
 // And groups predicates with the AND operator between them.

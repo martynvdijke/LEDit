@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Discovered Devices</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>Discovered Devices</h1>
+            {{if .discovered}}
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Fingerprint</th>
+                        <th>Model</th>
+                        <th>Version</th>
+                        <th>Address</th>
+                        <th>Age</th>
+                        <th>State</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .discovered}}
+                    <tr>
+                        <td>{{.Fingerprint}}</td>
+                        <td>{{.Model}}</td>
+                        <td>{{.Version}}</td>
+                        <td>{{.Address}}</td>
+                        <td>{{.LastSeen}}</td>
+                        <td><span class="badge bg-secondary">{{.State}}</span></td>
+                        <td>
+                            {{if eq .State "pending"}}
+                            <form method="POST" action="/api/device/discovery/{{.Fingerprint}}/enroll" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-primary">Enroll</button>
+                            </form>
+                            {{else if eq .State "approved"}}
+                            <form method="POST" action="/api/device/discovery/{{.Fingerprint}}/cancel" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-warning">Cancel</button>
+                            </form>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            {{else}}
+            <p class="text-muted mt-4">No discovered devices.</p>
+            {{end}}
+        </div>
+    </div>
+<script>
+if (typeof window !== 'undefined' && window.location && !window.Cypress) {
+    setInterval(function(){ location.reload(); }, 5000);
+}
+</script>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

@@ -98,6 +98,18 @@ const (
 	FieldOutputGamma = "output_gamma"
 	// FieldOutputMatrixLayout holds the string denoting the output_matrix_layout field in the database.
 	FieldOutputMatrixLayout = "output_matrix_layout"
+	// FieldFingerprint holds the string denoting the fingerprint field in the database.
+	FieldFingerprint = "fingerprint"
+	// FieldApprovedAt holds the string denoting the approved_at field in the database.
+	FieldApprovedAt = "approved_at"
+	// FieldFirmwareVersion holds the string denoting the firmware_version field in the database.
+	FieldFirmwareVersion = "firmware_version"
+	// FieldFirmwareVersionPin holds the string denoting the firmware_version_pin field in the database.
+	FieldFirmwareVersionPin = "firmware_version_pin"
+	// FieldLastUpdateStatus holds the string denoting the last_update_status field in the database.
+	FieldLastUpdateStatus = "last_update_status"
+	// FieldLastUpdateAt holds the string denoting the last_update_at field in the database.
+	FieldLastUpdateAt = "last_update_at"
 	// EdgeGroup holds the string denoting the group edge name in mutations.
 	EdgeGroup = "group"
 	// Table holds the table name of the devicesettings in the database.
@@ -157,6 +169,12 @@ var Columns = []string{
 	FieldOutputColorOrder,
 	FieldOutputGamma,
 	FieldOutputMatrixLayout,
+	FieldFingerprint,
+	FieldApprovedAt,
+	FieldFirmwareVersion,
+	FieldFirmwareVersionPin,
+	FieldLastUpdateStatus,
+	FieldLastUpdateAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "device_settings"
@@ -267,6 +285,12 @@ var (
 	DefaultOutputMatrixLayout string
 	// OutputMatrixLayoutValidator is a validator for the "output_matrix_layout" field. It is called by the builders before save.
 	OutputMatrixLayoutValidator func(string) error
+	// DefaultFingerprint holds the default value on creation for the "fingerprint" field.
+	DefaultFingerprint string
+	// DefaultFirmwareVersion holds the default value on creation for the "firmware_version" field.
+	DefaultFirmwareVersion string
+	// DefaultLastUpdateStatus holds the default value on creation for the "last_update_status" field.
+	DefaultLastUpdateStatus string
 )
 
 // OrderOption defines the ordering options for the DeviceSettings queries.
@@ -490,6 +514,36 @@ func ByOutputGamma(opts ...sql.OrderTermOption) OrderOption {
 // ByOutputMatrixLayout orders the results by the output_matrix_layout field.
 func ByOutputMatrixLayout(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOutputMatrixLayout, opts...).ToFunc()
+}
+
+// ByFingerprint orders the results by the fingerprint field.
+func ByFingerprint(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFingerprint, opts...).ToFunc()
+}
+
+// ByApprovedAt orders the results by the approved_at field.
+func ByApprovedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldApprovedAt, opts...).ToFunc()
+}
+
+// ByFirmwareVersion orders the results by the firmware_version field.
+func ByFirmwareVersion(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFirmwareVersion, opts...).ToFunc()
+}
+
+// ByFirmwareVersionPin orders the results by the firmware_version_pin field.
+func ByFirmwareVersionPin(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFirmwareVersionPin, opts...).ToFunc()
+}
+
+// ByLastUpdateStatus orders the results by the last_update_status field.
+func ByLastUpdateStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastUpdateStatus, opts...).ToFunc()
+}
+
+// ByLastUpdateAt orders the results by the last_update_at field.
+func ByLastUpdateAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastUpdateAt, opts...).ToFunc()
 }
 
 // ByGroupField orders the results by group field.

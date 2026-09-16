@@ -47,6 +47,34 @@ func (_c *WebhookSettingsCreate) SetNillableDefaultTTL(v *int) *WebhookSettingsC
 	return _c
 }
 
+// SetSigningSecret sets the "signing_secret" field.
+func (_c *WebhookSettingsCreate) SetSigningSecret(v string) *WebhookSettingsCreate {
+	_c.mutation.SetSigningSecret(v)
+	return _c
+}
+
+// SetNillableSigningSecret sets the "signing_secret" field if the given value is not nil.
+func (_c *WebhookSettingsCreate) SetNillableSigningSecret(v *string) *WebhookSettingsCreate {
+	if v != nil {
+		_c.SetSigningSecret(*v)
+	}
+	return _c
+}
+
+// SetSigningWindowSeconds sets the "signing_window_seconds" field.
+func (_c *WebhookSettingsCreate) SetSigningWindowSeconds(v int) *WebhookSettingsCreate {
+	_c.mutation.SetSigningWindowSeconds(v)
+	return _c
+}
+
+// SetNillableSigningWindowSeconds sets the "signing_window_seconds" field if the given value is not nil.
+func (_c *WebhookSettingsCreate) SetNillableSigningWindowSeconds(v *int) *WebhookSettingsCreate {
+	if v != nil {
+		_c.SetSigningWindowSeconds(*v)
+	}
+	return _c
+}
+
 // Mutation returns the WebhookSettingsMutation object of the builder.
 func (_c *WebhookSettingsCreate) Mutation() *WebhookSettingsMutation {
 	return _c.mutation
@@ -90,6 +118,14 @@ func (_c *WebhookSettingsCreate) defaults() {
 		v := webhooksettings.DefaultDefaultTTL
 		_c.mutation.SetDefaultTTL(v)
 	}
+	if _, ok := _c.mutation.SigningSecret(); !ok {
+		v := webhooksettings.DefaultSigningSecret
+		_c.mutation.SetSigningSecret(v)
+	}
+	if _, ok := _c.mutation.SigningWindowSeconds(); !ok {
+		v := webhooksettings.DefaultSigningWindowSeconds
+		_c.mutation.SetSigningWindowSeconds(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -103,6 +139,17 @@ func (_c *WebhookSettingsCreate) check() error {
 	if v, ok := _c.mutation.DefaultTTL(); ok {
 		if err := webhooksettings.DefaultTTLValidator(v); err != nil {
 			return &ValidationError{Name: "default_ttl", err: fmt.Errorf(`ent: validator failed for field "WebhookSettings.default_ttl": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.SigningSecret(); !ok {
+		return &ValidationError{Name: "signing_secret", err: errors.New(`ent: missing required field "WebhookSettings.signing_secret"`)}
+	}
+	if _, ok := _c.mutation.SigningWindowSeconds(); !ok {
+		return &ValidationError{Name: "signing_window_seconds", err: errors.New(`ent: missing required field "WebhookSettings.signing_window_seconds"`)}
+	}
+	if v, ok := _c.mutation.SigningWindowSeconds(); ok {
+		if err := webhooksettings.SigningWindowSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "signing_window_seconds", err: fmt.Errorf(`ent: validator failed for field "WebhookSettings.signing_window_seconds": %w`, err)}
 		}
 	}
 	return nil
@@ -138,6 +185,14 @@ func (_c *WebhookSettingsCreate) createSpec() (*WebhookSettings, *sqlgraph.Creat
 	if value, ok := _c.mutation.DefaultTTL(); ok {
 		_spec.SetField(webhooksettings.FieldDefaultTTL, field.TypeInt, value)
 		_node.DefaultTTL = value
+	}
+	if value, ok := _c.mutation.SigningSecret(); ok {
+		_spec.SetField(webhooksettings.FieldSigningSecret, field.TypeString, value)
+		_node.SigningSecret = value
+	}
+	if value, ok := _c.mutation.SigningWindowSeconds(); ok {
+		_spec.SetField(webhooksettings.FieldSigningWindowSeconds, field.TypeInt, value)
+		_node.SigningWindowSeconds = value
 	}
 	return _node, _spec
 }

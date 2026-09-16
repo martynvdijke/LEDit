@@ -19,7 +19,11 @@ type WebhookSettings struct {
 	// APIKey holds the value of the "api_key" field.
 	APIKey string `json:"api_key,omitempty"`
 	// DefaultTTL holds the value of the "default_ttl" field.
-	DefaultTTL                       int `json:"default_ttl,omitempty"`
+	DefaultTTL int `json:"default_ttl,omitempty"`
+	// SigningSecret holds the value of the "signing_secret" field.
+	SigningSecret string `json:"signing_secret,omitempty"`
+	// SigningWindowSeconds holds the value of the "signing_window_seconds" field.
+	SigningWindowSeconds             int `json:"signing_window_seconds,omitempty"`
 	general_settings_webhooksettings *int
 	selectValues                     sql.SelectValues
 }
@@ -29,9 +33,9 @@ func (*WebhookSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case webhooksettings.FieldID, webhooksettings.FieldDefaultTTL:
+		case webhooksettings.FieldID, webhooksettings.FieldDefaultTTL, webhooksettings.FieldSigningWindowSeconds:
 			values[i] = new(sql.NullInt64)
-		case webhooksettings.FieldAPIKey:
+		case webhooksettings.FieldAPIKey, webhooksettings.FieldSigningSecret:
 			values[i] = new(sql.NullString)
 		case webhooksettings.ForeignKeys[0]: // general_settings_webhooksettings
 			values[i] = new(sql.NullInt64)
@@ -67,6 +71,18 @@ func (_m *WebhookSettings) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field default_ttl", values[i])
 			} else if value.Valid {
 				_m.DefaultTTL = int(value.Int64)
+			}
+		case webhooksettings.FieldSigningSecret:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field signing_secret", values[i])
+			} else if value.Valid {
+				_m.SigningSecret = value.String
+			}
+		case webhooksettings.FieldSigningWindowSeconds:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field signing_window_seconds", values[i])
+			} else if value.Valid {
+				_m.SigningWindowSeconds = int(value.Int64)
 			}
 		case webhooksettings.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -116,6 +132,12 @@ func (_m *WebhookSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("default_ttl=")
 	builder.WriteString(fmt.Sprintf("%v", _m.DefaultTTL))
+	builder.WriteString(", ")
+	builder.WriteString("signing_secret=")
+	builder.WriteString(_m.SigningSecret)
+	builder.WriteString(", ")
+	builder.WriteString("signing_window_seconds=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SigningWindowSeconds))
 	builder.WriteByte(')')
 	return builder.String()
 }

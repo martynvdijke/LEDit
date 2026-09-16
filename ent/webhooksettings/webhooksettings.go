@@ -15,6 +15,10 @@ const (
 	FieldAPIKey = "api_key"
 	// FieldDefaultTTL holds the string denoting the default_ttl field in the database.
 	FieldDefaultTTL = "default_ttl"
+	// FieldSigningSecret holds the string denoting the signing_secret field in the database.
+	FieldSigningSecret = "signing_secret"
+	// FieldSigningWindowSeconds holds the string denoting the signing_window_seconds field in the database.
+	FieldSigningWindowSeconds = "signing_window_seconds"
 	// Table holds the table name of the webhooksettings in the database.
 	Table = "webhook_settings"
 )
@@ -24,6 +28,8 @@ var Columns = []string{
 	FieldID,
 	FieldAPIKey,
 	FieldDefaultTTL,
+	FieldSigningSecret,
+	FieldSigningWindowSeconds,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "webhook_settings"
@@ -54,6 +60,12 @@ var (
 	DefaultDefaultTTL int
 	// DefaultTTLValidator is a validator for the "default_ttl" field. It is called by the builders before save.
 	DefaultTTLValidator func(int) error
+	// DefaultSigningSecret holds the default value on creation for the "signing_secret" field.
+	DefaultSigningSecret string
+	// DefaultSigningWindowSeconds holds the default value on creation for the "signing_window_seconds" field.
+	DefaultSigningWindowSeconds int
+	// SigningWindowSecondsValidator is a validator for the "signing_window_seconds" field. It is called by the builders before save.
+	SigningWindowSecondsValidator func(int) error
 )
 
 // OrderOption defines the ordering options for the WebhookSettings queries.
@@ -72,4 +84,14 @@ func ByAPIKey(opts ...sql.OrderTermOption) OrderOption {
 // ByDefaultTTL orders the results by the default_ttl field.
 func ByDefaultTTL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDefaultTTL, opts...).ToFunc()
+}
+
+// BySigningSecret orders the results by the signing_secret field.
+func BySigningSecret(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSigningSecret, opts...).ToFunc()
+}
+
+// BySigningWindowSeconds orders the results by the signing_window_seconds field.
+func BySigningWindowSeconds(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSigningWindowSeconds, opts...).ToFunc()
 }

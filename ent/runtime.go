@@ -19,6 +19,8 @@ import (
 	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
+	"ledit/ent/firmwarerelease"
+	"ledit/ent/firmwaresettings"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
 	"ledit/ent/github"
@@ -516,6 +518,18 @@ func init() {
 	devicesettings.DefaultOutputMatrixLayout = devicesettingsDescOutputMatrixLayout.Default.(string)
 	// devicesettings.OutputMatrixLayoutValidator is a validator for the "output_matrix_layout" field. It is called by the builders before save.
 	devicesettings.OutputMatrixLayoutValidator = devicesettingsDescOutputMatrixLayout.Validators[0].(func(string) error)
+	// devicesettingsDescFingerprint is the schema descriptor for fingerprint field.
+	devicesettingsDescFingerprint := devicesettingsFields[43].Descriptor()
+	// devicesettings.DefaultFingerprint holds the default value on creation for the fingerprint field.
+	devicesettings.DefaultFingerprint = devicesettingsDescFingerprint.Default.(string)
+	// devicesettingsDescFirmwareVersion is the schema descriptor for firmware_version field.
+	devicesettingsDescFirmwareVersion := devicesettingsFields[45].Descriptor()
+	// devicesettings.DefaultFirmwareVersion holds the default value on creation for the firmware_version field.
+	devicesettings.DefaultFirmwareVersion = devicesettingsDescFirmwareVersion.Default.(string)
+	// devicesettingsDescLastUpdateStatus is the schema descriptor for last_update_status field.
+	devicesettingsDescLastUpdateStatus := devicesettingsFields[47].Descriptor()
+	// devicesettings.DefaultLastUpdateStatus holds the default value on creation for the last_update_status field.
+	devicesettings.DefaultLastUpdateStatus = devicesettingsDescLastUpdateStatus.Default.(string)
 	displayruleFields := schema.DisplayRule{}.Fields()
 	_ = displayruleFields
 	// displayruleDescName is the schema descriptor for name field.
@@ -570,6 +584,70 @@ func init() {
 	f1DescURL := f1Fields[1].Descriptor()
 	// f1.DefaultURL holds the default value on creation for the url field.
 	f1.DefaultURL = f1DescURL.Default.(string)
+	firmwarereleaseFields := schema.FirmwareRelease{}.Fields()
+	_ = firmwarereleaseFields
+	// firmwarereleaseDescChannel is the schema descriptor for channel field.
+	firmwarereleaseDescChannel := firmwarereleaseFields[1].Descriptor()
+	// firmwarerelease.DefaultChannel holds the default value on creation for the channel field.
+	firmwarerelease.DefaultChannel = firmwarereleaseDescChannel.Default.(string)
+	// firmwarereleaseDescSizeBytes is the schema descriptor for size_bytes field.
+	firmwarereleaseDescSizeBytes := firmwarereleaseFields[3].Descriptor()
+	// firmwarerelease.DefaultSizeBytes holds the default value on creation for the size_bytes field.
+	firmwarerelease.DefaultSizeBytes = firmwarereleaseDescSizeBytes.Default.(int)
+	// firmwarereleaseDescNotes is the schema descriptor for notes field.
+	firmwarereleaseDescNotes := firmwarereleaseFields[5].Descriptor()
+	// firmwarerelease.DefaultNotes holds the default value on creation for the notes field.
+	firmwarerelease.DefaultNotes = firmwarereleaseDescNotes.Default.(string)
+	// firmwarereleaseDescMandatory is the schema descriptor for mandatory field.
+	firmwarereleaseDescMandatory := firmwarereleaseFields[6].Descriptor()
+	// firmwarerelease.DefaultMandatory holds the default value on creation for the mandatory field.
+	firmwarerelease.DefaultMandatory = firmwarereleaseDescMandatory.Default.(bool)
+	// firmwarereleaseDescMinVersion is the schema descriptor for min_version field.
+	firmwarereleaseDescMinVersion := firmwarereleaseFields[7].Descriptor()
+	// firmwarerelease.DefaultMinVersion holds the default value on creation for the min_version field.
+	firmwarerelease.DefaultMinVersion = firmwarereleaseDescMinVersion.Default.(string)
+	// firmwarereleaseDescEnabled is the schema descriptor for enabled field.
+	firmwarereleaseDescEnabled := firmwarereleaseFields[8].Descriptor()
+	// firmwarerelease.DefaultEnabled holds the default value on creation for the enabled field.
+	firmwarerelease.DefaultEnabled = firmwarereleaseDescEnabled.Default.(bool)
+	// firmwarereleaseDescCreatedAt is the schema descriptor for created_at field.
+	firmwarereleaseDescCreatedAt := firmwarereleaseFields[9].Descriptor()
+	// firmwarerelease.DefaultCreatedAt holds the default value on creation for the created_at field.
+	firmwarerelease.DefaultCreatedAt = firmwarereleaseDescCreatedAt.Default.(func() time.Time)
+	firmwaresettingsFields := schema.FirmwareSettings{}.Fields()
+	_ = firmwaresettingsFields
+	// firmwaresettingsDescChannel is the schema descriptor for channel field.
+	firmwaresettingsDescChannel := firmwaresettingsFields[0].Descriptor()
+	// firmwaresettings.DefaultChannel holds the default value on creation for the channel field.
+	firmwaresettings.DefaultChannel = firmwaresettingsDescChannel.Default.(string)
+	// firmwaresettingsDescTargetVersion is the schema descriptor for target_version field.
+	firmwaresettingsDescTargetVersion := firmwaresettingsFields[1].Descriptor()
+	// firmwaresettings.DefaultTargetVersion holds the default value on creation for the target_version field.
+	firmwaresettings.DefaultTargetVersion = firmwaresettingsDescTargetVersion.Default.(string)
+	// firmwaresettingsDescRolloutPercent is the schema descriptor for rollout_percent field.
+	firmwaresettingsDescRolloutPercent := firmwaresettingsFields[2].Descriptor()
+	// firmwaresettings.DefaultRolloutPercent holds the default value on creation for the rollout_percent field.
+	firmwaresettings.DefaultRolloutPercent = firmwaresettingsDescRolloutPercent.Default.(int)
+	// firmwaresettings.RolloutPercentValidator is a validator for the "rollout_percent" field. It is called by the builders before save.
+	firmwaresettings.RolloutPercentValidator = func() func(int) error {
+		validators := firmwaresettingsDescRolloutPercent.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(rollout_percent int) error {
+			for _, fn := range fns {
+				if err := fn(rollout_percent); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// firmwaresettingsDescPaused is the schema descriptor for paused field.
+	firmwaresettingsDescPaused := firmwaresettingsFields[3].Descriptor()
+	// firmwaresettings.DefaultPaused holds the default value on creation for the paused field.
+	firmwaresettings.DefaultPaused = firmwaresettingsDescPaused.Default.(bool)
 	generalsettingsFields := schema.GeneralSettings{}.Fields()
 	_ = generalsettingsFields
 	// generalsettingsDescWidth is the schema descriptor for width field.
@@ -1677,6 +1755,30 @@ func init() {
 		return func(default_ttl int) error {
 			for _, fn := range fns {
 				if err := fn(default_ttl); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// webhooksettingsDescSigningSecret is the schema descriptor for signing_secret field.
+	webhooksettingsDescSigningSecret := webhooksettingsFields[2].Descriptor()
+	// webhooksettings.DefaultSigningSecret holds the default value on creation for the signing_secret field.
+	webhooksettings.DefaultSigningSecret = webhooksettingsDescSigningSecret.Default.(string)
+	// webhooksettingsDescSigningWindowSeconds is the schema descriptor for signing_window_seconds field.
+	webhooksettingsDescSigningWindowSeconds := webhooksettingsFields[3].Descriptor()
+	// webhooksettings.DefaultSigningWindowSeconds holds the default value on creation for the signing_window_seconds field.
+	webhooksettings.DefaultSigningWindowSeconds = webhooksettingsDescSigningWindowSeconds.Default.(int)
+	// webhooksettings.SigningWindowSecondsValidator is a validator for the "signing_window_seconds" field. It is called by the builders before save.
+	webhooksettings.SigningWindowSecondsValidator = func() func(int) error {
+		validators := webhooksettingsDescSigningWindowSeconds.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(signing_window_seconds int) error {
+			for _, fn := range fns {
+				if err := fn(signing_window_seconds); err != nil {
 					return err
 				}
 			}

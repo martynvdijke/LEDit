@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ledit-device"
-version = "1.0.0"
+version = "1.1.0"
 description = "LEDit device client: stream frames to an RGB LED matrix over WebSocket"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -21,6 +21,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest>=8","pytest-cov>=5","pytest-asyncio","websockets>=12"]
+discovery = ["zeroconf>=0.132"]
 
 [project.scripts]
 ledit-device = "ledit_device.__main__:main"

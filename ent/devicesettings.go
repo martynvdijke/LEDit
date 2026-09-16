@@ -104,6 +104,18 @@ type DeviceSettings struct {
 	OutputGamma float64 `json:"output_gamma,omitempty"`
 	// OutputMatrixLayout holds the value of the "output_matrix_layout" field.
 	OutputMatrixLayout string `json:"output_matrix_layout,omitempty"`
+	// Fingerprint holds the value of the "fingerprint" field.
+	Fingerprint string `json:"fingerprint,omitempty"`
+	// ApprovedAt holds the value of the "approved_at" field.
+	ApprovedAt *time.Time `json:"approved_at,omitempty"`
+	// FirmwareVersion holds the value of the "firmware_version" field.
+	FirmwareVersion string `json:"firmware_version,omitempty"`
+	// FirmwareVersionPin holds the value of the "firmware_version_pin" field.
+	FirmwareVersionPin *string `json:"firmware_version_pin,omitempty"`
+	// LastUpdateStatus holds the value of the "last_update_status" field.
+	LastUpdateStatus string `json:"last_update_status,omitempty"`
+	// LastUpdateAt holds the value of the "last_update_at" field.
+	LastUpdateAt *time.Time `json:"last_update_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DeviceSettingsQuery when eager-loading is set.
 	Edges                            DeviceSettingsEdges `json:"edges"`
@@ -142,9 +154,9 @@ func (*DeviceSettings) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldPanelCols, devicesettings.FieldPanelGap, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed, devicesettings.FieldPlaylistID, devicesettings.FieldFallbackPlaylistID, devicesettings.FieldBrightnessOverride, devicesettings.FieldGroupID, devicesettings.FieldOverlayHeight, devicesettings.FieldOverlaySpeedPx, devicesettings.FieldWledPort, devicesettings.FieldWledChannel, devicesettings.FieldArtnetPort, devicesettings.FieldArtnetUniverse, devicesettings.FieldOutputFps:
 			values[i] = new(sql.NullInt64)
-		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken, devicesettings.FieldContentMode, devicesettings.FieldScheduledPlaylistIds, devicesettings.FieldBrightnessSchedules, devicesettings.FieldBrightnessSensorConfig, devicesettings.FieldIdleScreensaver, devicesettings.FieldOverlayPosition, devicesettings.FieldOverlayText, devicesettings.FieldOverlayBg, devicesettings.FieldOverlayFg, devicesettings.FieldTransport, devicesettings.FieldWledHost, devicesettings.FieldWledRealtimeMode, devicesettings.FieldArtnetHost, devicesettings.FieldOutputColorOrder, devicesettings.FieldOutputMatrixLayout:
+		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken, devicesettings.FieldContentMode, devicesettings.FieldScheduledPlaylistIds, devicesettings.FieldBrightnessSchedules, devicesettings.FieldBrightnessSensorConfig, devicesettings.FieldIdleScreensaver, devicesettings.FieldOverlayPosition, devicesettings.FieldOverlayText, devicesettings.FieldOverlayBg, devicesettings.FieldOverlayFg, devicesettings.FieldTransport, devicesettings.FieldWledHost, devicesettings.FieldWledRealtimeMode, devicesettings.FieldArtnetHost, devicesettings.FieldOutputColorOrder, devicesettings.FieldOutputMatrixLayout, devicesettings.FieldFingerprint, devicesettings.FieldFirmwareVersion, devicesettings.FieldFirmwareVersionPin, devicesettings.FieldLastUpdateStatus:
 			values[i] = new(sql.NullString)
-		case devicesettings.FieldLastSeenAt:
+		case devicesettings.FieldLastSeenAt, devicesettings.FieldApprovedAt, devicesettings.FieldLastUpdateAt:
 			values[i] = new(sql.NullTime)
 		case devicesettings.ForeignKeys[0]: // general_settings_device_settings
 			values[i] = new(sql.NullInt64)
@@ -434,6 +446,45 @@ func (_m *DeviceSettings) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.OutputMatrixLayout = value.String
 			}
+		case devicesettings.FieldFingerprint:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field fingerprint", values[i])
+			} else if value.Valid {
+				_m.Fingerprint = value.String
+			}
+		case devicesettings.FieldApprovedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field approved_at", values[i])
+			} else if value.Valid {
+				_m.ApprovedAt = new(time.Time)
+				*_m.ApprovedAt = value.Time
+			}
+		case devicesettings.FieldFirmwareVersion:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field firmware_version", values[i])
+			} else if value.Valid {
+				_m.FirmwareVersion = value.String
+			}
+		case devicesettings.FieldFirmwareVersionPin:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field firmware_version_pin", values[i])
+			} else if value.Valid {
+				_m.FirmwareVersionPin = new(string)
+				*_m.FirmwareVersionPin = value.String
+			}
+		case devicesettings.FieldLastUpdateStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field last_update_status", values[i])
+			} else if value.Valid {
+				_m.LastUpdateStatus = value.String
+			}
+		case devicesettings.FieldLastUpdateAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_update_at", values[i])
+			} else if value.Valid {
+				_m.LastUpdateAt = new(time.Time)
+				*_m.LastUpdateAt = value.Time
+			}
 		case devicesettings.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field general_settings_device_settings", value)
@@ -624,6 +675,30 @@ func (_m *DeviceSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("output_matrix_layout=")
 	builder.WriteString(_m.OutputMatrixLayout)
+	builder.WriteString(", ")
+	builder.WriteString("fingerprint=")
+	builder.WriteString(_m.Fingerprint)
+	builder.WriteString(", ")
+	if v := _m.ApprovedAt; v != nil {
+		builder.WriteString("approved_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("firmware_version=")
+	builder.WriteString(_m.FirmwareVersion)
+	builder.WriteString(", ")
+	if v := _m.FirmwareVersionPin; v != nil {
+		builder.WriteString("firmware_version_pin=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("last_update_status=")
+	builder.WriteString(_m.LastUpdateStatus)
+	builder.WriteString(", ")
+	if v := _m.LastUpdateAt; v != nil {
+		builder.WriteString("last_update_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

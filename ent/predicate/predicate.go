@@ -57,6 +57,12 @@ type EmailSettings func(*sql.Selector)
 // F1 is the predicate function for f1 builders.
 type F1 func(*sql.Selector)
 
+// FirmwareRelease is the predicate function for firmwarerelease builders.
+type FirmwareRelease func(*sql.Selector)
+
+// FirmwareSettings is the predicate function for firmwaresettings builders.
+type FirmwareSettings func(*sql.Selector)
+
 // GeneralSettings is the predicate function for generalsettings builders.
 type GeneralSettings func(*sql.Selector)
 

@@ -46,6 +46,10 @@ type Tx struct {
 	EmailSettings *EmailSettingsClient
 	// F1 is the client for interacting with the F1 builders.
 	F1 *F1Client
+	// FirmwareRelease is the client for interacting with the FirmwareRelease builders.
+	FirmwareRelease *FirmwareReleaseClient
+	// FirmwareSettings is the client for interacting with the FirmwareSettings builders.
+	FirmwareSettings *FirmwareSettingsClient
 	// GeneralSettings is the client for interacting with the GeneralSettings builders.
 	GeneralSettings *GeneralSettingsClient
 	// GenericAPI is the client for interacting with the GenericAPI builders.
@@ -298,6 +302,8 @@ func (tx *Tx) init() {
 	tx.DisplayRule = NewDisplayRuleClient(tx.config)
 	tx.EmailSettings = NewEmailSettingsClient(tx.config)
 	tx.F1 = NewF1Client(tx.config)
+	tx.FirmwareRelease = NewFirmwareReleaseClient(tx.config)
+	tx.FirmwareSettings = NewFirmwareSettingsClient(tx.config)
 	tx.GeneralSettings = NewGeneralSettingsClient(tx.config)
 	tx.GenericAPI = NewGenericAPIClient(tx.config)
 	tx.GitHub = NewGitHubClient(tx.config)

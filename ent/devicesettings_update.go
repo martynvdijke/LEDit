@@ -799,6 +799,108 @@ func (_u *DeviceSettingsUpdate) SetNillableOutputMatrixLayout(v *string) *Device
 	return _u
 }
 
+// SetFingerprint sets the "fingerprint" field.
+func (_u *DeviceSettingsUpdate) SetFingerprint(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetFingerprint(v)
+	return _u
+}
+
+// SetNillableFingerprint sets the "fingerprint" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableFingerprint(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetFingerprint(*v)
+	}
+	return _u
+}
+
+// SetApprovedAt sets the "approved_at" field.
+func (_u *DeviceSettingsUpdate) SetApprovedAt(v time.Time) *DeviceSettingsUpdate {
+	_u.mutation.SetApprovedAt(v)
+	return _u
+}
+
+// SetNillableApprovedAt sets the "approved_at" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableApprovedAt(v *time.Time) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetApprovedAt(*v)
+	}
+	return _u
+}
+
+// ClearApprovedAt clears the value of the "approved_at" field.
+func (_u *DeviceSettingsUpdate) ClearApprovedAt() *DeviceSettingsUpdate {
+	_u.mutation.ClearApprovedAt()
+	return _u
+}
+
+// SetFirmwareVersion sets the "firmware_version" field.
+func (_u *DeviceSettingsUpdate) SetFirmwareVersion(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetFirmwareVersion(v)
+	return _u
+}
+
+// SetNillableFirmwareVersion sets the "firmware_version" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableFirmwareVersion(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetFirmwareVersion(*v)
+	}
+	return _u
+}
+
+// SetFirmwareVersionPin sets the "firmware_version_pin" field.
+func (_u *DeviceSettingsUpdate) SetFirmwareVersionPin(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetFirmwareVersionPin(v)
+	return _u
+}
+
+// SetNillableFirmwareVersionPin sets the "firmware_version_pin" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableFirmwareVersionPin(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetFirmwareVersionPin(*v)
+	}
+	return _u
+}
+
+// ClearFirmwareVersionPin clears the value of the "firmware_version_pin" field.
+func (_u *DeviceSettingsUpdate) ClearFirmwareVersionPin() *DeviceSettingsUpdate {
+	_u.mutation.ClearFirmwareVersionPin()
+	return _u
+}
+
+// SetLastUpdateStatus sets the "last_update_status" field.
+func (_u *DeviceSettingsUpdate) SetLastUpdateStatus(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetLastUpdateStatus(v)
+	return _u
+}
+
+// SetNillableLastUpdateStatus sets the "last_update_status" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableLastUpdateStatus(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetLastUpdateStatus(*v)
+	}
+	return _u
+}
+
+// SetLastUpdateAt sets the "last_update_at" field.
+func (_u *DeviceSettingsUpdate) SetLastUpdateAt(v time.Time) *DeviceSettingsUpdate {
+	_u.mutation.SetLastUpdateAt(v)
+	return _u
+}
+
+// SetNillableLastUpdateAt sets the "last_update_at" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableLastUpdateAt(v *time.Time) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetLastUpdateAt(*v)
+	}
+	return _u
+}
+
+// ClearLastUpdateAt clears the value of the "last_update_at" field.
+func (_u *DeviceSettingsUpdate) ClearLastUpdateAt() *DeviceSettingsUpdate {
+	_u.mutation.ClearLastUpdateAt()
+	return _u
+}
+
 // SetGroup sets the "group" edge to the DeviceGroup entity.
 func (_u *DeviceSettingsUpdate) SetGroup(v *DeviceGroup) *DeviceSettingsUpdate {
 	return _u.SetGroupID(v.ID)
@@ -1091,6 +1193,33 @@ func (_u *DeviceSettingsUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.OutputMatrixLayout(); ok {
 		_spec.SetField(devicesettings.FieldOutputMatrixLayout, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Fingerprint(); ok {
+		_spec.SetField(devicesettings.FieldFingerprint, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ApprovedAt(); ok {
+		_spec.SetField(devicesettings.FieldApprovedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ApprovedAtCleared() {
+		_spec.ClearField(devicesettings.FieldApprovedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.FirmwareVersion(); ok {
+		_spec.SetField(devicesettings.FieldFirmwareVersion, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.FirmwareVersionPin(); ok {
+		_spec.SetField(devicesettings.FieldFirmwareVersionPin, field.TypeString, value)
+	}
+	if _u.mutation.FirmwareVersionPinCleared() {
+		_spec.ClearField(devicesettings.FieldFirmwareVersionPin, field.TypeString)
+	}
+	if value, ok := _u.mutation.LastUpdateStatus(); ok {
+		_spec.SetField(devicesettings.FieldLastUpdateStatus, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.LastUpdateAt(); ok {
+		_spec.SetField(devicesettings.FieldLastUpdateAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastUpdateAtCleared() {
+		_spec.ClearField(devicesettings.FieldLastUpdateAt, field.TypeTime)
 	}
 	if _u.mutation.GroupCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1911,6 +2040,108 @@ func (_u *DeviceSettingsUpdateOne) SetNillableOutputMatrixLayout(v *string) *Dev
 	return _u
 }
 
+// SetFingerprint sets the "fingerprint" field.
+func (_u *DeviceSettingsUpdateOne) SetFingerprint(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetFingerprint(v)
+	return _u
+}
+
+// SetNillableFingerprint sets the "fingerprint" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableFingerprint(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetFingerprint(*v)
+	}
+	return _u
+}
+
+// SetApprovedAt sets the "approved_at" field.
+func (_u *DeviceSettingsUpdateOne) SetApprovedAt(v time.Time) *DeviceSettingsUpdateOne {
+	_u.mutation.SetApprovedAt(v)
+	return _u
+}
+
+// SetNillableApprovedAt sets the "approved_at" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableApprovedAt(v *time.Time) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetApprovedAt(*v)
+	}
+	return _u
+}
+
+// ClearApprovedAt clears the value of the "approved_at" field.
+func (_u *DeviceSettingsUpdateOne) ClearApprovedAt() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearApprovedAt()
+	return _u
+}
+
+// SetFirmwareVersion sets the "firmware_version" field.
+func (_u *DeviceSettingsUpdateOne) SetFirmwareVersion(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetFirmwareVersion(v)
+	return _u
+}
+
+// SetNillableFirmwareVersion sets the "firmware_version" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableFirmwareVersion(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetFirmwareVersion(*v)
+	}
+	return _u
+}
+
+// SetFirmwareVersionPin sets the "firmware_version_pin" field.
+func (_u *DeviceSettingsUpdateOne) SetFirmwareVersionPin(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetFirmwareVersionPin(v)
+	return _u
+}
+
+// SetNillableFirmwareVersionPin sets the "firmware_version_pin" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableFirmwareVersionPin(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetFirmwareVersionPin(*v)
+	}
+	return _u
+}
+
+// ClearFirmwareVersionPin clears the value of the "firmware_version_pin" field.
+func (_u *DeviceSettingsUpdateOne) ClearFirmwareVersionPin() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearFirmwareVersionPin()
+	return _u
+}
+
+// SetLastUpdateStatus sets the "last_update_status" field.
+func (_u *DeviceSettingsUpdateOne) SetLastUpdateStatus(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetLastUpdateStatus(v)
+	return _u
+}
+
+// SetNillableLastUpdateStatus sets the "last_update_status" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableLastUpdateStatus(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetLastUpdateStatus(*v)
+	}
+	return _u
+}
+
+// SetLastUpdateAt sets the "last_update_at" field.
+func (_u *DeviceSettingsUpdateOne) SetLastUpdateAt(v time.Time) *DeviceSettingsUpdateOne {
+	_u.mutation.SetLastUpdateAt(v)
+	return _u
+}
+
+// SetNillableLastUpdateAt sets the "last_update_at" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableLastUpdateAt(v *time.Time) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetLastUpdateAt(*v)
+	}
+	return _u
+}
+
+// ClearLastUpdateAt clears the value of the "last_update_at" field.
+func (_u *DeviceSettingsUpdateOne) ClearLastUpdateAt() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearLastUpdateAt()
+	return _u
+}
+
 // SetGroup sets the "group" edge to the DeviceGroup entity.
 func (_u *DeviceSettingsUpdateOne) SetGroup(v *DeviceGroup) *DeviceSettingsUpdateOne {
 	return _u.SetGroupID(v.ID)
@@ -2233,6 +2464,33 @@ func (_u *DeviceSettingsUpdateOne) sqlSave(ctx context.Context) (_node *DeviceSe
 	}
 	if value, ok := _u.mutation.OutputMatrixLayout(); ok {
 		_spec.SetField(devicesettings.FieldOutputMatrixLayout, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Fingerprint(); ok {
+		_spec.SetField(devicesettings.FieldFingerprint, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ApprovedAt(); ok {
+		_spec.SetField(devicesettings.FieldApprovedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ApprovedAtCleared() {
+		_spec.ClearField(devicesettings.FieldApprovedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.FirmwareVersion(); ok {
+		_spec.SetField(devicesettings.FieldFirmwareVersion, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.FirmwareVersionPin(); ok {
+		_spec.SetField(devicesettings.FieldFirmwareVersionPin, field.TypeString, value)
+	}
+	if _u.mutation.FirmwareVersionPinCleared() {
+		_spec.ClearField(devicesettings.FieldFirmwareVersionPin, field.TypeString)
+	}
+	if value, ok := _u.mutation.LastUpdateStatus(); ok {
+		_spec.SetField(devicesettings.FieldLastUpdateStatus, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.LastUpdateAt(); ok {
+		_spec.SetField(devicesettings.FieldLastUpdateAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastUpdateAtCleared() {
+		_spec.ClearField(devicesettings.FieldLastUpdateAt, field.TypeTime)
 	}
 	if _u.mutation.GroupCleared() {
 		edge := &sqlgraph.EdgeSpec{

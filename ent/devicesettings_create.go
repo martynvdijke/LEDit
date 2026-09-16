@@ -623,6 +623,90 @@ func (_c *DeviceSettingsCreate) SetNillableOutputMatrixLayout(v *string) *Device
 	return _c
 }
 
+// SetFingerprint sets the "fingerprint" field.
+func (_c *DeviceSettingsCreate) SetFingerprint(v string) *DeviceSettingsCreate {
+	_c.mutation.SetFingerprint(v)
+	return _c
+}
+
+// SetNillableFingerprint sets the "fingerprint" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableFingerprint(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetFingerprint(*v)
+	}
+	return _c
+}
+
+// SetApprovedAt sets the "approved_at" field.
+func (_c *DeviceSettingsCreate) SetApprovedAt(v time.Time) *DeviceSettingsCreate {
+	_c.mutation.SetApprovedAt(v)
+	return _c
+}
+
+// SetNillableApprovedAt sets the "approved_at" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableApprovedAt(v *time.Time) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetApprovedAt(*v)
+	}
+	return _c
+}
+
+// SetFirmwareVersion sets the "firmware_version" field.
+func (_c *DeviceSettingsCreate) SetFirmwareVersion(v string) *DeviceSettingsCreate {
+	_c.mutation.SetFirmwareVersion(v)
+	return _c
+}
+
+// SetNillableFirmwareVersion sets the "firmware_version" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableFirmwareVersion(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetFirmwareVersion(*v)
+	}
+	return _c
+}
+
+// SetFirmwareVersionPin sets the "firmware_version_pin" field.
+func (_c *DeviceSettingsCreate) SetFirmwareVersionPin(v string) *DeviceSettingsCreate {
+	_c.mutation.SetFirmwareVersionPin(v)
+	return _c
+}
+
+// SetNillableFirmwareVersionPin sets the "firmware_version_pin" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableFirmwareVersionPin(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetFirmwareVersionPin(*v)
+	}
+	return _c
+}
+
+// SetLastUpdateStatus sets the "last_update_status" field.
+func (_c *DeviceSettingsCreate) SetLastUpdateStatus(v string) *DeviceSettingsCreate {
+	_c.mutation.SetLastUpdateStatus(v)
+	return _c
+}
+
+// SetNillableLastUpdateStatus sets the "last_update_status" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableLastUpdateStatus(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetLastUpdateStatus(*v)
+	}
+	return _c
+}
+
+// SetLastUpdateAt sets the "last_update_at" field.
+func (_c *DeviceSettingsCreate) SetLastUpdateAt(v time.Time) *DeviceSettingsCreate {
+	_c.mutation.SetLastUpdateAt(v)
+	return _c
+}
+
+// SetNillableLastUpdateAt sets the "last_update_at" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableLastUpdateAt(v *time.Time) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetLastUpdateAt(*v)
+	}
+	return _c
+}
+
 // SetGroup sets the "group" edge to the DeviceGroup entity.
 func (_c *DeviceSettingsCreate) SetGroup(v *DeviceGroup) *DeviceSettingsCreate {
 	return _c.SetGroupID(v.ID)
@@ -807,6 +891,18 @@ func (_c *DeviceSettingsCreate) defaults() {
 		v := devicesettings.DefaultOutputMatrixLayout
 		_c.mutation.SetOutputMatrixLayout(v)
 	}
+	if _, ok := _c.mutation.Fingerprint(); !ok {
+		v := devicesettings.DefaultFingerprint
+		_c.mutation.SetFingerprint(v)
+	}
+	if _, ok := _c.mutation.FirmwareVersion(); !ok {
+		v := devicesettings.DefaultFirmwareVersion
+		_c.mutation.SetFirmwareVersion(v)
+	}
+	if _, ok := _c.mutation.LastUpdateStatus(); !ok {
+		v := devicesettings.DefaultLastUpdateStatus
+		_c.mutation.SetLastUpdateStatus(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -953,6 +1049,15 @@ func (_c *DeviceSettingsCreate) check() error {
 		if err := devicesettings.OutputMatrixLayoutValidator(v); err != nil {
 			return &ValidationError{Name: "output_matrix_layout", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.output_matrix_layout": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.Fingerprint(); !ok {
+		return &ValidationError{Name: "fingerprint", err: errors.New(`ent: missing required field "DeviceSettings.fingerprint"`)}
+	}
+	if _, ok := _c.mutation.FirmwareVersion(); !ok {
+		return &ValidationError{Name: "firmware_version", err: errors.New(`ent: missing required field "DeviceSettings.firmware_version"`)}
+	}
+	if _, ok := _c.mutation.LastUpdateStatus(); !ok {
+		return &ValidationError{Name: "last_update_status", err: errors.New(`ent: missing required field "DeviceSettings.last_update_status"`)}
 	}
 	return nil
 }
@@ -1147,6 +1252,30 @@ func (_c *DeviceSettingsCreate) createSpec() (*DeviceSettings, *sqlgraph.CreateS
 	if value, ok := _c.mutation.OutputMatrixLayout(); ok {
 		_spec.SetField(devicesettings.FieldOutputMatrixLayout, field.TypeString, value)
 		_node.OutputMatrixLayout = value
+	}
+	if value, ok := _c.mutation.Fingerprint(); ok {
+		_spec.SetField(devicesettings.FieldFingerprint, field.TypeString, value)
+		_node.Fingerprint = value
+	}
+	if value, ok := _c.mutation.ApprovedAt(); ok {
+		_spec.SetField(devicesettings.FieldApprovedAt, field.TypeTime, value)
+		_node.ApprovedAt = &value
+	}
+	if value, ok := _c.mutation.FirmwareVersion(); ok {
+		_spec.SetField(devicesettings.FieldFirmwareVersion, field.TypeString, value)
+		_node.FirmwareVersion = value
+	}
+	if value, ok := _c.mutation.FirmwareVersionPin(); ok {
+		_spec.SetField(devicesettings.FieldFirmwareVersionPin, field.TypeString, value)
+		_node.FirmwareVersionPin = &value
+	}
+	if value, ok := _c.mutation.LastUpdateStatus(); ok {
+		_spec.SetField(devicesettings.FieldLastUpdateStatus, field.TypeString, value)
+		_node.LastUpdateStatus = value
+	}
+	if value, ok := _c.mutation.LastUpdateAt(); ok {
+		_spec.SetField(devicesettings.FieldLastUpdateAt, field.TypeTime, value)
+		_node.LastUpdateAt = &value
 	}
 	if nodes := _c.mutation.GroupIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
