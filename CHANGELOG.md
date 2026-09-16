@@ -1,3 +1,16 @@
+# [1.44.0](https://github.com/martynvdijke/LEDit/compare/v1.43.2...v1.44.0) (2026-09-16)
+
+
+### Features
+
+* add artnet and wled output transports ([c1ecf77](https://github.com/martynvdijke/LEDit/commit/c1ecf772141a31d9c024955e0f83580426003842))
+* add content compositor and image mapping ([2bdf0a7](https://github.com/martynvdijke/LEDit/commit/2bdf0a7e49812e78a52209e7964e1031615f5777))
+* add fleet ops discovery, firmware OTA, webhook signing and prometheus metrics ([b37d0e6](https://github.com/martynvdijke/LEDit/commit/b37d0e6707336d787306f91465334a18d6d2e02f))
+* add guest photo frame ([da1b0d6](https://github.com/martynvdijke/LEDit/commit/da1b0d6565ae9e47b4712c924173a6f786795bf7))
+* add homelab datasources for immich, overseerr, qbittorrent, sabnzbd, speedtest and uptime kuma ([f608f9d](https://github.com/martynvdijke/LEDit/commit/f608f9d6de37b150949ec5acb8a943fe0150dc7c))
+* add inbound messaging adapters ([3660645](https://github.com/martynvdijke/LEDit/commit/3660645a664cb97be75a5c332b7c401aec3ec21f))
+* add visual layout editor ([dd67044](https://github.com/martynvdijke/LEDit/commit/dd670449338d335f50f649c03432cd3d1aeddfe1))
+
 ## [1.43.2](https://github.com/martynvdijke/LEDit/compare/v1.43.1...v1.43.2) (2026-09-15)
 
 ## [1.43.1](https://github.com/martynvdijke/LEDit/compare/v1.43.0...v1.43.1) (2026-09-14)
