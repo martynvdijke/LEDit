@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Visual Layout</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+    <style>
+        [data-canvas]{position:relative;overflow:auto;max-height:70vh;background:#070a09;border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;align-items:flex-start;justify-content:center}
+        [data-canvas-surface]{position:relative;flex:0 0 auto;background:#0b1712;border:1px solid var(--line);image-rendering:pixelated;touch-action:none;overflow:hidden;transform-origin:top left}
+        [data-region]{position:absolute;border:1px solid rgba(166,255,112,.9);background:rgba(166,255,112,.08);display:flex;align-items:center;justify-content:center;color:var(--text);font:10px var(--mono);overflow:hidden;cursor:move;user-select:none;transition:border-color .14s ease,box-shadow .14s ease,background .14s ease}
+        [data-region].selected{border-color:var(--amber);background:rgba(255,200,87,.12);box-shadow:0 0 0 2px rgba(255,200,87,.35)}
+        [data-region]:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+        [data-region] .region-label{pointer-events:none;padding:2px 4px;background:rgba(0,0,0,.55);border-radius:4px;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        [data-handle]{position:absolute;width:10px;height:10px;background:var(--amber);border:1px solid #000;border-radius:2px;z-index:2}
+        [data-handle="nw"]{left:-5px;top:-5px;cursor:nw-resize}
+        [data-handle="n"]{left:50%;top:-5px;transform:translateX(-50%);cursor:n-resize}
+        [data-handle="ne"]{right:-5px;top:-5px;cursor:ne-resize}
+        [data-handle="e"]{right:-5px;top:50%;transform:translateY(-50%);cursor:e-resize}
+        [data-handle="se"]{right:-5px;bottom:-5px;cursor:se-resize}
+        [data-handle="s"]{left:50%;bottom:-5px;transform:translateX(-50%);cursor:s-resize}
+        [data-handle="sw"]{left:-5px;bottom:-5px;cursor:sw-resize}
+        [data-handle="w"]{left:-5px;top:50%;transform:translateY(-50%);cursor:w-resize}
+        .region-warning{position:absolute;top:2px;right:2px;background:var(--red);color:#fff;font:8px var(--mono);padding:1px 4px;border-radius:4px;pointer-events:none}
+        [data-bezel]{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(180deg,rgba(255,112,102,.9) 0 6px,transparent 6px 12px);opacity:.85;pointer-events:none;border-left:1px dashed var(--red);border-right:1px dashed var(--red)}
+        .guide-line{position:absolute;background:var(--amber);pointer-events:none;z-index:5}
+        .guide-line.v{width:1px;top:0;bottom:0}
+        .guide-line.h{height:1px;left:0;right:0}
+        @media (prefers-reduced-motion: reduce){
+            [data-region]{transition:none !important}
+            [data-canvas-surface]{transition:none !important}
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Visual Layout</h1>
+            <form method="POST" action="{{.form_action}}" data-layout-editor data-preview-endpoint="/admin/preview/layout">
+                <!-- hidden fields : keep names exactly for backend -->
+                <input type="hidden" name="name" value="{{.name}}">
+                <input type="hidden" name="mode" value="{{if .mode}}{{.mode}}{{else}}absolute{{end}}">
+                <input type="hidden" name="rows" value="{{.rows}}">
+                <input type="hidden" name="cols" value="{{.cols}}">
+                <input type="hidden" name="gap" value="{{.gap}}">
+                <input type="hidden" name="padding" value="{{.padding}}">
+                <input type="hidden" name="background" value="{{.background}}">
+                <!-- enabled checkbox must be inside form and carry value on -->
+                <input type="checkbox" name="enabled" value="on" {{if .enabled}}checked{{end}} style="display:none" id="enabled-hidden">
+                <input type="hidden" name="ttl_seconds" value="{{.ttl_seconds}}">
+                <input type="hidden" name="regions" value="{{.regions}}">
+                <input type="hidden" name="canvas_w" value="{{.canvas_w}}">
+                <input type="hidden" name="canvas_h" value="{{.canvas_h}}">
+
+                <!-- visible meta controls -->
+                <div class="row mb-3">
+                    <div class="col-md-4 mb-2">
+                        <label class="form-label" for="layout-name-visible">Name</label>
+                        <input type="text" class="form-control" id="layout-name-visible" data-field="name-visible" value="{{.name}}" placeholder="Wall layout">
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label" for="layout-rows-visible">Rows</label>
+                        <input type="number" class="form-control" id="layout-rows-visible" data-field="rows-visible" value="{{.rows}}" min="1" max="8">
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label" for="layout-cols-visible">Columns</label>
+                        <input type="number" class="form-control" id="layout-cols-visible" data-field="cols-visible" value="{{.cols}}" min="1" max="8">
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label" for="layout-gap-visible">Gap (px)</label>
+                        <input type="number" class="form-control" id="layout-gap-visible" data-field="gap-visible" value="{{.gap}}" min="0" max="64">
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label" for="layout-background-visible">Background</label>
+                        <input type="color" class="form-control form-control-color" id="layout-background-visible" data-field="background-visible" value="{{if .background}}{{.background}}{{else}}#000000{{end}}">
+                    </div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap mb-3">
+                    <label class="form-check d-flex align-items-center gap-2">
+                        <input type="checkbox" class="form-check-input" data-field="enabled-visible" {{if .enabled}}checked{{end}}>
+                        <span>Enabled (shown in feed)</span>
+                    </label>
+                    <label class="form-label mb-0 d-flex align-items-center gap-2">Snap
+                        <input type="number" data-snap min="1" max="64" step="1" style="width:80px" class="form-control">
+                    </label>
+                    <label class="form-label mb-0 d-flex align-items-center gap-2">Device
+                        <select data-device-select class="form-select" style="width:200px"></select>
+                    </label>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap mb-3">
+                    <button type="button" class="btn btn-sm btn-ghost" data-undo>Undo</button>
+                    <button type="button" class="btn btn-sm btn-ghost" data-redo>Redo</button>
+                    <button type="button" class="btn btn-sm btn-primary" data-add-region>Add region</button>
+                    <button type="button" class="btn btn-sm btn-ghost" data-duplicate-region>Duplicate</button>
+                    <button type="button" class="btn btn-sm btn-danger" data-delete-region>Delete</button>
+                    <span class="text-muted small align-self-center">Shift+drag bypasses snap</span>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap mb-3">
+                    <button type="button" class="btn btn-sm btn-ghost" data-template="blank">Blank</button>
+                    <button type="button" class="btn btn-sm btn-ghost" data-template="split">2×2 Split</button>
+                    <button type="button" class="btn btn-sm btn-ghost" data-template="header-footer">Header/Footer</button>
+                    <button type="button" class="btn btn-sm btn-ghost" data-template="sidebar">Sidebar</button>
+                    <button type="button" class="btn btn-sm btn-ghost" data-grid-apply>Apply grid preset</button>
+                </div>
+
+                <div class="alert alert-warning" data-validation-warning role="alert" style="display:none"></div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div data-canvas>
+                            <div data-canvas-surface></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <strong>Regions</strong>
+                                <small class="text-muted"><span data-region-count>0</span> regions</small>
+                            </div>
+                            <div data-region-list class="d-flex flex-column gap-2" style="max-height:260px;overflow:auto"></div>
+                        </div>
+                        <div data-inspector class="card mb-3" style="padding:14px">
+                            <h5 class="mb-2">Inspector</h5>
+                            <div class="mb-2">
+                                <label class="form-label">Source</label>
+                                <select class="form-select" data-field="source"></select>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Inset (px)</label>
+                                    <input type="number" class="form-control" data-field="inset" min="0" max="64">
+                                </div>
+                                <div class="col-6 mb-2 d-flex align-items-end">
+                                    <label class="form-check"><input type="checkbox" class="form-check-input" data-field="border"> Border</label>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Theme accents</label>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <label class="small">Accent <input type="color" data-field="theme-accent"></label>
+                                    <label class="small">Text <input type="color" data-field="theme-text"></label>
+                                    <label class="small">Background <input type="color" data-field="theme-background"></label>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Font size</label>
+                                <input type="number" class="form-control" data-field="theme-font-size" min="1" max="100" placeholder="inherit">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-ghost" data-clear-theme>Clear theme override</button>
+                        </div>
+                        <div class="card mb-3" style="padding:14px">
+                            <h5 class="mb-2">Live preview</h5>
+                            <img data-live-preview-img alt="Layout live preview" width="256" height="256" class="border bg-dark w-100" style="image-rendering:pixelated;max-width:256px">
+                            <small class="text-muted">Preview size: <span data-preview-size>-</span></small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" data-save>Save layout</button>
+                    <a href="/admin/layouts" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+<script>window.LAYOUT_BINDING_OPTS = {{.binding_opts_json}};</script>
+<script>window.LAYOUT_DEVICES = {{.devices_json}};</script>
+<script>window.LAYOUT_MIN_REGION = {{.min_region}};</script>
+<script>window.LAYOUT_DEFAULT_DEVICE = {{.default_device_id}};</script>
+<script type="module" src="/static/assets/layout_editor.js"></script>
+</html>
