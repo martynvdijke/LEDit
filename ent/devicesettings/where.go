@@ -210,6 +210,66 @@ func OverlayFg(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldOverlayFg, v))
 }
 
+// Transport applies equality check predicate on the "transport" field. It's identical to TransportEQ.
+func Transport(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldTransport, v))
+}
+
+// WledHost applies equality check predicate on the "wled_host" field. It's identical to WledHostEQ.
+func WledHost(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldWledHost, v))
+}
+
+// WledPort applies equality check predicate on the "wled_port" field. It's identical to WledPortEQ.
+func WledPort(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldWledPort, v))
+}
+
+// WledRealtimeMode applies equality check predicate on the "wled_realtime_mode" field. It's identical to WledRealtimeModeEQ.
+func WledRealtimeMode(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldWledRealtimeMode, v))
+}
+
+// WledChannel applies equality check predicate on the "wled_channel" field. It's identical to WledChannelEQ.
+func WledChannel(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldWledChannel, v))
+}
+
+// ArtnetHost applies equality check predicate on the "artnet_host" field. It's identical to ArtnetHostEQ.
+func ArtnetHost(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldArtnetHost, v))
+}
+
+// ArtnetPort applies equality check predicate on the "artnet_port" field. It's identical to ArtnetPortEQ.
+func ArtnetPort(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldArtnetPort, v))
+}
+
+// ArtnetUniverse applies equality check predicate on the "artnet_universe" field. It's identical to ArtnetUniverseEQ.
+func ArtnetUniverse(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldArtnetUniverse, v))
+}
+
+// OutputFps applies equality check predicate on the "output_fps" field. It's identical to OutputFpsEQ.
+func OutputFps(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputFps, v))
+}
+
+// OutputColorOrder applies equality check predicate on the "output_color_order" field. It's identical to OutputColorOrderEQ.
+func OutputColorOrder(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputColorOrder, v))
+}
+
+// OutputGamma applies equality check predicate on the "output_gamma" field. It's identical to OutputGammaEQ.
+func OutputGamma(v float64) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputGamma, v))
+}
+
+// OutputMatrixLayout applies equality check predicate on the "output_matrix_layout" field. It's identical to OutputMatrixLayoutEQ.
+func OutputMatrixLayout(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputMatrixLayout, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldName, v))
@@ -1758,6 +1818,636 @@ func OverlayFgEqualFold(v string) predicate.DeviceSettings {
 // OverlayFgContainsFold applies the ContainsFold predicate on the "overlay_fg" field.
 func OverlayFgContainsFold(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldContainsFold(FieldOverlayFg, v))
+}
+
+// TransportEQ applies the EQ predicate on the "transport" field.
+func TransportEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldTransport, v))
+}
+
+// TransportNEQ applies the NEQ predicate on the "transport" field.
+func TransportNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldTransport, v))
+}
+
+// TransportIn applies the In predicate on the "transport" field.
+func TransportIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldTransport, vs...))
+}
+
+// TransportNotIn applies the NotIn predicate on the "transport" field.
+func TransportNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldTransport, vs...))
+}
+
+// TransportGT applies the GT predicate on the "transport" field.
+func TransportGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldTransport, v))
+}
+
+// TransportGTE applies the GTE predicate on the "transport" field.
+func TransportGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldTransport, v))
+}
+
+// TransportLT applies the LT predicate on the "transport" field.
+func TransportLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldTransport, v))
+}
+
+// TransportLTE applies the LTE predicate on the "transport" field.
+func TransportLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldTransport, v))
+}
+
+// TransportContains applies the Contains predicate on the "transport" field.
+func TransportContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldTransport, v))
+}
+
+// TransportHasPrefix applies the HasPrefix predicate on the "transport" field.
+func TransportHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldTransport, v))
+}
+
+// TransportHasSuffix applies the HasSuffix predicate on the "transport" field.
+func TransportHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldTransport, v))
+}
+
+// TransportEqualFold applies the EqualFold predicate on the "transport" field.
+func TransportEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldTransport, v))
+}
+
+// TransportContainsFold applies the ContainsFold predicate on the "transport" field.
+func TransportContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldTransport, v))
+}
+
+// WledHostEQ applies the EQ predicate on the "wled_host" field.
+func WledHostEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldWledHost, v))
+}
+
+// WledHostNEQ applies the NEQ predicate on the "wled_host" field.
+func WledHostNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldWledHost, v))
+}
+
+// WledHostIn applies the In predicate on the "wled_host" field.
+func WledHostIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldWledHost, vs...))
+}
+
+// WledHostNotIn applies the NotIn predicate on the "wled_host" field.
+func WledHostNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldWledHost, vs...))
+}
+
+// WledHostGT applies the GT predicate on the "wled_host" field.
+func WledHostGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldWledHost, v))
+}
+
+// WledHostGTE applies the GTE predicate on the "wled_host" field.
+func WledHostGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldWledHost, v))
+}
+
+// WledHostLT applies the LT predicate on the "wled_host" field.
+func WledHostLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldWledHost, v))
+}
+
+// WledHostLTE applies the LTE predicate on the "wled_host" field.
+func WledHostLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldWledHost, v))
+}
+
+// WledHostContains applies the Contains predicate on the "wled_host" field.
+func WledHostContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldWledHost, v))
+}
+
+// WledHostHasPrefix applies the HasPrefix predicate on the "wled_host" field.
+func WledHostHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldWledHost, v))
+}
+
+// WledHostHasSuffix applies the HasSuffix predicate on the "wled_host" field.
+func WledHostHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldWledHost, v))
+}
+
+// WledHostEqualFold applies the EqualFold predicate on the "wled_host" field.
+func WledHostEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldWledHost, v))
+}
+
+// WledHostContainsFold applies the ContainsFold predicate on the "wled_host" field.
+func WledHostContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldWledHost, v))
+}
+
+// WledPortEQ applies the EQ predicate on the "wled_port" field.
+func WledPortEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldWledPort, v))
+}
+
+// WledPortNEQ applies the NEQ predicate on the "wled_port" field.
+func WledPortNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldWledPort, v))
+}
+
+// WledPortIn applies the In predicate on the "wled_port" field.
+func WledPortIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldWledPort, vs...))
+}
+
+// WledPortNotIn applies the NotIn predicate on the "wled_port" field.
+func WledPortNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldWledPort, vs...))
+}
+
+// WledPortGT applies the GT predicate on the "wled_port" field.
+func WledPortGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldWledPort, v))
+}
+
+// WledPortGTE applies the GTE predicate on the "wled_port" field.
+func WledPortGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldWledPort, v))
+}
+
+// WledPortLT applies the LT predicate on the "wled_port" field.
+func WledPortLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldWledPort, v))
+}
+
+// WledPortLTE applies the LTE predicate on the "wled_port" field.
+func WledPortLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldWledPort, v))
+}
+
+// WledRealtimeModeEQ applies the EQ predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldWledRealtimeMode, v))
+}
+
+// WledRealtimeModeNEQ applies the NEQ predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldWledRealtimeMode, v))
+}
+
+// WledRealtimeModeIn applies the In predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldWledRealtimeMode, vs...))
+}
+
+// WledRealtimeModeNotIn applies the NotIn predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldWledRealtimeMode, vs...))
+}
+
+// WledRealtimeModeGT applies the GT predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldWledRealtimeMode, v))
+}
+
+// WledRealtimeModeGTE applies the GTE predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldWledRealtimeMode, v))
+}
+
+// WledRealtimeModeLT applies the LT predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldWledRealtimeMode, v))
+}
+
+// WledRealtimeModeLTE applies the LTE predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldWledRealtimeMode, v))
+}
+
+// WledRealtimeModeContains applies the Contains predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldWledRealtimeMode, v))
+}
+
+// WledRealtimeModeHasPrefix applies the HasPrefix predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldWledRealtimeMode, v))
+}
+
+// WledRealtimeModeHasSuffix applies the HasSuffix predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldWledRealtimeMode, v))
+}
+
+// WledRealtimeModeEqualFold applies the EqualFold predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldWledRealtimeMode, v))
+}
+
+// WledRealtimeModeContainsFold applies the ContainsFold predicate on the "wled_realtime_mode" field.
+func WledRealtimeModeContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldWledRealtimeMode, v))
+}
+
+// WledChannelEQ applies the EQ predicate on the "wled_channel" field.
+func WledChannelEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldWledChannel, v))
+}
+
+// WledChannelNEQ applies the NEQ predicate on the "wled_channel" field.
+func WledChannelNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldWledChannel, v))
+}
+
+// WledChannelIn applies the In predicate on the "wled_channel" field.
+func WledChannelIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldWledChannel, vs...))
+}
+
+// WledChannelNotIn applies the NotIn predicate on the "wled_channel" field.
+func WledChannelNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldWledChannel, vs...))
+}
+
+// WledChannelGT applies the GT predicate on the "wled_channel" field.
+func WledChannelGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldWledChannel, v))
+}
+
+// WledChannelGTE applies the GTE predicate on the "wled_channel" field.
+func WledChannelGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldWledChannel, v))
+}
+
+// WledChannelLT applies the LT predicate on the "wled_channel" field.
+func WledChannelLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldWledChannel, v))
+}
+
+// WledChannelLTE applies the LTE predicate on the "wled_channel" field.
+func WledChannelLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldWledChannel, v))
+}
+
+// ArtnetHostEQ applies the EQ predicate on the "artnet_host" field.
+func ArtnetHostEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldArtnetHost, v))
+}
+
+// ArtnetHostNEQ applies the NEQ predicate on the "artnet_host" field.
+func ArtnetHostNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldArtnetHost, v))
+}
+
+// ArtnetHostIn applies the In predicate on the "artnet_host" field.
+func ArtnetHostIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldArtnetHost, vs...))
+}
+
+// ArtnetHostNotIn applies the NotIn predicate on the "artnet_host" field.
+func ArtnetHostNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldArtnetHost, vs...))
+}
+
+// ArtnetHostGT applies the GT predicate on the "artnet_host" field.
+func ArtnetHostGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldArtnetHost, v))
+}
+
+// ArtnetHostGTE applies the GTE predicate on the "artnet_host" field.
+func ArtnetHostGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldArtnetHost, v))
+}
+
+// ArtnetHostLT applies the LT predicate on the "artnet_host" field.
+func ArtnetHostLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldArtnetHost, v))
+}
+
+// ArtnetHostLTE applies the LTE predicate on the "artnet_host" field.
+func ArtnetHostLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldArtnetHost, v))
+}
+
+// ArtnetHostContains applies the Contains predicate on the "artnet_host" field.
+func ArtnetHostContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldArtnetHost, v))
+}
+
+// ArtnetHostHasPrefix applies the HasPrefix predicate on the "artnet_host" field.
+func ArtnetHostHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldArtnetHost, v))
+}
+
+// ArtnetHostHasSuffix applies the HasSuffix predicate on the "artnet_host" field.
+func ArtnetHostHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldArtnetHost, v))
+}
+
+// ArtnetHostEqualFold applies the EqualFold predicate on the "artnet_host" field.
+func ArtnetHostEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldArtnetHost, v))
+}
+
+// ArtnetHostContainsFold applies the ContainsFold predicate on the "artnet_host" field.
+func ArtnetHostContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldArtnetHost, v))
+}
+
+// ArtnetPortEQ applies the EQ predicate on the "artnet_port" field.
+func ArtnetPortEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldArtnetPort, v))
+}
+
+// ArtnetPortNEQ applies the NEQ predicate on the "artnet_port" field.
+func ArtnetPortNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldArtnetPort, v))
+}
+
+// ArtnetPortIn applies the In predicate on the "artnet_port" field.
+func ArtnetPortIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldArtnetPort, vs...))
+}
+
+// ArtnetPortNotIn applies the NotIn predicate on the "artnet_port" field.
+func ArtnetPortNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldArtnetPort, vs...))
+}
+
+// ArtnetPortGT applies the GT predicate on the "artnet_port" field.
+func ArtnetPortGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldArtnetPort, v))
+}
+
+// ArtnetPortGTE applies the GTE predicate on the "artnet_port" field.
+func ArtnetPortGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldArtnetPort, v))
+}
+
+// ArtnetPortLT applies the LT predicate on the "artnet_port" field.
+func ArtnetPortLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldArtnetPort, v))
+}
+
+// ArtnetPortLTE applies the LTE predicate on the "artnet_port" field.
+func ArtnetPortLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldArtnetPort, v))
+}
+
+// ArtnetUniverseEQ applies the EQ predicate on the "artnet_universe" field.
+func ArtnetUniverseEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldArtnetUniverse, v))
+}
+
+// ArtnetUniverseNEQ applies the NEQ predicate on the "artnet_universe" field.
+func ArtnetUniverseNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldArtnetUniverse, v))
+}
+
+// ArtnetUniverseIn applies the In predicate on the "artnet_universe" field.
+func ArtnetUniverseIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldArtnetUniverse, vs...))
+}
+
+// ArtnetUniverseNotIn applies the NotIn predicate on the "artnet_universe" field.
+func ArtnetUniverseNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldArtnetUniverse, vs...))
+}
+
+// ArtnetUniverseGT applies the GT predicate on the "artnet_universe" field.
+func ArtnetUniverseGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldArtnetUniverse, v))
+}
+
+// ArtnetUniverseGTE applies the GTE predicate on the "artnet_universe" field.
+func ArtnetUniverseGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldArtnetUniverse, v))
+}
+
+// ArtnetUniverseLT applies the LT predicate on the "artnet_universe" field.
+func ArtnetUniverseLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldArtnetUniverse, v))
+}
+
+// ArtnetUniverseLTE applies the LTE predicate on the "artnet_universe" field.
+func ArtnetUniverseLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldArtnetUniverse, v))
+}
+
+// OutputFpsEQ applies the EQ predicate on the "output_fps" field.
+func OutputFpsEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputFps, v))
+}
+
+// OutputFpsNEQ applies the NEQ predicate on the "output_fps" field.
+func OutputFpsNEQ(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOutputFps, v))
+}
+
+// OutputFpsIn applies the In predicate on the "output_fps" field.
+func OutputFpsIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOutputFps, vs...))
+}
+
+// OutputFpsNotIn applies the NotIn predicate on the "output_fps" field.
+func OutputFpsNotIn(vs ...int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOutputFps, vs...))
+}
+
+// OutputFpsGT applies the GT predicate on the "output_fps" field.
+func OutputFpsGT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOutputFps, v))
+}
+
+// OutputFpsGTE applies the GTE predicate on the "output_fps" field.
+func OutputFpsGTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOutputFps, v))
+}
+
+// OutputFpsLT applies the LT predicate on the "output_fps" field.
+func OutputFpsLT(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOutputFps, v))
+}
+
+// OutputFpsLTE applies the LTE predicate on the "output_fps" field.
+func OutputFpsLTE(v int) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOutputFps, v))
+}
+
+// OutputColorOrderEQ applies the EQ predicate on the "output_color_order" field.
+func OutputColorOrderEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputColorOrder, v))
+}
+
+// OutputColorOrderNEQ applies the NEQ predicate on the "output_color_order" field.
+func OutputColorOrderNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOutputColorOrder, v))
+}
+
+// OutputColorOrderIn applies the In predicate on the "output_color_order" field.
+func OutputColorOrderIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOutputColorOrder, vs...))
+}
+
+// OutputColorOrderNotIn applies the NotIn predicate on the "output_color_order" field.
+func OutputColorOrderNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOutputColorOrder, vs...))
+}
+
+// OutputColorOrderGT applies the GT predicate on the "output_color_order" field.
+func OutputColorOrderGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOutputColorOrder, v))
+}
+
+// OutputColorOrderGTE applies the GTE predicate on the "output_color_order" field.
+func OutputColorOrderGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOutputColorOrder, v))
+}
+
+// OutputColorOrderLT applies the LT predicate on the "output_color_order" field.
+func OutputColorOrderLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOutputColorOrder, v))
+}
+
+// OutputColorOrderLTE applies the LTE predicate on the "output_color_order" field.
+func OutputColorOrderLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOutputColorOrder, v))
+}
+
+// OutputColorOrderContains applies the Contains predicate on the "output_color_order" field.
+func OutputColorOrderContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldOutputColorOrder, v))
+}
+
+// OutputColorOrderHasPrefix applies the HasPrefix predicate on the "output_color_order" field.
+func OutputColorOrderHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldOutputColorOrder, v))
+}
+
+// OutputColorOrderHasSuffix applies the HasSuffix predicate on the "output_color_order" field.
+func OutputColorOrderHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldOutputColorOrder, v))
+}
+
+// OutputColorOrderEqualFold applies the EqualFold predicate on the "output_color_order" field.
+func OutputColorOrderEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldOutputColorOrder, v))
+}
+
+// OutputColorOrderContainsFold applies the ContainsFold predicate on the "output_color_order" field.
+func OutputColorOrderContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldOutputColorOrder, v))
+}
+
+// OutputGammaEQ applies the EQ predicate on the "output_gamma" field.
+func OutputGammaEQ(v float64) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputGamma, v))
+}
+
+// OutputGammaNEQ applies the NEQ predicate on the "output_gamma" field.
+func OutputGammaNEQ(v float64) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOutputGamma, v))
+}
+
+// OutputGammaIn applies the In predicate on the "output_gamma" field.
+func OutputGammaIn(vs ...float64) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOutputGamma, vs...))
+}
+
+// OutputGammaNotIn applies the NotIn predicate on the "output_gamma" field.
+func OutputGammaNotIn(vs ...float64) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOutputGamma, vs...))
+}
+
+// OutputGammaGT applies the GT predicate on the "output_gamma" field.
+func OutputGammaGT(v float64) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOutputGamma, v))
+}
+
+// OutputGammaGTE applies the GTE predicate on the "output_gamma" field.
+func OutputGammaGTE(v float64) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOutputGamma, v))
+}
+
+// OutputGammaLT applies the LT predicate on the "output_gamma" field.
+func OutputGammaLT(v float64) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOutputGamma, v))
+}
+
+// OutputGammaLTE applies the LTE predicate on the "output_gamma" field.
+func OutputGammaLTE(v float64) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOutputGamma, v))
+}
+
+// OutputMatrixLayoutEQ applies the EQ predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputMatrixLayout, v))
+}
+
+// OutputMatrixLayoutNEQ applies the NEQ predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOutputMatrixLayout, v))
+}
+
+// OutputMatrixLayoutIn applies the In predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOutputMatrixLayout, vs...))
+}
+
+// OutputMatrixLayoutNotIn applies the NotIn predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOutputMatrixLayout, vs...))
+}
+
+// OutputMatrixLayoutGT applies the GT predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOutputMatrixLayout, v))
+}
+
+// OutputMatrixLayoutGTE applies the GTE predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOutputMatrixLayout, v))
+}
+
+// OutputMatrixLayoutLT applies the LT predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOutputMatrixLayout, v))
+}
+
+// OutputMatrixLayoutLTE applies the LTE predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOutputMatrixLayout, v))
+}
+
+// OutputMatrixLayoutContains applies the Contains predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldOutputMatrixLayout, v))
+}
+
+// OutputMatrixLayoutHasPrefix applies the HasPrefix predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldOutputMatrixLayout, v))
+}
+
+// OutputMatrixLayoutHasSuffix applies the HasSuffix predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldOutputMatrixLayout, v))
+}
+
+// OutputMatrixLayoutEqualFold applies the EqualFold predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldOutputMatrixLayout, v))
+}
+
+// OutputMatrixLayoutContainsFold applies the ContainsFold predicate on the "output_matrix_layout" field.
+func OutputMatrixLayoutContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldOutputMatrixLayout, v))
 }
 
 // HasGroup applies the HasEdge predicate on the "group" edge.

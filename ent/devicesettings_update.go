@@ -589,6 +589,216 @@ func (_u *DeviceSettingsUpdate) SetNillableOverlayFg(v *string) *DeviceSettingsU
 	return _u
 }
 
+// SetTransport sets the "transport" field.
+func (_u *DeviceSettingsUpdate) SetTransport(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetTransport(v)
+	return _u
+}
+
+// SetNillableTransport sets the "transport" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableTransport(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetTransport(*v)
+	}
+	return _u
+}
+
+// SetWledHost sets the "wled_host" field.
+func (_u *DeviceSettingsUpdate) SetWledHost(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetWledHost(v)
+	return _u
+}
+
+// SetNillableWledHost sets the "wled_host" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableWledHost(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetWledHost(*v)
+	}
+	return _u
+}
+
+// SetWledPort sets the "wled_port" field.
+func (_u *DeviceSettingsUpdate) SetWledPort(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetWledPort()
+	_u.mutation.SetWledPort(v)
+	return _u
+}
+
+// SetNillableWledPort sets the "wled_port" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableWledPort(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetWledPort(*v)
+	}
+	return _u
+}
+
+// AddWledPort adds value to the "wled_port" field.
+func (_u *DeviceSettingsUpdate) AddWledPort(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddWledPort(v)
+	return _u
+}
+
+// SetWledRealtimeMode sets the "wled_realtime_mode" field.
+func (_u *DeviceSettingsUpdate) SetWledRealtimeMode(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetWledRealtimeMode(v)
+	return _u
+}
+
+// SetNillableWledRealtimeMode sets the "wled_realtime_mode" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableWledRealtimeMode(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetWledRealtimeMode(*v)
+	}
+	return _u
+}
+
+// SetWledChannel sets the "wled_channel" field.
+func (_u *DeviceSettingsUpdate) SetWledChannel(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetWledChannel()
+	_u.mutation.SetWledChannel(v)
+	return _u
+}
+
+// SetNillableWledChannel sets the "wled_channel" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableWledChannel(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetWledChannel(*v)
+	}
+	return _u
+}
+
+// AddWledChannel adds value to the "wled_channel" field.
+func (_u *DeviceSettingsUpdate) AddWledChannel(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddWledChannel(v)
+	return _u
+}
+
+// SetArtnetHost sets the "artnet_host" field.
+func (_u *DeviceSettingsUpdate) SetArtnetHost(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetArtnetHost(v)
+	return _u
+}
+
+// SetNillableArtnetHost sets the "artnet_host" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableArtnetHost(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetArtnetHost(*v)
+	}
+	return _u
+}
+
+// SetArtnetPort sets the "artnet_port" field.
+func (_u *DeviceSettingsUpdate) SetArtnetPort(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetArtnetPort()
+	_u.mutation.SetArtnetPort(v)
+	return _u
+}
+
+// SetNillableArtnetPort sets the "artnet_port" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableArtnetPort(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetArtnetPort(*v)
+	}
+	return _u
+}
+
+// AddArtnetPort adds value to the "artnet_port" field.
+func (_u *DeviceSettingsUpdate) AddArtnetPort(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddArtnetPort(v)
+	return _u
+}
+
+// SetArtnetUniverse sets the "artnet_universe" field.
+func (_u *DeviceSettingsUpdate) SetArtnetUniverse(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetArtnetUniverse()
+	_u.mutation.SetArtnetUniverse(v)
+	return _u
+}
+
+// SetNillableArtnetUniverse sets the "artnet_universe" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableArtnetUniverse(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetArtnetUniverse(*v)
+	}
+	return _u
+}
+
+// AddArtnetUniverse adds value to the "artnet_universe" field.
+func (_u *DeviceSettingsUpdate) AddArtnetUniverse(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddArtnetUniverse(v)
+	return _u
+}
+
+// SetOutputFps sets the "output_fps" field.
+func (_u *DeviceSettingsUpdate) SetOutputFps(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetOutputFps()
+	_u.mutation.SetOutputFps(v)
+	return _u
+}
+
+// SetNillableOutputFps sets the "output_fps" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableOutputFps(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetOutputFps(*v)
+	}
+	return _u
+}
+
+// AddOutputFps adds value to the "output_fps" field.
+func (_u *DeviceSettingsUpdate) AddOutputFps(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddOutputFps(v)
+	return _u
+}
+
+// SetOutputColorOrder sets the "output_color_order" field.
+func (_u *DeviceSettingsUpdate) SetOutputColorOrder(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetOutputColorOrder(v)
+	return _u
+}
+
+// SetNillableOutputColorOrder sets the "output_color_order" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableOutputColorOrder(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetOutputColorOrder(*v)
+	}
+	return _u
+}
+
+// SetOutputGamma sets the "output_gamma" field.
+func (_u *DeviceSettingsUpdate) SetOutputGamma(v float64) *DeviceSettingsUpdate {
+	_u.mutation.ResetOutputGamma()
+	_u.mutation.SetOutputGamma(v)
+	return _u
+}
+
+// SetNillableOutputGamma sets the "output_gamma" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableOutputGamma(v *float64) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetOutputGamma(*v)
+	}
+	return _u
+}
+
+// AddOutputGamma adds value to the "output_gamma" field.
+func (_u *DeviceSettingsUpdate) AddOutputGamma(v float64) *DeviceSettingsUpdate {
+	_u.mutation.AddOutputGamma(v)
+	return _u
+}
+
+// SetOutputMatrixLayout sets the "output_matrix_layout" field.
+func (_u *DeviceSettingsUpdate) SetOutputMatrixLayout(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetOutputMatrixLayout(v)
+	return _u
+}
+
+// SetNillableOutputMatrixLayout sets the "output_matrix_layout" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableOutputMatrixLayout(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetOutputMatrixLayout(*v)
+	}
+	return _u
+}
+
 // SetGroup sets the "group" edge to the DeviceGroup entity.
 func (_u *DeviceSettingsUpdate) SetGroup(v *DeviceGroup) *DeviceSettingsUpdate {
 	return _u.SetGroupID(v.ID)
@@ -647,6 +857,26 @@ func (_u *DeviceSettingsUpdate) check() error {
 	if v, ok := _u.mutation.OverlayPosition(); ok {
 		if err := devicesettings.OverlayPositionValidator(v); err != nil {
 			return &ValidationError{Name: "overlay_position", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.overlay_position": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Transport(); ok {
+		if err := devicesettings.TransportValidator(v); err != nil {
+			return &ValidationError{Name: "transport", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.transport": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.WledRealtimeMode(); ok {
+		if err := devicesettings.WledRealtimeModeValidator(v); err != nil {
+			return &ValidationError{Name: "wled_realtime_mode", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.wled_realtime_mode": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.OutputColorOrder(); ok {
+		if err := devicesettings.OutputColorOrderValidator(v); err != nil {
+			return &ValidationError{Name: "output_color_order", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.output_color_order": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.OutputMatrixLayout(); ok {
+		if err := devicesettings.OutputMatrixLayoutValidator(v); err != nil {
+			return &ValidationError{Name: "output_matrix_layout", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.output_matrix_layout": %w`, err)}
 		}
 	}
 	return nil
@@ -807,6 +1037,60 @@ func (_u *DeviceSettingsUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.OverlayFg(); ok {
 		_spec.SetField(devicesettings.FieldOverlayFg, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Transport(); ok {
+		_spec.SetField(devicesettings.FieldTransport, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.WledHost(); ok {
+		_spec.SetField(devicesettings.FieldWledHost, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.WledPort(); ok {
+		_spec.SetField(devicesettings.FieldWledPort, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedWledPort(); ok {
+		_spec.AddField(devicesettings.FieldWledPort, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.WledRealtimeMode(); ok {
+		_spec.SetField(devicesettings.FieldWledRealtimeMode, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.WledChannel(); ok {
+		_spec.SetField(devicesettings.FieldWledChannel, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedWledChannel(); ok {
+		_spec.AddField(devicesettings.FieldWledChannel, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ArtnetHost(); ok {
+		_spec.SetField(devicesettings.FieldArtnetHost, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ArtnetPort(); ok {
+		_spec.SetField(devicesettings.FieldArtnetPort, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedArtnetPort(); ok {
+		_spec.AddField(devicesettings.FieldArtnetPort, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ArtnetUniverse(); ok {
+		_spec.SetField(devicesettings.FieldArtnetUniverse, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedArtnetUniverse(); ok {
+		_spec.AddField(devicesettings.FieldArtnetUniverse, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OutputFps(); ok {
+		_spec.SetField(devicesettings.FieldOutputFps, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOutputFps(); ok {
+		_spec.AddField(devicesettings.FieldOutputFps, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OutputColorOrder(); ok {
+		_spec.SetField(devicesettings.FieldOutputColorOrder, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OutputGamma(); ok {
+		_spec.SetField(devicesettings.FieldOutputGamma, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedOutputGamma(); ok {
+		_spec.AddField(devicesettings.FieldOutputGamma, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.OutputMatrixLayout(); ok {
+		_spec.SetField(devicesettings.FieldOutputMatrixLayout, field.TypeString, value)
 	}
 	if _u.mutation.GroupCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1417,6 +1701,216 @@ func (_u *DeviceSettingsUpdateOne) SetNillableOverlayFg(v *string) *DeviceSettin
 	return _u
 }
 
+// SetTransport sets the "transport" field.
+func (_u *DeviceSettingsUpdateOne) SetTransport(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetTransport(v)
+	return _u
+}
+
+// SetNillableTransport sets the "transport" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableTransport(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetTransport(*v)
+	}
+	return _u
+}
+
+// SetWledHost sets the "wled_host" field.
+func (_u *DeviceSettingsUpdateOne) SetWledHost(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetWledHost(v)
+	return _u
+}
+
+// SetNillableWledHost sets the "wled_host" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableWledHost(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetWledHost(*v)
+	}
+	return _u
+}
+
+// SetWledPort sets the "wled_port" field.
+func (_u *DeviceSettingsUpdateOne) SetWledPort(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetWledPort()
+	_u.mutation.SetWledPort(v)
+	return _u
+}
+
+// SetNillableWledPort sets the "wled_port" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableWledPort(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetWledPort(*v)
+	}
+	return _u
+}
+
+// AddWledPort adds value to the "wled_port" field.
+func (_u *DeviceSettingsUpdateOne) AddWledPort(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddWledPort(v)
+	return _u
+}
+
+// SetWledRealtimeMode sets the "wled_realtime_mode" field.
+func (_u *DeviceSettingsUpdateOne) SetWledRealtimeMode(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetWledRealtimeMode(v)
+	return _u
+}
+
+// SetNillableWledRealtimeMode sets the "wled_realtime_mode" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableWledRealtimeMode(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetWledRealtimeMode(*v)
+	}
+	return _u
+}
+
+// SetWledChannel sets the "wled_channel" field.
+func (_u *DeviceSettingsUpdateOne) SetWledChannel(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetWledChannel()
+	_u.mutation.SetWledChannel(v)
+	return _u
+}
+
+// SetNillableWledChannel sets the "wled_channel" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableWledChannel(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetWledChannel(*v)
+	}
+	return _u
+}
+
+// AddWledChannel adds value to the "wled_channel" field.
+func (_u *DeviceSettingsUpdateOne) AddWledChannel(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddWledChannel(v)
+	return _u
+}
+
+// SetArtnetHost sets the "artnet_host" field.
+func (_u *DeviceSettingsUpdateOne) SetArtnetHost(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetArtnetHost(v)
+	return _u
+}
+
+// SetNillableArtnetHost sets the "artnet_host" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableArtnetHost(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetArtnetHost(*v)
+	}
+	return _u
+}
+
+// SetArtnetPort sets the "artnet_port" field.
+func (_u *DeviceSettingsUpdateOne) SetArtnetPort(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetArtnetPort()
+	_u.mutation.SetArtnetPort(v)
+	return _u
+}
+
+// SetNillableArtnetPort sets the "artnet_port" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableArtnetPort(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetArtnetPort(*v)
+	}
+	return _u
+}
+
+// AddArtnetPort adds value to the "artnet_port" field.
+func (_u *DeviceSettingsUpdateOne) AddArtnetPort(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddArtnetPort(v)
+	return _u
+}
+
+// SetArtnetUniverse sets the "artnet_universe" field.
+func (_u *DeviceSettingsUpdateOne) SetArtnetUniverse(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetArtnetUniverse()
+	_u.mutation.SetArtnetUniverse(v)
+	return _u
+}
+
+// SetNillableArtnetUniverse sets the "artnet_universe" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableArtnetUniverse(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetArtnetUniverse(*v)
+	}
+	return _u
+}
+
+// AddArtnetUniverse adds value to the "artnet_universe" field.
+func (_u *DeviceSettingsUpdateOne) AddArtnetUniverse(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddArtnetUniverse(v)
+	return _u
+}
+
+// SetOutputFps sets the "output_fps" field.
+func (_u *DeviceSettingsUpdateOne) SetOutputFps(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetOutputFps()
+	_u.mutation.SetOutputFps(v)
+	return _u
+}
+
+// SetNillableOutputFps sets the "output_fps" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableOutputFps(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetOutputFps(*v)
+	}
+	return _u
+}
+
+// AddOutputFps adds value to the "output_fps" field.
+func (_u *DeviceSettingsUpdateOne) AddOutputFps(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddOutputFps(v)
+	return _u
+}
+
+// SetOutputColorOrder sets the "output_color_order" field.
+func (_u *DeviceSettingsUpdateOne) SetOutputColorOrder(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetOutputColorOrder(v)
+	return _u
+}
+
+// SetNillableOutputColorOrder sets the "output_color_order" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableOutputColorOrder(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetOutputColorOrder(*v)
+	}
+	return _u
+}
+
+// SetOutputGamma sets the "output_gamma" field.
+func (_u *DeviceSettingsUpdateOne) SetOutputGamma(v float64) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetOutputGamma()
+	_u.mutation.SetOutputGamma(v)
+	return _u
+}
+
+// SetNillableOutputGamma sets the "output_gamma" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableOutputGamma(v *float64) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetOutputGamma(*v)
+	}
+	return _u
+}
+
+// AddOutputGamma adds value to the "output_gamma" field.
+func (_u *DeviceSettingsUpdateOne) AddOutputGamma(v float64) *DeviceSettingsUpdateOne {
+	_u.mutation.AddOutputGamma(v)
+	return _u
+}
+
+// SetOutputMatrixLayout sets the "output_matrix_layout" field.
+func (_u *DeviceSettingsUpdateOne) SetOutputMatrixLayout(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetOutputMatrixLayout(v)
+	return _u
+}
+
+// SetNillableOutputMatrixLayout sets the "output_matrix_layout" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableOutputMatrixLayout(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetOutputMatrixLayout(*v)
+	}
+	return _u
+}
+
 // SetGroup sets the "group" edge to the DeviceGroup entity.
 func (_u *DeviceSettingsUpdateOne) SetGroup(v *DeviceGroup) *DeviceSettingsUpdateOne {
 	return _u.SetGroupID(v.ID)
@@ -1488,6 +1982,26 @@ func (_u *DeviceSettingsUpdateOne) check() error {
 	if v, ok := _u.mutation.OverlayPosition(); ok {
 		if err := devicesettings.OverlayPositionValidator(v); err != nil {
 			return &ValidationError{Name: "overlay_position", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.overlay_position": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Transport(); ok {
+		if err := devicesettings.TransportValidator(v); err != nil {
+			return &ValidationError{Name: "transport", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.transport": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.WledRealtimeMode(); ok {
+		if err := devicesettings.WledRealtimeModeValidator(v); err != nil {
+			return &ValidationError{Name: "wled_realtime_mode", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.wled_realtime_mode": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.OutputColorOrder(); ok {
+		if err := devicesettings.OutputColorOrderValidator(v); err != nil {
+			return &ValidationError{Name: "output_color_order", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.output_color_order": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.OutputMatrixLayout(); ok {
+		if err := devicesettings.OutputMatrixLayoutValidator(v); err != nil {
+			return &ValidationError{Name: "output_matrix_layout", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.output_matrix_layout": %w`, err)}
 		}
 	}
 	return nil
@@ -1665,6 +2179,60 @@ func (_u *DeviceSettingsUpdateOne) sqlSave(ctx context.Context) (_node *DeviceSe
 	}
 	if value, ok := _u.mutation.OverlayFg(); ok {
 		_spec.SetField(devicesettings.FieldOverlayFg, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Transport(); ok {
+		_spec.SetField(devicesettings.FieldTransport, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.WledHost(); ok {
+		_spec.SetField(devicesettings.FieldWledHost, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.WledPort(); ok {
+		_spec.SetField(devicesettings.FieldWledPort, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedWledPort(); ok {
+		_spec.AddField(devicesettings.FieldWledPort, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.WledRealtimeMode(); ok {
+		_spec.SetField(devicesettings.FieldWledRealtimeMode, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.WledChannel(); ok {
+		_spec.SetField(devicesettings.FieldWledChannel, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedWledChannel(); ok {
+		_spec.AddField(devicesettings.FieldWledChannel, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ArtnetHost(); ok {
+		_spec.SetField(devicesettings.FieldArtnetHost, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ArtnetPort(); ok {
+		_spec.SetField(devicesettings.FieldArtnetPort, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedArtnetPort(); ok {
+		_spec.AddField(devicesettings.FieldArtnetPort, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ArtnetUniverse(); ok {
+		_spec.SetField(devicesettings.FieldArtnetUniverse, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedArtnetUniverse(); ok {
+		_spec.AddField(devicesettings.FieldArtnetUniverse, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OutputFps(); ok {
+		_spec.SetField(devicesettings.FieldOutputFps, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOutputFps(); ok {
+		_spec.AddField(devicesettings.FieldOutputFps, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OutputColorOrder(); ok {
+		_spec.SetField(devicesettings.FieldOutputColorOrder, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OutputGamma(); ok {
+		_spec.SetField(devicesettings.FieldOutputGamma, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedOutputGamma(); ok {
+		_spec.AddField(devicesettings.FieldOutputGamma, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.OutputMatrixLayout(); ok {
+		_spec.SetField(devicesettings.FieldOutputMatrixLayout, field.TypeString, value)
 	}
 	if _u.mutation.GroupCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -10,6 +10,7 @@ import (
 	"ledit/ent/aisettings"
 	"ledit/ent/alertsettings"
 	"ledit/ent/calendar"
+	"ledit/ent/composition"
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
@@ -22,22 +23,27 @@ import (
 	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/immich"
 	"ledit/ent/jellyfin"
 	"ledit/ent/matrixlayout"
 	"ledit/ent/mpd"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/nowplayingsource"
+	"ledit/ent/overseerr"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/predicate"
+	"ledit/ent/qbittorrent"
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/sabnzbd"
 	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/speedtest"
 	"ledit/ent/sports"
 	"ledit/ent/stock"
 	"ledit/ent/sunmoon"
@@ -47,6 +53,7 @@ import (
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
+	"ledit/ent/uptimekuma"
 	"ledit/ent/video"
 	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
@@ -861,6 +868,21 @@ func (_u *GeneralSettingsUpdate) AddMatrixLayouts(v ...*MatrixLayout) *GeneralSe
 	return _u.AddMatrixLayoutIDs(ids...)
 }
 
+// AddCompositionIDs adds the "compositions" edge to the Composition entity by IDs.
+func (_u *GeneralSettingsUpdate) AddCompositionIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddCompositionIDs(ids...)
+	return _u
+}
+
+// AddCompositions adds the "compositions" edges to the Composition entity.
+func (_u *GeneralSettingsUpdate) AddCompositions(v ...*Composition) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCompositionIDs(ids...)
+}
+
 // AddCountdownIDs adds the "countdowns" edge to the Countdown entity by IDs.
 func (_u *GeneralSettingsUpdate) AddCountdownIDs(ids ...int) *GeneralSettingsUpdate {
 	_u.mutation.AddCountdownIDs(ids...)
@@ -1174,6 +1196,96 @@ func (_u *GeneralSettingsUpdate) AddNowPlayingSources(v ...*NowPlayingSource) *G
 		ids[i] = v[i].ID
 	}
 	return _u.AddNowPlayingSourceIDs(ids...)
+}
+
+// AddImmichIDs adds the "immichs" edge to the Immich entity by IDs.
+func (_u *GeneralSettingsUpdate) AddImmichIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddImmichIDs(ids...)
+	return _u
+}
+
+// AddImmichs adds the "immichs" edges to the Immich entity.
+func (_u *GeneralSettingsUpdate) AddImmichs(v ...*Immich) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddImmichIDs(ids...)
+}
+
+// AddQbittorrentIDs adds the "qbittorrents" edge to the Qbittorrent entity by IDs.
+func (_u *GeneralSettingsUpdate) AddQbittorrentIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddQbittorrentIDs(ids...)
+	return _u
+}
+
+// AddQbittorrents adds the "qbittorrents" edges to the Qbittorrent entity.
+func (_u *GeneralSettingsUpdate) AddQbittorrents(v ...*Qbittorrent) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddQbittorrentIDs(ids...)
+}
+
+// AddSabnzbdIDs adds the "sabnzbd" edge to the Sabnzbd entity by IDs.
+func (_u *GeneralSettingsUpdate) AddSabnzbdIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddSabnzbdIDs(ids...)
+	return _u
+}
+
+// AddSabnzbd adds the "sabnzbd" edges to the Sabnzbd entity.
+func (_u *GeneralSettingsUpdate) AddSabnzbd(v ...*Sabnzbd) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSabnzbdIDs(ids...)
+}
+
+// AddOverseerrIDs adds the "overseerrs" edge to the Overseerr entity by IDs.
+func (_u *GeneralSettingsUpdate) AddOverseerrIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddOverseerrIDs(ids...)
+	return _u
+}
+
+// AddOverseerrs adds the "overseerrs" edges to the Overseerr entity.
+func (_u *GeneralSettingsUpdate) AddOverseerrs(v ...*Overseerr) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOverseerrIDs(ids...)
+}
+
+// AddUptimeKumaIDs adds the "uptime_kumas" edge to the UptimeKuma entity by IDs.
+func (_u *GeneralSettingsUpdate) AddUptimeKumaIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddUptimeKumaIDs(ids...)
+	return _u
+}
+
+// AddUptimeKumas adds the "uptime_kumas" edges to the UptimeKuma entity.
+func (_u *GeneralSettingsUpdate) AddUptimeKumas(v ...*UptimeKuma) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUptimeKumaIDs(ids...)
+}
+
+// AddSpeedtestIDs adds the "speedtests" edge to the Speedtest entity by IDs.
+func (_u *GeneralSettingsUpdate) AddSpeedtestIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddSpeedtestIDs(ids...)
+	return _u
+}
+
+// AddSpeedtests adds the "speedtests" edges to the Speedtest entity.
+func (_u *GeneralSettingsUpdate) AddSpeedtests(v ...*Speedtest) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSpeedtestIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -1643,6 +1755,27 @@ func (_u *GeneralSettingsUpdate) RemoveMatrixLayouts(v ...*MatrixLayout) *Genera
 	return _u.RemoveMatrixLayoutIDs(ids...)
 }
 
+// ClearCompositions clears all "compositions" edges to the Composition entity.
+func (_u *GeneralSettingsUpdate) ClearCompositions() *GeneralSettingsUpdate {
+	_u.mutation.ClearCompositions()
+	return _u
+}
+
+// RemoveCompositionIDs removes the "compositions" edge to Composition entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveCompositionIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveCompositionIDs(ids...)
+	return _u
+}
+
+// RemoveCompositions removes "compositions" edges to Composition entities.
+func (_u *GeneralSettingsUpdate) RemoveCompositions(v ...*Composition) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCompositionIDs(ids...)
+}
+
 // ClearCountdowns clears all "countdowns" edges to the Countdown entity.
 func (_u *GeneralSettingsUpdate) ClearCountdowns() *GeneralSettingsUpdate {
 	_u.mutation.ClearCountdowns()
@@ -2082,6 +2215,132 @@ func (_u *GeneralSettingsUpdate) RemoveNowPlayingSources(v ...*NowPlayingSource)
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveNowPlayingSourceIDs(ids...)
+}
+
+// ClearImmichs clears all "immichs" edges to the Immich entity.
+func (_u *GeneralSettingsUpdate) ClearImmichs() *GeneralSettingsUpdate {
+	_u.mutation.ClearImmichs()
+	return _u
+}
+
+// RemoveImmichIDs removes the "immichs" edge to Immich entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveImmichIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveImmichIDs(ids...)
+	return _u
+}
+
+// RemoveImmichs removes "immichs" edges to Immich entities.
+func (_u *GeneralSettingsUpdate) RemoveImmichs(v ...*Immich) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveImmichIDs(ids...)
+}
+
+// ClearQbittorrents clears all "qbittorrents" edges to the Qbittorrent entity.
+func (_u *GeneralSettingsUpdate) ClearQbittorrents() *GeneralSettingsUpdate {
+	_u.mutation.ClearQbittorrents()
+	return _u
+}
+
+// RemoveQbittorrentIDs removes the "qbittorrents" edge to Qbittorrent entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveQbittorrentIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveQbittorrentIDs(ids...)
+	return _u
+}
+
+// RemoveQbittorrents removes "qbittorrents" edges to Qbittorrent entities.
+func (_u *GeneralSettingsUpdate) RemoveQbittorrents(v ...*Qbittorrent) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveQbittorrentIDs(ids...)
+}
+
+// ClearSabnzbd clears all "sabnzbd" edges to the Sabnzbd entity.
+func (_u *GeneralSettingsUpdate) ClearSabnzbd() *GeneralSettingsUpdate {
+	_u.mutation.ClearSabnzbd()
+	return _u
+}
+
+// RemoveSabnzbdIDs removes the "sabnzbd" edge to Sabnzbd entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveSabnzbdIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveSabnzbdIDs(ids...)
+	return _u
+}
+
+// RemoveSabnzbd removes "sabnzbd" edges to Sabnzbd entities.
+func (_u *GeneralSettingsUpdate) RemoveSabnzbd(v ...*Sabnzbd) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSabnzbdIDs(ids...)
+}
+
+// ClearOverseerrs clears all "overseerrs" edges to the Overseerr entity.
+func (_u *GeneralSettingsUpdate) ClearOverseerrs() *GeneralSettingsUpdate {
+	_u.mutation.ClearOverseerrs()
+	return _u
+}
+
+// RemoveOverseerrIDs removes the "overseerrs" edge to Overseerr entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveOverseerrIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveOverseerrIDs(ids...)
+	return _u
+}
+
+// RemoveOverseerrs removes "overseerrs" edges to Overseerr entities.
+func (_u *GeneralSettingsUpdate) RemoveOverseerrs(v ...*Overseerr) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOverseerrIDs(ids...)
+}
+
+// ClearUptimeKumas clears all "uptime_kumas" edges to the UptimeKuma entity.
+func (_u *GeneralSettingsUpdate) ClearUptimeKumas() *GeneralSettingsUpdate {
+	_u.mutation.ClearUptimeKumas()
+	return _u
+}
+
+// RemoveUptimeKumaIDs removes the "uptime_kumas" edge to UptimeKuma entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveUptimeKumaIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveUptimeKumaIDs(ids...)
+	return _u
+}
+
+// RemoveUptimeKumas removes "uptime_kumas" edges to UptimeKuma entities.
+func (_u *GeneralSettingsUpdate) RemoveUptimeKumas(v ...*UptimeKuma) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUptimeKumaIDs(ids...)
+}
+
+// ClearSpeedtests clears all "speedtests" edges to the Speedtest entity.
+func (_u *GeneralSettingsUpdate) ClearSpeedtests() *GeneralSettingsUpdate {
+	_u.mutation.ClearSpeedtests()
+	return _u
+}
+
+// RemoveSpeedtestIDs removes the "speedtests" edge to Speedtest entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveSpeedtestIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveSpeedtestIDs(ids...)
+	return _u
+}
+
+// RemoveSpeedtests removes "speedtests" edges to Speedtest entities.
+func (_u *GeneralSettingsUpdate) RemoveSpeedtests(v ...*Speedtest) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSpeedtestIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -3265,6 +3524,51 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.CompositionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CompositionsTable,
+			Columns: []string{generalsettings.CompositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(composition.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCompositionsIDs(); len(nodes) > 0 && !_u.mutation.CompositionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CompositionsTable,
+			Columns: []string{generalsettings.CompositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(composition.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CompositionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CompositionsTable,
+			Columns: []string{generalsettings.CompositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(composition.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.CountdownsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -4210,6 +4514,276 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ImmichsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ImmichsTable,
+			Columns: []string{generalsettings.ImmichsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(immich.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedImmichsIDs(); len(nodes) > 0 && !_u.mutation.ImmichsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ImmichsTable,
+			Columns: []string{generalsettings.ImmichsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(immich.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ImmichsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ImmichsTable,
+			Columns: []string{generalsettings.ImmichsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(immich.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.QbittorrentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QbittorrentsTable,
+			Columns: []string{generalsettings.QbittorrentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qbittorrent.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedQbittorrentsIDs(); len(nodes) > 0 && !_u.mutation.QbittorrentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QbittorrentsTable,
+			Columns: []string{generalsettings.QbittorrentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qbittorrent.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.QbittorrentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QbittorrentsTable,
+			Columns: []string{generalsettings.QbittorrentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qbittorrent.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SabnzbdCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SabnzbdTable,
+			Columns: []string{generalsettings.SabnzbdColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sabnzbd.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSabnzbdIDs(); len(nodes) > 0 && !_u.mutation.SabnzbdCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SabnzbdTable,
+			Columns: []string{generalsettings.SabnzbdColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sabnzbd.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SabnzbdIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SabnzbdTable,
+			Columns: []string{generalsettings.SabnzbdColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sabnzbd.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OverseerrsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.OverseerrsTable,
+			Columns: []string{generalsettings.OverseerrsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(overseerr.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOverseerrsIDs(); len(nodes) > 0 && !_u.mutation.OverseerrsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.OverseerrsTable,
+			Columns: []string{generalsettings.OverseerrsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(overseerr.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OverseerrsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.OverseerrsTable,
+			Columns: []string{generalsettings.OverseerrsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(overseerr.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UptimeKumasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimeKumasTable,
+			Columns: []string{generalsettings.UptimeKumasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptimekuma.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUptimeKumasIDs(); len(nodes) > 0 && !_u.mutation.UptimeKumasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimeKumasTable,
+			Columns: []string{generalsettings.UptimeKumasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptimekuma.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UptimeKumasIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimeKumasTable,
+			Columns: []string{generalsettings.UptimeKumasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptimekuma.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SpeedtestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SpeedtestsTable,
+			Columns: []string{generalsettings.SpeedtestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(speedtest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSpeedtestsIDs(); len(nodes) > 0 && !_u.mutation.SpeedtestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SpeedtestsTable,
+			Columns: []string{generalsettings.SpeedtestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(speedtest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SpeedtestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SpeedtestsTable,
+			Columns: []string{generalsettings.SpeedtestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(speedtest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -5020,6 +5594,21 @@ func (_u *GeneralSettingsUpdateOne) AddMatrixLayouts(v ...*MatrixLayout) *Genera
 	return _u.AddMatrixLayoutIDs(ids...)
 }
 
+// AddCompositionIDs adds the "compositions" edge to the Composition entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddCompositionIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddCompositionIDs(ids...)
+	return _u
+}
+
+// AddCompositions adds the "compositions" edges to the Composition entity.
+func (_u *GeneralSettingsUpdateOne) AddCompositions(v ...*Composition) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCompositionIDs(ids...)
+}
+
 // AddCountdownIDs adds the "countdowns" edge to the Countdown entity by IDs.
 func (_u *GeneralSettingsUpdateOne) AddCountdownIDs(ids ...int) *GeneralSettingsUpdateOne {
 	_u.mutation.AddCountdownIDs(ids...)
@@ -5333,6 +5922,96 @@ func (_u *GeneralSettingsUpdateOne) AddNowPlayingSources(v ...*NowPlayingSource)
 		ids[i] = v[i].ID
 	}
 	return _u.AddNowPlayingSourceIDs(ids...)
+}
+
+// AddImmichIDs adds the "immichs" edge to the Immich entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddImmichIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddImmichIDs(ids...)
+	return _u
+}
+
+// AddImmichs adds the "immichs" edges to the Immich entity.
+func (_u *GeneralSettingsUpdateOne) AddImmichs(v ...*Immich) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddImmichIDs(ids...)
+}
+
+// AddQbittorrentIDs adds the "qbittorrents" edge to the Qbittorrent entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddQbittorrentIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddQbittorrentIDs(ids...)
+	return _u
+}
+
+// AddQbittorrents adds the "qbittorrents" edges to the Qbittorrent entity.
+func (_u *GeneralSettingsUpdateOne) AddQbittorrents(v ...*Qbittorrent) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddQbittorrentIDs(ids...)
+}
+
+// AddSabnzbdIDs adds the "sabnzbd" edge to the Sabnzbd entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddSabnzbdIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddSabnzbdIDs(ids...)
+	return _u
+}
+
+// AddSabnzbd adds the "sabnzbd" edges to the Sabnzbd entity.
+func (_u *GeneralSettingsUpdateOne) AddSabnzbd(v ...*Sabnzbd) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSabnzbdIDs(ids...)
+}
+
+// AddOverseerrIDs adds the "overseerrs" edge to the Overseerr entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddOverseerrIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddOverseerrIDs(ids...)
+	return _u
+}
+
+// AddOverseerrs adds the "overseerrs" edges to the Overseerr entity.
+func (_u *GeneralSettingsUpdateOne) AddOverseerrs(v ...*Overseerr) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOverseerrIDs(ids...)
+}
+
+// AddUptimeKumaIDs adds the "uptime_kumas" edge to the UptimeKuma entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddUptimeKumaIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddUptimeKumaIDs(ids...)
+	return _u
+}
+
+// AddUptimeKumas adds the "uptime_kumas" edges to the UptimeKuma entity.
+func (_u *GeneralSettingsUpdateOne) AddUptimeKumas(v ...*UptimeKuma) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUptimeKumaIDs(ids...)
+}
+
+// AddSpeedtestIDs adds the "speedtests" edge to the Speedtest entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddSpeedtestIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddSpeedtestIDs(ids...)
+	return _u
+}
+
+// AddSpeedtests adds the "speedtests" edges to the Speedtest entity.
+func (_u *GeneralSettingsUpdateOne) AddSpeedtests(v ...*Speedtest) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSpeedtestIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -5802,6 +6481,27 @@ func (_u *GeneralSettingsUpdateOne) RemoveMatrixLayouts(v ...*MatrixLayout) *Gen
 	return _u.RemoveMatrixLayoutIDs(ids...)
 }
 
+// ClearCompositions clears all "compositions" edges to the Composition entity.
+func (_u *GeneralSettingsUpdateOne) ClearCompositions() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearCompositions()
+	return _u
+}
+
+// RemoveCompositionIDs removes the "compositions" edge to Composition entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveCompositionIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveCompositionIDs(ids...)
+	return _u
+}
+
+// RemoveCompositions removes "compositions" edges to Composition entities.
+func (_u *GeneralSettingsUpdateOne) RemoveCompositions(v ...*Composition) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCompositionIDs(ids...)
+}
+
 // ClearCountdowns clears all "countdowns" edges to the Countdown entity.
 func (_u *GeneralSettingsUpdateOne) ClearCountdowns() *GeneralSettingsUpdateOne {
 	_u.mutation.ClearCountdowns()
@@ -6241,6 +6941,132 @@ func (_u *GeneralSettingsUpdateOne) RemoveNowPlayingSources(v ...*NowPlayingSour
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveNowPlayingSourceIDs(ids...)
+}
+
+// ClearImmichs clears all "immichs" edges to the Immich entity.
+func (_u *GeneralSettingsUpdateOne) ClearImmichs() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearImmichs()
+	return _u
+}
+
+// RemoveImmichIDs removes the "immichs" edge to Immich entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveImmichIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveImmichIDs(ids...)
+	return _u
+}
+
+// RemoveImmichs removes "immichs" edges to Immich entities.
+func (_u *GeneralSettingsUpdateOne) RemoveImmichs(v ...*Immich) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveImmichIDs(ids...)
+}
+
+// ClearQbittorrents clears all "qbittorrents" edges to the Qbittorrent entity.
+func (_u *GeneralSettingsUpdateOne) ClearQbittorrents() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearQbittorrents()
+	return _u
+}
+
+// RemoveQbittorrentIDs removes the "qbittorrents" edge to Qbittorrent entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveQbittorrentIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveQbittorrentIDs(ids...)
+	return _u
+}
+
+// RemoveQbittorrents removes "qbittorrents" edges to Qbittorrent entities.
+func (_u *GeneralSettingsUpdateOne) RemoveQbittorrents(v ...*Qbittorrent) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveQbittorrentIDs(ids...)
+}
+
+// ClearSabnzbd clears all "sabnzbd" edges to the Sabnzbd entity.
+func (_u *GeneralSettingsUpdateOne) ClearSabnzbd() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearSabnzbd()
+	return _u
+}
+
+// RemoveSabnzbdIDs removes the "sabnzbd" edge to Sabnzbd entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveSabnzbdIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveSabnzbdIDs(ids...)
+	return _u
+}
+
+// RemoveSabnzbd removes "sabnzbd" edges to Sabnzbd entities.
+func (_u *GeneralSettingsUpdateOne) RemoveSabnzbd(v ...*Sabnzbd) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSabnzbdIDs(ids...)
+}
+
+// ClearOverseerrs clears all "overseerrs" edges to the Overseerr entity.
+func (_u *GeneralSettingsUpdateOne) ClearOverseerrs() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearOverseerrs()
+	return _u
+}
+
+// RemoveOverseerrIDs removes the "overseerrs" edge to Overseerr entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveOverseerrIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveOverseerrIDs(ids...)
+	return _u
+}
+
+// RemoveOverseerrs removes "overseerrs" edges to Overseerr entities.
+func (_u *GeneralSettingsUpdateOne) RemoveOverseerrs(v ...*Overseerr) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOverseerrIDs(ids...)
+}
+
+// ClearUptimeKumas clears all "uptime_kumas" edges to the UptimeKuma entity.
+func (_u *GeneralSettingsUpdateOne) ClearUptimeKumas() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearUptimeKumas()
+	return _u
+}
+
+// RemoveUptimeKumaIDs removes the "uptime_kumas" edge to UptimeKuma entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveUptimeKumaIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveUptimeKumaIDs(ids...)
+	return _u
+}
+
+// RemoveUptimeKumas removes "uptime_kumas" edges to UptimeKuma entities.
+func (_u *GeneralSettingsUpdateOne) RemoveUptimeKumas(v ...*UptimeKuma) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUptimeKumaIDs(ids...)
+}
+
+// ClearSpeedtests clears all "speedtests" edges to the Speedtest entity.
+func (_u *GeneralSettingsUpdateOne) ClearSpeedtests() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearSpeedtests()
+	return _u
+}
+
+// RemoveSpeedtestIDs removes the "speedtests" edge to Speedtest entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveSpeedtestIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveSpeedtestIDs(ids...)
+	return _u
+}
+
+// RemoveSpeedtests removes "speedtests" edges to Speedtest entities.
+func (_u *GeneralSettingsUpdateOne) RemoveSpeedtests(v ...*Speedtest) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSpeedtestIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -7454,6 +8280,51 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.CompositionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CompositionsTable,
+			Columns: []string{generalsettings.CompositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(composition.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCompositionsIDs(); len(nodes) > 0 && !_u.mutation.CompositionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CompositionsTable,
+			Columns: []string{generalsettings.CompositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(composition.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CompositionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CompositionsTable,
+			Columns: []string{generalsettings.CompositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(composition.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.CountdownsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -8392,6 +9263,276 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nowplayingsource.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ImmichsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ImmichsTable,
+			Columns: []string{generalsettings.ImmichsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(immich.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedImmichsIDs(); len(nodes) > 0 && !_u.mutation.ImmichsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ImmichsTable,
+			Columns: []string{generalsettings.ImmichsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(immich.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ImmichsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ImmichsTable,
+			Columns: []string{generalsettings.ImmichsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(immich.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.QbittorrentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QbittorrentsTable,
+			Columns: []string{generalsettings.QbittorrentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qbittorrent.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedQbittorrentsIDs(); len(nodes) > 0 && !_u.mutation.QbittorrentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QbittorrentsTable,
+			Columns: []string{generalsettings.QbittorrentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qbittorrent.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.QbittorrentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QbittorrentsTable,
+			Columns: []string{generalsettings.QbittorrentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qbittorrent.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SabnzbdCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SabnzbdTable,
+			Columns: []string{generalsettings.SabnzbdColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sabnzbd.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSabnzbdIDs(); len(nodes) > 0 && !_u.mutation.SabnzbdCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SabnzbdTable,
+			Columns: []string{generalsettings.SabnzbdColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sabnzbd.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SabnzbdIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SabnzbdTable,
+			Columns: []string{generalsettings.SabnzbdColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sabnzbd.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OverseerrsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.OverseerrsTable,
+			Columns: []string{generalsettings.OverseerrsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(overseerr.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOverseerrsIDs(); len(nodes) > 0 && !_u.mutation.OverseerrsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.OverseerrsTable,
+			Columns: []string{generalsettings.OverseerrsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(overseerr.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OverseerrsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.OverseerrsTable,
+			Columns: []string{generalsettings.OverseerrsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(overseerr.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UptimeKumasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimeKumasTable,
+			Columns: []string{generalsettings.UptimeKumasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptimekuma.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUptimeKumasIDs(); len(nodes) > 0 && !_u.mutation.UptimeKumasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimeKumasTable,
+			Columns: []string{generalsettings.UptimeKumasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptimekuma.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UptimeKumasIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimeKumasTable,
+			Columns: []string{generalsettings.UptimeKumasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptimekuma.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SpeedtestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SpeedtestsTable,
+			Columns: []string{generalsettings.SpeedtestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(speedtest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSpeedtestsIDs(); len(nodes) > 0 && !_u.mutation.SpeedtestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SpeedtestsTable,
+			Columns: []string{generalsettings.SpeedtestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(speedtest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SpeedtestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SpeedtestsTable,
+			Columns: []string{generalsettings.SpeedtestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(speedtest.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -19,7 +19,7 @@ func (DeliveryLog) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("message_id").Default(""),
 		field.String("kind").Default(""),
-		field.Enum("surface").Values("ws", "trmnl", "mqtt", "webhook"),
+		field.Enum("surface").Values("ws", "trmnl", "mqtt", "webhook", "inbound"),
 		field.String("target").Default(""),
 		field.Enum("status").Values("delivered", "failed", "acked"),
 		field.Time("attempted_at").Default(time.Now),

@@ -9,6 +9,7 @@ import (
 	"ledit/ent/apitoken"
 	"ledit/ent/calendar"
 	"ledit/ent/chartsample"
+	"ledit/ent/composition"
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/datasourceplugin"
@@ -23,8 +24,11 @@ import (
 	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/greetingrule"
+	"ledit/ent/guestphoto"
 	"ledit/ent/guesttoken"
 	"ledit/ent/homeassistant"
+	"ledit/ent/immich"
+	"ledit/ent/inboundadapter"
 	"ledit/ent/incident"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logsettings"
@@ -36,16 +40,20 @@ import (
 	"ledit/ent/nowplayingsource"
 	"ledit/ent/outboundsettings"
 	"ledit/ent/outboundwebhook"
+	"ledit/ent/overseerr"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
+	"ledit/ent/qbittorrent"
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/sabnzbd"
 	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/schema"
 	"ledit/ent/sonarr"
+	"ledit/ent/speedtest"
 	"ledit/ent/sports"
 	"ledit/ent/stock"
 	"ledit/ent/sunmoon"
@@ -56,6 +64,7 @@ import (
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
+	"ledit/ent/uptimekuma"
 	"ledit/ent/user"
 	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
@@ -163,6 +172,56 @@ func init() {
 	chartsampleDescCreatedAt := chartsampleFields[8].Descriptor()
 	// chartsample.DefaultCreatedAt holds the default value on creation for the created_at field.
 	chartsample.DefaultCreatedAt = chartsampleDescCreatedAt.Default.(func() time.Time)
+	compositionFields := schema.Composition{}.Fields()
+	_ = compositionFields
+	// compositionDescEnabled is the schema descriptor for enabled field.
+	compositionDescEnabled := compositionFields[1].Descriptor()
+	// composition.DefaultEnabled holds the default value on creation for the enabled field.
+	composition.DefaultEnabled = compositionDescEnabled.Default.(bool)
+	// compositionDescMode is the schema descriptor for mode field.
+	compositionDescMode := compositionFields[2].Descriptor()
+	// composition.DefaultMode holds the default value on creation for the mode field.
+	composition.DefaultMode = compositionDescMode.Default.(string)
+	// composition.ModeValidator is a validator for the "mode" field. It is called by the builders before save.
+	composition.ModeValidator = compositionDescMode.Validators[0].(func(string) error)
+	// compositionDescRows is the schema descriptor for rows field.
+	compositionDescRows := compositionFields[3].Descriptor()
+	// composition.DefaultRows holds the default value on creation for the rows field.
+	composition.DefaultRows = compositionDescRows.Default.(int)
+	// compositionDescCols is the schema descriptor for cols field.
+	compositionDescCols := compositionFields[4].Descriptor()
+	// composition.DefaultCols holds the default value on creation for the cols field.
+	composition.DefaultCols = compositionDescCols.Default.(int)
+	// compositionDescGap is the schema descriptor for gap field.
+	compositionDescGap := compositionFields[5].Descriptor()
+	// composition.DefaultGap holds the default value on creation for the gap field.
+	composition.DefaultGap = compositionDescGap.Default.(int)
+	// compositionDescPadding is the schema descriptor for padding field.
+	compositionDescPadding := compositionFields[6].Descriptor()
+	// composition.DefaultPadding holds the default value on creation for the padding field.
+	composition.DefaultPadding = compositionDescPadding.Default.(int)
+	// compositionDescBackground is the schema descriptor for background field.
+	compositionDescBackground := compositionFields[7].Descriptor()
+	// composition.DefaultBackground holds the default value on creation for the background field.
+	composition.DefaultBackground = compositionDescBackground.Default.(string)
+	// compositionDescRegions is the schema descriptor for regions field.
+	compositionDescRegions := compositionFields[8].Descriptor()
+	// composition.DefaultRegions holds the default value on creation for the regions field.
+	composition.DefaultRegions = compositionDescRegions.Default.(string)
+	// compositionDescTTLSeconds is the schema descriptor for ttl_seconds field.
+	compositionDescTTLSeconds := compositionFields[9].Descriptor()
+	// composition.DefaultTTLSeconds holds the default value on creation for the ttl_seconds field.
+	composition.DefaultTTLSeconds = compositionDescTTLSeconds.Default.(int)
+	// compositionDescCreatedAt is the schema descriptor for created_at field.
+	compositionDescCreatedAt := compositionFields[10].Descriptor()
+	// composition.DefaultCreatedAt holds the default value on creation for the created_at field.
+	composition.DefaultCreatedAt = compositionDescCreatedAt.Default.(func() time.Time)
+	// compositionDescUpdatedAt is the schema descriptor for updated_at field.
+	compositionDescUpdatedAt := compositionFields[11].Descriptor()
+	// composition.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	composition.DefaultUpdatedAt = compositionDescUpdatedAt.Default.(func() time.Time)
+	// composition.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	composition.UpdateDefaultUpdatedAt = compositionDescUpdatedAt.UpdateDefault.(func() time.Time)
 	countdownFields := schema.Countdown{}.Fields()
 	_ = countdownFields
 	// countdownDescLabel is the schema descriptor for label field.
@@ -401,6 +460,62 @@ func init() {
 	devicesettingsDescOverlayFg := devicesettingsFields[30].Descriptor()
 	// devicesettings.DefaultOverlayFg holds the default value on creation for the overlay_fg field.
 	devicesettings.DefaultOverlayFg = devicesettingsDescOverlayFg.Default.(string)
+	// devicesettingsDescTransport is the schema descriptor for transport field.
+	devicesettingsDescTransport := devicesettingsFields[31].Descriptor()
+	// devicesettings.DefaultTransport holds the default value on creation for the transport field.
+	devicesettings.DefaultTransport = devicesettingsDescTransport.Default.(string)
+	// devicesettings.TransportValidator is a validator for the "transport" field. It is called by the builders before save.
+	devicesettings.TransportValidator = devicesettingsDescTransport.Validators[0].(func(string) error)
+	// devicesettingsDescWledHost is the schema descriptor for wled_host field.
+	devicesettingsDescWledHost := devicesettingsFields[32].Descriptor()
+	// devicesettings.DefaultWledHost holds the default value on creation for the wled_host field.
+	devicesettings.DefaultWledHost = devicesettingsDescWledHost.Default.(string)
+	// devicesettingsDescWledPort is the schema descriptor for wled_port field.
+	devicesettingsDescWledPort := devicesettingsFields[33].Descriptor()
+	// devicesettings.DefaultWledPort holds the default value on creation for the wled_port field.
+	devicesettings.DefaultWledPort = devicesettingsDescWledPort.Default.(int)
+	// devicesettingsDescWledRealtimeMode is the schema descriptor for wled_realtime_mode field.
+	devicesettingsDescWledRealtimeMode := devicesettingsFields[34].Descriptor()
+	// devicesettings.DefaultWledRealtimeMode holds the default value on creation for the wled_realtime_mode field.
+	devicesettings.DefaultWledRealtimeMode = devicesettingsDescWledRealtimeMode.Default.(string)
+	// devicesettings.WledRealtimeModeValidator is a validator for the "wled_realtime_mode" field. It is called by the builders before save.
+	devicesettings.WledRealtimeModeValidator = devicesettingsDescWledRealtimeMode.Validators[0].(func(string) error)
+	// devicesettingsDescWledChannel is the schema descriptor for wled_channel field.
+	devicesettingsDescWledChannel := devicesettingsFields[35].Descriptor()
+	// devicesettings.DefaultWledChannel holds the default value on creation for the wled_channel field.
+	devicesettings.DefaultWledChannel = devicesettingsDescWledChannel.Default.(int)
+	// devicesettingsDescArtnetHost is the schema descriptor for artnet_host field.
+	devicesettingsDescArtnetHost := devicesettingsFields[36].Descriptor()
+	// devicesettings.DefaultArtnetHost holds the default value on creation for the artnet_host field.
+	devicesettings.DefaultArtnetHost = devicesettingsDescArtnetHost.Default.(string)
+	// devicesettingsDescArtnetPort is the schema descriptor for artnet_port field.
+	devicesettingsDescArtnetPort := devicesettingsFields[37].Descriptor()
+	// devicesettings.DefaultArtnetPort holds the default value on creation for the artnet_port field.
+	devicesettings.DefaultArtnetPort = devicesettingsDescArtnetPort.Default.(int)
+	// devicesettingsDescArtnetUniverse is the schema descriptor for artnet_universe field.
+	devicesettingsDescArtnetUniverse := devicesettingsFields[38].Descriptor()
+	// devicesettings.DefaultArtnetUniverse holds the default value on creation for the artnet_universe field.
+	devicesettings.DefaultArtnetUniverse = devicesettingsDescArtnetUniverse.Default.(int)
+	// devicesettingsDescOutputFps is the schema descriptor for output_fps field.
+	devicesettingsDescOutputFps := devicesettingsFields[39].Descriptor()
+	// devicesettings.DefaultOutputFps holds the default value on creation for the output_fps field.
+	devicesettings.DefaultOutputFps = devicesettingsDescOutputFps.Default.(int)
+	// devicesettingsDescOutputColorOrder is the schema descriptor for output_color_order field.
+	devicesettingsDescOutputColorOrder := devicesettingsFields[40].Descriptor()
+	// devicesettings.DefaultOutputColorOrder holds the default value on creation for the output_color_order field.
+	devicesettings.DefaultOutputColorOrder = devicesettingsDescOutputColorOrder.Default.(string)
+	// devicesettings.OutputColorOrderValidator is a validator for the "output_color_order" field. It is called by the builders before save.
+	devicesettings.OutputColorOrderValidator = devicesettingsDescOutputColorOrder.Validators[0].(func(string) error)
+	// devicesettingsDescOutputGamma is the schema descriptor for output_gamma field.
+	devicesettingsDescOutputGamma := devicesettingsFields[41].Descriptor()
+	// devicesettings.DefaultOutputGamma holds the default value on creation for the output_gamma field.
+	devicesettings.DefaultOutputGamma = devicesettingsDescOutputGamma.Default.(float64)
+	// devicesettingsDescOutputMatrixLayout is the schema descriptor for output_matrix_layout field.
+	devicesettingsDescOutputMatrixLayout := devicesettingsFields[42].Descriptor()
+	// devicesettings.DefaultOutputMatrixLayout holds the default value on creation for the output_matrix_layout field.
+	devicesettings.DefaultOutputMatrixLayout = devicesettingsDescOutputMatrixLayout.Default.(string)
+	// devicesettings.OutputMatrixLayoutValidator is a validator for the "output_matrix_layout" field. It is called by the builders before save.
+	devicesettings.OutputMatrixLayoutValidator = devicesettingsDescOutputMatrixLayout.Validators[0].(func(string) error)
 	displayruleFields := schema.DisplayRule{}.Fields()
 	_ = displayruleFields
 	// displayruleDescName is the schema descriptor for name field.
@@ -651,6 +766,30 @@ func init() {
 	greetingrule.DefaultUpdatedAt = greetingruleDescUpdatedAt.Default.(func() time.Time)
 	// greetingrule.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	greetingrule.UpdateDefaultUpdatedAt = greetingruleDescUpdatedAt.UpdateDefault.(func() time.Time)
+	guestphotoFields := schema.GuestPhoto{}.Fields()
+	_ = guestphotoFields
+	// guestphotoDescPath is the schema descriptor for path field.
+	guestphotoDescPath := guestphotoFields[1].Descriptor()
+	// guestphoto.DefaultPath holds the default value on creation for the path field.
+	guestphoto.DefaultPath = guestphotoDescPath.Default.(string)
+	// guestphotoDescGuestTokenID is the schema descriptor for guest_token_id field.
+	guestphotoDescGuestTokenID := guestphotoFields[2].Descriptor()
+	// guestphoto.DefaultGuestTokenID holds the default value on creation for the guest_token_id field.
+	guestphoto.DefaultGuestTokenID = guestphotoDescGuestTokenID.Default.(int)
+	// guestphotoDescBytes is the schema descriptor for bytes field.
+	guestphotoDescBytes := guestphotoFields[4].Descriptor()
+	// guestphoto.DefaultBytes holds the default value on creation for the bytes field.
+	guestphoto.DefaultBytes = guestphotoDescBytes.Default.(int)
+	// guestphotoDescCreatedAt is the schema descriptor for created_at field.
+	guestphotoDescCreatedAt := guestphotoFields[5].Descriptor()
+	// guestphoto.DefaultCreatedAt holds the default value on creation for the created_at field.
+	guestphoto.DefaultCreatedAt = guestphotoDescCreatedAt.Default.(func() time.Time)
+	// guestphotoDescUpdatedAt is the schema descriptor for updated_at field.
+	guestphotoDescUpdatedAt := guestphotoFields[6].Descriptor()
+	// guestphoto.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	guestphoto.DefaultUpdatedAt = guestphotoDescUpdatedAt.Default.(func() time.Time)
+	// guestphoto.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	guestphoto.UpdateDefaultUpdatedAt = guestphotoDescUpdatedAt.UpdateDefault.(func() time.Time)
 	guesttokenFields := schema.GuestToken{}.Fields()
 	_ = guesttokenFields
 	// guesttokenDescLabel is the schema descriptor for label field.
@@ -681,6 +820,48 @@ func init() {
 	homeassistantDescURL := homeassistantFields[1].Descriptor()
 	// homeassistant.DefaultURL holds the default value on creation for the url field.
 	homeassistant.DefaultURL = homeassistantDescURL.Default.(string)
+	immichFields := schema.Immich{}.Fields()
+	_ = immichFields
+	// immichDescToken is the schema descriptor for token field.
+	immichDescToken := immichFields[0].Descriptor()
+	// immich.DefaultToken holds the default value on creation for the token field.
+	immich.DefaultToken = immichDescToken.Default.(string)
+	// immichDescURL is the schema descriptor for url field.
+	immichDescURL := immichFields[1].Descriptor()
+	// immich.DefaultURL holds the default value on creation for the url field.
+	immich.DefaultURL = immichDescURL.Default.(string)
+	// immichDescConfig is the schema descriptor for config field.
+	immichDescConfig := immichFields[2].Descriptor()
+	// immich.DefaultConfig holds the default value on creation for the config field.
+	immich.DefaultConfig = immichDescConfig.Default.(string)
+	inboundadapterFields := schema.InboundAdapter{}.Fields()
+	_ = inboundadapterFields
+	// inboundadapterDescEnabled is the schema descriptor for enabled field.
+	inboundadapterDescEnabled := inboundadapterFields[2].Descriptor()
+	// inboundadapter.DefaultEnabled holds the default value on creation for the enabled field.
+	inboundadapter.DefaultEnabled = inboundadapterDescEnabled.Default.(bool)
+	// inboundadapterDescSecret is the schema descriptor for secret field.
+	inboundadapterDescSecret := inboundadapterFields[3].Descriptor()
+	// inboundadapter.DefaultSecret holds the default value on creation for the secret field.
+	inboundadapter.DefaultSecret = inboundadapterDescSecret.Default.(string)
+	// inboundadapterDescAllowlist is the schema descriptor for allowlist field.
+	inboundadapterDescAllowlist := inboundadapterFields[4].Descriptor()
+	// inboundadapter.DefaultAllowlist holds the default value on creation for the allowlist field.
+	inboundadapter.DefaultAllowlist = inboundadapterDescAllowlist.Default.(string)
+	// inboundadapterDescConfig is the schema descriptor for config field.
+	inboundadapterDescConfig := inboundadapterFields[5].Descriptor()
+	// inboundadapter.DefaultConfig holds the default value on creation for the config field.
+	inboundadapter.DefaultConfig = inboundadapterDescConfig.Default.(string)
+	// inboundadapterDescCreatedAt is the schema descriptor for created_at field.
+	inboundadapterDescCreatedAt := inboundadapterFields[6].Descriptor()
+	// inboundadapter.DefaultCreatedAt holds the default value on creation for the created_at field.
+	inboundadapter.DefaultCreatedAt = inboundadapterDescCreatedAt.Default.(func() time.Time)
+	// inboundadapterDescUpdatedAt is the schema descriptor for updated_at field.
+	inboundadapterDescUpdatedAt := inboundadapterFields[7].Descriptor()
+	// inboundadapter.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	inboundadapter.DefaultUpdatedAt = inboundadapterDescUpdatedAt.Default.(func() time.Time)
+	// inboundadapter.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	inboundadapter.UpdateDefaultUpdatedAt = inboundadapterDescUpdatedAt.UpdateDefault.(func() time.Time)
 	incidentFields := schema.Incident{}.Fields()
 	_ = incidentFields
 	// incidentDescTitle is the schema descriptor for title field.
@@ -911,6 +1092,16 @@ func init() {
 	outboundwebhookDescCreatedAt := outboundwebhookFields[3].Descriptor()
 	// outboundwebhook.DefaultCreatedAt holds the default value on creation for the created_at field.
 	outboundwebhook.DefaultCreatedAt = outboundwebhookDescCreatedAt.Default.(func() time.Time)
+	overseerrFields := schema.Overseerr{}.Fields()
+	_ = overseerrFields
+	// overseerrDescToken is the schema descriptor for token field.
+	overseerrDescToken := overseerrFields[0].Descriptor()
+	// overseerr.DefaultToken holds the default value on creation for the token field.
+	overseerr.DefaultToken = overseerrDescToken.Default.(string)
+	// overseerrDescURL is the schema descriptor for url field.
+	overseerrDescURL := overseerrFields[1].Descriptor()
+	// overseerr.DefaultURL holds the default value on creation for the url field.
+	overseerr.DefaultURL = overseerrDescURL.Default.(string)
 	piholeFields := schema.PiHole{}.Fields()
 	_ = piholeFields
 	// piholeDescToken is the schema descriptor for token field.
@@ -973,6 +1164,16 @@ func init() {
 	playlistDescScheduleWindows := playlistFields[3].Descriptor()
 	// playlist.DefaultScheduleWindows holds the default value on creation for the schedule_windows field.
 	playlist.DefaultScheduleWindows = playlistDescScheduleWindows.Default.(string)
+	qbittorrentFields := schema.Qbittorrent{}.Fields()
+	_ = qbittorrentFields
+	// qbittorrentDescToken is the schema descriptor for token field.
+	qbittorrentDescToken := qbittorrentFields[0].Descriptor()
+	// qbittorrent.DefaultToken holds the default value on creation for the token field.
+	qbittorrent.DefaultToken = qbittorrentDescToken.Default.(string)
+	// qbittorrentDescURL is the schema descriptor for url field.
+	qbittorrentDescURL := qbittorrentFields[1].Descriptor()
+	// qbittorrent.DefaultURL holds the default value on creation for the url field.
+	qbittorrent.DefaultURL = qbittorrentDescURL.Default.(string)
 	qrcodeFields := schema.Qrcode{}.Fields()
 	_ = qrcodeFields
 	// qrcodeDescContent is the schema descriptor for content field.
@@ -1045,6 +1246,16 @@ func init() {
 	rssfeedDescName := rssfeedFields[1].Descriptor()
 	// rssfeed.DefaultName holds the default value on creation for the name field.
 	rssfeed.DefaultName = rssfeedDescName.Default.(string)
+	sabnzbdFields := schema.Sabnzbd{}.Fields()
+	_ = sabnzbdFields
+	// sabnzbdDescToken is the schema descriptor for token field.
+	sabnzbdDescToken := sabnzbdFields[0].Descriptor()
+	// sabnzbd.DefaultToken holds the default value on creation for the token field.
+	sabnzbd.DefaultToken = sabnzbdDescToken.Default.(string)
+	// sabnzbdDescURL is the schema descriptor for url field.
+	sabnzbdDescURL := sabnzbdFields[1].Descriptor()
+	// sabnzbd.DefaultURL holds the default value on creation for the url field.
+	sabnzbd.DefaultURL = sabnzbdDescURL.Default.(string)
 	sceneFields := schema.Scene{}.Fields()
 	_ = sceneFields
 	// sceneDescName is the schema descriptor for name field.
@@ -1119,6 +1330,16 @@ func init() {
 	sonarrDescURL := sonarrFields[1].Descriptor()
 	// sonarr.DefaultURL holds the default value on creation for the url field.
 	sonarr.DefaultURL = sonarrDescURL.Default.(string)
+	speedtestFields := schema.Speedtest{}.Fields()
+	_ = speedtestFields
+	// speedtestDescToken is the schema descriptor for token field.
+	speedtestDescToken := speedtestFields[0].Descriptor()
+	// speedtest.DefaultToken holds the default value on creation for the token field.
+	speedtest.DefaultToken = speedtestDescToken.Default.(string)
+	// speedtestDescURL is the schema descriptor for url field.
+	speedtestDescURL := speedtestFields[1].Descriptor()
+	// speedtest.DefaultURL holds the default value on creation for the url field.
+	speedtest.DefaultURL = speedtestDescURL.Default.(string)
 	sportsFields := schema.Sports{}.Fields()
 	_ = sportsFields
 	// sportsDescToken is the schema descriptor for token field.
@@ -1291,6 +1512,16 @@ func init() {
 	uptimeDescConfig := uptimeFields[1].Descriptor()
 	// uptime.DefaultConfig holds the default value on creation for the config field.
 	uptime.DefaultConfig = uptimeDescConfig.Default.(string)
+	uptimekumaFields := schema.UptimeKuma{}.Fields()
+	_ = uptimekumaFields
+	// uptimekumaDescToken is the schema descriptor for token field.
+	uptimekumaDescToken := uptimekumaFields[0].Descriptor()
+	// uptimekuma.DefaultToken holds the default value on creation for the token field.
+	uptimekuma.DefaultToken = uptimekumaDescToken.Default.(string)
+	// uptimekumaDescURL is the schema descriptor for url field.
+	uptimekumaDescURL := uptimekumaFields[1].Descriptor()
+	// uptimekuma.DefaultURL holds the default value on creation for the url field.
+	uptimekuma.DefaultURL = uptimekumaDescURL.Default.(string)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescUsername is the schema descriptor for username field.

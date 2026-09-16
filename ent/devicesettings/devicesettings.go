@@ -74,6 +74,30 @@ const (
 	FieldOverlayBg = "overlay_bg"
 	// FieldOverlayFg holds the string denoting the overlay_fg field in the database.
 	FieldOverlayFg = "overlay_fg"
+	// FieldTransport holds the string denoting the transport field in the database.
+	FieldTransport = "transport"
+	// FieldWledHost holds the string denoting the wled_host field in the database.
+	FieldWledHost = "wled_host"
+	// FieldWledPort holds the string denoting the wled_port field in the database.
+	FieldWledPort = "wled_port"
+	// FieldWledRealtimeMode holds the string denoting the wled_realtime_mode field in the database.
+	FieldWledRealtimeMode = "wled_realtime_mode"
+	// FieldWledChannel holds the string denoting the wled_channel field in the database.
+	FieldWledChannel = "wled_channel"
+	// FieldArtnetHost holds the string denoting the artnet_host field in the database.
+	FieldArtnetHost = "artnet_host"
+	// FieldArtnetPort holds the string denoting the artnet_port field in the database.
+	FieldArtnetPort = "artnet_port"
+	// FieldArtnetUniverse holds the string denoting the artnet_universe field in the database.
+	FieldArtnetUniverse = "artnet_universe"
+	// FieldOutputFps holds the string denoting the output_fps field in the database.
+	FieldOutputFps = "output_fps"
+	// FieldOutputColorOrder holds the string denoting the output_color_order field in the database.
+	FieldOutputColorOrder = "output_color_order"
+	// FieldOutputGamma holds the string denoting the output_gamma field in the database.
+	FieldOutputGamma = "output_gamma"
+	// FieldOutputMatrixLayout holds the string denoting the output_matrix_layout field in the database.
+	FieldOutputMatrixLayout = "output_matrix_layout"
 	// EdgeGroup holds the string denoting the group edge name in mutations.
 	EdgeGroup = "group"
 	// Table holds the table name of the devicesettings in the database.
@@ -121,6 +145,18 @@ var Columns = []string{
 	FieldOverlaySpeedPx,
 	FieldOverlayBg,
 	FieldOverlayFg,
+	FieldTransport,
+	FieldWledHost,
+	FieldWledPort,
+	FieldWledRealtimeMode,
+	FieldWledChannel,
+	FieldArtnetHost,
+	FieldArtnetPort,
+	FieldArtnetUniverse,
+	FieldOutputFps,
+	FieldOutputColorOrder,
+	FieldOutputGamma,
+	FieldOutputMatrixLayout,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "device_settings"
@@ -199,6 +235,38 @@ var (
 	DefaultOverlayBg string
 	// DefaultOverlayFg holds the default value on creation for the "overlay_fg" field.
 	DefaultOverlayFg string
+	// DefaultTransport holds the default value on creation for the "transport" field.
+	DefaultTransport string
+	// TransportValidator is a validator for the "transport" field. It is called by the builders before save.
+	TransportValidator func(string) error
+	// DefaultWledHost holds the default value on creation for the "wled_host" field.
+	DefaultWledHost string
+	// DefaultWledPort holds the default value on creation for the "wled_port" field.
+	DefaultWledPort int
+	// DefaultWledRealtimeMode holds the default value on creation for the "wled_realtime_mode" field.
+	DefaultWledRealtimeMode string
+	// WledRealtimeModeValidator is a validator for the "wled_realtime_mode" field. It is called by the builders before save.
+	WledRealtimeModeValidator func(string) error
+	// DefaultWledChannel holds the default value on creation for the "wled_channel" field.
+	DefaultWledChannel int
+	// DefaultArtnetHost holds the default value on creation for the "artnet_host" field.
+	DefaultArtnetHost string
+	// DefaultArtnetPort holds the default value on creation for the "artnet_port" field.
+	DefaultArtnetPort int
+	// DefaultArtnetUniverse holds the default value on creation for the "artnet_universe" field.
+	DefaultArtnetUniverse int
+	// DefaultOutputFps holds the default value on creation for the "output_fps" field.
+	DefaultOutputFps int
+	// DefaultOutputColorOrder holds the default value on creation for the "output_color_order" field.
+	DefaultOutputColorOrder string
+	// OutputColorOrderValidator is a validator for the "output_color_order" field. It is called by the builders before save.
+	OutputColorOrderValidator func(string) error
+	// DefaultOutputGamma holds the default value on creation for the "output_gamma" field.
+	DefaultOutputGamma float64
+	// DefaultOutputMatrixLayout holds the default value on creation for the "output_matrix_layout" field.
+	DefaultOutputMatrixLayout string
+	// OutputMatrixLayoutValidator is a validator for the "output_matrix_layout" field. It is called by the builders before save.
+	OutputMatrixLayoutValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the DeviceSettings queries.
@@ -362,6 +430,66 @@ func ByOverlayBg(opts ...sql.OrderTermOption) OrderOption {
 // ByOverlayFg orders the results by the overlay_fg field.
 func ByOverlayFg(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOverlayFg, opts...).ToFunc()
+}
+
+// ByTransport orders the results by the transport field.
+func ByTransport(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTransport, opts...).ToFunc()
+}
+
+// ByWledHost orders the results by the wled_host field.
+func ByWledHost(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWledHost, opts...).ToFunc()
+}
+
+// ByWledPort orders the results by the wled_port field.
+func ByWledPort(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWledPort, opts...).ToFunc()
+}
+
+// ByWledRealtimeMode orders the results by the wled_realtime_mode field.
+func ByWledRealtimeMode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWledRealtimeMode, opts...).ToFunc()
+}
+
+// ByWledChannel orders the results by the wled_channel field.
+func ByWledChannel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWledChannel, opts...).ToFunc()
+}
+
+// ByArtnetHost orders the results by the artnet_host field.
+func ByArtnetHost(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldArtnetHost, opts...).ToFunc()
+}
+
+// ByArtnetPort orders the results by the artnet_port field.
+func ByArtnetPort(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldArtnetPort, opts...).ToFunc()
+}
+
+// ByArtnetUniverse orders the results by the artnet_universe field.
+func ByArtnetUniverse(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldArtnetUniverse, opts...).ToFunc()
+}
+
+// ByOutputFps orders the results by the output_fps field.
+func ByOutputFps(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOutputFps, opts...).ToFunc()
+}
+
+// ByOutputColorOrder orders the results by the output_color_order field.
+func ByOutputColorOrder(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOutputColorOrder, opts...).ToFunc()
+}
+
+// ByOutputGamma orders the results by the output_gamma field.
+func ByOutputGamma(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOutputGamma, opts...).ToFunc()
+}
+
+// ByOutputMatrixLayout orders the results by the output_matrix_layout field.
+func ByOutputMatrixLayout(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOutputMatrixLayout, opts...).ToFunc()
 }
 
 // ByGroupField orders the results by group field.

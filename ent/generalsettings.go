@@ -115,6 +115,8 @@ type GeneralSettingsEdges struct {
 	GenericApis []*GenericAPI `json:"generic_apis,omitempty"`
 	// MatrixLayouts holds the value of the matrix_layouts edge.
 	MatrixLayouts []*MatrixLayout `json:"matrix_layouts,omitempty"`
+	// Compositions holds the value of the compositions edge.
+	Compositions []*Composition `json:"compositions,omitempty"`
 	// Countdowns holds the value of the countdowns edge.
 	Countdowns []*Countdown `json:"countdowns,omitempty"`
 	// AiDigests holds the value of the ai_digests edge.
@@ -157,9 +159,21 @@ type GeneralSettingsEdges struct {
 	Qrcodes []*Qrcode `json:"qrcodes,omitempty"`
 	// NowPlayingSources holds the value of the now_playing_sources edge.
 	NowPlayingSources []*NowPlayingSource `json:"now_playing_sources,omitempty"`
+	// Immichs holds the value of the immichs edge.
+	Immichs []*Immich `json:"immichs,omitempty"`
+	// Qbittorrents holds the value of the qbittorrents edge.
+	Qbittorrents []*Qbittorrent `json:"qbittorrents,omitempty"`
+	// Sabnzbd holds the value of the sabnzbd edge.
+	Sabnzbd []*Sabnzbd `json:"sabnzbd,omitempty"`
+	// Overseerrs holds the value of the overseerrs edge.
+	Overseerrs []*Overseerr `json:"overseerrs,omitempty"`
+	// UptimeKumas holds the value of the uptime_kumas edge.
+	UptimeKumas []*UptimeKuma `json:"uptime_kumas,omitempty"`
+	// Speedtests holds the value of the speedtests edge.
+	Speedtests []*Speedtest `json:"speedtests,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [43]bool
+	loadedTypes [50]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -360,10 +374,19 @@ func (e GeneralSettingsEdges) MatrixLayoutsOrErr() ([]*MatrixLayout, error) {
 	return nil, &NotLoadedError{edge: "matrix_layouts"}
 }
 
+// CompositionsOrErr returns the Compositions value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) CompositionsOrErr() ([]*Composition, error) {
+	if e.loadedTypes[22] {
+		return e.Compositions, nil
+	}
+	return nil, &NotLoadedError{edge: "compositions"}
+}
+
 // CountdownsOrErr returns the Countdowns value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) CountdownsOrErr() ([]*Countdown, error) {
-	if e.loadedTypes[22] {
+	if e.loadedTypes[23] {
 		return e.Countdowns, nil
 	}
 	return nil, &NotLoadedError{edge: "countdowns"}
@@ -372,7 +395,7 @@ func (e GeneralSettingsEdges) CountdownsOrErr() ([]*Countdown, error) {
 // AiDigestsOrErr returns the AiDigests value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) AiDigestsOrErr() ([]*AIDigest, error) {
-	if e.loadedTypes[23] {
+	if e.loadedTypes[24] {
 		return e.AiDigests, nil
 	}
 	return nil, &NotLoadedError{edge: "ai_digests"}
@@ -381,7 +404,7 @@ func (e GeneralSettingsEdges) AiDigestsOrErr() ([]*AIDigest, error) {
 // AlertSettingsOrErr returns the AlertSettings value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) AlertSettingsOrErr() ([]*AlertSettings, error) {
-	if e.loadedTypes[24] {
+	if e.loadedTypes[25] {
 		return e.AlertSettings, nil
 	}
 	return nil, &NotLoadedError{edge: "alert_settings"}
@@ -390,7 +413,7 @@ func (e GeneralSettingsEdges) AlertSettingsOrErr() ([]*AlertSettings, error) {
 // PixelArtsOrErr returns the PixelArts value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) PixelArtsOrErr() ([]*PixelArt, error) {
-	if e.loadedTypes[25] {
+	if e.loadedTypes[26] {
 		return e.PixelArts, nil
 	}
 	return nil, &NotLoadedError{edge: "pixel_arts"}
@@ -399,7 +422,7 @@ func (e GeneralSettingsEdges) PixelArtsOrErr() ([]*PixelArt, error) {
 // PlaylistsOrErr returns the Playlists value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) PlaylistsOrErr() ([]*Playlist, error) {
-	if e.loadedTypes[26] {
+	if e.loadedTypes[27] {
 		return e.Playlists, nil
 	}
 	return nil, &NotLoadedError{edge: "playlists"}
@@ -408,7 +431,7 @@ func (e GeneralSettingsEdges) PlaylistsOrErr() ([]*Playlist, error) {
 // DisplayrulesOrErr returns the Displayrules value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) DisplayrulesOrErr() ([]*DisplayRule, error) {
-	if e.loadedTypes[27] {
+	if e.loadedTypes[28] {
 		return e.Displayrules, nil
 	}
 	return nil, &NotLoadedError{edge: "displayrules"}
@@ -417,7 +440,7 @@ func (e GeneralSettingsEdges) DisplayrulesOrErr() ([]*DisplayRule, error) {
 // WakealarmsOrErr returns the Wakealarms value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) WakealarmsOrErr() ([]*WakeAlarm, error) {
-	if e.loadedTypes[28] {
+	if e.loadedTypes[29] {
 		return e.Wakealarms, nil
 	}
 	return nil, &NotLoadedError{edge: "wakealarms"}
@@ -426,7 +449,7 @@ func (e GeneralSettingsEdges) WakealarmsOrErr() ([]*WakeAlarm, error) {
 // ScenesOrErr returns the Scenes value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) ScenesOrErr() ([]*Scene, error) {
-	if e.loadedTypes[29] {
+	if e.loadedTypes[30] {
 		return e.Scenes, nil
 	}
 	return nil, &NotLoadedError{edge: "scenes"}
@@ -435,7 +458,7 @@ func (e GeneralSettingsEdges) ScenesOrErr() ([]*Scene, error) {
 // WebhooksettingsOrErr returns the Webhooksettings value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) WebhooksettingsOrErr() ([]*WebhookSettings, error) {
-	if e.loadedTypes[30] {
+	if e.loadedTypes[31] {
 		return e.Webhooksettings, nil
 	}
 	return nil, &NotLoadedError{edge: "webhooksettings"}
@@ -444,7 +467,7 @@ func (e GeneralSettingsEdges) WebhooksettingsOrErr() ([]*WebhookSettings, error)
 // MqttsettingsOrErr returns the Mqttsettings value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) MqttsettingsOrErr() ([]*MQTTSettings, error) {
-	if e.loadedTypes[31] {
+	if e.loadedTypes[32] {
 		return e.Mqttsettings, nil
 	}
 	return nil, &NotLoadedError{edge: "mqttsettings"}
@@ -453,7 +476,7 @@ func (e GeneralSettingsEdges) MqttsettingsOrErr() ([]*MQTTSettings, error) {
 // TelegramsettingsOrErr returns the Telegramsettings value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) TelegramsettingsOrErr() ([]*TelegramSettings, error) {
-	if e.loadedTypes[32] {
+	if e.loadedTypes[33] {
 		return e.Telegramsettings, nil
 	}
 	return nil, &NotLoadedError{edge: "telegramsettings"}
@@ -462,7 +485,7 @@ func (e GeneralSettingsEdges) TelegramsettingsOrErr() ([]*TelegramSettings, erro
 // TransitsOrErr returns the Transits value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) TransitsOrErr() ([]*Transit, error) {
-	if e.loadedTypes[33] {
+	if e.loadedTypes[34] {
 		return e.Transits, nil
 	}
 	return nil, &NotLoadedError{edge: "transits"}
@@ -471,7 +494,7 @@ func (e GeneralSettingsEdges) TransitsOrErr() ([]*Transit, error) {
 // UptimesOrErr returns the Uptimes value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) UptimesOrErr() ([]*Uptime, error) {
-	if e.loadedTypes[34] {
+	if e.loadedTypes[35] {
 		return e.Uptimes, nil
 	}
 	return nil, &NotLoadedError{edge: "uptimes"}
@@ -480,7 +503,7 @@ func (e GeneralSettingsEdges) UptimesOrErr() ([]*Uptime, error) {
 // PiholesOrErr returns the Piholes value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) PiholesOrErr() ([]*PiHole, error) {
-	if e.loadedTypes[35] {
+	if e.loadedTypes[36] {
 		return e.Piholes, nil
 	}
 	return nil, &NotLoadedError{edge: "piholes"}
@@ -489,7 +512,7 @@ func (e GeneralSettingsEdges) PiholesOrErr() ([]*PiHole, error) {
 // GithubsOrErr returns the Githubs value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) GithubsOrErr() ([]*GitHub, error) {
-	if e.loadedTypes[36] {
+	if e.loadedTypes[37] {
 		return e.Githubs, nil
 	}
 	return nil, &NotLoadedError{edge: "githubs"}
@@ -498,7 +521,7 @@ func (e GeneralSettingsEdges) GithubsOrErr() ([]*GitHub, error) {
 // SportsOrErr returns the Sports value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) SportsOrErr() ([]*Sports, error) {
-	if e.loadedTypes[37] {
+	if e.loadedTypes[38] {
 		return e.Sports, nil
 	}
 	return nil, &NotLoadedError{edge: "sports"}
@@ -507,7 +530,7 @@ func (e GeneralSettingsEdges) SportsOrErr() ([]*Sports, error) {
 // SunmoonsOrErr returns the Sunmoons value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) SunmoonsOrErr() ([]*SunMoon, error) {
-	if e.loadedTypes[38] {
+	if e.loadedTypes[39] {
 		return e.Sunmoons, nil
 	}
 	return nil, &NotLoadedError{edge: "sunmoons"}
@@ -516,7 +539,7 @@ func (e GeneralSettingsEdges) SunmoonsOrErr() ([]*SunMoon, error) {
 // JellyfinsOrErr returns the Jellyfins value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) JellyfinsOrErr() ([]*Jellyfin, error) {
-	if e.loadedTypes[39] {
+	if e.loadedTypes[40] {
 		return e.Jellyfins, nil
 	}
 	return nil, &NotLoadedError{edge: "jellyfins"}
@@ -525,7 +548,7 @@ func (e GeneralSettingsEdges) JellyfinsOrErr() ([]*Jellyfin, error) {
 // MpdsOrErr returns the Mpds value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) MpdsOrErr() ([]*MPD, error) {
-	if e.loadedTypes[40] {
+	if e.loadedTypes[41] {
 		return e.Mpds, nil
 	}
 	return nil, &NotLoadedError{edge: "mpds"}
@@ -534,7 +557,7 @@ func (e GeneralSettingsEdges) MpdsOrErr() ([]*MPD, error) {
 // QrcodesOrErr returns the Qrcodes value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) QrcodesOrErr() ([]*Qrcode, error) {
-	if e.loadedTypes[41] {
+	if e.loadedTypes[42] {
 		return e.Qrcodes, nil
 	}
 	return nil, &NotLoadedError{edge: "qrcodes"}
@@ -543,10 +566,64 @@ func (e GeneralSettingsEdges) QrcodesOrErr() ([]*Qrcode, error) {
 // NowPlayingSourcesOrErr returns the NowPlayingSources value or an error if the edge
 // was not loaded in eager-loading.
 func (e GeneralSettingsEdges) NowPlayingSourcesOrErr() ([]*NowPlayingSource, error) {
-	if e.loadedTypes[42] {
+	if e.loadedTypes[43] {
 		return e.NowPlayingSources, nil
 	}
 	return nil, &NotLoadedError{edge: "now_playing_sources"}
+}
+
+// ImmichsOrErr returns the Immichs value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) ImmichsOrErr() ([]*Immich, error) {
+	if e.loadedTypes[44] {
+		return e.Immichs, nil
+	}
+	return nil, &NotLoadedError{edge: "immichs"}
+}
+
+// QbittorrentsOrErr returns the Qbittorrents value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) QbittorrentsOrErr() ([]*Qbittorrent, error) {
+	if e.loadedTypes[45] {
+		return e.Qbittorrents, nil
+	}
+	return nil, &NotLoadedError{edge: "qbittorrents"}
+}
+
+// SabnzbdOrErr returns the Sabnzbd value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) SabnzbdOrErr() ([]*Sabnzbd, error) {
+	if e.loadedTypes[46] {
+		return e.Sabnzbd, nil
+	}
+	return nil, &NotLoadedError{edge: "sabnzbd"}
+}
+
+// OverseerrsOrErr returns the Overseerrs value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) OverseerrsOrErr() ([]*Overseerr, error) {
+	if e.loadedTypes[47] {
+		return e.Overseerrs, nil
+	}
+	return nil, &NotLoadedError{edge: "overseerrs"}
+}
+
+// UptimeKumasOrErr returns the UptimeKumas value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) UptimeKumasOrErr() ([]*UptimeKuma, error) {
+	if e.loadedTypes[48] {
+		return e.UptimeKumas, nil
+	}
+	return nil, &NotLoadedError{edge: "uptime_kumas"}
+}
+
+// SpeedtestsOrErr returns the Speedtests value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) SpeedtestsOrErr() ([]*Speedtest, error) {
+	if e.loadedTypes[49] {
+		return e.Speedtests, nil
+	}
+	return nil, &NotLoadedError{edge: "speedtests"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -849,6 +926,11 @@ func (_m *GeneralSettings) QueryMatrixLayouts() *MatrixLayoutQuery {
 	return NewGeneralSettingsClient(_m.config).QueryMatrixLayouts(_m)
 }
 
+// QueryCompositions queries the "compositions" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryCompositions() *CompositionQuery {
+	return NewGeneralSettingsClient(_m.config).QueryCompositions(_m)
+}
+
 // QueryCountdowns queries the "countdowns" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryCountdowns() *CountdownQuery {
 	return NewGeneralSettingsClient(_m.config).QueryCountdowns(_m)
@@ -952,6 +1034,36 @@ func (_m *GeneralSettings) QueryQrcodes() *QrcodeQuery {
 // QueryNowPlayingSources queries the "now_playing_sources" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QueryNowPlayingSources() *NowPlayingSourceQuery {
 	return NewGeneralSettingsClient(_m.config).QueryNowPlayingSources(_m)
+}
+
+// QueryImmichs queries the "immichs" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryImmichs() *ImmichQuery {
+	return NewGeneralSettingsClient(_m.config).QueryImmichs(_m)
+}
+
+// QueryQbittorrents queries the "qbittorrents" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryQbittorrents() *QbittorrentQuery {
+	return NewGeneralSettingsClient(_m.config).QueryQbittorrents(_m)
+}
+
+// QuerySabnzbd queries the "sabnzbd" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QuerySabnzbd() *SabnzbdQuery {
+	return NewGeneralSettingsClient(_m.config).QuerySabnzbd(_m)
+}
+
+// QueryOverseerrs queries the "overseerrs" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryOverseerrs() *OverseerrQuery {
+	return NewGeneralSettingsClient(_m.config).QueryOverseerrs(_m)
+}
+
+// QueryUptimeKumas queries the "uptime_kumas" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryUptimeKumas() *UptimeKumaQuery {
+	return NewGeneralSettingsClient(_m.config).QueryUptimeKumas(_m)
+}
+
+// QuerySpeedtests queries the "speedtests" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QuerySpeedtests() *SpeedtestQuery {
+	return NewGeneralSettingsClient(_m.config).QuerySpeedtests(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

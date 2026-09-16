@@ -26,6 +26,8 @@ type Tx struct {
 	Calendar *CalendarClient
 	// ChartSample is the client for interacting with the ChartSample builders.
 	ChartSample *ChartSampleClient
+	// Composition is the client for interacting with the Composition builders.
+	Composition *CompositionClient
 	// Countdown is the client for interacting with the Countdown builders.
 	Countdown *CountdownClient
 	// Crypto is the client for interacting with the Crypto builders.
@@ -54,12 +56,18 @@ type Tx struct {
 	GoogleCalendar *GoogleCalendarClient
 	// GreetingRule is the client for interacting with the GreetingRule builders.
 	GreetingRule *GreetingRuleClient
+	// GuestPhoto is the client for interacting with the GuestPhoto builders.
+	GuestPhoto *GuestPhotoClient
 	// GuestToken is the client for interacting with the GuestToken builders.
 	GuestToken *GuestTokenClient
 	// HomeAssistant is the client for interacting with the HomeAssistant builders.
 	HomeAssistant *HomeAssistantClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// Immich is the client for interacting with the Immich builders.
+	Immich *ImmichClient
+	// InboundAdapter is the client for interacting with the InboundAdapter builders.
+	InboundAdapter *InboundAdapterClient
 	// Incident is the client for interacting with the Incident builders.
 	Incident *IncidentClient
 	// Jellyfin is the client for interacting with the Jellyfin builders.
@@ -84,24 +92,32 @@ type Tx struct {
 	OutboundSettings *OutboundSettingsClient
 	// OutboundWebhook is the client for interacting with the OutboundWebhook builders.
 	OutboundWebhook *OutboundWebhookClient
+	// Overseerr is the client for interacting with the Overseerr builders.
+	Overseerr *OverseerrClient
 	// PiHole is the client for interacting with the PiHole builders.
 	PiHole *PiHoleClient
 	// PixelArt is the client for interacting with the PixelArt builders.
 	PixelArt *PixelArtClient
 	// Playlist is the client for interacting with the Playlist builders.
 	Playlist *PlaylistClient
+	// Qbittorrent is the client for interacting with the Qbittorrent builders.
+	Qbittorrent *QbittorrentClient
 	// Qrcode is the client for interacting with the Qrcode builders.
 	Qrcode *QrcodeClient
 	// Radarr is the client for interacting with the Radarr builders.
 	Radarr *RadarrClient
 	// RssFeed is the client for interacting with the RssFeed builders.
 	RssFeed *RssFeedClient
+	// Sabnzbd is the client for interacting with the Sabnzbd builders.
+	Sabnzbd *SabnzbdClient
 	// Scene is the client for interacting with the Scene builders.
 	Scene *SceneClient
 	// Schedule is the client for interacting with the Schedule builders.
 	Schedule *ScheduleClient
 	// Sonarr is the client for interacting with the Sonarr builders.
 	Sonarr *SonarrClient
+	// Speedtest is the client for interacting with the Speedtest builders.
+	Speedtest *SpeedtestClient
 	// Sports is the client for interacting with the Sports builders.
 	Sports *SportsClient
 	// Stock is the client for interacting with the Stock builders.
@@ -122,6 +138,8 @@ type Tx struct {
 	Untappd *UntappdClient
 	// Uptime is the client for interacting with the Uptime builders.
 	Uptime *UptimeClient
+	// UptimeKuma is the client for interacting with the UptimeKuma builders.
+	UptimeKuma *UptimeKumaClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// Video is the client for interacting with the Video builders.
@@ -270,6 +288,7 @@ func (tx *Tx) init() {
 	tx.ApiToken = NewApiTokenClient(tx.config)
 	tx.Calendar = NewCalendarClient(tx.config)
 	tx.ChartSample = NewChartSampleClient(tx.config)
+	tx.Composition = NewCompositionClient(tx.config)
 	tx.Countdown = NewCountdownClient(tx.config)
 	tx.Crypto = NewCryptoClient(tx.config)
 	tx.DatasourcePlugin = NewDatasourcePluginClient(tx.config)
@@ -284,9 +303,12 @@ func (tx *Tx) init() {
 	tx.GitHub = NewGitHubClient(tx.config)
 	tx.GoogleCalendar = NewGoogleCalendarClient(tx.config)
 	tx.GreetingRule = NewGreetingRuleClient(tx.config)
+	tx.GuestPhoto = NewGuestPhotoClient(tx.config)
 	tx.GuestToken = NewGuestTokenClient(tx.config)
 	tx.HomeAssistant = NewHomeAssistantClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
+	tx.Immich = NewImmichClient(tx.config)
+	tx.InboundAdapter = NewInboundAdapterClient(tx.config)
 	tx.Incident = NewIncidentClient(tx.config)
 	tx.Jellyfin = NewJellyfinClient(tx.config)
 	tx.LogEntry = NewLogEntryClient(tx.config)
@@ -299,15 +321,19 @@ func (tx *Tx) init() {
 	tx.NowPlayingSource = NewNowPlayingSourceClient(tx.config)
 	tx.OutboundSettings = NewOutboundSettingsClient(tx.config)
 	tx.OutboundWebhook = NewOutboundWebhookClient(tx.config)
+	tx.Overseerr = NewOverseerrClient(tx.config)
 	tx.PiHole = NewPiHoleClient(tx.config)
 	tx.PixelArt = NewPixelArtClient(tx.config)
 	tx.Playlist = NewPlaylistClient(tx.config)
+	tx.Qbittorrent = NewQbittorrentClient(tx.config)
 	tx.Qrcode = NewQrcodeClient(tx.config)
 	tx.Radarr = NewRadarrClient(tx.config)
 	tx.RssFeed = NewRssFeedClient(tx.config)
+	tx.Sabnzbd = NewSabnzbdClient(tx.config)
 	tx.Scene = NewSceneClient(tx.config)
 	tx.Schedule = NewScheduleClient(tx.config)
 	tx.Sonarr = NewSonarrClient(tx.config)
+	tx.Speedtest = NewSpeedtestClient(tx.config)
 	tx.Sports = NewSportsClient(tx.config)
 	tx.Stock = NewStockClient(tx.config)
 	tx.SunMoon = NewSunMoonClient(tx.config)
@@ -318,6 +344,7 @@ func (tx *Tx) init() {
 	tx.UmamiSettings = NewUmamiSettingsClient(tx.config)
 	tx.Untappd = NewUntappdClient(tx.config)
 	tx.Uptime = NewUptimeClient(tx.config)
+	tx.UptimeKuma = NewUptimeKumaClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.Video = NewVideoClient(tx.config)
 	tx.WakeAlarm = NewWakeAlarmClient(tx.config)

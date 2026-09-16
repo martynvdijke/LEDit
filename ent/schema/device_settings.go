@@ -2,6 +2,7 @@ package schema
 
 import (
 	"errors"
+	"fmt"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
@@ -67,6 +68,46 @@ func (DeviceSettings) Fields() []ent.Field {
 		field.Int("overlay_speed_px").Default(0),
 		field.String("overlay_bg").Default("#000000"),
 		field.String("overlay_fg").Default("#ffffff"),
+		field.String("transport").Default("websocket").Validate(func(s string) error {
+			switch s {
+			case "websocket", "wled", "artnet":
+				return nil
+			default:
+				return fmt.Errorf("transport must be one of websocket, wled, artnet")
+			}
+		}),
+		field.String("wled_host").Default(""),
+		field.Int("wled_port").Default(4048),
+		field.String("wled_realtime_mode").Default("ddp").Validate(func(s string) error {
+			switch s {
+			case "ddp", "e131", "http":
+				return nil
+			default:
+				return fmt.Errorf("wled_realtime_mode must be one of ddp, e131, http")
+			}
+		}),
+		field.Int("wled_channel").Default(0),
+		field.String("artnet_host").Default(""),
+		field.Int("artnet_port").Default(6454),
+		field.Int("artnet_universe").Default(0),
+		field.Int("output_fps").Default(20),
+		field.String("output_color_order").Default("RGB").Validate(func(s string) error {
+			switch s {
+			case "RGB", "GRB", "BGR":
+				return nil
+			default:
+				return fmt.Errorf("output_color_order must be one of RGB, GRB, BGR")
+			}
+		}),
+		field.Float("output_gamma").Default(1.0),
+		field.String("output_matrix_layout").Default("row-major").Validate(func(s string) error {
+			switch s {
+			case "row-major", "serpentine":
+				return nil
+			default:
+				return fmt.Errorf("output_matrix_layout must be one of row-major, serpentine")
+			}
+		}),
 	}
 }
 

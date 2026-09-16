@@ -76,6 +76,7 @@ const (
 	SurfaceTrmnl   Surface = "trmnl"
 	SurfaceMqtt    Surface = "mqtt"
 	SurfaceWebhook Surface = "webhook"
+	SurfaceInbound Surface = "inbound"
 )
 
 func (s Surface) String() string {
@@ -85,7 +86,7 @@ func (s Surface) String() string {
 // SurfaceValidator is a validator for the "surface" field enum values. It is called by the builders before save.
 func SurfaceValidator(s Surface) error {
 	switch s {
-	case SurfaceWs, SurfaceTrmnl, SurfaceMqtt, SurfaceWebhook:
+	case SurfaceWs, SurfaceTrmnl, SurfaceMqtt, SurfaceWebhook, SurfaceInbound:
 		return nil
 	default:
 		return fmt.Errorf("deliverylog: invalid enum value for surface field: %q", s)

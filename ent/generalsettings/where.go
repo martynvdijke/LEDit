@@ -1826,6 +1826,29 @@ func HasMatrixLayoutsWith(preds ...predicate.MatrixLayout) predicate.GeneralSett
 	})
 }
 
+// HasCompositions applies the HasEdge predicate on the "compositions" edge.
+func HasCompositions() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CompositionsTable, CompositionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCompositionsWith applies the HasEdge predicate on the "compositions" edge with a given conditions (other predicates).
+func HasCompositionsWith(preds ...predicate.Composition) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newCompositionsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasCountdowns applies the HasEdge predicate on the "countdowns" edge.
 func HasCountdowns() predicate.GeneralSettings {
 	return predicate.GeneralSettings(func(s *sql.Selector) {
@@ -2301,6 +2324,144 @@ func HasNowPlayingSources() predicate.GeneralSettings {
 func HasNowPlayingSourcesWith(preds ...predicate.NowPlayingSource) predicate.GeneralSettings {
 	return predicate.GeneralSettings(func(s *sql.Selector) {
 		step := newNowPlayingSourcesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasImmichs applies the HasEdge predicate on the "immichs" edge.
+func HasImmichs() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ImmichsTable, ImmichsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasImmichsWith applies the HasEdge predicate on the "immichs" edge with a given conditions (other predicates).
+func HasImmichsWith(preds ...predicate.Immich) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newImmichsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasQbittorrents applies the HasEdge predicate on the "qbittorrents" edge.
+func HasQbittorrents() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, QbittorrentsTable, QbittorrentsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasQbittorrentsWith applies the HasEdge predicate on the "qbittorrents" edge with a given conditions (other predicates).
+func HasQbittorrentsWith(preds ...predicate.Qbittorrent) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newQbittorrentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSabnzbd applies the HasEdge predicate on the "sabnzbd" edge.
+func HasSabnzbd() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, SabnzbdTable, SabnzbdColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSabnzbdWith applies the HasEdge predicate on the "sabnzbd" edge with a given conditions (other predicates).
+func HasSabnzbdWith(preds ...predicate.Sabnzbd) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newSabnzbdStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOverseerrs applies the HasEdge predicate on the "overseerrs" edge.
+func HasOverseerrs() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OverseerrsTable, OverseerrsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOverseerrsWith applies the HasEdge predicate on the "overseerrs" edge with a given conditions (other predicates).
+func HasOverseerrsWith(preds ...predicate.Overseerr) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newOverseerrsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUptimeKumas applies the HasEdge predicate on the "uptime_kumas" edge.
+func HasUptimeKumas() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UptimeKumasTable, UptimeKumasColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUptimeKumasWith applies the HasEdge predicate on the "uptime_kumas" edge with a given conditions (other predicates).
+func HasUptimeKumasWith(preds ...predicate.UptimeKuma) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newUptimeKumasStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSpeedtests applies the HasEdge predicate on the "speedtests" edge.
+func HasSpeedtests() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, SpeedtestsTable, SpeedtestsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSpeedtestsWith applies the HasEdge predicate on the "speedtests" edge with a given conditions (other predicates).
+func HasSpeedtestsWith(preds ...predicate.Speedtest) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newSpeedtestsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

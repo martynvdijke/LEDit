@@ -13,6 +13,7 @@ import (
 	"ledit/ent/apitoken"
 	"ledit/ent/calendar"
 	"ledit/ent/chartsample"
+	"ledit/ent/composition"
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/datasourceplugin"
@@ -27,9 +28,12 @@ import (
 	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/greetingrule"
+	"ledit/ent/guestphoto"
 	"ledit/ent/guesttoken"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/immich"
+	"ledit/ent/inboundadapter"
 	"ledit/ent/incident"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
@@ -42,16 +46,20 @@ import (
 	"ledit/ent/nowplayingsource"
 	"ledit/ent/outboundsettings"
 	"ledit/ent/outboundwebhook"
+	"ledit/ent/overseerr"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/predicate"
+	"ledit/ent/qbittorrent"
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/sabnzbd"
 	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/speedtest"
 	"ledit/ent/sports"
 	"ledit/ent/stock"
 	"ledit/ent/sunmoon"
@@ -62,6 +70,7 @@ import (
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
+	"ledit/ent/uptimekuma"
 	"ledit/ent/user"
 	"ledit/ent/video"
 	"ledit/ent/wakealarm"
@@ -90,6 +99,7 @@ const (
 	TypeApiToken         = "ApiToken"
 	TypeCalendar         = "Calendar"
 	TypeChartSample      = "ChartSample"
+	TypeComposition      = "Composition"
 	TypeCountdown        = "Countdown"
 	TypeCrypto           = "Crypto"
 	TypeDatasourcePlugin = "DatasourcePlugin"
@@ -104,9 +114,12 @@ const (
 	TypeGitHub           = "GitHub"
 	TypeGoogleCalendar   = "GoogleCalendar"
 	TypeGreetingRule     = "GreetingRule"
+	TypeGuestPhoto       = "GuestPhoto"
 	TypeGuestToken       = "GuestToken"
 	TypeHomeAssistant    = "HomeAssistant"
 	TypeImage            = "Image"
+	TypeImmich           = "Immich"
+	TypeInboundAdapter   = "InboundAdapter"
 	TypeIncident         = "Incident"
 	TypeJellyfin         = "Jellyfin"
 	TypeLogEntry         = "LogEntry"
@@ -119,15 +132,19 @@ const (
 	TypeNowPlayingSource = "NowPlayingSource"
 	TypeOutboundSettings = "OutboundSettings"
 	TypeOutboundWebhook  = "OutboundWebhook"
+	TypeOverseerr        = "Overseerr"
 	TypePiHole           = "PiHole"
 	TypePixelArt         = "PixelArt"
 	TypePlaylist         = "Playlist"
+	TypeQbittorrent      = "Qbittorrent"
 	TypeQrcode           = "Qrcode"
 	TypeRadarr           = "Radarr"
 	TypeRssFeed          = "RssFeed"
+	TypeSabnzbd          = "Sabnzbd"
 	TypeScene            = "Scene"
 	TypeSchedule         = "Schedule"
 	TypeSonarr           = "Sonarr"
+	TypeSpeedtest        = "Speedtest"
 	TypeSports           = "Sports"
 	TypeStock            = "Stock"
 	TypeSunMoon          = "SunMoon"
@@ -138,6 +155,7 @@ const (
 	TypeUmamiSettings    = "UmamiSettings"
 	TypeUntappd          = "Untappd"
 	TypeUptime           = "Uptime"
+	TypeUptimeKuma       = "UptimeKuma"
 	TypeUser             = "User"
 	TypeVideo            = "Video"
 	TypeWakeAlarm        = "WakeAlarm"
@@ -4816,6 +4834,1094 @@ func (m *ChartSampleMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown ChartSample edge %s", name)
 }
 
+// CompositionMutation represents an operation that mutates the Composition nodes in the graph.
+type CompositionMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	name           *string
+	enabled        *bool
+	mode           *string
+	rows           *int
+	addrows        *int
+	cols           *int
+	addcols        *int
+	gap            *int
+	addgap         *int
+	padding        *int
+	addpadding     *int
+	background     *string
+	regions        *string
+	ttl_seconds    *int
+	addttl_seconds *int
+	created_at     *time.Time
+	updated_at     *time.Time
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*Composition, error)
+	predicates     []predicate.Composition
+}
+
+var _ ent.Mutation = (*CompositionMutation)(nil)
+
+// compositionOption allows management of the mutation configuration using functional options.
+type compositionOption func(*CompositionMutation)
+
+// newCompositionMutation creates new mutation for the Composition entity.
+func newCompositionMutation(c config, op Op, opts ...compositionOption) *CompositionMutation {
+	m := &CompositionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeComposition,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCompositionID sets the ID field of the mutation.
+func withCompositionID(id int) compositionOption {
+	return func(m *CompositionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Composition
+		)
+		m.oldValue = func(ctx context.Context) (*Composition, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Composition.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withComposition sets the old Composition of the mutation.
+func withComposition(node *Composition) compositionOption {
+	return func(m *CompositionMutation) {
+		m.oldValue = func(context.Context) (*Composition, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CompositionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CompositionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CompositionMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CompositionMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Composition.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *CompositionMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *CompositionMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *CompositionMutation) ResetName() {
+	m.name = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *CompositionMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *CompositionMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *CompositionMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetMode sets the "mode" field.
+func (m *CompositionMutation) SetMode(s string) {
+	m.mode = &s
+}
+
+// Mode returns the value of the "mode" field in the mutation.
+func (m *CompositionMutation) Mode() (r string, exists bool) {
+	v := m.mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMode returns the old "mode" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldMode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMode: %w", err)
+	}
+	return oldValue.Mode, nil
+}
+
+// ResetMode resets all changes to the "mode" field.
+func (m *CompositionMutation) ResetMode() {
+	m.mode = nil
+}
+
+// SetRows sets the "rows" field.
+func (m *CompositionMutation) SetRows(i int) {
+	m.rows = &i
+	m.addrows = nil
+}
+
+// Rows returns the value of the "rows" field in the mutation.
+func (m *CompositionMutation) Rows() (r int, exists bool) {
+	v := m.rows
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRows returns the old "rows" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldRows(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRows is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRows requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRows: %w", err)
+	}
+	return oldValue.Rows, nil
+}
+
+// AddRows adds i to the "rows" field.
+func (m *CompositionMutation) AddRows(i int) {
+	if m.addrows != nil {
+		*m.addrows += i
+	} else {
+		m.addrows = &i
+	}
+}
+
+// AddedRows returns the value that was added to the "rows" field in this mutation.
+func (m *CompositionMutation) AddedRows() (r int, exists bool) {
+	v := m.addrows
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRows resets all changes to the "rows" field.
+func (m *CompositionMutation) ResetRows() {
+	m.rows = nil
+	m.addrows = nil
+}
+
+// SetCols sets the "cols" field.
+func (m *CompositionMutation) SetCols(i int) {
+	m.cols = &i
+	m.addcols = nil
+}
+
+// Cols returns the value of the "cols" field in the mutation.
+func (m *CompositionMutation) Cols() (r int, exists bool) {
+	v := m.cols
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCols returns the old "cols" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldCols(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCols is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCols requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCols: %w", err)
+	}
+	return oldValue.Cols, nil
+}
+
+// AddCols adds i to the "cols" field.
+func (m *CompositionMutation) AddCols(i int) {
+	if m.addcols != nil {
+		*m.addcols += i
+	} else {
+		m.addcols = &i
+	}
+}
+
+// AddedCols returns the value that was added to the "cols" field in this mutation.
+func (m *CompositionMutation) AddedCols() (r int, exists bool) {
+	v := m.addcols
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCols resets all changes to the "cols" field.
+func (m *CompositionMutation) ResetCols() {
+	m.cols = nil
+	m.addcols = nil
+}
+
+// SetGap sets the "gap" field.
+func (m *CompositionMutation) SetGap(i int) {
+	m.gap = &i
+	m.addgap = nil
+}
+
+// Gap returns the value of the "gap" field in the mutation.
+func (m *CompositionMutation) Gap() (r int, exists bool) {
+	v := m.gap
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGap returns the old "gap" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldGap(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGap is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGap requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGap: %w", err)
+	}
+	return oldValue.Gap, nil
+}
+
+// AddGap adds i to the "gap" field.
+func (m *CompositionMutation) AddGap(i int) {
+	if m.addgap != nil {
+		*m.addgap += i
+	} else {
+		m.addgap = &i
+	}
+}
+
+// AddedGap returns the value that was added to the "gap" field in this mutation.
+func (m *CompositionMutation) AddedGap() (r int, exists bool) {
+	v := m.addgap
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetGap resets all changes to the "gap" field.
+func (m *CompositionMutation) ResetGap() {
+	m.gap = nil
+	m.addgap = nil
+}
+
+// SetPadding sets the "padding" field.
+func (m *CompositionMutation) SetPadding(i int) {
+	m.padding = &i
+	m.addpadding = nil
+}
+
+// Padding returns the value of the "padding" field in the mutation.
+func (m *CompositionMutation) Padding() (r int, exists bool) {
+	v := m.padding
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPadding returns the old "padding" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldPadding(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPadding is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPadding requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPadding: %w", err)
+	}
+	return oldValue.Padding, nil
+}
+
+// AddPadding adds i to the "padding" field.
+func (m *CompositionMutation) AddPadding(i int) {
+	if m.addpadding != nil {
+		*m.addpadding += i
+	} else {
+		m.addpadding = &i
+	}
+}
+
+// AddedPadding returns the value that was added to the "padding" field in this mutation.
+func (m *CompositionMutation) AddedPadding() (r int, exists bool) {
+	v := m.addpadding
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPadding resets all changes to the "padding" field.
+func (m *CompositionMutation) ResetPadding() {
+	m.padding = nil
+	m.addpadding = nil
+}
+
+// SetBackground sets the "background" field.
+func (m *CompositionMutation) SetBackground(s string) {
+	m.background = &s
+}
+
+// Background returns the value of the "background" field in the mutation.
+func (m *CompositionMutation) Background() (r string, exists bool) {
+	v := m.background
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackground returns the old "background" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldBackground(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackground is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackground requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackground: %w", err)
+	}
+	return oldValue.Background, nil
+}
+
+// ResetBackground resets all changes to the "background" field.
+func (m *CompositionMutation) ResetBackground() {
+	m.background = nil
+}
+
+// SetRegions sets the "regions" field.
+func (m *CompositionMutation) SetRegions(s string) {
+	m.regions = &s
+}
+
+// Regions returns the value of the "regions" field in the mutation.
+func (m *CompositionMutation) Regions() (r string, exists bool) {
+	v := m.regions
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRegions returns the old "regions" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldRegions(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRegions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRegions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRegions: %w", err)
+	}
+	return oldValue.Regions, nil
+}
+
+// ResetRegions resets all changes to the "regions" field.
+func (m *CompositionMutation) ResetRegions() {
+	m.regions = nil
+}
+
+// SetTTLSeconds sets the "ttl_seconds" field.
+func (m *CompositionMutation) SetTTLSeconds(i int) {
+	m.ttl_seconds = &i
+	m.addttl_seconds = nil
+}
+
+// TTLSeconds returns the value of the "ttl_seconds" field in the mutation.
+func (m *CompositionMutation) TTLSeconds() (r int, exists bool) {
+	v := m.ttl_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTTLSeconds returns the old "ttl_seconds" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldTTLSeconds(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTTLSeconds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTTLSeconds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTTLSeconds: %w", err)
+	}
+	return oldValue.TTLSeconds, nil
+}
+
+// AddTTLSeconds adds i to the "ttl_seconds" field.
+func (m *CompositionMutation) AddTTLSeconds(i int) {
+	if m.addttl_seconds != nil {
+		*m.addttl_seconds += i
+	} else {
+		m.addttl_seconds = &i
+	}
+}
+
+// AddedTTLSeconds returns the value that was added to the "ttl_seconds" field in this mutation.
+func (m *CompositionMutation) AddedTTLSeconds() (r int, exists bool) {
+	v := m.addttl_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTTLSeconds resets all changes to the "ttl_seconds" field.
+func (m *CompositionMutation) ResetTTLSeconds() {
+	m.ttl_seconds = nil
+	m.addttl_seconds = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *CompositionMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *CompositionMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *CompositionMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *CompositionMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *CompositionMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Composition entity.
+// If the Composition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompositionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *CompositionMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the CompositionMutation builder.
+func (m *CompositionMutation) Where(ps ...predicate.Composition) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the CompositionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *CompositionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Composition, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *CompositionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *CompositionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Composition).
+func (m *CompositionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CompositionMutation) Fields() []string {
+	fields := make([]string, 0, 12)
+	if m.name != nil {
+		fields = append(fields, composition.FieldName)
+	}
+	if m.enabled != nil {
+		fields = append(fields, composition.FieldEnabled)
+	}
+	if m.mode != nil {
+		fields = append(fields, composition.FieldMode)
+	}
+	if m.rows != nil {
+		fields = append(fields, composition.FieldRows)
+	}
+	if m.cols != nil {
+		fields = append(fields, composition.FieldCols)
+	}
+	if m.gap != nil {
+		fields = append(fields, composition.FieldGap)
+	}
+	if m.padding != nil {
+		fields = append(fields, composition.FieldPadding)
+	}
+	if m.background != nil {
+		fields = append(fields, composition.FieldBackground)
+	}
+	if m.regions != nil {
+		fields = append(fields, composition.FieldRegions)
+	}
+	if m.ttl_seconds != nil {
+		fields = append(fields, composition.FieldTTLSeconds)
+	}
+	if m.created_at != nil {
+		fields = append(fields, composition.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, composition.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CompositionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case composition.FieldName:
+		return m.Name()
+	case composition.FieldEnabled:
+		return m.Enabled()
+	case composition.FieldMode:
+		return m.Mode()
+	case composition.FieldRows:
+		return m.Rows()
+	case composition.FieldCols:
+		return m.Cols()
+	case composition.FieldGap:
+		return m.Gap()
+	case composition.FieldPadding:
+		return m.Padding()
+	case composition.FieldBackground:
+		return m.Background()
+	case composition.FieldRegions:
+		return m.Regions()
+	case composition.FieldTTLSeconds:
+		return m.TTLSeconds()
+	case composition.FieldCreatedAt:
+		return m.CreatedAt()
+	case composition.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CompositionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case composition.FieldName:
+		return m.OldName(ctx)
+	case composition.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case composition.FieldMode:
+		return m.OldMode(ctx)
+	case composition.FieldRows:
+		return m.OldRows(ctx)
+	case composition.FieldCols:
+		return m.OldCols(ctx)
+	case composition.FieldGap:
+		return m.OldGap(ctx)
+	case composition.FieldPadding:
+		return m.OldPadding(ctx)
+	case composition.FieldBackground:
+		return m.OldBackground(ctx)
+	case composition.FieldRegions:
+		return m.OldRegions(ctx)
+	case composition.FieldTTLSeconds:
+		return m.OldTTLSeconds(ctx)
+	case composition.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case composition.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Composition field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CompositionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case composition.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case composition.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case composition.FieldMode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMode(v)
+		return nil
+	case composition.FieldRows:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRows(v)
+		return nil
+	case composition.FieldCols:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCols(v)
+		return nil
+	case composition.FieldGap:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGap(v)
+		return nil
+	case composition.FieldPadding:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPadding(v)
+		return nil
+	case composition.FieldBackground:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackground(v)
+		return nil
+	case composition.FieldRegions:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRegions(v)
+		return nil
+	case composition.FieldTTLSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTTLSeconds(v)
+		return nil
+	case composition.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case composition.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Composition field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CompositionMutation) AddedFields() []string {
+	var fields []string
+	if m.addrows != nil {
+		fields = append(fields, composition.FieldRows)
+	}
+	if m.addcols != nil {
+		fields = append(fields, composition.FieldCols)
+	}
+	if m.addgap != nil {
+		fields = append(fields, composition.FieldGap)
+	}
+	if m.addpadding != nil {
+		fields = append(fields, composition.FieldPadding)
+	}
+	if m.addttl_seconds != nil {
+		fields = append(fields, composition.FieldTTLSeconds)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CompositionMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case composition.FieldRows:
+		return m.AddedRows()
+	case composition.FieldCols:
+		return m.AddedCols()
+	case composition.FieldGap:
+		return m.AddedGap()
+	case composition.FieldPadding:
+		return m.AddedPadding()
+	case composition.FieldTTLSeconds:
+		return m.AddedTTLSeconds()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CompositionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case composition.FieldRows:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRows(v)
+		return nil
+	case composition.FieldCols:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCols(v)
+		return nil
+	case composition.FieldGap:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddGap(v)
+		return nil
+	case composition.FieldPadding:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPadding(v)
+		return nil
+	case composition.FieldTTLSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTTLSeconds(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Composition numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CompositionMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CompositionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CompositionMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Composition nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CompositionMutation) ResetField(name string) error {
+	switch name {
+	case composition.FieldName:
+		m.ResetName()
+		return nil
+	case composition.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case composition.FieldMode:
+		m.ResetMode()
+		return nil
+	case composition.FieldRows:
+		m.ResetRows()
+		return nil
+	case composition.FieldCols:
+		m.ResetCols()
+		return nil
+	case composition.FieldGap:
+		m.ResetGap()
+		return nil
+	case composition.FieldPadding:
+		m.ResetPadding()
+		return nil
+	case composition.FieldBackground:
+		m.ResetBackground()
+		return nil
+	case composition.FieldRegions:
+		m.ResetRegions()
+		return nil
+	case composition.FieldTTLSeconds:
+		m.ResetTTLSeconds()
+		return nil
+	case composition.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case composition.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Composition field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CompositionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CompositionMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CompositionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CompositionMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CompositionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CompositionMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CompositionMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Composition unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CompositionMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Composition edge %s", name)
+}
+
 // CountdownMutation represents an operation that mutates the Countdown nodes in the graph.
 type CountdownMutation struct {
 	config
@@ -8307,6 +9413,24 @@ type DeviceSettingsMutation struct {
 	addoverlay_speed_px      *int
 	overlay_bg               *string
 	overlay_fg               *string
+	transport                *string
+	wled_host                *string
+	wled_port                *int
+	addwled_port             *int
+	wled_realtime_mode       *string
+	wled_channel             *int
+	addwled_channel          *int
+	artnet_host              *string
+	artnet_port              *int
+	addartnet_port           *int
+	artnet_universe          *int
+	addartnet_universe       *int
+	output_fps               *int
+	addoutput_fps            *int
+	output_color_order       *string
+	output_gamma             *float64
+	addoutput_gamma          *float64
+	output_matrix_layout     *string
 	clearedFields            map[string]struct{}
 	group                    *int
 	clearedgroup             bool
@@ -9863,6 +10987,558 @@ func (m *DeviceSettingsMutation) ResetOverlayFg() {
 	m.overlay_fg = nil
 }
 
+// SetTransport sets the "transport" field.
+func (m *DeviceSettingsMutation) SetTransport(s string) {
+	m.transport = &s
+}
+
+// Transport returns the value of the "transport" field in the mutation.
+func (m *DeviceSettingsMutation) Transport() (r string, exists bool) {
+	v := m.transport
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTransport returns the old "transport" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldTransport(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTransport is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTransport requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTransport: %w", err)
+	}
+	return oldValue.Transport, nil
+}
+
+// ResetTransport resets all changes to the "transport" field.
+func (m *DeviceSettingsMutation) ResetTransport() {
+	m.transport = nil
+}
+
+// SetWledHost sets the "wled_host" field.
+func (m *DeviceSettingsMutation) SetWledHost(s string) {
+	m.wled_host = &s
+}
+
+// WledHost returns the value of the "wled_host" field in the mutation.
+func (m *DeviceSettingsMutation) WledHost() (r string, exists bool) {
+	v := m.wled_host
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWledHost returns the old "wled_host" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldWledHost(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWledHost is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWledHost requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWledHost: %w", err)
+	}
+	return oldValue.WledHost, nil
+}
+
+// ResetWledHost resets all changes to the "wled_host" field.
+func (m *DeviceSettingsMutation) ResetWledHost() {
+	m.wled_host = nil
+}
+
+// SetWledPort sets the "wled_port" field.
+func (m *DeviceSettingsMutation) SetWledPort(i int) {
+	m.wled_port = &i
+	m.addwled_port = nil
+}
+
+// WledPort returns the value of the "wled_port" field in the mutation.
+func (m *DeviceSettingsMutation) WledPort() (r int, exists bool) {
+	v := m.wled_port
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWledPort returns the old "wled_port" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldWledPort(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWledPort is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWledPort requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWledPort: %w", err)
+	}
+	return oldValue.WledPort, nil
+}
+
+// AddWledPort adds i to the "wled_port" field.
+func (m *DeviceSettingsMutation) AddWledPort(i int) {
+	if m.addwled_port != nil {
+		*m.addwled_port += i
+	} else {
+		m.addwled_port = &i
+	}
+}
+
+// AddedWledPort returns the value that was added to the "wled_port" field in this mutation.
+func (m *DeviceSettingsMutation) AddedWledPort() (r int, exists bool) {
+	v := m.addwled_port
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWledPort resets all changes to the "wled_port" field.
+func (m *DeviceSettingsMutation) ResetWledPort() {
+	m.wled_port = nil
+	m.addwled_port = nil
+}
+
+// SetWledRealtimeMode sets the "wled_realtime_mode" field.
+func (m *DeviceSettingsMutation) SetWledRealtimeMode(s string) {
+	m.wled_realtime_mode = &s
+}
+
+// WledRealtimeMode returns the value of the "wled_realtime_mode" field in the mutation.
+func (m *DeviceSettingsMutation) WledRealtimeMode() (r string, exists bool) {
+	v := m.wled_realtime_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWledRealtimeMode returns the old "wled_realtime_mode" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldWledRealtimeMode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWledRealtimeMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWledRealtimeMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWledRealtimeMode: %w", err)
+	}
+	return oldValue.WledRealtimeMode, nil
+}
+
+// ResetWledRealtimeMode resets all changes to the "wled_realtime_mode" field.
+func (m *DeviceSettingsMutation) ResetWledRealtimeMode() {
+	m.wled_realtime_mode = nil
+}
+
+// SetWledChannel sets the "wled_channel" field.
+func (m *DeviceSettingsMutation) SetWledChannel(i int) {
+	m.wled_channel = &i
+	m.addwled_channel = nil
+}
+
+// WledChannel returns the value of the "wled_channel" field in the mutation.
+func (m *DeviceSettingsMutation) WledChannel() (r int, exists bool) {
+	v := m.wled_channel
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWledChannel returns the old "wled_channel" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldWledChannel(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWledChannel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWledChannel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWledChannel: %w", err)
+	}
+	return oldValue.WledChannel, nil
+}
+
+// AddWledChannel adds i to the "wled_channel" field.
+func (m *DeviceSettingsMutation) AddWledChannel(i int) {
+	if m.addwled_channel != nil {
+		*m.addwled_channel += i
+	} else {
+		m.addwled_channel = &i
+	}
+}
+
+// AddedWledChannel returns the value that was added to the "wled_channel" field in this mutation.
+func (m *DeviceSettingsMutation) AddedWledChannel() (r int, exists bool) {
+	v := m.addwled_channel
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWledChannel resets all changes to the "wled_channel" field.
+func (m *DeviceSettingsMutation) ResetWledChannel() {
+	m.wled_channel = nil
+	m.addwled_channel = nil
+}
+
+// SetArtnetHost sets the "artnet_host" field.
+func (m *DeviceSettingsMutation) SetArtnetHost(s string) {
+	m.artnet_host = &s
+}
+
+// ArtnetHost returns the value of the "artnet_host" field in the mutation.
+func (m *DeviceSettingsMutation) ArtnetHost() (r string, exists bool) {
+	v := m.artnet_host
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArtnetHost returns the old "artnet_host" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldArtnetHost(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldArtnetHost is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldArtnetHost requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArtnetHost: %w", err)
+	}
+	return oldValue.ArtnetHost, nil
+}
+
+// ResetArtnetHost resets all changes to the "artnet_host" field.
+func (m *DeviceSettingsMutation) ResetArtnetHost() {
+	m.artnet_host = nil
+}
+
+// SetArtnetPort sets the "artnet_port" field.
+func (m *DeviceSettingsMutation) SetArtnetPort(i int) {
+	m.artnet_port = &i
+	m.addartnet_port = nil
+}
+
+// ArtnetPort returns the value of the "artnet_port" field in the mutation.
+func (m *DeviceSettingsMutation) ArtnetPort() (r int, exists bool) {
+	v := m.artnet_port
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArtnetPort returns the old "artnet_port" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldArtnetPort(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldArtnetPort is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldArtnetPort requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArtnetPort: %w", err)
+	}
+	return oldValue.ArtnetPort, nil
+}
+
+// AddArtnetPort adds i to the "artnet_port" field.
+func (m *DeviceSettingsMutation) AddArtnetPort(i int) {
+	if m.addartnet_port != nil {
+		*m.addartnet_port += i
+	} else {
+		m.addartnet_port = &i
+	}
+}
+
+// AddedArtnetPort returns the value that was added to the "artnet_port" field in this mutation.
+func (m *DeviceSettingsMutation) AddedArtnetPort() (r int, exists bool) {
+	v := m.addartnet_port
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetArtnetPort resets all changes to the "artnet_port" field.
+func (m *DeviceSettingsMutation) ResetArtnetPort() {
+	m.artnet_port = nil
+	m.addartnet_port = nil
+}
+
+// SetArtnetUniverse sets the "artnet_universe" field.
+func (m *DeviceSettingsMutation) SetArtnetUniverse(i int) {
+	m.artnet_universe = &i
+	m.addartnet_universe = nil
+}
+
+// ArtnetUniverse returns the value of the "artnet_universe" field in the mutation.
+func (m *DeviceSettingsMutation) ArtnetUniverse() (r int, exists bool) {
+	v := m.artnet_universe
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArtnetUniverse returns the old "artnet_universe" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldArtnetUniverse(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldArtnetUniverse is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldArtnetUniverse requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArtnetUniverse: %w", err)
+	}
+	return oldValue.ArtnetUniverse, nil
+}
+
+// AddArtnetUniverse adds i to the "artnet_universe" field.
+func (m *DeviceSettingsMutation) AddArtnetUniverse(i int) {
+	if m.addartnet_universe != nil {
+		*m.addartnet_universe += i
+	} else {
+		m.addartnet_universe = &i
+	}
+}
+
+// AddedArtnetUniverse returns the value that was added to the "artnet_universe" field in this mutation.
+func (m *DeviceSettingsMutation) AddedArtnetUniverse() (r int, exists bool) {
+	v := m.addartnet_universe
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetArtnetUniverse resets all changes to the "artnet_universe" field.
+func (m *DeviceSettingsMutation) ResetArtnetUniverse() {
+	m.artnet_universe = nil
+	m.addartnet_universe = nil
+}
+
+// SetOutputFps sets the "output_fps" field.
+func (m *DeviceSettingsMutation) SetOutputFps(i int) {
+	m.output_fps = &i
+	m.addoutput_fps = nil
+}
+
+// OutputFps returns the value of the "output_fps" field in the mutation.
+func (m *DeviceSettingsMutation) OutputFps() (r int, exists bool) {
+	v := m.output_fps
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOutputFps returns the old "output_fps" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldOutputFps(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOutputFps is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOutputFps requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOutputFps: %w", err)
+	}
+	return oldValue.OutputFps, nil
+}
+
+// AddOutputFps adds i to the "output_fps" field.
+func (m *DeviceSettingsMutation) AddOutputFps(i int) {
+	if m.addoutput_fps != nil {
+		*m.addoutput_fps += i
+	} else {
+		m.addoutput_fps = &i
+	}
+}
+
+// AddedOutputFps returns the value that was added to the "output_fps" field in this mutation.
+func (m *DeviceSettingsMutation) AddedOutputFps() (r int, exists bool) {
+	v := m.addoutput_fps
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetOutputFps resets all changes to the "output_fps" field.
+func (m *DeviceSettingsMutation) ResetOutputFps() {
+	m.output_fps = nil
+	m.addoutput_fps = nil
+}
+
+// SetOutputColorOrder sets the "output_color_order" field.
+func (m *DeviceSettingsMutation) SetOutputColorOrder(s string) {
+	m.output_color_order = &s
+}
+
+// OutputColorOrder returns the value of the "output_color_order" field in the mutation.
+func (m *DeviceSettingsMutation) OutputColorOrder() (r string, exists bool) {
+	v := m.output_color_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOutputColorOrder returns the old "output_color_order" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldOutputColorOrder(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOutputColorOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOutputColorOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOutputColorOrder: %w", err)
+	}
+	return oldValue.OutputColorOrder, nil
+}
+
+// ResetOutputColorOrder resets all changes to the "output_color_order" field.
+func (m *DeviceSettingsMutation) ResetOutputColorOrder() {
+	m.output_color_order = nil
+}
+
+// SetOutputGamma sets the "output_gamma" field.
+func (m *DeviceSettingsMutation) SetOutputGamma(f float64) {
+	m.output_gamma = &f
+	m.addoutput_gamma = nil
+}
+
+// OutputGamma returns the value of the "output_gamma" field in the mutation.
+func (m *DeviceSettingsMutation) OutputGamma() (r float64, exists bool) {
+	v := m.output_gamma
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOutputGamma returns the old "output_gamma" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldOutputGamma(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOutputGamma is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOutputGamma requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOutputGamma: %w", err)
+	}
+	return oldValue.OutputGamma, nil
+}
+
+// AddOutputGamma adds f to the "output_gamma" field.
+func (m *DeviceSettingsMutation) AddOutputGamma(f float64) {
+	if m.addoutput_gamma != nil {
+		*m.addoutput_gamma += f
+	} else {
+		m.addoutput_gamma = &f
+	}
+}
+
+// AddedOutputGamma returns the value that was added to the "output_gamma" field in this mutation.
+func (m *DeviceSettingsMutation) AddedOutputGamma() (r float64, exists bool) {
+	v := m.addoutput_gamma
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetOutputGamma resets all changes to the "output_gamma" field.
+func (m *DeviceSettingsMutation) ResetOutputGamma() {
+	m.output_gamma = nil
+	m.addoutput_gamma = nil
+}
+
+// SetOutputMatrixLayout sets the "output_matrix_layout" field.
+func (m *DeviceSettingsMutation) SetOutputMatrixLayout(s string) {
+	m.output_matrix_layout = &s
+}
+
+// OutputMatrixLayout returns the value of the "output_matrix_layout" field in the mutation.
+func (m *DeviceSettingsMutation) OutputMatrixLayout() (r string, exists bool) {
+	v := m.output_matrix_layout
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOutputMatrixLayout returns the old "output_matrix_layout" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldOutputMatrixLayout(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOutputMatrixLayout is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOutputMatrixLayout requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOutputMatrixLayout: %w", err)
+	}
+	return oldValue.OutputMatrixLayout, nil
+}
+
+// ResetOutputMatrixLayout resets all changes to the "output_matrix_layout" field.
+func (m *DeviceSettingsMutation) ResetOutputMatrixLayout() {
+	m.output_matrix_layout = nil
+}
+
 // ClearGroup clears the "group" edge to the DeviceGroup entity.
 func (m *DeviceSettingsMutation) ClearGroup() {
 	m.clearedgroup = true
@@ -9924,7 +11600,7 @@ func (m *DeviceSettingsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DeviceSettingsMutation) Fields() []string {
-	fields := make([]string, 0, 31)
+	fields := make([]string, 0, 43)
 	if m.name != nil {
 		fields = append(fields, devicesettings.FieldName)
 	}
@@ -10018,6 +11694,42 @@ func (m *DeviceSettingsMutation) Fields() []string {
 	if m.overlay_fg != nil {
 		fields = append(fields, devicesettings.FieldOverlayFg)
 	}
+	if m.transport != nil {
+		fields = append(fields, devicesettings.FieldTransport)
+	}
+	if m.wled_host != nil {
+		fields = append(fields, devicesettings.FieldWledHost)
+	}
+	if m.wled_port != nil {
+		fields = append(fields, devicesettings.FieldWledPort)
+	}
+	if m.wled_realtime_mode != nil {
+		fields = append(fields, devicesettings.FieldWledRealtimeMode)
+	}
+	if m.wled_channel != nil {
+		fields = append(fields, devicesettings.FieldWledChannel)
+	}
+	if m.artnet_host != nil {
+		fields = append(fields, devicesettings.FieldArtnetHost)
+	}
+	if m.artnet_port != nil {
+		fields = append(fields, devicesettings.FieldArtnetPort)
+	}
+	if m.artnet_universe != nil {
+		fields = append(fields, devicesettings.FieldArtnetUniverse)
+	}
+	if m.output_fps != nil {
+		fields = append(fields, devicesettings.FieldOutputFps)
+	}
+	if m.output_color_order != nil {
+		fields = append(fields, devicesettings.FieldOutputColorOrder)
+	}
+	if m.output_gamma != nil {
+		fields = append(fields, devicesettings.FieldOutputGamma)
+	}
+	if m.output_matrix_layout != nil {
+		fields = append(fields, devicesettings.FieldOutputMatrixLayout)
+	}
 	return fields
 }
 
@@ -10088,6 +11800,30 @@ func (m *DeviceSettingsMutation) Field(name string) (ent.Value, bool) {
 		return m.OverlayBg()
 	case devicesettings.FieldOverlayFg:
 		return m.OverlayFg()
+	case devicesettings.FieldTransport:
+		return m.Transport()
+	case devicesettings.FieldWledHost:
+		return m.WledHost()
+	case devicesettings.FieldWledPort:
+		return m.WledPort()
+	case devicesettings.FieldWledRealtimeMode:
+		return m.WledRealtimeMode()
+	case devicesettings.FieldWledChannel:
+		return m.WledChannel()
+	case devicesettings.FieldArtnetHost:
+		return m.ArtnetHost()
+	case devicesettings.FieldArtnetPort:
+		return m.ArtnetPort()
+	case devicesettings.FieldArtnetUniverse:
+		return m.ArtnetUniverse()
+	case devicesettings.FieldOutputFps:
+		return m.OutputFps()
+	case devicesettings.FieldOutputColorOrder:
+		return m.OutputColorOrder()
+	case devicesettings.FieldOutputGamma:
+		return m.OutputGamma()
+	case devicesettings.FieldOutputMatrixLayout:
+		return m.OutputMatrixLayout()
 	}
 	return nil, false
 }
@@ -10159,6 +11895,30 @@ func (m *DeviceSettingsMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldOverlayBg(ctx)
 	case devicesettings.FieldOverlayFg:
 		return m.OldOverlayFg(ctx)
+	case devicesettings.FieldTransport:
+		return m.OldTransport(ctx)
+	case devicesettings.FieldWledHost:
+		return m.OldWledHost(ctx)
+	case devicesettings.FieldWledPort:
+		return m.OldWledPort(ctx)
+	case devicesettings.FieldWledRealtimeMode:
+		return m.OldWledRealtimeMode(ctx)
+	case devicesettings.FieldWledChannel:
+		return m.OldWledChannel(ctx)
+	case devicesettings.FieldArtnetHost:
+		return m.OldArtnetHost(ctx)
+	case devicesettings.FieldArtnetPort:
+		return m.OldArtnetPort(ctx)
+	case devicesettings.FieldArtnetUniverse:
+		return m.OldArtnetUniverse(ctx)
+	case devicesettings.FieldOutputFps:
+		return m.OldOutputFps(ctx)
+	case devicesettings.FieldOutputColorOrder:
+		return m.OldOutputColorOrder(ctx)
+	case devicesettings.FieldOutputGamma:
+		return m.OldOutputGamma(ctx)
+	case devicesettings.FieldOutputMatrixLayout:
+		return m.OldOutputMatrixLayout(ctx)
 	}
 	return nil, fmt.Errorf("unknown DeviceSettings field %s", name)
 }
@@ -10385,6 +12145,90 @@ func (m *DeviceSettingsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetOverlayFg(v)
 		return nil
+	case devicesettings.FieldTransport:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTransport(v)
+		return nil
+	case devicesettings.FieldWledHost:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWledHost(v)
+		return nil
+	case devicesettings.FieldWledPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWledPort(v)
+		return nil
+	case devicesettings.FieldWledRealtimeMode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWledRealtimeMode(v)
+		return nil
+	case devicesettings.FieldWledChannel:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWledChannel(v)
+		return nil
+	case devicesettings.FieldArtnetHost:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArtnetHost(v)
+		return nil
+	case devicesettings.FieldArtnetPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArtnetPort(v)
+		return nil
+	case devicesettings.FieldArtnetUniverse:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArtnetUniverse(v)
+		return nil
+	case devicesettings.FieldOutputFps:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOutputFps(v)
+		return nil
+	case devicesettings.FieldOutputColorOrder:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOutputColorOrder(v)
+		return nil
+	case devicesettings.FieldOutputGamma:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOutputGamma(v)
+		return nil
+	case devicesettings.FieldOutputMatrixLayout:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOutputMatrixLayout(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DeviceSettings field %s", name)
 }
@@ -10429,6 +12273,24 @@ func (m *DeviceSettingsMutation) AddedFields() []string {
 	if m.addoverlay_speed_px != nil {
 		fields = append(fields, devicesettings.FieldOverlaySpeedPx)
 	}
+	if m.addwled_port != nil {
+		fields = append(fields, devicesettings.FieldWledPort)
+	}
+	if m.addwled_channel != nil {
+		fields = append(fields, devicesettings.FieldWledChannel)
+	}
+	if m.addartnet_port != nil {
+		fields = append(fields, devicesettings.FieldArtnetPort)
+	}
+	if m.addartnet_universe != nil {
+		fields = append(fields, devicesettings.FieldArtnetUniverse)
+	}
+	if m.addoutput_fps != nil {
+		fields = append(fields, devicesettings.FieldOutputFps)
+	}
+	if m.addoutput_gamma != nil {
+		fields = append(fields, devicesettings.FieldOutputGamma)
+	}
 	return fields
 }
 
@@ -10461,6 +12323,18 @@ func (m *DeviceSettingsMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedOverlayHeight()
 	case devicesettings.FieldOverlaySpeedPx:
 		return m.AddedOverlaySpeedPx()
+	case devicesettings.FieldWledPort:
+		return m.AddedWledPort()
+	case devicesettings.FieldWledChannel:
+		return m.AddedWledChannel()
+	case devicesettings.FieldArtnetPort:
+		return m.AddedArtnetPort()
+	case devicesettings.FieldArtnetUniverse:
+		return m.AddedArtnetUniverse()
+	case devicesettings.FieldOutputFps:
+		return m.AddedOutputFps()
+	case devicesettings.FieldOutputGamma:
+		return m.AddedOutputGamma()
 	}
 	return nil, false
 }
@@ -10553,6 +12427,48 @@ func (m *DeviceSettingsMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddOverlaySpeedPx(v)
+		return nil
+	case devicesettings.FieldWledPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWledPort(v)
+		return nil
+	case devicesettings.FieldWledChannel:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWledChannel(v)
+		return nil
+	case devicesettings.FieldArtnetPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddArtnetPort(v)
+		return nil
+	case devicesettings.FieldArtnetUniverse:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddArtnetUniverse(v)
+		return nil
+	case devicesettings.FieldOutputFps:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOutputFps(v)
+		return nil
+	case devicesettings.FieldOutputGamma:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOutputGamma(v)
 		return nil
 	}
 	return fmt.Errorf("unknown DeviceSettings numeric field %s", name)
@@ -10718,6 +12634,42 @@ func (m *DeviceSettingsMutation) ResetField(name string) error {
 		return nil
 	case devicesettings.FieldOverlayFg:
 		m.ResetOverlayFg()
+		return nil
+	case devicesettings.FieldTransport:
+		m.ResetTransport()
+		return nil
+	case devicesettings.FieldWledHost:
+		m.ResetWledHost()
+		return nil
+	case devicesettings.FieldWledPort:
+		m.ResetWledPort()
+		return nil
+	case devicesettings.FieldWledRealtimeMode:
+		m.ResetWledRealtimeMode()
+		return nil
+	case devicesettings.FieldWledChannel:
+		m.ResetWledChannel()
+		return nil
+	case devicesettings.FieldArtnetHost:
+		m.ResetArtnetHost()
+		return nil
+	case devicesettings.FieldArtnetPort:
+		m.ResetArtnetPort()
+		return nil
+	case devicesettings.FieldArtnetUniverse:
+		m.ResetArtnetUniverse()
+		return nil
+	case devicesettings.FieldOutputFps:
+		m.ResetOutputFps()
+		return nil
+	case devicesettings.FieldOutputColorOrder:
+		m.ResetOutputColorOrder()
+		return nil
+	case devicesettings.FieldOutputGamma:
+		m.ResetOutputGamma()
+		return nil
+	case devicesettings.FieldOutputMatrixLayout:
+		m.ResetOutputMatrixLayout()
 		return nil
 	}
 	return fmt.Errorf("unknown DeviceSettings field %s", name)
@@ -12729,6 +14681,9 @@ type GeneralSettingsMutation struct {
 	matrix_layouts                 map[int]struct{}
 	removedmatrix_layouts          map[int]struct{}
 	clearedmatrix_layouts          bool
+	compositions                   map[int]struct{}
+	removedcompositions            map[int]struct{}
+	clearedcompositions            bool
 	countdowns                     map[int]struct{}
 	removedcountdowns              map[int]struct{}
 	clearedcountdowns              bool
@@ -12792,6 +14747,24 @@ type GeneralSettingsMutation struct {
 	now_playing_sources            map[int]struct{}
 	removednow_playing_sources     map[int]struct{}
 	clearednow_playing_sources     bool
+	immichs                        map[int]struct{}
+	removedimmichs                 map[int]struct{}
+	clearedimmichs                 bool
+	qbittorrents                   map[int]struct{}
+	removedqbittorrents            map[int]struct{}
+	clearedqbittorrents            bool
+	sabnzbd                        map[int]struct{}
+	removedsabnzbd                 map[int]struct{}
+	clearedsabnzbd                 bool
+	overseerrs                     map[int]struct{}
+	removedoverseerrs              map[int]struct{}
+	clearedoverseerrs              bool
+	uptime_kumas                   map[int]struct{}
+	removeduptime_kumas            map[int]struct{}
+	cleareduptime_kumas            bool
+	speedtests                     map[int]struct{}
+	removedspeedtests              map[int]struct{}
+	clearedspeedtests              bool
 	done                           bool
 	oldValue                       func(context.Context) (*GeneralSettings, error)
 	predicates                     []predicate.GeneralSettings
@@ -15270,6 +17243,60 @@ func (m *GeneralSettingsMutation) ResetMatrixLayouts() {
 	m.removedmatrix_layouts = nil
 }
 
+// AddCompositionIDs adds the "compositions" edge to the Composition entity by ids.
+func (m *GeneralSettingsMutation) AddCompositionIDs(ids ...int) {
+	if m.compositions == nil {
+		m.compositions = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.compositions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCompositions clears the "compositions" edge to the Composition entity.
+func (m *GeneralSettingsMutation) ClearCompositions() {
+	m.clearedcompositions = true
+}
+
+// CompositionsCleared reports if the "compositions" edge to the Composition entity was cleared.
+func (m *GeneralSettingsMutation) CompositionsCleared() bool {
+	return m.clearedcompositions
+}
+
+// RemoveCompositionIDs removes the "compositions" edge to the Composition entity by IDs.
+func (m *GeneralSettingsMutation) RemoveCompositionIDs(ids ...int) {
+	if m.removedcompositions == nil {
+		m.removedcompositions = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.compositions, ids[i])
+		m.removedcompositions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCompositions returns the removed IDs of the "compositions" edge to the Composition entity.
+func (m *GeneralSettingsMutation) RemovedCompositionsIDs() (ids []int) {
+	for id := range m.removedcompositions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CompositionsIDs returns the "compositions" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) CompositionsIDs() (ids []int) {
+	for id := range m.compositions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCompositions resets all changes to the "compositions" edge.
+func (m *GeneralSettingsMutation) ResetCompositions() {
+	m.compositions = nil
+	m.clearedcompositions = false
+	m.removedcompositions = nil
+}
+
 // AddCountdownIDs adds the "countdowns" edge to the Countdown entity by ids.
 func (m *GeneralSettingsMutation) AddCountdownIDs(ids ...int) {
 	if m.countdowns == nil {
@@ -16404,6 +18431,330 @@ func (m *GeneralSettingsMutation) ResetNowPlayingSources() {
 	m.removednow_playing_sources = nil
 }
 
+// AddImmichIDs adds the "immichs" edge to the Immich entity by ids.
+func (m *GeneralSettingsMutation) AddImmichIDs(ids ...int) {
+	if m.immichs == nil {
+		m.immichs = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.immichs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearImmichs clears the "immichs" edge to the Immich entity.
+func (m *GeneralSettingsMutation) ClearImmichs() {
+	m.clearedimmichs = true
+}
+
+// ImmichsCleared reports if the "immichs" edge to the Immich entity was cleared.
+func (m *GeneralSettingsMutation) ImmichsCleared() bool {
+	return m.clearedimmichs
+}
+
+// RemoveImmichIDs removes the "immichs" edge to the Immich entity by IDs.
+func (m *GeneralSettingsMutation) RemoveImmichIDs(ids ...int) {
+	if m.removedimmichs == nil {
+		m.removedimmichs = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.immichs, ids[i])
+		m.removedimmichs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedImmichs returns the removed IDs of the "immichs" edge to the Immich entity.
+func (m *GeneralSettingsMutation) RemovedImmichsIDs() (ids []int) {
+	for id := range m.removedimmichs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ImmichsIDs returns the "immichs" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) ImmichsIDs() (ids []int) {
+	for id := range m.immichs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetImmichs resets all changes to the "immichs" edge.
+func (m *GeneralSettingsMutation) ResetImmichs() {
+	m.immichs = nil
+	m.clearedimmichs = false
+	m.removedimmichs = nil
+}
+
+// AddQbittorrentIDs adds the "qbittorrents" edge to the Qbittorrent entity by ids.
+func (m *GeneralSettingsMutation) AddQbittorrentIDs(ids ...int) {
+	if m.qbittorrents == nil {
+		m.qbittorrents = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.qbittorrents[ids[i]] = struct{}{}
+	}
+}
+
+// ClearQbittorrents clears the "qbittorrents" edge to the Qbittorrent entity.
+func (m *GeneralSettingsMutation) ClearQbittorrents() {
+	m.clearedqbittorrents = true
+}
+
+// QbittorrentsCleared reports if the "qbittorrents" edge to the Qbittorrent entity was cleared.
+func (m *GeneralSettingsMutation) QbittorrentsCleared() bool {
+	return m.clearedqbittorrents
+}
+
+// RemoveQbittorrentIDs removes the "qbittorrents" edge to the Qbittorrent entity by IDs.
+func (m *GeneralSettingsMutation) RemoveQbittorrentIDs(ids ...int) {
+	if m.removedqbittorrents == nil {
+		m.removedqbittorrents = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.qbittorrents, ids[i])
+		m.removedqbittorrents[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedQbittorrents returns the removed IDs of the "qbittorrents" edge to the Qbittorrent entity.
+func (m *GeneralSettingsMutation) RemovedQbittorrentsIDs() (ids []int) {
+	for id := range m.removedqbittorrents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// QbittorrentsIDs returns the "qbittorrents" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) QbittorrentsIDs() (ids []int) {
+	for id := range m.qbittorrents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetQbittorrents resets all changes to the "qbittorrents" edge.
+func (m *GeneralSettingsMutation) ResetQbittorrents() {
+	m.qbittorrents = nil
+	m.clearedqbittorrents = false
+	m.removedqbittorrents = nil
+}
+
+// AddSabnzbdIDs adds the "sabnzbd" edge to the Sabnzbd entity by ids.
+func (m *GeneralSettingsMutation) AddSabnzbdIDs(ids ...int) {
+	if m.sabnzbd == nil {
+		m.sabnzbd = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.sabnzbd[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSabnzbd clears the "sabnzbd" edge to the Sabnzbd entity.
+func (m *GeneralSettingsMutation) ClearSabnzbd() {
+	m.clearedsabnzbd = true
+}
+
+// SabnzbdCleared reports if the "sabnzbd" edge to the Sabnzbd entity was cleared.
+func (m *GeneralSettingsMutation) SabnzbdCleared() bool {
+	return m.clearedsabnzbd
+}
+
+// RemoveSabnzbdIDs removes the "sabnzbd" edge to the Sabnzbd entity by IDs.
+func (m *GeneralSettingsMutation) RemoveSabnzbdIDs(ids ...int) {
+	if m.removedsabnzbd == nil {
+		m.removedsabnzbd = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.sabnzbd, ids[i])
+		m.removedsabnzbd[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSabnzbd returns the removed IDs of the "sabnzbd" edge to the Sabnzbd entity.
+func (m *GeneralSettingsMutation) RemovedSabnzbdIDs() (ids []int) {
+	for id := range m.removedsabnzbd {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SabnzbdIDs returns the "sabnzbd" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) SabnzbdIDs() (ids []int) {
+	for id := range m.sabnzbd {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSabnzbd resets all changes to the "sabnzbd" edge.
+func (m *GeneralSettingsMutation) ResetSabnzbd() {
+	m.sabnzbd = nil
+	m.clearedsabnzbd = false
+	m.removedsabnzbd = nil
+}
+
+// AddOverseerrIDs adds the "overseerrs" edge to the Overseerr entity by ids.
+func (m *GeneralSettingsMutation) AddOverseerrIDs(ids ...int) {
+	if m.overseerrs == nil {
+		m.overseerrs = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.overseerrs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOverseerrs clears the "overseerrs" edge to the Overseerr entity.
+func (m *GeneralSettingsMutation) ClearOverseerrs() {
+	m.clearedoverseerrs = true
+}
+
+// OverseerrsCleared reports if the "overseerrs" edge to the Overseerr entity was cleared.
+func (m *GeneralSettingsMutation) OverseerrsCleared() bool {
+	return m.clearedoverseerrs
+}
+
+// RemoveOverseerrIDs removes the "overseerrs" edge to the Overseerr entity by IDs.
+func (m *GeneralSettingsMutation) RemoveOverseerrIDs(ids ...int) {
+	if m.removedoverseerrs == nil {
+		m.removedoverseerrs = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.overseerrs, ids[i])
+		m.removedoverseerrs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOverseerrs returns the removed IDs of the "overseerrs" edge to the Overseerr entity.
+func (m *GeneralSettingsMutation) RemovedOverseerrsIDs() (ids []int) {
+	for id := range m.removedoverseerrs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OverseerrsIDs returns the "overseerrs" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) OverseerrsIDs() (ids []int) {
+	for id := range m.overseerrs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOverseerrs resets all changes to the "overseerrs" edge.
+func (m *GeneralSettingsMutation) ResetOverseerrs() {
+	m.overseerrs = nil
+	m.clearedoverseerrs = false
+	m.removedoverseerrs = nil
+}
+
+// AddUptimeKumaIDs adds the "uptime_kumas" edge to the UptimeKuma entity by ids.
+func (m *GeneralSettingsMutation) AddUptimeKumaIDs(ids ...int) {
+	if m.uptime_kumas == nil {
+		m.uptime_kumas = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.uptime_kumas[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUptimeKumas clears the "uptime_kumas" edge to the UptimeKuma entity.
+func (m *GeneralSettingsMutation) ClearUptimeKumas() {
+	m.cleareduptime_kumas = true
+}
+
+// UptimeKumasCleared reports if the "uptime_kumas" edge to the UptimeKuma entity was cleared.
+func (m *GeneralSettingsMutation) UptimeKumasCleared() bool {
+	return m.cleareduptime_kumas
+}
+
+// RemoveUptimeKumaIDs removes the "uptime_kumas" edge to the UptimeKuma entity by IDs.
+func (m *GeneralSettingsMutation) RemoveUptimeKumaIDs(ids ...int) {
+	if m.removeduptime_kumas == nil {
+		m.removeduptime_kumas = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.uptime_kumas, ids[i])
+		m.removeduptime_kumas[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUptimeKumas returns the removed IDs of the "uptime_kumas" edge to the UptimeKuma entity.
+func (m *GeneralSettingsMutation) RemovedUptimeKumasIDs() (ids []int) {
+	for id := range m.removeduptime_kumas {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UptimeKumasIDs returns the "uptime_kumas" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) UptimeKumasIDs() (ids []int) {
+	for id := range m.uptime_kumas {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUptimeKumas resets all changes to the "uptime_kumas" edge.
+func (m *GeneralSettingsMutation) ResetUptimeKumas() {
+	m.uptime_kumas = nil
+	m.cleareduptime_kumas = false
+	m.removeduptime_kumas = nil
+}
+
+// AddSpeedtestIDs adds the "speedtests" edge to the Speedtest entity by ids.
+func (m *GeneralSettingsMutation) AddSpeedtestIDs(ids ...int) {
+	if m.speedtests == nil {
+		m.speedtests = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.speedtests[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSpeedtests clears the "speedtests" edge to the Speedtest entity.
+func (m *GeneralSettingsMutation) ClearSpeedtests() {
+	m.clearedspeedtests = true
+}
+
+// SpeedtestsCleared reports if the "speedtests" edge to the Speedtest entity was cleared.
+func (m *GeneralSettingsMutation) SpeedtestsCleared() bool {
+	return m.clearedspeedtests
+}
+
+// RemoveSpeedtestIDs removes the "speedtests" edge to the Speedtest entity by IDs.
+func (m *GeneralSettingsMutation) RemoveSpeedtestIDs(ids ...int) {
+	if m.removedspeedtests == nil {
+		m.removedspeedtests = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.speedtests, ids[i])
+		m.removedspeedtests[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSpeedtests returns the removed IDs of the "speedtests" edge to the Speedtest entity.
+func (m *GeneralSettingsMutation) RemovedSpeedtestsIDs() (ids []int) {
+	for id := range m.removedspeedtests {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SpeedtestsIDs returns the "speedtests" edge IDs in the mutation.
+func (m *GeneralSettingsMutation) SpeedtestsIDs() (ids []int) {
+	for id := range m.speedtests {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSpeedtests resets all changes to the "speedtests" edge.
+func (m *GeneralSettingsMutation) ResetSpeedtests() {
+	m.speedtests = nil
+	m.clearedspeedtests = false
+	m.removedspeedtests = nil
+}
+
 // Where appends a list predicates to the GeneralSettingsMutation builder.
 func (m *GeneralSettingsMutation) Where(ps ...predicate.GeneralSettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -17115,7 +19466,7 @@ func (m *GeneralSettingsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GeneralSettingsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 43)
+	edges := make([]string, 0, 50)
 	if m.sonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -17182,6 +19533,9 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	if m.matrix_layouts != nil {
 		edges = append(edges, generalsettings.EdgeMatrixLayouts)
 	}
+	if m.compositions != nil {
+		edges = append(edges, generalsettings.EdgeCompositions)
+	}
 	if m.countdowns != nil {
 		edges = append(edges, generalsettings.EdgeCountdowns)
 	}
@@ -17244,6 +19598,24 @@ func (m *GeneralSettingsMutation) AddedEdges() []string {
 	}
 	if m.now_playing_sources != nil {
 		edges = append(edges, generalsettings.EdgeNowPlayingSources)
+	}
+	if m.immichs != nil {
+		edges = append(edges, generalsettings.EdgeImmichs)
+	}
+	if m.qbittorrents != nil {
+		edges = append(edges, generalsettings.EdgeQbittorrents)
+	}
+	if m.sabnzbd != nil {
+		edges = append(edges, generalsettings.EdgeSabnzbd)
+	}
+	if m.overseerrs != nil {
+		edges = append(edges, generalsettings.EdgeOverseerrs)
+	}
+	if m.uptime_kumas != nil {
+		edges = append(edges, generalsettings.EdgeUptimeKumas)
+	}
+	if m.speedtests != nil {
+		edges = append(edges, generalsettings.EdgeSpeedtests)
 	}
 	return edges
 }
@@ -17384,6 +19756,12 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeCompositions:
+		ids := make([]ent.Value, 0, len(m.compositions))
+		for id := range m.compositions {
+			ids = append(ids, id)
+		}
+		return ids
 	case generalsettings.EdgeCountdowns:
 		ids := make([]ent.Value, 0, len(m.countdowns))
 		for id := range m.countdowns {
@@ -17510,13 +19888,49 @@ func (m *GeneralSettingsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeImmichs:
+		ids := make([]ent.Value, 0, len(m.immichs))
+		for id := range m.immichs {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeQbittorrents:
+		ids := make([]ent.Value, 0, len(m.qbittorrents))
+		for id := range m.qbittorrents {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeSabnzbd:
+		ids := make([]ent.Value, 0, len(m.sabnzbd))
+		for id := range m.sabnzbd {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeOverseerrs:
+		ids := make([]ent.Value, 0, len(m.overseerrs))
+		for id := range m.overseerrs {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeUptimeKumas:
+		ids := make([]ent.Value, 0, len(m.uptime_kumas))
+		for id := range m.uptime_kumas {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeSpeedtests:
+		ids := make([]ent.Value, 0, len(m.speedtests))
+		for id := range m.speedtests {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GeneralSettingsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 43)
+	edges := make([]string, 0, 50)
 	if m.removedsonarr != nil {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -17583,6 +19997,9 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	if m.removedmatrix_layouts != nil {
 		edges = append(edges, generalsettings.EdgeMatrixLayouts)
 	}
+	if m.removedcompositions != nil {
+		edges = append(edges, generalsettings.EdgeCompositions)
+	}
 	if m.removedcountdowns != nil {
 		edges = append(edges, generalsettings.EdgeCountdowns)
 	}
@@ -17645,6 +20062,24 @@ func (m *GeneralSettingsMutation) RemovedEdges() []string {
 	}
 	if m.removednow_playing_sources != nil {
 		edges = append(edges, generalsettings.EdgeNowPlayingSources)
+	}
+	if m.removedimmichs != nil {
+		edges = append(edges, generalsettings.EdgeImmichs)
+	}
+	if m.removedqbittorrents != nil {
+		edges = append(edges, generalsettings.EdgeQbittorrents)
+	}
+	if m.removedsabnzbd != nil {
+		edges = append(edges, generalsettings.EdgeSabnzbd)
+	}
+	if m.removedoverseerrs != nil {
+		edges = append(edges, generalsettings.EdgeOverseerrs)
+	}
+	if m.removeduptime_kumas != nil {
+		edges = append(edges, generalsettings.EdgeUptimeKumas)
+	}
+	if m.removedspeedtests != nil {
+		edges = append(edges, generalsettings.EdgeSpeedtests)
 	}
 	return edges
 }
@@ -17785,6 +20220,12 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeCompositions:
+		ids := make([]ent.Value, 0, len(m.removedcompositions))
+		for id := range m.removedcompositions {
+			ids = append(ids, id)
+		}
+		return ids
 	case generalsettings.EdgeCountdowns:
 		ids := make([]ent.Value, 0, len(m.removedcountdowns))
 		for id := range m.removedcountdowns {
@@ -17911,13 +20352,49 @@ func (m *GeneralSettingsMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case generalsettings.EdgeImmichs:
+		ids := make([]ent.Value, 0, len(m.removedimmichs))
+		for id := range m.removedimmichs {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeQbittorrents:
+		ids := make([]ent.Value, 0, len(m.removedqbittorrents))
+		for id := range m.removedqbittorrents {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeSabnzbd:
+		ids := make([]ent.Value, 0, len(m.removedsabnzbd))
+		for id := range m.removedsabnzbd {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeOverseerrs:
+		ids := make([]ent.Value, 0, len(m.removedoverseerrs))
+		for id := range m.removedoverseerrs {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeUptimeKumas:
+		ids := make([]ent.Value, 0, len(m.removeduptime_kumas))
+		for id := range m.removeduptime_kumas {
+			ids = append(ids, id)
+		}
+		return ids
+	case generalsettings.EdgeSpeedtests:
+		ids := make([]ent.Value, 0, len(m.removedspeedtests))
+		for id := range m.removedspeedtests {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GeneralSettingsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 43)
+	edges := make([]string, 0, 50)
 	if m.clearedsonarr {
 		edges = append(edges, generalsettings.EdgeSonarr)
 	}
@@ -17984,6 +20461,9 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	if m.clearedmatrix_layouts {
 		edges = append(edges, generalsettings.EdgeMatrixLayouts)
 	}
+	if m.clearedcompositions {
+		edges = append(edges, generalsettings.EdgeCompositions)
+	}
 	if m.clearedcountdowns {
 		edges = append(edges, generalsettings.EdgeCountdowns)
 	}
@@ -18047,6 +20527,24 @@ func (m *GeneralSettingsMutation) ClearedEdges() []string {
 	if m.clearednow_playing_sources {
 		edges = append(edges, generalsettings.EdgeNowPlayingSources)
 	}
+	if m.clearedimmichs {
+		edges = append(edges, generalsettings.EdgeImmichs)
+	}
+	if m.clearedqbittorrents {
+		edges = append(edges, generalsettings.EdgeQbittorrents)
+	}
+	if m.clearedsabnzbd {
+		edges = append(edges, generalsettings.EdgeSabnzbd)
+	}
+	if m.clearedoverseerrs {
+		edges = append(edges, generalsettings.EdgeOverseerrs)
+	}
+	if m.cleareduptime_kumas {
+		edges = append(edges, generalsettings.EdgeUptimeKumas)
+	}
+	if m.clearedspeedtests {
+		edges = append(edges, generalsettings.EdgeSpeedtests)
+	}
 	return edges
 }
 
@@ -18098,6 +20596,8 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedgeneric_apis
 	case generalsettings.EdgeMatrixLayouts:
 		return m.clearedmatrix_layouts
+	case generalsettings.EdgeCompositions:
+		return m.clearedcompositions
 	case generalsettings.EdgeCountdowns:
 		return m.clearedcountdowns
 	case generalsettings.EdgeAiDigests:
@@ -18140,6 +20640,18 @@ func (m *GeneralSettingsMutation) EdgeCleared(name string) bool {
 		return m.clearedqrcodes
 	case generalsettings.EdgeNowPlayingSources:
 		return m.clearednow_playing_sources
+	case generalsettings.EdgeImmichs:
+		return m.clearedimmichs
+	case generalsettings.EdgeQbittorrents:
+		return m.clearedqbittorrents
+	case generalsettings.EdgeSabnzbd:
+		return m.clearedsabnzbd
+	case generalsettings.EdgeOverseerrs:
+		return m.clearedoverseerrs
+	case generalsettings.EdgeUptimeKumas:
+		return m.cleareduptime_kumas
+	case generalsettings.EdgeSpeedtests:
+		return m.clearedspeedtests
 	}
 	return false
 }
@@ -18222,6 +20734,9 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 	case generalsettings.EdgeMatrixLayouts:
 		m.ResetMatrixLayouts()
 		return nil
+	case generalsettings.EdgeCompositions:
+		m.ResetCompositions()
+		return nil
 	case generalsettings.EdgeCountdowns:
 		m.ResetCountdowns()
 		return nil
@@ -18284,6 +20799,24 @@ func (m *GeneralSettingsMutation) ResetEdge(name string) error {
 		return nil
 	case generalsettings.EdgeNowPlayingSources:
 		m.ResetNowPlayingSources()
+		return nil
+	case generalsettings.EdgeImmichs:
+		m.ResetImmichs()
+		return nil
+	case generalsettings.EdgeQbittorrents:
+		m.ResetQbittorrents()
+		return nil
+	case generalsettings.EdgeSabnzbd:
+		m.ResetSabnzbd()
+		return nil
+	case generalsettings.EdgeOverseerrs:
+		m.ResetOverseerrs()
+		return nil
+	case generalsettings.EdgeUptimeKumas:
+		m.ResetUptimeKumas()
+		return nil
+	case generalsettings.EdgeSpeedtests:
+		m.ResetSpeedtests()
 		return nil
 	}
 	return fmt.Errorf("unknown GeneralSettings edge %s", name)
@@ -20586,6 +23119,753 @@ func (m *GreetingRuleMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown GreetingRule edge %s", name)
 }
 
+// GuestPhotoMutation represents an operation that mutates the GuestPhoto nodes in the graph.
+type GuestPhotoMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int
+	_path             *string
+	guest_token_id    *int
+	addguest_token_id *int
+	status            *guestphoto.Status
+	bytes             *int
+	addbytes          *int
+	created_at        *time.Time
+	updated_at        *time.Time
+	expires_at        *time.Time
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*GuestPhoto, error)
+	predicates        []predicate.GuestPhoto
+}
+
+var _ ent.Mutation = (*GuestPhotoMutation)(nil)
+
+// guestphotoOption allows management of the mutation configuration using functional options.
+type guestphotoOption func(*GuestPhotoMutation)
+
+// newGuestPhotoMutation creates new mutation for the GuestPhoto entity.
+func newGuestPhotoMutation(c config, op Op, opts ...guestphotoOption) *GuestPhotoMutation {
+	m := &GuestPhotoMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGuestPhoto,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGuestPhotoID sets the ID field of the mutation.
+func withGuestPhotoID(id int) guestphotoOption {
+	return func(m *GuestPhotoMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GuestPhoto
+		)
+		m.oldValue = func(ctx context.Context) (*GuestPhoto, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GuestPhoto.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGuestPhoto sets the old GuestPhoto of the mutation.
+func withGuestPhoto(node *GuestPhoto) guestphotoOption {
+	return func(m *GuestPhotoMutation) {
+		m.oldValue = func(context.Context) (*GuestPhoto, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GuestPhotoMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GuestPhotoMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of GuestPhoto entities.
+func (m *GuestPhotoMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GuestPhotoMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GuestPhotoMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().GuestPhoto.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetPath sets the "path" field.
+func (m *GuestPhotoMutation) SetPath(s string) {
+	m._path = &s
+}
+
+// Path returns the value of the "path" field in the mutation.
+func (m *GuestPhotoMutation) Path() (r string, exists bool) {
+	v := m._path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPath returns the old "path" field's value of the GuestPhoto entity.
+// If the GuestPhoto object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestPhotoMutation) OldPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPath: %w", err)
+	}
+	return oldValue.Path, nil
+}
+
+// ResetPath resets all changes to the "path" field.
+func (m *GuestPhotoMutation) ResetPath() {
+	m._path = nil
+}
+
+// SetGuestTokenID sets the "guest_token_id" field.
+func (m *GuestPhotoMutation) SetGuestTokenID(i int) {
+	m.guest_token_id = &i
+	m.addguest_token_id = nil
+}
+
+// GuestTokenID returns the value of the "guest_token_id" field in the mutation.
+func (m *GuestPhotoMutation) GuestTokenID() (r int, exists bool) {
+	v := m.guest_token_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGuestTokenID returns the old "guest_token_id" field's value of the GuestPhoto entity.
+// If the GuestPhoto object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestPhotoMutation) OldGuestTokenID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGuestTokenID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGuestTokenID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGuestTokenID: %w", err)
+	}
+	return oldValue.GuestTokenID, nil
+}
+
+// AddGuestTokenID adds i to the "guest_token_id" field.
+func (m *GuestPhotoMutation) AddGuestTokenID(i int) {
+	if m.addguest_token_id != nil {
+		*m.addguest_token_id += i
+	} else {
+		m.addguest_token_id = &i
+	}
+}
+
+// AddedGuestTokenID returns the value that was added to the "guest_token_id" field in this mutation.
+func (m *GuestPhotoMutation) AddedGuestTokenID() (r int, exists bool) {
+	v := m.addguest_token_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetGuestTokenID resets all changes to the "guest_token_id" field.
+func (m *GuestPhotoMutation) ResetGuestTokenID() {
+	m.guest_token_id = nil
+	m.addguest_token_id = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *GuestPhotoMutation) SetStatus(gu guestphoto.Status) {
+	m.status = &gu
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *GuestPhotoMutation) Status() (r guestphoto.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the GuestPhoto entity.
+// If the GuestPhoto object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestPhotoMutation) OldStatus(ctx context.Context) (v guestphoto.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *GuestPhotoMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetBytes sets the "bytes" field.
+func (m *GuestPhotoMutation) SetBytes(i int) {
+	m.bytes = &i
+	m.addbytes = nil
+}
+
+// Bytes returns the value of the "bytes" field in the mutation.
+func (m *GuestPhotoMutation) Bytes() (r int, exists bool) {
+	v := m.bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBytes returns the old "bytes" field's value of the GuestPhoto entity.
+// If the GuestPhoto object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestPhotoMutation) OldBytes(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBytes: %w", err)
+	}
+	return oldValue.Bytes, nil
+}
+
+// AddBytes adds i to the "bytes" field.
+func (m *GuestPhotoMutation) AddBytes(i int) {
+	if m.addbytes != nil {
+		*m.addbytes += i
+	} else {
+		m.addbytes = &i
+	}
+}
+
+// AddedBytes returns the value that was added to the "bytes" field in this mutation.
+func (m *GuestPhotoMutation) AddedBytes() (r int, exists bool) {
+	v := m.addbytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetBytes resets all changes to the "bytes" field.
+func (m *GuestPhotoMutation) ResetBytes() {
+	m.bytes = nil
+	m.addbytes = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *GuestPhotoMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *GuestPhotoMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the GuestPhoto entity.
+// If the GuestPhoto object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestPhotoMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *GuestPhotoMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *GuestPhotoMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *GuestPhotoMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the GuestPhoto entity.
+// If the GuestPhoto object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestPhotoMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *GuestPhotoMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *GuestPhotoMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *GuestPhotoMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the GuestPhoto entity.
+// If the GuestPhoto object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuestPhotoMutation) OldExpiresAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (m *GuestPhotoMutation) ClearExpiresAt() {
+	m.expires_at = nil
+	m.clearedFields[guestphoto.FieldExpiresAt] = struct{}{}
+}
+
+// ExpiresAtCleared returns if the "expires_at" field was cleared in this mutation.
+func (m *GuestPhotoMutation) ExpiresAtCleared() bool {
+	_, ok := m.clearedFields[guestphoto.FieldExpiresAt]
+	return ok
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *GuestPhotoMutation) ResetExpiresAt() {
+	m.expires_at = nil
+	delete(m.clearedFields, guestphoto.FieldExpiresAt)
+}
+
+// Where appends a list predicates to the GuestPhotoMutation builder.
+func (m *GuestPhotoMutation) Where(ps ...predicate.GuestPhoto) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the GuestPhotoMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *GuestPhotoMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.GuestPhoto, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *GuestPhotoMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *GuestPhotoMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (GuestPhoto).
+func (m *GuestPhotoMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GuestPhotoMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m._path != nil {
+		fields = append(fields, guestphoto.FieldPath)
+	}
+	if m.guest_token_id != nil {
+		fields = append(fields, guestphoto.FieldGuestTokenID)
+	}
+	if m.status != nil {
+		fields = append(fields, guestphoto.FieldStatus)
+	}
+	if m.bytes != nil {
+		fields = append(fields, guestphoto.FieldBytes)
+	}
+	if m.created_at != nil {
+		fields = append(fields, guestphoto.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, guestphoto.FieldUpdatedAt)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, guestphoto.FieldExpiresAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GuestPhotoMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case guestphoto.FieldPath:
+		return m.Path()
+	case guestphoto.FieldGuestTokenID:
+		return m.GuestTokenID()
+	case guestphoto.FieldStatus:
+		return m.Status()
+	case guestphoto.FieldBytes:
+		return m.Bytes()
+	case guestphoto.FieldCreatedAt:
+		return m.CreatedAt()
+	case guestphoto.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case guestphoto.FieldExpiresAt:
+		return m.ExpiresAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GuestPhotoMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case guestphoto.FieldPath:
+		return m.OldPath(ctx)
+	case guestphoto.FieldGuestTokenID:
+		return m.OldGuestTokenID(ctx)
+	case guestphoto.FieldStatus:
+		return m.OldStatus(ctx)
+	case guestphoto.FieldBytes:
+		return m.OldBytes(ctx)
+	case guestphoto.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case guestphoto.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case guestphoto.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown GuestPhoto field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GuestPhotoMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case guestphoto.FieldPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPath(v)
+		return nil
+	case guestphoto.FieldGuestTokenID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGuestTokenID(v)
+		return nil
+	case guestphoto.FieldStatus:
+		v, ok := value.(guestphoto.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case guestphoto.FieldBytes:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBytes(v)
+		return nil
+	case guestphoto.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case guestphoto.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case guestphoto.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GuestPhoto field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GuestPhotoMutation) AddedFields() []string {
+	var fields []string
+	if m.addguest_token_id != nil {
+		fields = append(fields, guestphoto.FieldGuestTokenID)
+	}
+	if m.addbytes != nil {
+		fields = append(fields, guestphoto.FieldBytes)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GuestPhotoMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case guestphoto.FieldGuestTokenID:
+		return m.AddedGuestTokenID()
+	case guestphoto.FieldBytes:
+		return m.AddedBytes()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GuestPhotoMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case guestphoto.FieldGuestTokenID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddGuestTokenID(v)
+		return nil
+	case guestphoto.FieldBytes:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBytes(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GuestPhoto numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GuestPhotoMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(guestphoto.FieldExpiresAt) {
+		fields = append(fields, guestphoto.FieldExpiresAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GuestPhotoMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GuestPhotoMutation) ClearField(name string) error {
+	switch name {
+	case guestphoto.FieldExpiresAt:
+		m.ClearExpiresAt()
+		return nil
+	}
+	return fmt.Errorf("unknown GuestPhoto nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GuestPhotoMutation) ResetField(name string) error {
+	switch name {
+	case guestphoto.FieldPath:
+		m.ResetPath()
+		return nil
+	case guestphoto.FieldGuestTokenID:
+		m.ResetGuestTokenID()
+		return nil
+	case guestphoto.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case guestphoto.FieldBytes:
+		m.ResetBytes()
+		return nil
+	case guestphoto.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case guestphoto.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case guestphoto.FieldExpiresAt:
+		m.ResetExpiresAt()
+		return nil
+	}
+	return fmt.Errorf("unknown GuestPhoto field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GuestPhotoMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GuestPhotoMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GuestPhotoMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GuestPhotoMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GuestPhotoMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GuestPhotoMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GuestPhotoMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown GuestPhoto unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GuestPhotoMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown GuestPhoto edge %s", name)
+}
+
 // GuestTokenMutation represents an operation that mutates the GuestToken nodes in the graph.
 type GuestTokenMutation struct {
 	config
@@ -22076,6 +25356,1096 @@ func (m *ImageMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ImageMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Image edge %s", name)
+}
+
+// ImmichMutation represents an operation that mutates the Immich nodes in the graph.
+type ImmichMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	token         *string
+	url           *string
+	_config       *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Immich, error)
+	predicates    []predicate.Immich
+}
+
+var _ ent.Mutation = (*ImmichMutation)(nil)
+
+// immichOption allows management of the mutation configuration using functional options.
+type immichOption func(*ImmichMutation)
+
+// newImmichMutation creates new mutation for the Immich entity.
+func newImmichMutation(c config, op Op, opts ...immichOption) *ImmichMutation {
+	m := &ImmichMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeImmich,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withImmichID sets the ID field of the mutation.
+func withImmichID(id int) immichOption {
+	return func(m *ImmichMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Immich
+		)
+		m.oldValue = func(ctx context.Context) (*Immich, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Immich.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withImmich sets the old Immich of the mutation.
+func withImmich(node *Immich) immichOption {
+	return func(m *ImmichMutation) {
+		m.oldValue = func(context.Context) (*Immich, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ImmichMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ImmichMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ImmichMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ImmichMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Immich.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetToken sets the "token" field.
+func (m *ImmichMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *ImmichMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the Immich entity.
+// If the Immich object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ImmichMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *ImmichMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetURL sets the "url" field.
+func (m *ImmichMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *ImmichMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Immich entity.
+// If the Immich object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ImmichMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *ImmichMutation) ResetURL() {
+	m.url = nil
+}
+
+// SetConfig sets the "config" field.
+func (m *ImmichMutation) SetConfig(s string) {
+	m._config = &s
+}
+
+// Config returns the value of the "config" field in the mutation.
+func (m *ImmichMutation) Config() (r string, exists bool) {
+	v := m._config
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfig returns the old "config" field's value of the Immich entity.
+// If the Immich object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ImmichMutation) OldConfig(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfig requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
+	}
+	return oldValue.Config, nil
+}
+
+// ResetConfig resets all changes to the "config" field.
+func (m *ImmichMutation) ResetConfig() {
+	m._config = nil
+}
+
+// Where appends a list predicates to the ImmichMutation builder.
+func (m *ImmichMutation) Where(ps ...predicate.Immich) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ImmichMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ImmichMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Immich, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ImmichMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ImmichMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Immich).
+func (m *ImmichMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ImmichMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.token != nil {
+		fields = append(fields, immich.FieldToken)
+	}
+	if m.url != nil {
+		fields = append(fields, immich.FieldURL)
+	}
+	if m._config != nil {
+		fields = append(fields, immich.FieldConfig)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ImmichMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case immich.FieldToken:
+		return m.Token()
+	case immich.FieldURL:
+		return m.URL()
+	case immich.FieldConfig:
+		return m.Config()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ImmichMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case immich.FieldToken:
+		return m.OldToken(ctx)
+	case immich.FieldURL:
+		return m.OldURL(ctx)
+	case immich.FieldConfig:
+		return m.OldConfig(ctx)
+	}
+	return nil, fmt.Errorf("unknown Immich field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ImmichMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case immich.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case immich.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	case immich.FieldConfig:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfig(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Immich field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ImmichMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ImmichMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ImmichMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Immich numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ImmichMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ImmichMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ImmichMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Immich nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ImmichMutation) ResetField(name string) error {
+	switch name {
+	case immich.FieldToken:
+		m.ResetToken()
+		return nil
+	case immich.FieldURL:
+		m.ResetURL()
+		return nil
+	case immich.FieldConfig:
+		m.ResetConfig()
+		return nil
+	}
+	return fmt.Errorf("unknown Immich field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ImmichMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ImmichMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ImmichMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ImmichMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ImmichMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ImmichMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ImmichMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Immich unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ImmichMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Immich edge %s", name)
+}
+
+// InboundAdapterMutation represents an operation that mutates the InboundAdapter nodes in the graph.
+type InboundAdapterMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	kind          *string
+	enabled       *bool
+	secret        *string
+	allowlist     *string
+	_config       *string
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*InboundAdapter, error)
+	predicates    []predicate.InboundAdapter
+}
+
+var _ ent.Mutation = (*InboundAdapterMutation)(nil)
+
+// inboundadapterOption allows management of the mutation configuration using functional options.
+type inboundadapterOption func(*InboundAdapterMutation)
+
+// newInboundAdapterMutation creates new mutation for the InboundAdapter entity.
+func newInboundAdapterMutation(c config, op Op, opts ...inboundadapterOption) *InboundAdapterMutation {
+	m := &InboundAdapterMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInboundAdapter,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInboundAdapterID sets the ID field of the mutation.
+func withInboundAdapterID(id int) inboundadapterOption {
+	return func(m *InboundAdapterMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InboundAdapter
+		)
+		m.oldValue = func(ctx context.Context) (*InboundAdapter, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InboundAdapter.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInboundAdapter sets the old InboundAdapter of the mutation.
+func withInboundAdapter(node *InboundAdapter) inboundadapterOption {
+	return func(m *InboundAdapterMutation) {
+		m.oldValue = func(context.Context) (*InboundAdapter, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InboundAdapterMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InboundAdapterMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InboundAdapter entities.
+func (m *InboundAdapterMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InboundAdapterMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InboundAdapterMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InboundAdapter.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetKind sets the "kind" field.
+func (m *InboundAdapterMutation) SetKind(s string) {
+	m.kind = &s
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *InboundAdapterMutation) Kind() (r string, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the InboundAdapter entity.
+// If the InboundAdapter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InboundAdapterMutation) OldKind(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *InboundAdapterMutation) ResetKind() {
+	m.kind = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *InboundAdapterMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *InboundAdapterMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the InboundAdapter entity.
+// If the InboundAdapter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InboundAdapterMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *InboundAdapterMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetSecret sets the "secret" field.
+func (m *InboundAdapterMutation) SetSecret(s string) {
+	m.secret = &s
+}
+
+// Secret returns the value of the "secret" field in the mutation.
+func (m *InboundAdapterMutation) Secret() (r string, exists bool) {
+	v := m.secret
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSecret returns the old "secret" field's value of the InboundAdapter entity.
+// If the InboundAdapter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InboundAdapterMutation) OldSecret(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSecret is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSecret requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSecret: %w", err)
+	}
+	return oldValue.Secret, nil
+}
+
+// ResetSecret resets all changes to the "secret" field.
+func (m *InboundAdapterMutation) ResetSecret() {
+	m.secret = nil
+}
+
+// SetAllowlist sets the "allowlist" field.
+func (m *InboundAdapterMutation) SetAllowlist(s string) {
+	m.allowlist = &s
+}
+
+// Allowlist returns the value of the "allowlist" field in the mutation.
+func (m *InboundAdapterMutation) Allowlist() (r string, exists bool) {
+	v := m.allowlist
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAllowlist returns the old "allowlist" field's value of the InboundAdapter entity.
+// If the InboundAdapter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InboundAdapterMutation) OldAllowlist(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAllowlist is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAllowlist requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAllowlist: %w", err)
+	}
+	return oldValue.Allowlist, nil
+}
+
+// ResetAllowlist resets all changes to the "allowlist" field.
+func (m *InboundAdapterMutation) ResetAllowlist() {
+	m.allowlist = nil
+}
+
+// SetConfig sets the "config" field.
+func (m *InboundAdapterMutation) SetConfig(s string) {
+	m._config = &s
+}
+
+// Config returns the value of the "config" field in the mutation.
+func (m *InboundAdapterMutation) Config() (r string, exists bool) {
+	v := m._config
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfig returns the old "config" field's value of the InboundAdapter entity.
+// If the InboundAdapter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InboundAdapterMutation) OldConfig(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfig requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
+	}
+	return oldValue.Config, nil
+}
+
+// ResetConfig resets all changes to the "config" field.
+func (m *InboundAdapterMutation) ResetConfig() {
+	m._config = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InboundAdapterMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InboundAdapterMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InboundAdapter entity.
+// If the InboundAdapter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InboundAdapterMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InboundAdapterMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InboundAdapterMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InboundAdapterMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InboundAdapter entity.
+// If the InboundAdapter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InboundAdapterMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InboundAdapterMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the InboundAdapterMutation builder.
+func (m *InboundAdapterMutation) Where(ps ...predicate.InboundAdapter) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InboundAdapterMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InboundAdapterMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InboundAdapter, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InboundAdapterMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InboundAdapterMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InboundAdapter).
+func (m *InboundAdapterMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InboundAdapterMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.kind != nil {
+		fields = append(fields, inboundadapter.FieldKind)
+	}
+	if m.enabled != nil {
+		fields = append(fields, inboundadapter.FieldEnabled)
+	}
+	if m.secret != nil {
+		fields = append(fields, inboundadapter.FieldSecret)
+	}
+	if m.allowlist != nil {
+		fields = append(fields, inboundadapter.FieldAllowlist)
+	}
+	if m._config != nil {
+		fields = append(fields, inboundadapter.FieldConfig)
+	}
+	if m.created_at != nil {
+		fields = append(fields, inboundadapter.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, inboundadapter.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InboundAdapterMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case inboundadapter.FieldKind:
+		return m.Kind()
+	case inboundadapter.FieldEnabled:
+		return m.Enabled()
+	case inboundadapter.FieldSecret:
+		return m.Secret()
+	case inboundadapter.FieldAllowlist:
+		return m.Allowlist()
+	case inboundadapter.FieldConfig:
+		return m.Config()
+	case inboundadapter.FieldCreatedAt:
+		return m.CreatedAt()
+	case inboundadapter.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InboundAdapterMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case inboundadapter.FieldKind:
+		return m.OldKind(ctx)
+	case inboundadapter.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case inboundadapter.FieldSecret:
+		return m.OldSecret(ctx)
+	case inboundadapter.FieldAllowlist:
+		return m.OldAllowlist(ctx)
+	case inboundadapter.FieldConfig:
+		return m.OldConfig(ctx)
+	case inboundadapter.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case inboundadapter.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown InboundAdapter field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InboundAdapterMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case inboundadapter.FieldKind:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
+		return nil
+	case inboundadapter.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case inboundadapter.FieldSecret:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSecret(v)
+		return nil
+	case inboundadapter.FieldAllowlist:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAllowlist(v)
+		return nil
+	case inboundadapter.FieldConfig:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfig(v)
+		return nil
+	case inboundadapter.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case inboundadapter.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InboundAdapter field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InboundAdapterMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InboundAdapterMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InboundAdapterMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown InboundAdapter numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InboundAdapterMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InboundAdapterMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InboundAdapterMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown InboundAdapter nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InboundAdapterMutation) ResetField(name string) error {
+	switch name {
+	case inboundadapter.FieldKind:
+		m.ResetKind()
+		return nil
+	case inboundadapter.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case inboundadapter.FieldSecret:
+		m.ResetSecret()
+		return nil
+	case inboundadapter.FieldAllowlist:
+		m.ResetAllowlist()
+		return nil
+	case inboundadapter.FieldConfig:
+		m.ResetConfig()
+		return nil
+	case inboundadapter.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case inboundadapter.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InboundAdapter field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InboundAdapterMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InboundAdapterMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InboundAdapterMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InboundAdapterMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InboundAdapterMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InboundAdapterMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InboundAdapterMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown InboundAdapter unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InboundAdapterMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown InboundAdapter edge %s", name)
 }
 
 // IncidentMutation represents an operation that mutates the Incident nodes in the graph.
@@ -28805,6 +33175,386 @@ func (m *OutboundWebhookMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown OutboundWebhook edge %s", name)
 }
 
+// OverseerrMutation represents an operation that mutates the Overseerr nodes in the graph.
+type OverseerrMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	token         *string
+	url           *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Overseerr, error)
+	predicates    []predicate.Overseerr
+}
+
+var _ ent.Mutation = (*OverseerrMutation)(nil)
+
+// overseerrOption allows management of the mutation configuration using functional options.
+type overseerrOption func(*OverseerrMutation)
+
+// newOverseerrMutation creates new mutation for the Overseerr entity.
+func newOverseerrMutation(c config, op Op, opts ...overseerrOption) *OverseerrMutation {
+	m := &OverseerrMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOverseerr,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOverseerrID sets the ID field of the mutation.
+func withOverseerrID(id int) overseerrOption {
+	return func(m *OverseerrMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Overseerr
+		)
+		m.oldValue = func(ctx context.Context) (*Overseerr, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Overseerr.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOverseerr sets the old Overseerr of the mutation.
+func withOverseerr(node *Overseerr) overseerrOption {
+	return func(m *OverseerrMutation) {
+		m.oldValue = func(context.Context) (*Overseerr, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OverseerrMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OverseerrMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OverseerrMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OverseerrMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Overseerr.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetToken sets the "token" field.
+func (m *OverseerrMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *OverseerrMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the Overseerr entity.
+// If the Overseerr object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OverseerrMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *OverseerrMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetURL sets the "url" field.
+func (m *OverseerrMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *OverseerrMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Overseerr entity.
+// If the Overseerr object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OverseerrMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *OverseerrMutation) ResetURL() {
+	m.url = nil
+}
+
+// Where appends a list predicates to the OverseerrMutation builder.
+func (m *OverseerrMutation) Where(ps ...predicate.Overseerr) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OverseerrMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OverseerrMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Overseerr, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OverseerrMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OverseerrMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Overseerr).
+func (m *OverseerrMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OverseerrMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.token != nil {
+		fields = append(fields, overseerr.FieldToken)
+	}
+	if m.url != nil {
+		fields = append(fields, overseerr.FieldURL)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OverseerrMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case overseerr.FieldToken:
+		return m.Token()
+	case overseerr.FieldURL:
+		return m.URL()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OverseerrMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case overseerr.FieldToken:
+		return m.OldToken(ctx)
+	case overseerr.FieldURL:
+		return m.OldURL(ctx)
+	}
+	return nil, fmt.Errorf("unknown Overseerr field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OverseerrMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case overseerr.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case overseerr.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Overseerr field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OverseerrMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OverseerrMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OverseerrMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Overseerr numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OverseerrMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OverseerrMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OverseerrMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Overseerr nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OverseerrMutation) ResetField(name string) error {
+	switch name {
+	case overseerr.FieldToken:
+		m.ResetToken()
+		return nil
+	case overseerr.FieldURL:
+		m.ResetURL()
+		return nil
+	}
+	return fmt.Errorf("unknown Overseerr field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OverseerrMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OverseerrMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OverseerrMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OverseerrMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OverseerrMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OverseerrMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OverseerrMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Overseerr unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OverseerrMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Overseerr edge %s", name)
+}
+
 // PiHoleMutation represents an operation that mutates the PiHole nodes in the graph.
 type PiHoleMutation struct {
 	config
@@ -30500,6 +35250,386 @@ func (m *PlaylistMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Playlist edge %s", name)
 }
 
+// QbittorrentMutation represents an operation that mutates the Qbittorrent nodes in the graph.
+type QbittorrentMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	token         *string
+	url           *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Qbittorrent, error)
+	predicates    []predicate.Qbittorrent
+}
+
+var _ ent.Mutation = (*QbittorrentMutation)(nil)
+
+// qbittorrentOption allows management of the mutation configuration using functional options.
+type qbittorrentOption func(*QbittorrentMutation)
+
+// newQbittorrentMutation creates new mutation for the Qbittorrent entity.
+func newQbittorrentMutation(c config, op Op, opts ...qbittorrentOption) *QbittorrentMutation {
+	m := &QbittorrentMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeQbittorrent,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withQbittorrentID sets the ID field of the mutation.
+func withQbittorrentID(id int) qbittorrentOption {
+	return func(m *QbittorrentMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Qbittorrent
+		)
+		m.oldValue = func(ctx context.Context) (*Qbittorrent, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Qbittorrent.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withQbittorrent sets the old Qbittorrent of the mutation.
+func withQbittorrent(node *Qbittorrent) qbittorrentOption {
+	return func(m *QbittorrentMutation) {
+		m.oldValue = func(context.Context) (*Qbittorrent, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m QbittorrentMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m QbittorrentMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *QbittorrentMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *QbittorrentMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Qbittorrent.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetToken sets the "token" field.
+func (m *QbittorrentMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *QbittorrentMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the Qbittorrent entity.
+// If the Qbittorrent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *QbittorrentMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *QbittorrentMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetURL sets the "url" field.
+func (m *QbittorrentMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *QbittorrentMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Qbittorrent entity.
+// If the Qbittorrent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *QbittorrentMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *QbittorrentMutation) ResetURL() {
+	m.url = nil
+}
+
+// Where appends a list predicates to the QbittorrentMutation builder.
+func (m *QbittorrentMutation) Where(ps ...predicate.Qbittorrent) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the QbittorrentMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *QbittorrentMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Qbittorrent, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *QbittorrentMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *QbittorrentMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Qbittorrent).
+func (m *QbittorrentMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *QbittorrentMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.token != nil {
+		fields = append(fields, qbittorrent.FieldToken)
+	}
+	if m.url != nil {
+		fields = append(fields, qbittorrent.FieldURL)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *QbittorrentMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case qbittorrent.FieldToken:
+		return m.Token()
+	case qbittorrent.FieldURL:
+		return m.URL()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *QbittorrentMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case qbittorrent.FieldToken:
+		return m.OldToken(ctx)
+	case qbittorrent.FieldURL:
+		return m.OldURL(ctx)
+	}
+	return nil, fmt.Errorf("unknown Qbittorrent field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *QbittorrentMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case qbittorrent.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case qbittorrent.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Qbittorrent field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *QbittorrentMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *QbittorrentMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *QbittorrentMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Qbittorrent numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *QbittorrentMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *QbittorrentMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *QbittorrentMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Qbittorrent nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *QbittorrentMutation) ResetField(name string) error {
+	switch name {
+	case qbittorrent.FieldToken:
+		m.ResetToken()
+		return nil
+	case qbittorrent.FieldURL:
+		m.ResetURL()
+		return nil
+	}
+	return fmt.Errorf("unknown Qbittorrent field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *QbittorrentMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *QbittorrentMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *QbittorrentMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *QbittorrentMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *QbittorrentMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *QbittorrentMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *QbittorrentMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Qbittorrent unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *QbittorrentMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Qbittorrent edge %s", name)
+}
+
 // QrcodeMutation represents an operation that mutates the Qrcode nodes in the graph.
 type QrcodeMutation struct {
 	config
@@ -31998,6 +37128,386 @@ func (m *RssFeedMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *RssFeedMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown RssFeed edge %s", name)
+}
+
+// SabnzbdMutation represents an operation that mutates the Sabnzbd nodes in the graph.
+type SabnzbdMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	token         *string
+	url           *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Sabnzbd, error)
+	predicates    []predicate.Sabnzbd
+}
+
+var _ ent.Mutation = (*SabnzbdMutation)(nil)
+
+// sabnzbdOption allows management of the mutation configuration using functional options.
+type sabnzbdOption func(*SabnzbdMutation)
+
+// newSabnzbdMutation creates new mutation for the Sabnzbd entity.
+func newSabnzbdMutation(c config, op Op, opts ...sabnzbdOption) *SabnzbdMutation {
+	m := &SabnzbdMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSabnzbd,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSabnzbdID sets the ID field of the mutation.
+func withSabnzbdID(id int) sabnzbdOption {
+	return func(m *SabnzbdMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Sabnzbd
+		)
+		m.oldValue = func(ctx context.Context) (*Sabnzbd, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Sabnzbd.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSabnzbd sets the old Sabnzbd of the mutation.
+func withSabnzbd(node *Sabnzbd) sabnzbdOption {
+	return func(m *SabnzbdMutation) {
+		m.oldValue = func(context.Context) (*Sabnzbd, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SabnzbdMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SabnzbdMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SabnzbdMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SabnzbdMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Sabnzbd.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetToken sets the "token" field.
+func (m *SabnzbdMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *SabnzbdMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the Sabnzbd entity.
+// If the Sabnzbd object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SabnzbdMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *SabnzbdMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetURL sets the "url" field.
+func (m *SabnzbdMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *SabnzbdMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Sabnzbd entity.
+// If the Sabnzbd object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SabnzbdMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *SabnzbdMutation) ResetURL() {
+	m.url = nil
+}
+
+// Where appends a list predicates to the SabnzbdMutation builder.
+func (m *SabnzbdMutation) Where(ps ...predicate.Sabnzbd) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the SabnzbdMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *SabnzbdMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Sabnzbd, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *SabnzbdMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *SabnzbdMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Sabnzbd).
+func (m *SabnzbdMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SabnzbdMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.token != nil {
+		fields = append(fields, sabnzbd.FieldToken)
+	}
+	if m.url != nil {
+		fields = append(fields, sabnzbd.FieldURL)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SabnzbdMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case sabnzbd.FieldToken:
+		return m.Token()
+	case sabnzbd.FieldURL:
+		return m.URL()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SabnzbdMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case sabnzbd.FieldToken:
+		return m.OldToken(ctx)
+	case sabnzbd.FieldURL:
+		return m.OldURL(ctx)
+	}
+	return nil, fmt.Errorf("unknown Sabnzbd field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SabnzbdMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case sabnzbd.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case sabnzbd.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Sabnzbd field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SabnzbdMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SabnzbdMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SabnzbdMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Sabnzbd numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SabnzbdMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SabnzbdMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SabnzbdMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Sabnzbd nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SabnzbdMutation) ResetField(name string) error {
+	switch name {
+	case sabnzbd.FieldToken:
+		m.ResetToken()
+		return nil
+	case sabnzbd.FieldURL:
+		m.ResetURL()
+		return nil
+	}
+	return fmt.Errorf("unknown Sabnzbd field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SabnzbdMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SabnzbdMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SabnzbdMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SabnzbdMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SabnzbdMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SabnzbdMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SabnzbdMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Sabnzbd unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SabnzbdMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Sabnzbd edge %s", name)
 }
 
 // SceneMutation represents an operation that mutates the Scene nodes in the graph.
@@ -33675,6 +39185,386 @@ func (m *SonarrMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *SonarrMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Sonarr edge %s", name)
+}
+
+// SpeedtestMutation represents an operation that mutates the Speedtest nodes in the graph.
+type SpeedtestMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	token         *string
+	url           *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Speedtest, error)
+	predicates    []predicate.Speedtest
+}
+
+var _ ent.Mutation = (*SpeedtestMutation)(nil)
+
+// speedtestOption allows management of the mutation configuration using functional options.
+type speedtestOption func(*SpeedtestMutation)
+
+// newSpeedtestMutation creates new mutation for the Speedtest entity.
+func newSpeedtestMutation(c config, op Op, opts ...speedtestOption) *SpeedtestMutation {
+	m := &SpeedtestMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSpeedtest,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSpeedtestID sets the ID field of the mutation.
+func withSpeedtestID(id int) speedtestOption {
+	return func(m *SpeedtestMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Speedtest
+		)
+		m.oldValue = func(ctx context.Context) (*Speedtest, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Speedtest.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSpeedtest sets the old Speedtest of the mutation.
+func withSpeedtest(node *Speedtest) speedtestOption {
+	return func(m *SpeedtestMutation) {
+		m.oldValue = func(context.Context) (*Speedtest, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SpeedtestMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SpeedtestMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SpeedtestMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SpeedtestMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Speedtest.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetToken sets the "token" field.
+func (m *SpeedtestMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *SpeedtestMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the Speedtest entity.
+// If the Speedtest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SpeedtestMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *SpeedtestMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetURL sets the "url" field.
+func (m *SpeedtestMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *SpeedtestMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Speedtest entity.
+// If the Speedtest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SpeedtestMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *SpeedtestMutation) ResetURL() {
+	m.url = nil
+}
+
+// Where appends a list predicates to the SpeedtestMutation builder.
+func (m *SpeedtestMutation) Where(ps ...predicate.Speedtest) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the SpeedtestMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *SpeedtestMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Speedtest, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *SpeedtestMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *SpeedtestMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Speedtest).
+func (m *SpeedtestMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SpeedtestMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.token != nil {
+		fields = append(fields, speedtest.FieldToken)
+	}
+	if m.url != nil {
+		fields = append(fields, speedtest.FieldURL)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SpeedtestMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case speedtest.FieldToken:
+		return m.Token()
+	case speedtest.FieldURL:
+		return m.URL()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SpeedtestMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case speedtest.FieldToken:
+		return m.OldToken(ctx)
+	case speedtest.FieldURL:
+		return m.OldURL(ctx)
+	}
+	return nil, fmt.Errorf("unknown Speedtest field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SpeedtestMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case speedtest.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case speedtest.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Speedtest field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SpeedtestMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SpeedtestMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SpeedtestMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Speedtest numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SpeedtestMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SpeedtestMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SpeedtestMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Speedtest nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SpeedtestMutation) ResetField(name string) error {
+	switch name {
+	case speedtest.FieldToken:
+		m.ResetToken()
+		return nil
+	case speedtest.FieldURL:
+		m.ResetURL()
+		return nil
+	}
+	return fmt.Errorf("unknown Speedtest field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SpeedtestMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SpeedtestMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SpeedtestMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SpeedtestMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SpeedtestMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SpeedtestMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SpeedtestMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Speedtest unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SpeedtestMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Speedtest edge %s", name)
 }
 
 // SportsMutation represents an operation that mutates the Sports nodes in the graph.
@@ -39014,6 +44904,386 @@ func (m *UptimeMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *UptimeMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Uptime edge %s", name)
+}
+
+// UptimeKumaMutation represents an operation that mutates the UptimeKuma nodes in the graph.
+type UptimeKumaMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	token         *string
+	url           *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*UptimeKuma, error)
+	predicates    []predicate.UptimeKuma
+}
+
+var _ ent.Mutation = (*UptimeKumaMutation)(nil)
+
+// uptimekumaOption allows management of the mutation configuration using functional options.
+type uptimekumaOption func(*UptimeKumaMutation)
+
+// newUptimeKumaMutation creates new mutation for the UptimeKuma entity.
+func newUptimeKumaMutation(c config, op Op, opts ...uptimekumaOption) *UptimeKumaMutation {
+	m := &UptimeKumaMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeUptimeKuma,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withUptimeKumaID sets the ID field of the mutation.
+func withUptimeKumaID(id int) uptimekumaOption {
+	return func(m *UptimeKumaMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *UptimeKuma
+		)
+		m.oldValue = func(ctx context.Context) (*UptimeKuma, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().UptimeKuma.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withUptimeKuma sets the old UptimeKuma of the mutation.
+func withUptimeKuma(node *UptimeKuma) uptimekumaOption {
+	return func(m *UptimeKumaMutation) {
+		m.oldValue = func(context.Context) (*UptimeKuma, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m UptimeKumaMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m UptimeKumaMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *UptimeKumaMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *UptimeKumaMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().UptimeKuma.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetToken sets the "token" field.
+func (m *UptimeKumaMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *UptimeKumaMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the UptimeKuma entity.
+// If the UptimeKuma object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UptimeKumaMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *UptimeKumaMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetURL sets the "url" field.
+func (m *UptimeKumaMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *UptimeKumaMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the UptimeKuma entity.
+// If the UptimeKuma object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UptimeKumaMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *UptimeKumaMutation) ResetURL() {
+	m.url = nil
+}
+
+// Where appends a list predicates to the UptimeKumaMutation builder.
+func (m *UptimeKumaMutation) Where(ps ...predicate.UptimeKuma) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the UptimeKumaMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *UptimeKumaMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.UptimeKuma, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *UptimeKumaMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *UptimeKumaMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (UptimeKuma).
+func (m *UptimeKumaMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *UptimeKumaMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.token != nil {
+		fields = append(fields, uptimekuma.FieldToken)
+	}
+	if m.url != nil {
+		fields = append(fields, uptimekuma.FieldURL)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *UptimeKumaMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case uptimekuma.FieldToken:
+		return m.Token()
+	case uptimekuma.FieldURL:
+		return m.URL()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *UptimeKumaMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case uptimekuma.FieldToken:
+		return m.OldToken(ctx)
+	case uptimekuma.FieldURL:
+		return m.OldURL(ctx)
+	}
+	return nil, fmt.Errorf("unknown UptimeKuma field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UptimeKumaMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case uptimekuma.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case uptimekuma.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	}
+	return fmt.Errorf("unknown UptimeKuma field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *UptimeKumaMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *UptimeKumaMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UptimeKumaMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown UptimeKuma numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *UptimeKumaMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *UptimeKumaMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *UptimeKumaMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown UptimeKuma nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *UptimeKumaMutation) ResetField(name string) error {
+	switch name {
+	case uptimekuma.FieldToken:
+		m.ResetToken()
+		return nil
+	case uptimekuma.FieldURL:
+		m.ResetURL()
+		return nil
+	}
+	return fmt.Errorf("unknown UptimeKuma field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *UptimeKumaMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *UptimeKumaMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *UptimeKumaMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *UptimeKumaMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *UptimeKumaMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *UptimeKumaMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *UptimeKumaMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown UptimeKuma unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *UptimeKumaMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown UptimeKuma edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.

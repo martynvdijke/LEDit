@@ -102,6 +102,8 @@ const (
 	EdgeGenericApis = "generic_apis"
 	// EdgeMatrixLayouts holds the string denoting the matrix_layouts edge name in mutations.
 	EdgeMatrixLayouts = "matrix_layouts"
+	// EdgeCompositions holds the string denoting the compositions edge name in mutations.
+	EdgeCompositions = "compositions"
 	// EdgeCountdowns holds the string denoting the countdowns edge name in mutations.
 	EdgeCountdowns = "countdowns"
 	// EdgeAiDigests holds the string denoting the ai_digests edge name in mutations.
@@ -144,6 +146,18 @@ const (
 	EdgeQrcodes = "qrcodes"
 	// EdgeNowPlayingSources holds the string denoting the now_playing_sources edge name in mutations.
 	EdgeNowPlayingSources = "now_playing_sources"
+	// EdgeImmichs holds the string denoting the immichs edge name in mutations.
+	EdgeImmichs = "immichs"
+	// EdgeQbittorrents holds the string denoting the qbittorrents edge name in mutations.
+	EdgeQbittorrents = "qbittorrents"
+	// EdgeSabnzbd holds the string denoting the sabnzbd edge name in mutations.
+	EdgeSabnzbd = "sabnzbd"
+	// EdgeOverseerrs holds the string denoting the overseerrs edge name in mutations.
+	EdgeOverseerrs = "overseerrs"
+	// EdgeUptimeKumas holds the string denoting the uptime_kumas edge name in mutations.
+	EdgeUptimeKumas = "uptime_kumas"
+	// EdgeSpeedtests holds the string denoting the speedtests edge name in mutations.
+	EdgeSpeedtests = "speedtests"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -300,6 +314,13 @@ const (
 	MatrixLayoutsInverseTable = "matrix_layouts"
 	// MatrixLayoutsColumn is the table column denoting the matrix_layouts relation/edge.
 	MatrixLayoutsColumn = "general_settings_matrix_layouts"
+	// CompositionsTable is the table that holds the compositions relation/edge.
+	CompositionsTable = "compositions"
+	// CompositionsInverseTable is the table name for the Composition entity.
+	// It exists in this package in order to avoid circular dependency with the "composition" package.
+	CompositionsInverseTable = "compositions"
+	// CompositionsColumn is the table column denoting the compositions relation/edge.
+	CompositionsColumn = "general_settings_compositions"
 	// CountdownsTable is the table that holds the countdowns relation/edge.
 	CountdownsTable = "countdowns"
 	// CountdownsInverseTable is the table name for the Countdown entity.
@@ -447,6 +468,48 @@ const (
 	NowPlayingSourcesInverseTable = "now_playing_sources"
 	// NowPlayingSourcesColumn is the table column denoting the now_playing_sources relation/edge.
 	NowPlayingSourcesColumn = "general_settings_now_playing_sources"
+	// ImmichsTable is the table that holds the immichs relation/edge.
+	ImmichsTable = "immiches"
+	// ImmichsInverseTable is the table name for the Immich entity.
+	// It exists in this package in order to avoid circular dependency with the "immich" package.
+	ImmichsInverseTable = "immiches"
+	// ImmichsColumn is the table column denoting the immichs relation/edge.
+	ImmichsColumn = "general_settings_immichs"
+	// QbittorrentsTable is the table that holds the qbittorrents relation/edge.
+	QbittorrentsTable = "qbittorrents"
+	// QbittorrentsInverseTable is the table name for the Qbittorrent entity.
+	// It exists in this package in order to avoid circular dependency with the "qbittorrent" package.
+	QbittorrentsInverseTable = "qbittorrents"
+	// QbittorrentsColumn is the table column denoting the qbittorrents relation/edge.
+	QbittorrentsColumn = "general_settings_qbittorrents"
+	// SabnzbdTable is the table that holds the sabnzbd relation/edge.
+	SabnzbdTable = "sabnzbds"
+	// SabnzbdInverseTable is the table name for the Sabnzbd entity.
+	// It exists in this package in order to avoid circular dependency with the "sabnzbd" package.
+	SabnzbdInverseTable = "sabnzbds"
+	// SabnzbdColumn is the table column denoting the sabnzbd relation/edge.
+	SabnzbdColumn = "general_settings_sabnzbd"
+	// OverseerrsTable is the table that holds the overseerrs relation/edge.
+	OverseerrsTable = "overseerrs"
+	// OverseerrsInverseTable is the table name for the Overseerr entity.
+	// It exists in this package in order to avoid circular dependency with the "overseerr" package.
+	OverseerrsInverseTable = "overseerrs"
+	// OverseerrsColumn is the table column denoting the overseerrs relation/edge.
+	OverseerrsColumn = "general_settings_overseerrs"
+	// UptimeKumasTable is the table that holds the uptime_kumas relation/edge.
+	UptimeKumasTable = "uptime_kumas"
+	// UptimeKumasInverseTable is the table name for the UptimeKuma entity.
+	// It exists in this package in order to avoid circular dependency with the "uptimekuma" package.
+	UptimeKumasInverseTable = "uptime_kumas"
+	// UptimeKumasColumn is the table column denoting the uptime_kumas relation/edge.
+	UptimeKumasColumn = "general_settings_uptime_kumas"
+	// SpeedtestsTable is the table that holds the speedtests relation/edge.
+	SpeedtestsTable = "speedtests"
+	// SpeedtestsInverseTable is the table name for the Speedtest entity.
+	// It exists in this package in order to avoid circular dependency with the "speedtest" package.
+	SpeedtestsInverseTable = "speedtests"
+	// SpeedtestsColumn is the table column denoting the speedtests relation/edge.
+	SpeedtestsColumn = "general_settings_speedtests"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -963,6 +1026,20 @@ func ByMatrixLayouts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByCompositionsCount orders the results by compositions count.
+func ByCompositionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCompositionsStep(), opts...)
+	}
+}
+
+// ByCompositions orders the results by compositions terms.
+func ByCompositions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCompositionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByCountdownsCount orders the results by countdowns count.
 func ByCountdownsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -1256,6 +1333,90 @@ func ByNowPlayingSources(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 		sqlgraph.OrderByNeighborTerms(s, newNowPlayingSourcesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByImmichsCount orders the results by immichs count.
+func ByImmichsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newImmichsStep(), opts...)
+	}
+}
+
+// ByImmichs orders the results by immichs terms.
+func ByImmichs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newImmichsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByQbittorrentsCount orders the results by qbittorrents count.
+func ByQbittorrentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newQbittorrentsStep(), opts...)
+	}
+}
+
+// ByQbittorrents orders the results by qbittorrents terms.
+func ByQbittorrents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newQbittorrentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySabnzbdCount orders the results by sabnzbd count.
+func BySabnzbdCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSabnzbdStep(), opts...)
+	}
+}
+
+// BySabnzbd orders the results by sabnzbd terms.
+func BySabnzbd(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSabnzbdStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByOverseerrsCount orders the results by overseerrs count.
+func ByOverseerrsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOverseerrsStep(), opts...)
+	}
+}
+
+// ByOverseerrs orders the results by overseerrs terms.
+func ByOverseerrs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOverseerrsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByUptimeKumasCount orders the results by uptime_kumas count.
+func ByUptimeKumasCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUptimeKumasStep(), opts...)
+	}
+}
+
+// ByUptimeKumas orders the results by uptime_kumas terms.
+func ByUptimeKumas(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUptimeKumasStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySpeedtestsCount orders the results by speedtests count.
+func BySpeedtestsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSpeedtestsStep(), opts...)
+	}
+}
+
+// BySpeedtests orders the results by speedtests terms.
+func BySpeedtests(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSpeedtestsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -1410,6 +1571,13 @@ func newMatrixLayoutsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, MatrixLayoutsTable, MatrixLayoutsColumn),
 	)
 }
+func newCompositionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CompositionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CompositionsTable, CompositionsColumn),
+	)
+}
 func newCountdownsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -1555,5 +1723,47 @@ func newNowPlayingSourcesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(NowPlayingSourcesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, NowPlayingSourcesTable, NowPlayingSourcesColumn),
+	)
+}
+func newImmichsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ImmichsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ImmichsTable, ImmichsColumn),
+	)
+}
+func newQbittorrentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(QbittorrentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, QbittorrentsTable, QbittorrentsColumn),
+	)
+}
+func newSabnzbdStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SabnzbdInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SabnzbdTable, SabnzbdColumn),
+	)
+}
+func newOverseerrsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OverseerrsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OverseerrsTable, OverseerrsColumn),
+	)
+}
+func newUptimeKumasStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UptimeKumasInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, UptimeKumasTable, UptimeKumasColumn),
+	)
+}
+func newSpeedtestsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SpeedtestsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SpeedtestsTable, SpeedtestsColumn),
 	)
 }

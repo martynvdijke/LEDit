@@ -27,6 +27,9 @@ type Calendar func(*sql.Selector)
 // ChartSample is the predicate function for chartsample builders.
 type ChartSample func(*sql.Selector)
 
+// Composition is the predicate function for composition builders.
+type Composition func(*sql.Selector)
+
 // Countdown is the predicate function for countdown builders.
 type Countdown func(*sql.Selector)
 
@@ -69,6 +72,9 @@ type GoogleCalendar func(*sql.Selector)
 // GreetingRule is the predicate function for greetingrule builders.
 type GreetingRule func(*sql.Selector)
 
+// GuestPhoto is the predicate function for guestphoto builders.
+type GuestPhoto func(*sql.Selector)
+
 // GuestToken is the predicate function for guesttoken builders.
 type GuestToken func(*sql.Selector)
 
@@ -77,6 +83,12 @@ type HomeAssistant func(*sql.Selector)
 
 // Image is the predicate function for image builders.
 type Image func(*sql.Selector)
+
+// Immich is the predicate function for immich builders.
+type Immich func(*sql.Selector)
+
+// InboundAdapter is the predicate function for inboundadapter builders.
+type InboundAdapter func(*sql.Selector)
 
 // Incident is the predicate function for incident builders.
 type Incident func(*sql.Selector)
@@ -114,6 +126,9 @@ type OutboundSettings func(*sql.Selector)
 // OutboundWebhook is the predicate function for outboundwebhook builders.
 type OutboundWebhook func(*sql.Selector)
 
+// Overseerr is the predicate function for overseerr builders.
+type Overseerr func(*sql.Selector)
+
 // PiHole is the predicate function for pihole builders.
 type PiHole func(*sql.Selector)
 
@@ -122,6 +137,9 @@ type PixelArt func(*sql.Selector)
 
 // Playlist is the predicate function for playlist builders.
 type Playlist func(*sql.Selector)
+
+// Qbittorrent is the predicate function for qbittorrent builders.
+type Qbittorrent func(*sql.Selector)
 
 // Qrcode is the predicate function for qrcode builders.
 type Qrcode func(*sql.Selector)
@@ -132,6 +150,9 @@ type Radarr func(*sql.Selector)
 // RssFeed is the predicate function for rssfeed builders.
 type RssFeed func(*sql.Selector)
 
+// Sabnzbd is the predicate function for sabnzbd builders.
+type Sabnzbd func(*sql.Selector)
+
 // Scene is the predicate function for scene builders.
 type Scene func(*sql.Selector)
 
@@ -140,6 +161,9 @@ type Schedule func(*sql.Selector)
 
 // Sonarr is the predicate function for sonarr builders.
 type Sonarr func(*sql.Selector)
+
+// Speedtest is the predicate function for speedtest builders.
+type Speedtest func(*sql.Selector)
 
 // Sports is the predicate function for sports builders.
 type Sports func(*sql.Selector)
@@ -170,6 +194,9 @@ type Untappd func(*sql.Selector)
 
 // Uptime is the predicate function for uptime builders.
 type Uptime func(*sql.Selector)
+
+// UptimeKuma is the predicate function for uptimekuma builders.
+type UptimeKuma func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

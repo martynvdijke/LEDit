@@ -80,6 +80,30 @@ type DeviceSettings struct {
 	OverlayBg string `json:"overlay_bg,omitempty"`
 	// OverlayFg holds the value of the "overlay_fg" field.
 	OverlayFg string `json:"overlay_fg,omitempty"`
+	// Transport holds the value of the "transport" field.
+	Transport string `json:"transport,omitempty"`
+	// WledHost holds the value of the "wled_host" field.
+	WledHost string `json:"wled_host,omitempty"`
+	// WledPort holds the value of the "wled_port" field.
+	WledPort int `json:"wled_port,omitempty"`
+	// WledRealtimeMode holds the value of the "wled_realtime_mode" field.
+	WledRealtimeMode string `json:"wled_realtime_mode,omitempty"`
+	// WledChannel holds the value of the "wled_channel" field.
+	WledChannel int `json:"wled_channel,omitempty"`
+	// ArtnetHost holds the value of the "artnet_host" field.
+	ArtnetHost string `json:"artnet_host,omitempty"`
+	// ArtnetPort holds the value of the "artnet_port" field.
+	ArtnetPort int `json:"artnet_port,omitempty"`
+	// ArtnetUniverse holds the value of the "artnet_universe" field.
+	ArtnetUniverse int `json:"artnet_universe,omitempty"`
+	// OutputFps holds the value of the "output_fps" field.
+	OutputFps int `json:"output_fps,omitempty"`
+	// OutputColorOrder holds the value of the "output_color_order" field.
+	OutputColorOrder string `json:"output_color_order,omitempty"`
+	// OutputGamma holds the value of the "output_gamma" field.
+	OutputGamma float64 `json:"output_gamma,omitempty"`
+	// OutputMatrixLayout holds the value of the "output_matrix_layout" field.
+	OutputMatrixLayout string `json:"output_matrix_layout,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DeviceSettingsQuery when eager-loading is set.
 	Edges                            DeviceSettingsEdges `json:"edges"`
@@ -114,9 +138,11 @@ func (*DeviceSettings) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case devicesettings.FieldEnabled, devicesettings.FieldBrightnessEnabled, devicesettings.FieldOverlayEnabled:
 			values[i] = new(sql.NullBool)
-		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldPanelCols, devicesettings.FieldPanelGap, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed, devicesettings.FieldPlaylistID, devicesettings.FieldFallbackPlaylistID, devicesettings.FieldBrightnessOverride, devicesettings.FieldGroupID, devicesettings.FieldOverlayHeight, devicesettings.FieldOverlaySpeedPx:
+		case devicesettings.FieldOutputGamma:
+			values[i] = new(sql.NullFloat64)
+		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldPanelCols, devicesettings.FieldPanelGap, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed, devicesettings.FieldPlaylistID, devicesettings.FieldFallbackPlaylistID, devicesettings.FieldBrightnessOverride, devicesettings.FieldGroupID, devicesettings.FieldOverlayHeight, devicesettings.FieldOverlaySpeedPx, devicesettings.FieldWledPort, devicesettings.FieldWledChannel, devicesettings.FieldArtnetPort, devicesettings.FieldArtnetUniverse, devicesettings.FieldOutputFps:
 			values[i] = new(sql.NullInt64)
-		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken, devicesettings.FieldContentMode, devicesettings.FieldScheduledPlaylistIds, devicesettings.FieldBrightnessSchedules, devicesettings.FieldBrightnessSensorConfig, devicesettings.FieldIdleScreensaver, devicesettings.FieldOverlayPosition, devicesettings.FieldOverlayText, devicesettings.FieldOverlayBg, devicesettings.FieldOverlayFg:
+		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken, devicesettings.FieldContentMode, devicesettings.FieldScheduledPlaylistIds, devicesettings.FieldBrightnessSchedules, devicesettings.FieldBrightnessSensorConfig, devicesettings.FieldIdleScreensaver, devicesettings.FieldOverlayPosition, devicesettings.FieldOverlayText, devicesettings.FieldOverlayBg, devicesettings.FieldOverlayFg, devicesettings.FieldTransport, devicesettings.FieldWledHost, devicesettings.FieldWledRealtimeMode, devicesettings.FieldArtnetHost, devicesettings.FieldOutputColorOrder, devicesettings.FieldOutputMatrixLayout:
 			values[i] = new(sql.NullString)
 		case devicesettings.FieldLastSeenAt:
 			values[i] = new(sql.NullTime)
@@ -336,6 +362,78 @@ func (_m *DeviceSettings) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.OverlayFg = value.String
 			}
+		case devicesettings.FieldTransport:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field transport", values[i])
+			} else if value.Valid {
+				_m.Transport = value.String
+			}
+		case devicesettings.FieldWledHost:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field wled_host", values[i])
+			} else if value.Valid {
+				_m.WledHost = value.String
+			}
+		case devicesettings.FieldWledPort:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field wled_port", values[i])
+			} else if value.Valid {
+				_m.WledPort = int(value.Int64)
+			}
+		case devicesettings.FieldWledRealtimeMode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field wled_realtime_mode", values[i])
+			} else if value.Valid {
+				_m.WledRealtimeMode = value.String
+			}
+		case devicesettings.FieldWledChannel:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field wled_channel", values[i])
+			} else if value.Valid {
+				_m.WledChannel = int(value.Int64)
+			}
+		case devicesettings.FieldArtnetHost:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field artnet_host", values[i])
+			} else if value.Valid {
+				_m.ArtnetHost = value.String
+			}
+		case devicesettings.FieldArtnetPort:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field artnet_port", values[i])
+			} else if value.Valid {
+				_m.ArtnetPort = int(value.Int64)
+			}
+		case devicesettings.FieldArtnetUniverse:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field artnet_universe", values[i])
+			} else if value.Valid {
+				_m.ArtnetUniverse = int(value.Int64)
+			}
+		case devicesettings.FieldOutputFps:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field output_fps", values[i])
+			} else if value.Valid {
+				_m.OutputFps = int(value.Int64)
+			}
+		case devicesettings.FieldOutputColorOrder:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field output_color_order", values[i])
+			} else if value.Valid {
+				_m.OutputColorOrder = value.String
+			}
+		case devicesettings.FieldOutputGamma:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field output_gamma", values[i])
+			} else if value.Valid {
+				_m.OutputGamma = value.Float64
+			}
+		case devicesettings.FieldOutputMatrixLayout:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field output_matrix_layout", values[i])
+			} else if value.Valid {
+				_m.OutputMatrixLayout = value.String
+			}
 		case devicesettings.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field general_settings_device_settings", value)
@@ -490,6 +588,42 @@ func (_m *DeviceSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("overlay_fg=")
 	builder.WriteString(_m.OverlayFg)
+	builder.WriteString(", ")
+	builder.WriteString("transport=")
+	builder.WriteString(_m.Transport)
+	builder.WriteString(", ")
+	builder.WriteString("wled_host=")
+	builder.WriteString(_m.WledHost)
+	builder.WriteString(", ")
+	builder.WriteString("wled_port=")
+	builder.WriteString(fmt.Sprintf("%v", _m.WledPort))
+	builder.WriteString(", ")
+	builder.WriteString("wled_realtime_mode=")
+	builder.WriteString(_m.WledRealtimeMode)
+	builder.WriteString(", ")
+	builder.WriteString("wled_channel=")
+	builder.WriteString(fmt.Sprintf("%v", _m.WledChannel))
+	builder.WriteString(", ")
+	builder.WriteString("artnet_host=")
+	builder.WriteString(_m.ArtnetHost)
+	builder.WriteString(", ")
+	builder.WriteString("artnet_port=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ArtnetPort))
+	builder.WriteString(", ")
+	builder.WriteString("artnet_universe=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ArtnetUniverse))
+	builder.WriteString(", ")
+	builder.WriteString("output_fps=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OutputFps))
+	builder.WriteString(", ")
+	builder.WriteString("output_color_order=")
+	builder.WriteString(_m.OutputColorOrder)
+	builder.WriteString(", ")
+	builder.WriteString("output_gamma=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OutputGamma))
+	builder.WriteString(", ")
+	builder.WriteString("output_matrix_layout=")
+	builder.WriteString(_m.OutputMatrixLayout)
 	builder.WriteByte(')')
 	return builder.String()
 }

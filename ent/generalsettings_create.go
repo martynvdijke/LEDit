@@ -10,6 +10,7 @@ import (
 	"ledit/ent/aisettings"
 	"ledit/ent/alertsettings"
 	"ledit/ent/calendar"
+	"ledit/ent/composition"
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
@@ -22,21 +23,26 @@ import (
 	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/immich"
 	"ledit/ent/jellyfin"
 	"ledit/ent/matrixlayout"
 	"ledit/ent/mpd"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/nowplayingsource"
+	"ledit/ent/overseerr"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
+	"ledit/ent/qbittorrent"
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/sabnzbd"
 	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/speedtest"
 	"ledit/ent/sports"
 	"ledit/ent/stock"
 	"ledit/ent/sunmoon"
@@ -46,6 +52,7 @@ import (
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
+	"ledit/ent/uptimekuma"
 	"ledit/ent/video"
 	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
@@ -699,6 +706,21 @@ func (_c *GeneralSettingsCreate) AddMatrixLayouts(v ...*MatrixLayout) *GeneralSe
 	return _c.AddMatrixLayoutIDs(ids...)
 }
 
+// AddCompositionIDs adds the "compositions" edge to the Composition entity by IDs.
+func (_c *GeneralSettingsCreate) AddCompositionIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddCompositionIDs(ids...)
+	return _c
+}
+
+// AddCompositions adds the "compositions" edges to the Composition entity.
+func (_c *GeneralSettingsCreate) AddCompositions(v ...*Composition) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCompositionIDs(ids...)
+}
+
 // AddCountdownIDs adds the "countdowns" edge to the Countdown entity by IDs.
 func (_c *GeneralSettingsCreate) AddCountdownIDs(ids ...int) *GeneralSettingsCreate {
 	_c.mutation.AddCountdownIDs(ids...)
@@ -1012,6 +1034,96 @@ func (_c *GeneralSettingsCreate) AddNowPlayingSources(v ...*NowPlayingSource) *G
 		ids[i] = v[i].ID
 	}
 	return _c.AddNowPlayingSourceIDs(ids...)
+}
+
+// AddImmichIDs adds the "immichs" edge to the Immich entity by IDs.
+func (_c *GeneralSettingsCreate) AddImmichIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddImmichIDs(ids...)
+	return _c
+}
+
+// AddImmichs adds the "immichs" edges to the Immich entity.
+func (_c *GeneralSettingsCreate) AddImmichs(v ...*Immich) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddImmichIDs(ids...)
+}
+
+// AddQbittorrentIDs adds the "qbittorrents" edge to the Qbittorrent entity by IDs.
+func (_c *GeneralSettingsCreate) AddQbittorrentIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddQbittorrentIDs(ids...)
+	return _c
+}
+
+// AddQbittorrents adds the "qbittorrents" edges to the Qbittorrent entity.
+func (_c *GeneralSettingsCreate) AddQbittorrents(v ...*Qbittorrent) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddQbittorrentIDs(ids...)
+}
+
+// AddSabnzbdIDs adds the "sabnzbd" edge to the Sabnzbd entity by IDs.
+func (_c *GeneralSettingsCreate) AddSabnzbdIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddSabnzbdIDs(ids...)
+	return _c
+}
+
+// AddSabnzbd adds the "sabnzbd" edges to the Sabnzbd entity.
+func (_c *GeneralSettingsCreate) AddSabnzbd(v ...*Sabnzbd) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSabnzbdIDs(ids...)
+}
+
+// AddOverseerrIDs adds the "overseerrs" edge to the Overseerr entity by IDs.
+func (_c *GeneralSettingsCreate) AddOverseerrIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddOverseerrIDs(ids...)
+	return _c
+}
+
+// AddOverseerrs adds the "overseerrs" edges to the Overseerr entity.
+func (_c *GeneralSettingsCreate) AddOverseerrs(v ...*Overseerr) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddOverseerrIDs(ids...)
+}
+
+// AddUptimeKumaIDs adds the "uptime_kumas" edge to the UptimeKuma entity by IDs.
+func (_c *GeneralSettingsCreate) AddUptimeKumaIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddUptimeKumaIDs(ids...)
+	return _c
+}
+
+// AddUptimeKumas adds the "uptime_kumas" edges to the UptimeKuma entity.
+func (_c *GeneralSettingsCreate) AddUptimeKumas(v ...*UptimeKuma) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddUptimeKumaIDs(ids...)
+}
+
+// AddSpeedtestIDs adds the "speedtests" edge to the Speedtest entity by IDs.
+func (_c *GeneralSettingsCreate) AddSpeedtestIDs(ids ...int) *GeneralSettingsCreate {
+	_c.mutation.AddSpeedtestIDs(ids...)
+	return _c
+}
+
+// AddSpeedtests adds the "speedtests" edges to the Speedtest entity.
+func (_c *GeneralSettingsCreate) AddSpeedtests(v ...*Speedtest) *GeneralSettingsCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSpeedtestIDs(ids...)
 }
 
 // Mutation returns the GeneralSettingsMutation object of the builder.
@@ -1652,6 +1764,22 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.CompositionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.CompositionsTable,
+			Columns: []string{generalsettings.CompositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(composition.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.CountdownsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1981,6 +2109,102 @@ func (_c *GeneralSettingsCreate) createSpec() (*GeneralSettings, *sqlgraph.Creat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nowplayingsource.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ImmichsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ImmichsTable,
+			Columns: []string{generalsettings.ImmichsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(immich.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.QbittorrentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.QbittorrentsTable,
+			Columns: []string{generalsettings.QbittorrentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(qbittorrent.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SabnzbdIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SabnzbdTable,
+			Columns: []string{generalsettings.SabnzbdColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sabnzbd.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.OverseerrsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.OverseerrsTable,
+			Columns: []string{generalsettings.OverseerrsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(overseerr.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.UptimeKumasIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.UptimeKumasTable,
+			Columns: []string{generalsettings.UptimeKumasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uptimekuma.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SpeedtestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.SpeedtestsTable,
+			Columns: []string{generalsettings.SpeedtestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(speedtest.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

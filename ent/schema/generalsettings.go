@@ -78,6 +78,7 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("news_feeds", NewsFeed.Type),
 		edge.To("generic_apis", GenericAPI.Type),
 		edge.To("matrix_layouts", MatrixLayout.Type),
+		edge.To("compositions", Composition.Type),
 		edge.To("countdowns", Countdown.Type),
 		edge.To("ai_digests", AIDigest.Type),
 		edge.To("alert_settings", AlertSettings.Type),
@@ -99,5 +100,11 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("mpds", MPD.Type),
 		edge.To("qrcodes", Qrcode.Type),
 		edge.To("now_playing_sources", NowPlayingSource.Type),
+		edge.To("immichs", Immich.Type),
+		edge.To("qbittorrents", Qbittorrent.Type),
+		edge.To("sabnzbd", Sabnzbd.Type),
+		edge.To("overseerrs", Overseerr.Type),
+		edge.To("uptime_kumas", UptimeKuma.Type),
+		edge.To("speedtests", Speedtest.Type),
 	}
 }

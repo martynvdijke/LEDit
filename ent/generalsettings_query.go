@@ -10,6 +10,7 @@ import (
 	"ledit/ent/aisettings"
 	"ledit/ent/alertsettings"
 	"ledit/ent/calendar"
+	"ledit/ent/composition"
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/devicesettings"
@@ -22,22 +23,27 @@ import (
 	"ledit/ent/googlecalendar"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/immich"
 	"ledit/ent/jellyfin"
 	"ledit/ent/matrixlayout"
 	"ledit/ent/mpd"
 	"ledit/ent/mqttsettings"
 	"ledit/ent/newsfeed"
 	"ledit/ent/nowplayingsource"
+	"ledit/ent/overseerr"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/predicate"
+	"ledit/ent/qbittorrent"
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/sabnzbd"
 	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/speedtest"
 	"ledit/ent/sports"
 	"ledit/ent/stock"
 	"ledit/ent/sunmoon"
@@ -47,6 +53,7 @@ import (
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
+	"ledit/ent/uptimekuma"
 	"ledit/ent/video"
 	"ledit/ent/wakealarm"
 	"ledit/ent/weather"
@@ -88,6 +95,7 @@ type GeneralSettingsQuery struct {
 	withNewsFeeds         *NewsFeedQuery
 	withGenericApis       *GenericAPIQuery
 	withMatrixLayouts     *MatrixLayoutQuery
+	withCompositions      *CompositionQuery
 	withCountdowns        *CountdownQuery
 	withAiDigests         *AIDigestQuery
 	withAlertSettings     *AlertSettingsQuery
@@ -109,6 +117,12 @@ type GeneralSettingsQuery struct {
 	withMpds              *MPDQuery
 	withQrcodes           *QrcodeQuery
 	withNowPlayingSources *NowPlayingSourceQuery
+	withImmichs           *ImmichQuery
+	withQbittorrents      *QbittorrentQuery
+	withSabnzbd           *SabnzbdQuery
+	withOverseerrs        *OverseerrQuery
+	withUptimeKumas       *UptimeKumaQuery
+	withSpeedtests        *SpeedtestQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -629,6 +643,28 @@ func (_q *GeneralSettingsQuery) QueryMatrixLayouts() *MatrixLayoutQuery {
 	return query
 }
 
+// QueryCompositions chains the current query on the "compositions" edge.
+func (_q *GeneralSettingsQuery) QueryCompositions() *CompositionQuery {
+	query := (&CompositionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(composition.Table, composition.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.CompositionsTable, generalsettings.CompositionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryCountdowns chains the current query on the "countdowns" edge.
 func (_q *GeneralSettingsQuery) QueryCountdowns() *CountdownQuery {
 	query := (&CountdownClient{config: _q.config}).Query()
@@ -1091,6 +1127,138 @@ func (_q *GeneralSettingsQuery) QueryNowPlayingSources() *NowPlayingSourceQuery 
 	return query
 }
 
+// QueryImmichs chains the current query on the "immichs" edge.
+func (_q *GeneralSettingsQuery) QueryImmichs() *ImmichQuery {
+	query := (&ImmichClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(immich.Table, immich.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.ImmichsTable, generalsettings.ImmichsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryQbittorrents chains the current query on the "qbittorrents" edge.
+func (_q *GeneralSettingsQuery) QueryQbittorrents() *QbittorrentQuery {
+	query := (&QbittorrentClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(qbittorrent.Table, qbittorrent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.QbittorrentsTable, generalsettings.QbittorrentsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySabnzbd chains the current query on the "sabnzbd" edge.
+func (_q *GeneralSettingsQuery) QuerySabnzbd() *SabnzbdQuery {
+	query := (&SabnzbdClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(sabnzbd.Table, sabnzbd.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.SabnzbdTable, generalsettings.SabnzbdColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOverseerrs chains the current query on the "overseerrs" edge.
+func (_q *GeneralSettingsQuery) QueryOverseerrs() *OverseerrQuery {
+	query := (&OverseerrClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(overseerr.Table, overseerr.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.OverseerrsTable, generalsettings.OverseerrsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUptimeKumas chains the current query on the "uptime_kumas" edge.
+func (_q *GeneralSettingsQuery) QueryUptimeKumas() *UptimeKumaQuery {
+	query := (&UptimeKumaClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(uptimekuma.Table, uptimekuma.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.UptimeKumasTable, generalsettings.UptimeKumasColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySpeedtests chains the current query on the "speedtests" edge.
+func (_q *GeneralSettingsQuery) QuerySpeedtests() *SpeedtestQuery {
+	query := (&SpeedtestClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(speedtest.Table, speedtest.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.SpeedtestsTable, generalsettings.SpeedtestsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first GeneralSettings entity from the query.
 // Returns a *NotFoundError when no GeneralSettings was found.
 func (_q *GeneralSettingsQuery) First(ctx context.Context) (*GeneralSettings, error) {
@@ -1305,6 +1473,7 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		withNewsFeeds:         _q.withNewsFeeds.Clone(),
 		withGenericApis:       _q.withGenericApis.Clone(),
 		withMatrixLayouts:     _q.withMatrixLayouts.Clone(),
+		withCompositions:      _q.withCompositions.Clone(),
 		withCountdowns:        _q.withCountdowns.Clone(),
 		withAiDigests:         _q.withAiDigests.Clone(),
 		withAlertSettings:     _q.withAlertSettings.Clone(),
@@ -1326,6 +1495,12 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		withMpds:              _q.withMpds.Clone(),
 		withQrcodes:           _q.withQrcodes.Clone(),
 		withNowPlayingSources: _q.withNowPlayingSources.Clone(),
+		withImmichs:           _q.withImmichs.Clone(),
+		withQbittorrents:      _q.withQbittorrents.Clone(),
+		withSabnzbd:           _q.withSabnzbd.Clone(),
+		withOverseerrs:        _q.withOverseerrs.Clone(),
+		withUptimeKumas:       _q.withUptimeKumas.Clone(),
+		withSpeedtests:        _q.withSpeedtests.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -1574,6 +1749,17 @@ func (_q *GeneralSettingsQuery) WithMatrixLayouts(opts ...func(*MatrixLayoutQuer
 	return _q
 }
 
+// WithCompositions tells the query-builder to eager-load the nodes that are connected to
+// the "compositions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithCompositions(opts ...func(*CompositionQuery)) *GeneralSettingsQuery {
+	query := (&CompositionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withCompositions = query
+	return _q
+}
+
 // WithCountdowns tells the query-builder to eager-load the nodes that are connected to
 // the "countdowns" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *GeneralSettingsQuery) WithCountdowns(opts ...func(*CountdownQuery)) *GeneralSettingsQuery {
@@ -1805,6 +1991,72 @@ func (_q *GeneralSettingsQuery) WithNowPlayingSources(opts ...func(*NowPlayingSo
 	return _q
 }
 
+// WithImmichs tells the query-builder to eager-load the nodes that are connected to
+// the "immichs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithImmichs(opts ...func(*ImmichQuery)) *GeneralSettingsQuery {
+	query := (&ImmichClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withImmichs = query
+	return _q
+}
+
+// WithQbittorrents tells the query-builder to eager-load the nodes that are connected to
+// the "qbittorrents" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithQbittorrents(opts ...func(*QbittorrentQuery)) *GeneralSettingsQuery {
+	query := (&QbittorrentClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withQbittorrents = query
+	return _q
+}
+
+// WithSabnzbd tells the query-builder to eager-load the nodes that are connected to
+// the "sabnzbd" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithSabnzbd(opts ...func(*SabnzbdQuery)) *GeneralSettingsQuery {
+	query := (&SabnzbdClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSabnzbd = query
+	return _q
+}
+
+// WithOverseerrs tells the query-builder to eager-load the nodes that are connected to
+// the "overseerrs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithOverseerrs(opts ...func(*OverseerrQuery)) *GeneralSettingsQuery {
+	query := (&OverseerrClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOverseerrs = query
+	return _q
+}
+
+// WithUptimeKumas tells the query-builder to eager-load the nodes that are connected to
+// the "uptime_kumas" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithUptimeKumas(opts ...func(*UptimeKumaQuery)) *GeneralSettingsQuery {
+	query := (&UptimeKumaClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withUptimeKumas = query
+	return _q
+}
+
+// WithSpeedtests tells the query-builder to eager-load the nodes that are connected to
+// the "speedtests" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithSpeedtests(opts ...func(*SpeedtestQuery)) *GeneralSettingsQuery {
+	query := (&SpeedtestClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSpeedtests = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -1883,7 +2135,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [43]bool{
+		loadedTypes = [50]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -1906,6 +2158,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withNewsFeeds != nil,
 			_q.withGenericApis != nil,
 			_q.withMatrixLayouts != nil,
+			_q.withCompositions != nil,
 			_q.withCountdowns != nil,
 			_q.withAiDigests != nil,
 			_q.withAlertSettings != nil,
@@ -1927,6 +2180,12 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withMpds != nil,
 			_q.withQrcodes != nil,
 			_q.withNowPlayingSources != nil,
+			_q.withImmichs != nil,
+			_q.withQbittorrents != nil,
+			_q.withSabnzbd != nil,
+			_q.withOverseerrs != nil,
+			_q.withUptimeKumas != nil,
+			_q.withSpeedtests != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -2105,6 +2364,13 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			return nil, err
 		}
 	}
+	if query := _q.withCompositions; query != nil {
+		if err := _q.loadCompositions(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Compositions = []*Composition{} },
+			func(n *GeneralSettings, e *Composition) { n.Edges.Compositions = append(n.Edges.Compositions, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := _q.withCountdowns; query != nil {
 		if err := _q.loadCountdowns(ctx, query, nodes,
 			func(n *GeneralSettings) { n.Edges.Countdowns = []*Countdown{} },
@@ -2255,6 +2521,48 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			func(n *GeneralSettings, e *NowPlayingSource) {
 				n.Edges.NowPlayingSources = append(n.Edges.NowPlayingSources, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withImmichs; query != nil {
+		if err := _q.loadImmichs(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Immichs = []*Immich{} },
+			func(n *GeneralSettings, e *Immich) { n.Edges.Immichs = append(n.Edges.Immichs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withQbittorrents; query != nil {
+		if err := _q.loadQbittorrents(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Qbittorrents = []*Qbittorrent{} },
+			func(n *GeneralSettings, e *Qbittorrent) { n.Edges.Qbittorrents = append(n.Edges.Qbittorrents, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSabnzbd; query != nil {
+		if err := _q.loadSabnzbd(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Sabnzbd = []*Sabnzbd{} },
+			func(n *GeneralSettings, e *Sabnzbd) { n.Edges.Sabnzbd = append(n.Edges.Sabnzbd, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withOverseerrs; query != nil {
+		if err := _q.loadOverseerrs(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Overseerrs = []*Overseerr{} },
+			func(n *GeneralSettings, e *Overseerr) { n.Edges.Overseerrs = append(n.Edges.Overseerrs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withUptimeKumas; query != nil {
+		if err := _q.loadUptimeKumas(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.UptimeKumas = []*UptimeKuma{} },
+			func(n *GeneralSettings, e *UptimeKuma) { n.Edges.UptimeKumas = append(n.Edges.UptimeKumas, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSpeedtests; query != nil {
+		if err := _q.loadSpeedtests(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Speedtests = []*Speedtest{} },
+			func(n *GeneralSettings, e *Speedtest) { n.Edges.Speedtests = append(n.Edges.Speedtests, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -2943,6 +3251,37 @@ func (_q *GeneralSettingsQuery) loadMatrixLayouts(ctx context.Context, query *Ma
 	}
 	return nil
 }
+func (_q *GeneralSettingsQuery) loadCompositions(ctx context.Context, query *CompositionQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Composition)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Composition(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.CompositionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_compositions
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_compositions" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_compositions" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 func (_q *GeneralSettingsQuery) loadCountdowns(ctx context.Context, query *CountdownQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Countdown)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*GeneralSettings)
@@ -3589,6 +3928,192 @@ func (_q *GeneralSettingsQuery) loadNowPlayingSources(ctx context.Context, query
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_now_playing_sources" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadImmichs(ctx context.Context, query *ImmichQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Immich)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Immich(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.ImmichsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_immichs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_immichs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_immichs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadQbittorrents(ctx context.Context, query *QbittorrentQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Qbittorrent)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Qbittorrent(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.QbittorrentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_qbittorrents
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_qbittorrents" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_qbittorrents" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadSabnzbd(ctx context.Context, query *SabnzbdQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Sabnzbd)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Sabnzbd(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.SabnzbdColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_sabnzbd
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_sabnzbd" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_sabnzbd" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadOverseerrs(ctx context.Context, query *OverseerrQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Overseerr)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Overseerr(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.OverseerrsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_overseerrs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_overseerrs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_overseerrs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadUptimeKumas(ctx context.Context, query *UptimeKumaQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *UptimeKuma)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.UptimeKuma(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.UptimeKumasColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_uptime_kumas
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_uptime_kumas" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_uptime_kumas" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadSpeedtests(ctx context.Context, query *SpeedtestQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Speedtest)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Speedtest(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.SpeedtestsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_speedtests
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_speedtests" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_speedtests" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

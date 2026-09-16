@@ -13,6 +13,7 @@ import (
 	"ledit/ent/apitoken"
 	"ledit/ent/calendar"
 	"ledit/ent/chartsample"
+	"ledit/ent/composition"
 	"ledit/ent/countdown"
 	"ledit/ent/crypto"
 	"ledit/ent/datasourceplugin"
@@ -27,9 +28,12 @@ import (
 	"ledit/ent/github"
 	"ledit/ent/googlecalendar"
 	"ledit/ent/greetingrule"
+	"ledit/ent/guestphoto"
 	"ledit/ent/guesttoken"
 	"ledit/ent/homeassistant"
 	"ledit/ent/image"
+	"ledit/ent/immich"
+	"ledit/ent/inboundadapter"
 	"ledit/ent/incident"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
@@ -42,15 +46,19 @@ import (
 	"ledit/ent/nowplayingsource"
 	"ledit/ent/outboundsettings"
 	"ledit/ent/outboundwebhook"
+	"ledit/ent/overseerr"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
+	"ledit/ent/qbittorrent"
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
 	"ledit/ent/rssfeed"
+	"ledit/ent/sabnzbd"
 	"ledit/ent/scene"
 	"ledit/ent/schedule"
 	"ledit/ent/sonarr"
+	"ledit/ent/speedtest"
 	"ledit/ent/sports"
 	"ledit/ent/stock"
 	"ledit/ent/sunmoon"
@@ -61,6 +69,7 @@ import (
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
+	"ledit/ent/uptimekuma"
 	"ledit/ent/user"
 	"ledit/ent/video"
 	"ledit/ent/wakealarm"
@@ -139,6 +148,7 @@ func checkColumn(t, c string) error {
 			apitoken.Table:         apitoken.ValidColumn,
 			calendar.Table:         calendar.ValidColumn,
 			chartsample.Table:      chartsample.ValidColumn,
+			composition.Table:      composition.ValidColumn,
 			countdown.Table:        countdown.ValidColumn,
 			crypto.Table:           crypto.ValidColumn,
 			datasourceplugin.Table: datasourceplugin.ValidColumn,
@@ -153,9 +163,12 @@ func checkColumn(t, c string) error {
 			github.Table:           github.ValidColumn,
 			googlecalendar.Table:   googlecalendar.ValidColumn,
 			greetingrule.Table:     greetingrule.ValidColumn,
+			guestphoto.Table:       guestphoto.ValidColumn,
 			guesttoken.Table:       guesttoken.ValidColumn,
 			homeassistant.Table:    homeassistant.ValidColumn,
 			image.Table:            image.ValidColumn,
+			immich.Table:           immich.ValidColumn,
+			inboundadapter.Table:   inboundadapter.ValidColumn,
 			incident.Table:         incident.ValidColumn,
 			jellyfin.Table:         jellyfin.ValidColumn,
 			logentry.Table:         logentry.ValidColumn,
@@ -168,15 +181,19 @@ func checkColumn(t, c string) error {
 			nowplayingsource.Table: nowplayingsource.ValidColumn,
 			outboundsettings.Table: outboundsettings.ValidColumn,
 			outboundwebhook.Table:  outboundwebhook.ValidColumn,
+			overseerr.Table:        overseerr.ValidColumn,
 			pihole.Table:           pihole.ValidColumn,
 			pixelart.Table:         pixelart.ValidColumn,
 			playlist.Table:         playlist.ValidColumn,
+			qbittorrent.Table:      qbittorrent.ValidColumn,
 			qrcode.Table:           qrcode.ValidColumn,
 			radarr.Table:           radarr.ValidColumn,
 			rssfeed.Table:          rssfeed.ValidColumn,
+			sabnzbd.Table:          sabnzbd.ValidColumn,
 			scene.Table:            scene.ValidColumn,
 			schedule.Table:         schedule.ValidColumn,
 			sonarr.Table:           sonarr.ValidColumn,
+			speedtest.Table:        speedtest.ValidColumn,
 			sports.Table:           sports.ValidColumn,
 			stock.Table:            stock.ValidColumn,
 			sunmoon.Table:          sunmoon.ValidColumn,
@@ -187,6 +204,7 @@ func checkColumn(t, c string) error {
 			umamisettings.Table:    umamisettings.ValidColumn,
 			untappd.Table:          untappd.ValidColumn,
 			uptime.Table:           uptime.ValidColumn,
+			uptimekuma.Table:       uptimekuma.ValidColumn,
 			user.Table:             user.ValidColumn,
 			video.Table:            video.ValidColumn,
 			wakealarm.Table:        wakealarm.ValidColumn,

@@ -92,6 +92,18 @@ func (f ChartSampleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChartSampleMutation", m)
 }
 
+// The CompositionFunc type is an adapter to allow the use of ordinary
+// function as Composition mutator.
+type CompositionFunc func(context.Context, *ent.CompositionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CompositionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CompositionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CompositionMutation", m)
+}
+
 // The CountdownFunc type is an adapter to allow the use of ordinary
 // function as Countdown mutator.
 type CountdownFunc func(context.Context, *ent.CountdownMutation) (ent.Value, error)
@@ -260,6 +272,18 @@ func (f GreetingRuleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GreetingRuleMutation", m)
 }
 
+// The GuestPhotoFunc type is an adapter to allow the use of ordinary
+// function as GuestPhoto mutator.
+type GuestPhotoFunc func(context.Context, *ent.GuestPhotoMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GuestPhotoFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GuestPhotoMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GuestPhotoMutation", m)
+}
+
 // The GuestTokenFunc type is an adapter to allow the use of ordinary
 // function as GuestToken mutator.
 type GuestTokenFunc func(context.Context, *ent.GuestTokenMutation) (ent.Value, error)
@@ -294,6 +318,30 @@ func (f ImageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ImageMutation", m)
+}
+
+// The ImmichFunc type is an adapter to allow the use of ordinary
+// function as Immich mutator.
+type ImmichFunc func(context.Context, *ent.ImmichMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ImmichFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ImmichMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ImmichMutation", m)
+}
+
+// The InboundAdapterFunc type is an adapter to allow the use of ordinary
+// function as InboundAdapter mutator.
+type InboundAdapterFunc func(context.Context, *ent.InboundAdapterMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InboundAdapterFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InboundAdapterMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InboundAdapterMutation", m)
 }
 
 // The IncidentFunc type is an adapter to allow the use of ordinary
@@ -440,6 +488,18 @@ func (f OutboundWebhookFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OutboundWebhookMutation", m)
 }
 
+// The OverseerrFunc type is an adapter to allow the use of ordinary
+// function as Overseerr mutator.
+type OverseerrFunc func(context.Context, *ent.OverseerrMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OverseerrFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OverseerrMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OverseerrMutation", m)
+}
+
 // The PiHoleFunc type is an adapter to allow the use of ordinary
 // function as PiHole mutator.
 type PiHoleFunc func(context.Context, *ent.PiHoleMutation) (ent.Value, error)
@@ -474,6 +534,18 @@ func (f PlaylistFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlaylistMutation", m)
+}
+
+// The QbittorrentFunc type is an adapter to allow the use of ordinary
+// function as Qbittorrent mutator.
+type QbittorrentFunc func(context.Context, *ent.QbittorrentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f QbittorrentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.QbittorrentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.QbittorrentMutation", m)
 }
 
 // The QrcodeFunc type is an adapter to allow the use of ordinary
@@ -512,6 +584,18 @@ func (f RssFeedFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RssFeedMutation", m)
 }
 
+// The SabnzbdFunc type is an adapter to allow the use of ordinary
+// function as Sabnzbd mutator.
+type SabnzbdFunc func(context.Context, *ent.SabnzbdMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SabnzbdFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SabnzbdMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SabnzbdMutation", m)
+}
+
 // The SceneFunc type is an adapter to allow the use of ordinary
 // function as Scene mutator.
 type SceneFunc func(context.Context, *ent.SceneMutation) (ent.Value, error)
@@ -546,6 +630,18 @@ func (f SonarrFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SonarrMutation", m)
+}
+
+// The SpeedtestFunc type is an adapter to allow the use of ordinary
+// function as Speedtest mutator.
+type SpeedtestFunc func(context.Context, *ent.SpeedtestMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SpeedtestFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SpeedtestMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SpeedtestMutation", m)
 }
 
 // The SportsFunc type is an adapter to allow the use of ordinary
@@ -666,6 +762,18 @@ func (f UptimeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UptimeMutation", m)
+}
+
+// The UptimeKumaFunc type is an adapter to allow the use of ordinary
+// function as UptimeKuma mutator.
+type UptimeKumaFunc func(context.Context, *ent.UptimeKumaMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UptimeKumaFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UptimeKumaMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UptimeKumaMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary
