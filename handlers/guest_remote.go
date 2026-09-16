@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"net/http"
 	"strconv"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
+	"github.com/skip2/go-qrcode"
 	"ledit/ent"
 	"ledit/ent/guesttoken"
 )
@@ -21,7 +23,14 @@ var guestValidScopes = map[string]struct{}{
 	"pause":   {},
 	"next":    {},
 	"message": {},
+	"photo":   {},
 }
+
+// frameCookieName is the short-lived HttpOnly cookie the frame page exchanges
+// its URL-fragment secret for, so uploads don't resend the secret in headers on
+// every request. The cookie value is the same high-entropy credential, so the
+// server validates it identically; it is not a separate token space.
+const frameCookieName = "ledit_frame"
 
 // hashGuestToken returns the SHA-256 hex digest used for guest token lookup.
 // Only the digest is persisted; the raw secret is shown once at creation.
@@ -69,6 +78,13 @@ func (s *Server) GuestAuthMiddleware(requiredScope string) gin.HandlerFunc {
 				secret = strings.TrimSpace(strings.TrimPrefix(auth, "Bearer "))
 			}
 		}
+		// Frame-page fallback: the browser flow exchanges its fragment secret for
+		// this HttpOnly cookie at POST /frame/session, then keeps using it.
+		if secret == "" {
+			if ck, err := c.Cookie(frameCookieName); err == nil {
+				secret = strings.TrimSpace(ck)
+			}
+		}
 		if secret == "" {
 			abortGuestUnauthorized(c)
 			return
@@ -103,23 +119,24 @@ func (s *Server) GuestAuthMiddleware(requiredScope string) gin.HandlerFunc {
 // ---------------------------------------------------------------------------
 
 var (
-	guestRateMu sync.Mutex
-	guestRate   = map[string][]time.Time{}
+	rateMu      sync.Mutex
+	rateBuckets = map[string][]time.Time{}
 )
 
-// checkGuestRateLimit applies a fixed one-minute window to key. It returns
-// false and the whole seconds until the oldest hit leaves the window when the
-// limit is exceeded, otherwise true. Entries older than the window are pruned
-// on access.
+// checkRateLimit applies a fixed one-minute window to key. It returns false and
+// the whole seconds until the oldest hit leaves the window when the limit is
+// exceeded, otherwise true. Entries older than the window are pruned on access.
+// Every key must already be namespaced by the caller (e.g. "guest:msg:1",
+// "inbound:discord:chan-2").
 //
 // ponytail: in-memory limiter, single-process; move to a shared store only if
 // LEDit runs multi-instance.
-func checkGuestRateLimit(key string, limit int) (bool, int) {
-	guestRateMu.Lock()
-	defer guestRateMu.Unlock()
+func checkWindowRateLimit(key string, limit int) (bool, int) {
+	rateMu.Lock()
+	defer rateMu.Unlock()
 	now := time.Now()
 	cut := now.Add(-time.Minute)
-	times := guestRate[key]
+	times := rateBuckets[key]
 	filtered := times[:0]
 	for _, t := range times {
 		if t.After(cut) {
@@ -127,7 +144,7 @@ func checkGuestRateLimit(key string, limit int) (bool, int) {
 		}
 	}
 	if len(filtered) >= limit {
-		guestRate[key] = filtered
+		rateBuckets[key] = filtered
 		retry := int(time.Until(filtered[0].Add(time.Minute)).Seconds())
 		if retry < 1 {
 			retry = 1
@@ -135,8 +152,13 @@ func checkGuestRateLimit(key string, limit int) (bool, int) {
 		return false, retry
 	}
 	filtered = append(filtered, now)
-	guestRate[key] = filtered
+	rateBuckets[key] = filtered
 	return true, 0
+}
+
+// checkGuestRateLimit is the guest-remote key convention over checkWindowRateLimit.
+func checkGuestRateLimit(key string, limit int) (bool, int) {
+	return checkWindowRateLimit(key, limit)
 }
 
 // abortGuestRateLimited rejects a throttled request with 429 and Retry-After.
@@ -338,7 +360,7 @@ func (s *Server) APIGuestRemotesCreate(c *gin.Context) {
 	}
 	scopes, ok := normalizeGuestScopes(req.Scopes)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "scopes must be a non-empty subset of pause, next, message"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "scopes must be a non-empty subset of pause, next, message, photo"})
 		return
 	}
 
@@ -365,7 +387,7 @@ func (s *Server) APIGuestRemotesCreate(c *gin.Context) {
 	link := scheme + "://" + c.Request.Host + "/remote#" + secret
 
 	// The secret is returned exactly once, in the create response only.
-	c.JSON(http.StatusCreated, gin.H{
+	resp := gin.H{
 		"id":         tok.ID,
 		"label":      tok.Label,
 		"prefix":     tok.TokenPrefix,
@@ -373,7 +395,19 @@ func (s *Server) APIGuestRemotesCreate(c *gin.Context) {
 		"expires_at": tok.ExpiresAt,
 		"secret":     secret,
 		"link":       link,
-	})
+	}
+	// Photo-scoped tokens are used from the standalone frame page. The secret
+	// rides in the URL fragment (never the query or path) and the QR carries the
+	// same fragment-only link; the PNG is embedded as a data URI so the secret
+	// never leaves this authenticated response body.
+	if hasGuestScope(scopes, "photo") {
+		frameLink := scheme + "://" + c.Request.Host + "/frame#" + secret
+		resp["frame_link"] = frameLink
+		if png, err := qrcode.Encode(frameLink, qrcode.Medium, 256); err == nil {
+			resp["frame_qr"] = "data:image/png;base64," + base64.StdEncoding.EncodeToString(png)
+		}
+	}
+	c.JSON(http.StatusCreated, resp)
 }
 
 // APIGuestRemotesRevoke revokes a token so it can no longer authenticate.

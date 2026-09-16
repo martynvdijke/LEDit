@@ -40,6 +40,10 @@
                                 <input class="form-check-input" type="checkbox" id="scope-message" value="message" checked>
                                 <label class="form-check-label" for="scope-message">Message</label>
                             </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="scope-photo" value="photo">
+                                <label class="form-check-label" for="scope-photo">Photo</label>
+                            </div>
                         </div>
                         <div class="col-12 col-md-3">
                             <label class="form-label" for="guest-expiry">Expiry</label>
@@ -59,6 +63,13 @@
                         <div class="input-group">
                             <input type="text" id="guest-share-link" class="form-control" readonly aria-label="Guest remote share link">
                             <button class="btn btn-outline-secondary" type="button" id="guest-copy">Copy</button>
+                        </div>
+                        <div id="guest-frame-result" class="mt-3" hidden>
+                            <p class="text-muted mb-2">Photo frame link (scan to upload a photo):</p>
+                            <div class="input-group">
+                                <input type="text" id="guest-frame-link" class="form-control" readonly aria-label="Guest photo frame link">
+                            </div>
+                            <img id="guest-frame-qr" class="mt-3" alt="Photo frame QR code" width="192" height="192">
                         </div>
                     </div>
                 </div>
@@ -138,6 +149,15 @@
             var data = await res.json();
             linkInput.value = data.link || '';
             result.hidden = false;
+            var frameResult = document.getElementById('guest-frame-result');
+            if (data.frame_link) {
+                document.getElementById('guest-frame-link').value = data.frame_link;
+                var qr = document.getElementById('guest-frame-qr');
+                if (data.frame_qr) { qr.src = data.frame_qr; }
+                frameResult.hidden = false;
+            } else {
+                frameResult.hidden = true;
+            }
             linkInput.focus();
             linkInput.select();
         });

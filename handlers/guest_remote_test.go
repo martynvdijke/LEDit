@@ -18,9 +18,9 @@ import (
 func newGuestRemoteTestServer(t *testing.T) *Server {
 	t.Helper()
 	// Reset shared limiter and feed state so tests do not leak into each other.
-	guestRateMu.Lock()
-	guestRate = map[string][]time.Time{}
-	guestRateMu.Unlock()
+	rateMu.Lock()
+	rateBuckets = map[string][]time.Time{}
+	rateMu.Unlock()
 	GlobalFeed = &FeedController{}
 	dsn := fmt.Sprintf("file:guestremote_%d.db?cache=shared&_fk=1&_busy_timeout=5000&mode=memory", time.Now().UnixNano())
 	drv, err := sql.Open(dialect.SQLite, dsn)
@@ -176,12 +176,12 @@ func TestGuestRateLimitWindowRollover(t *testing.T) {
 		t.Fatalf("4th request should be throttled with positive retry, got ok=%v retry=%d", ok, retry)
 	}
 	// Age the recorded hits out of the one-minute window.
-	guestRateMu.Lock()
+	rateMu.Lock()
 	old := time.Now().Add(-2 * time.Minute)
-	for i := range guestRate[key] {
-		guestRate[key][i] = old
+	for i := range rateBuckets[key] {
+		rateBuckets[key][i] = old
 	}
-	guestRateMu.Unlock()
+	rateMu.Unlock()
 	if ok, _ := checkGuestRateLimit(key, 3); !ok {
 		t.Fatal("after window rollover a new request should be allowed")
 	}
