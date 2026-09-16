@@ -82,6 +82,27 @@
                     </div>
                     <div class="form-text small text-muted">Height max is min(32, matrix height / 2). Overlay enabled with empty text is rejected.</div>
                 </div>
+                <div class="card mb-3 p-3">
+                    <h5>Output transport</h5>
+                    <div class="mb-3"><label class="form-label" for="transport">Transport</label><select class="form-select" id="transport" name="transport"><option value="websocket" {{if .obj}}{{if eq .obj.Transport "websocket"}}selected{{end}}{{if eq .obj.Transport ""}}selected{{end}}{{else}}selected{{end}}>WebSocket</option><option value="wled" {{if .obj}}{{if eq .obj.Transport "wled"}}selected{{end}}{{end}}>WLED</option><option value="artnet" {{if .obj}}{{if eq .obj.Transport "artnet"}}selected{{end}}{{end}}>Art-Net</option></select></div>
+                    <div id="transport-wled" style="display:none">
+                        <div class="mb-2"><label class="form-label">WLED host</label><input type="text" class="form-control" name="wled_host" value="{{if .obj}}{{.obj.WledHost}}{{end}}"></div>
+                        <div class="mb-2"><label class="form-label">WLED port</label><input type="number" class="form-control" name="wled_port" min="1" max="65535" value="{{if .obj}}{{.obj.WledPort}}{{else}}4048{{end}}"></div>
+                        <div class="mb-2"><label class="form-label">WLED realtime mode</label><select class="form-select" name="wled_realtime_mode"><option value="ddp" {{if .obj}}{{if eq .obj.WledRealtimeMode "ddp"}}selected{{end}}{{else}}selected{{end}}>DDP</option><option value="e131" {{if .obj}}{{if eq .obj.WledRealtimeMode "e131"}}selected{{end}}{{end}}>E1.31</option><option value="http" {{if .obj}}{{if eq .obj.WledRealtimeMode "http"}}selected{{end}}{{end}}>HTTP</option></select></div>
+                        <div class="mb-2"><label class="form-label">WLED channel</label><input type="number" class="form-control" name="wled_channel" min="0" value="{{if .obj}}{{.obj.WledChannel}}{{else}}0{{end}}"></div>
+                    </div>
+                    <div id="transport-artnet" style="display:none">
+                        <div class="mb-2"><label class="form-label">Art-Net host</label><input type="text" class="form-control" name="artnet_host" value="{{if .obj}}{{.obj.ArtnetHost}}{{end}}"></div>
+                        <div class="mb-2"><label class="form-label">Art-Net port</label><input type="number" class="form-control" name="artnet_port" min="1" max="65535" value="{{if .obj}}{{.obj.ArtnetPort}}{{else}}6454{{end}}"></div>
+                        <div class="mb-2"><label class="form-label">Art-Net universe</label><input type="number" class="form-control" name="artnet_universe" min="0" value="{{if .obj}}{{.obj.ArtnetUniverse}}{{else}}0{{end}}"></div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col"><label class="form-label">FPS</label><input type="number" class="form-control" name="output_fps" min="1" max="60" value="{{if .obj}}{{.obj.OutputFps}}{{else}}20{{end}}"></div>
+                        <div class="col"><label class="form-label">Color order</label><select class="form-select" name="output_color_order"><option value="RGB" {{if .obj}}{{if eq .obj.OutputColorOrder "RGB"}}selected{{end}}{{else}}selected{{end}}>RGB</option><option value="GRB" {{if .obj}}{{if eq .obj.OutputColorOrder "GRB"}}selected{{end}}{{end}}>GRB</option><option value="BGR" {{if .obj}}{{if eq .obj.OutputColorOrder "BGR"}}selected{{end}}{{end}}>BGR</option></select></div>
+                        <div class="col"><label class="form-label">Gamma</label><input type="number" step="0.1" min="0.1" max="4.0" class="form-control" name="output_gamma" value="{{if .obj}}{{.obj.OutputGamma}}{{else}}1.0{{end}}"></div>
+                        <div class="col"><label class="form-label">Matrix layout</label><select class="form-select" name="output_matrix_layout"><option value="row-major" {{if .obj}}{{if eq .obj.OutputMatrixLayout "row-major"}}selected{{end}}{{else}}selected{{end}}>Row-major</option><option value="serpentine" {{if .obj}}{{if eq .obj.OutputMatrixLayout "serpentine"}}selected{{end}}{{end}}>Serpentine</option></select></div>
+                    </div>
+                </div>
                 <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
                 <a href="/admin/devices" class="btn btn-secondary">Cancel</a>
             </form>
@@ -260,6 +281,16 @@
     // re-running sync() on submit would clobber a value set directly on the
     // hidden input (e.g. scripts/tests).
     render();
+})();
+</script>
+<script>
+(function(){
+    var sel=document.getElementById('transport');
+    var wled=document.getElementById('transport-wled');
+    var artnet=document.getElementById('transport-artnet');
+    if(!sel||!wled||!artnet) return;
+    function toggle(){ var v=sel.value; wled.style.display=v==='wled'?'':'none'; artnet.style.display=v==='artnet'?'':'none'; }
+    sel.addEventListener('change',toggle); toggle();
 })();
 </script>
 </body><script type="module" src="/static/assets/app.js"></script>
