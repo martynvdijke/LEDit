@@ -29,6 +29,19 @@ type Message struct {
 	CreatedAt time.Time  `json:"created_at"`
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	Surfaces  []string   `json:"surfaces,omitempty"`
+	// Priority is the inbound severity hint (0 normal .. 3 urgent). Additive:
+	// omitempty keeps legacy notification/incident payloads byte-identical.
+	Priority int `json:"priority,omitempty"`
+	// Media optionally attaches an image for display surfaces.
+	Media *MessageMedia `json:"media,omitempty"`
+}
+
+// MessageMedia is an optional image attached to a message. URL is a remote
+// source, Path a local file under web/media; callers set at most one.
+type MessageMedia struct {
+	URL  string `json:"url,omitempty"`
+	Path string `json:"path,omitempty"`
+	MIME string `json:"mime,omitempty"`
 }
 
 var messageSurfaces = []string{"ws", "trmnl", "mqtt", "webhook"}
@@ -53,6 +66,8 @@ func NotificationToMessage(n notifEntry) Message {
 		CreatedAt: created,
 		ExpiresAt: exp,
 		Surfaces:  messageSurfaces,
+		Priority:  n.Priority,
+		Media:     n.Media,
 	}
 }
 

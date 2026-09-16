@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Inbound Messaging</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Inbound Messaging</h1>
+                <a href="/admin/delivery" class="btn btn-sm btn-outline-secondary">Delivery log</a>
+            </div>
+            {{range .adapters}}
+            <div class="card mt-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>{{.Title}}</strong>
+                    <small class="text-muted">{{if .Configured}}configured{{else}}not configured{{end}} · allowlist: {{.AllowlistCount}}{{if .LastMessageAt}} · last: {{.LastMessageAt}}{{end}}</small>
+                </div>
+                <div class="card-body">
+                    {{if .LastError}}<div class="alert alert-warning py-1 small" role="alert">Last error: {{.LastError}}</div>{{end}}
+                    {{if .LastMessageAt}}<div class="text-muted small">Last message: {{.LastMessageAt}}</div>{{end}}
+                    <form method="POST" action="/admin/inbound/{{.Kind}}" class="mt-2">
+                        <div class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input" id="enabled-{{.Kind}}" name="enabled" {{if .Enabled}}checked{{end}}>
+                            <label for="enabled-{{.Kind}}" class="form-check-label">Enabled</label>
+                        </div>
+                        <div class="mb-2">
+                            <label for="secret-{{.Kind}}" class="form-label">Secret / Token</label>
+                            <input type="password" class="form-control" id="secret-{{.Kind}}" name="secret" placeholder="{{if .Configured}}•••••••• (leave as ******** to keep){{else}}enter secret{{end}}" value="{{if .Configured}}********{{end}}">
+                        </div>
+                        <div class="mb-2">
+                            <label for="allowlist-{{.Kind}}" class="form-label">Allowlist (one per line or comma/space separated)</label>
+                            <textarea class="form-control font-monospace" id="allowlist-{{.Kind}}" name="allowlist" rows="3">{{.AllowlistText}}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="config-{{.Kind}}" class="form-label">Config (JSON)</label>
+                            <textarea class="form-control font-monospace" id="config-{{.Kind}}" name="config" rows="4" spellcheck="false">{{.Config}}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </form>
+                    <form method="POST" action="/admin/inbound/{{.Kind}}/test" class="mt-2" style="display:inline">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Test</button>
+                    </form>
+                </div>
+            </div>
+            {{end}}
+            {{if not .adapters}}
+            <p class="text-muted mt-4">No adapters yet. Adapters are created on first save — configure any of the six kinds above and click Save.</p>
+            {{end}}
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

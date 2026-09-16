@@ -277,6 +277,11 @@ type notifEntry struct {
 	// CreatedAt backs the unified Message read model; json:"-" keeps the
 	// existing notification API shape byte-identical.
 	CreatedAt time.Time `json:"-"`
+	// Priority is an internal 0-3 inbound severity hint; json:"-" for the same
+	// byte-identical-shape reason as CreatedAt.
+	Priority int `json:"-"`
+	// Media optionally attaches an image; json:"-" likewise.
+	Media *MessageMedia `json:"-"`
 }
 
 // NotifOption configures AddNotification.
@@ -284,6 +289,8 @@ type notifConfig struct {
 	ttl       time.Duration
 	color     string
 	expiresAt time.Time
+	priority  int
+	media     *MessageMedia
 }
 
 // NotifOption is an exported functional option for AddNotification.
@@ -302,6 +309,17 @@ func withColor(color string) NotifOption {
 // withExpiresAt is an internal option for testing expiry.
 func withExpiresAt(t time.Time) NotifOption {
 	return func(c *notifConfig) { c.expiresAt = t }
+}
+
+// WithPriority sets the 0-3 severity hint carried by the unified Message read
+// model. Persistence stays Title/Message-only.
+func WithPriority(p int) NotifOption {
+	return func(c *notifConfig) { c.priority = p }
+}
+
+// WithMedia attaches an image to the notification for display surfaces.
+func WithMedia(m *MessageMedia) NotifOption {
+	return func(c *notifConfig) { c.media = m }
 }
 
 // addToMemoryQueue stores a notification in the in-memory queue (for live feed display).
@@ -333,6 +351,8 @@ func addToMemoryQueueWithOptions(title, message string, opts ...NotifOption) not
 		ExpiresAt: exp,
 		Color:     cfg.color,
 		CreatedAt: now,
+		Priority:  cfg.priority,
+		Media:     cfg.media,
 	}
 	notifHistory = append(notifHistory, entry)
 	// Keep last 50
