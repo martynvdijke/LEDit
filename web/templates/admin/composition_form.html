@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .edit}}Edit{{else}}New{{end}} Composition</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .edit}}Edit{{else}}New{{end}} Composition</h1>
+            <div class="row">
+                <div class="col-md-7">
+                    <form method="POST" action="/admin/compositions{{if .edit}}/{{.obj.ID}}/edit{{else}}/new{{end}}" class="mt-4" data-live-preview-form data-preview-endpoint="/admin/preview/composition">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{if .edit}}{{.obj.Name}}{{end}}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="mode" class="form-label">Coordinate mode</label>
+                            <select class="form-select" id="mode" name="mode">
+                                <option value="grid" {{if eq .mode "grid"}}selected{{end}}>Grid (rows/columns + spans)</option>
+                                <option value="absolute" {{if eq .mode "absolute"}}selected{{end}}>Absolute (x/y/width/height)</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="rows" class="form-label">Rows (1-8)</label>
+                                <input type="number" class="form-control" id="rows" name="rows" value="{{.rows}}" min="1" max="8">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="cols" class="form-label">Columns (1-8)</label>
+                                <input type="number" class="form-control" id="cols" name="cols" value="{{.cols}}" min="1" max="8">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="gap" class="form-label">Gap (px)</label>
+                                <input type="number" class="form-control" id="gap" name="gap" value="{{.gap}}" min="0" max="64">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="padding" class="form-label">Padding (px)</label>
+                                <input type="number" class="form-control" id="padding" name="padding" value="{{.padding}}" min="0" max="64">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="background" class="form-label">Background</label>
+                                <input type="color" class="form-control form-control-color" id="background" name="background" value="{{.background}}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="ttl_seconds" class="form-label">TTL override (seconds, 0 = default)</label>
+                                <input type="number" class="form-control" id="ttl_seconds" name="ttl_seconds" value="{{if .edit}}{{.ttl_seconds}}{{else}}0{{end}}" min="0">
+                            </div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {{if .enabled}}checked{{end}}>
+                            <label for="enabled" class="form-check-label">Enabled (shown in feed)</label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regions" class="form-label">Regions (JSON)</label>
+                            <textarea class="form-control font-monospace" id="regions" name="regions" rows="10" spellcheck="false">{{.regions}}</textarea>
+                            <small class="text-muted">
+                                Array of regions. Grid mode uses <code>row</code>/<code>col</code> with optional <code>row_span</code>/<code>col_span</code>;
+                                absolute mode uses <code>x</code>/<code>y</code>/<code>w</code>/<code>h</code>. Each region binds
+                                <code>source_type</code>+<code>source_id</code>, with optional <code>id</code>, <code>inset</code>, <code>border</code>, and a <code>theme</code> override
+                                (<code>accent</code>, <code>text</code>, <code>background</code>, <code>font_size</code>).
+                            </small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
+                        <a href="/admin/compositions" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+                <div class="col-md-5">
+                    <h5 class="mt-4">Live preview</h5>
+                    <img data-live-preview-img alt="Composition live preview" width="256" height="256" class="border bg-dark" style="image-rendering:pixelated">
+                    {{if .edit}}
+                    <div class="mt-2">
+                        <a href="/admin/preview?type=composition&id={{.obj.ID}}&w=256&h=256" target="_blank" class="btn btn-sm btn-outline-secondary">Full preview</a>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>window.BINDING_OPTS = {{.binding_opts_json}};</script>
+<script type="module" src="/static/assets/app.js"></script>
+</html>
