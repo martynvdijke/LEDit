@@ -3,42 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEDit - Theme Editor</title>
+    <title>LEDit - {{if .theme}}Edit{{else}}New{{end}} Theme</title>
     <link rel="stylesheet" href="/static/assets/styles.css">
 </head>
 <body>
     <div class="d-flex">
         {{template "sidebar" .}}
         <div class="container-fluid p-4">
-            <h1>Theme Editor</h1>
-            <form method="POST" action="/admin/theme" class="mt-4">
-                <div class="row">
-                    <div class="col-md-4">
+            <h1>{{if .theme}}Edit Theme{{else}}New Theme{{end}}</h1>
+            {{if .theme}}{{if .theme.BuiltIn}}<div class="alert alert-info mt-3" role="alert">Built-in themes are read-only</div>{{end}}{{end}}
+            <div class="row">
+                <div class="col-md-6">
+                    <form method="POST" action="/admin/themes/{{if .theme}}{{.theme.ID}}{{else}}new{{end}}/edit" class="mt-4" data-theme-editor>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="My theme" value="{{if .theme}}{{.theme.Name}}{{end}}" {{if .theme}}{{if .theme.BuiltIn}}disabled{{end}}{{end}}>
+                        </div>
                         <div class="mb-3">
                             <label for="bg_color" class="form-label">Background Color</label>
-                            <input type="color" class="form-control form-control-color" id="bg_color" name="bg_color" value="{{.theme.bg_color}}">
+                            <input type="color" class="form-control form-control-color" id="bg_color" name="bg_color" value="{{if .theme}}{{.theme.BgColor}}{{else}}#282a36{{end}}" {{if .theme}}{{if .theme.BuiltIn}}disabled{{end}}{{end}}>
                         </div>
                         <div class="mb-3">
                             <label for="accent_color" class="form-label">Accent Color</label>
-                            <input type="color" class="form-control form-control-color" id="accent_color" name="accent_color" value="{{.theme.accent_color}}">
+                            <input type="color" class="form-control form-control-color" id="accent_color" name="accent_color" value="{{if .theme}}{{.theme.AccentColor}}{{else}}#50fa7b{{end}}" {{if .theme}}{{if .theme.BuiltIn}}disabled{{end}}{{end}}>
                         </div>
                         <div class="mb-3">
                             <label for="text_color" class="form-label">Text Color</label>
-                            <input type="color" class="form-control form-control-color" id="text_color" name="text_color" value="{{.theme.text_color}}">
+                            <input type="color" class="form-control form-control-color" id="text_color" name="text_color" value="{{if .theme}}{{.theme.TextColor}}{{else}}#8be9fd{{end}}" {{if .theme}}{{if .theme.BuiltIn}}disabled{{end}}{{end}}>
                         </div>
                         <div class="mb-3">
                             <label for="title" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="title" name="title" value="{{.theme.title}}">
+                            <input type="text" class="form-control" id="title" name="title" value="{{if .theme}}{{.theme.Title}}{{else}}CUSTOM{{end}}" {{if .theme}}{{if .theme.BuiltIn}}disabled{{end}}{{end}}>
                         </div>
                         <div class="mb-3">
                             <label for="font_size" class="form-label">Font Size</label>
-                            <input type="number" class="form-control" id="font_size" name="font_size" value="{{.theme.font_size}}">
+                            <input type="number" class="form-control" id="font_size" name="font_size" min="8" max="100" step="1" value="{{if .theme}}{{.theme.FontSize}}{{else}}24{{end}}" {{if .theme}}{{if .theme.BuiltIn}}disabled{{end}}{{end}}>
                         </div>
-                        <button type="submit" class="btn btn-primary">Save Theme</button>
+                        {{if not .theme}}
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_default" name="is_default">
+                            <label for="is_default" class="form-check-label">Set as default</label>
+                        </div>
+                        {{end}}
+                        {{if .theme}}{{if .theme.BuiltIn}}{{else}}<button type="submit" class="btn btn-primary" data-theme-save>Save</button>{{end}}{{else}}<button type="submit" class="btn btn-primary" data-theme-save>Save</button>{{end}}
+                        <a href="/admin/themes" class="btn btn-secondary">Cancel</a>
+                    </form>
+                    {{if .theme}}{{if not .theme.BuiltIn}}
+                    <form method="POST" action="/admin/themes/{{.theme.ID}}/duplicate" class="mt-3" style="display:inline">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Duplicate</button>
+                    </form>
+                    {{end}}{{end}}
+                </div>
+                <div class="col-md-6">
+                    <div class="mt-4">
+                        <label for="preview_target" class="form-label">Preview source</label>
+                        <select id="preview_target" class="form-select mb-3" data-theme-preview-target>
+                            {{range .targets}}
+                            <option value="{{.Type}}:{{.ID}}" {{if and (eq .Type $.previewType) (eq .ID $.previewID)}}selected{{end}}>{{.Label}}</option>
+                            {{end}}
+                        </select>
+                        <h5>Live preview</h5>
+                        <img data-live-preview-img alt="Live preview" width="256" height="256" class="border bg-dark" style="image-rendering:pixelated">
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
-</body><script type="module" src="/static/assets/app.js"></script>
+</body><script type="module" src="/static/assets/app.js"></script><script type="module" src="/static/assets/theme_editor.js"></script>
 </html>

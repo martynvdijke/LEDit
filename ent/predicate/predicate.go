@@ -186,6 +186,12 @@ type TelegramSettings func(*sql.Selector)
 // TextSlide is the predicate function for textslide builders.
 type TextSlide func(*sql.Selector)
 
+// Theme is the predicate function for theme builders.
+type Theme func(*sql.Selector)
+
+// ThemeAssignment is the predicate function for themeassignment builders.
+type ThemeAssignment func(*sql.Selector)
+
 // TimelapseFrame is the predicate function for timelapseframe builders.
 type TimelapseFrame func(*sql.Selector)
 

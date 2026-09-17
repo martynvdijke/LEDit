@@ -61,6 +61,8 @@ import (
 	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/theme"
+	"ledit/ent/themeassignment"
 	"ledit/ent/timelapseframe"
 	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
@@ -1492,6 +1494,84 @@ func init() {
 	textslideDescFontSize := textslideFields[3].Descriptor()
 	// textslide.DefaultFontSize holds the default value on creation for the font_size field.
 	textslide.DefaultFontSize = textslideDescFontSize.Default.(int)
+	themeFields := schema.Theme{}.Fields()
+	_ = themeFields
+	// themeDescName is the schema descriptor for name field.
+	themeDescName := themeFields[0].Descriptor()
+	// theme.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	theme.NameValidator = func() func(string) error {
+		validators := themeDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// themeDescBgColor is the schema descriptor for bg_color field.
+	themeDescBgColor := themeFields[1].Descriptor()
+	// theme.DefaultBgColor holds the default value on creation for the bg_color field.
+	theme.DefaultBgColor = themeDescBgColor.Default.(string)
+	// theme.BgColorValidator is a validator for the "bg_color" field. It is called by the builders before save.
+	theme.BgColorValidator = themeDescBgColor.Validators[0].(func(string) error)
+	// themeDescAccentColor is the schema descriptor for accent_color field.
+	themeDescAccentColor := themeFields[2].Descriptor()
+	// theme.DefaultAccentColor holds the default value on creation for the accent_color field.
+	theme.DefaultAccentColor = themeDescAccentColor.Default.(string)
+	// theme.AccentColorValidator is a validator for the "accent_color" field. It is called by the builders before save.
+	theme.AccentColorValidator = themeDescAccentColor.Validators[0].(func(string) error)
+	// themeDescTextColor is the schema descriptor for text_color field.
+	themeDescTextColor := themeFields[3].Descriptor()
+	// theme.DefaultTextColor holds the default value on creation for the text_color field.
+	theme.DefaultTextColor = themeDescTextColor.Default.(string)
+	// theme.TextColorValidator is a validator for the "text_color" field. It is called by the builders before save.
+	theme.TextColorValidator = themeDescTextColor.Validators[0].(func(string) error)
+	// themeDescTitle is the schema descriptor for title field.
+	themeDescTitle := themeFields[4].Descriptor()
+	// theme.DefaultTitle holds the default value on creation for the title field.
+	theme.DefaultTitle = themeDescTitle.Default.(string)
+	// theme.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	theme.TitleValidator = themeDescTitle.Validators[0].(func(string) error)
+	// themeDescFontSize is the schema descriptor for font_size field.
+	themeDescFontSize := themeFields[5].Descriptor()
+	// theme.DefaultFontSize holds the default value on creation for the font_size field.
+	theme.DefaultFontSize = themeDescFontSize.Default.(float64)
+	// theme.FontSizeValidator is a validator for the "font_size" field. It is called by the builders before save.
+	theme.FontSizeValidator = func() func(float64) error {
+		validators := themeDescFontSize.Validators
+		fns := [...]func(float64) error{
+			validators[0].(func(float64) error),
+			validators[1].(func(float64) error),
+		}
+		return func(font_size float64) error {
+			for _, fn := range fns {
+				if err := fn(font_size); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// themeDescBuiltIn is the schema descriptor for built_in field.
+	themeDescBuiltIn := themeFields[6].Descriptor()
+	// theme.DefaultBuiltIn holds the default value on creation for the built_in field.
+	theme.DefaultBuiltIn = themeDescBuiltIn.Default.(bool)
+	// themeDescIsDefault is the schema descriptor for is_default field.
+	themeDescIsDefault := themeFields[7].Descriptor()
+	// theme.DefaultIsDefault holds the default value on creation for the is_default field.
+	theme.DefaultIsDefault = themeDescIsDefault.Default.(bool)
+	themeassignmentFields := schema.ThemeAssignment{}.Fields()
+	_ = themeassignmentFields
+	// themeassignmentDescTargetType is the schema descriptor for target_type field.
+	themeassignmentDescTargetType := themeassignmentFields[0].Descriptor()
+	// themeassignment.TargetTypeValidator is a validator for the "target_type" field. It is called by the builders before save.
+	themeassignment.TargetTypeValidator = themeassignmentDescTargetType.Validators[0].(func(string) error)
 	timelapseframeFields := schema.TimelapseFrame{}.Fields()
 	_ = timelapseframeFields
 	// timelapseframeDescCapturedAt is the schema descriptor for captured_at field.

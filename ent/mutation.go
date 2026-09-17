@@ -67,6 +67,8 @@ import (
 	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/theme"
+	"ledit/ent/themeassignment"
 	"ledit/ent/timelapseframe"
 	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
@@ -154,6 +156,8 @@ const (
 	TypeSunMoon          = "SunMoon"
 	TypeTelegramSettings = "TelegramSettings"
 	TypeTextSlide        = "TextSlide"
+	TypeTheme            = "Theme"
+	TypeThemeAssignment  = "ThemeAssignment"
 	TypeTimelapseFrame   = "TimelapseFrame"
 	TypeTransit          = "Transit"
 	TypeUmamiSettings    = "UmamiSettings"
@@ -43741,6 +43745,1322 @@ func (m *TextSlideMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *TextSlideMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown TextSlide edge %s", name)
+}
+
+// ThemeMutation represents an operation that mutates the Theme nodes in the graph.
+type ThemeMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *int
+	name               *string
+	bg_color           *string
+	accent_color       *string
+	text_color         *string
+	title              *string
+	font_size          *float64
+	addfont_size       *float64
+	built_in           *bool
+	is_default         *bool
+	clearedFields      map[string]struct{}
+	assignments        map[int]struct{}
+	removedassignments map[int]struct{}
+	clearedassignments bool
+	done               bool
+	oldValue           func(context.Context) (*Theme, error)
+	predicates         []predicate.Theme
+}
+
+var _ ent.Mutation = (*ThemeMutation)(nil)
+
+// themeOption allows management of the mutation configuration using functional options.
+type themeOption func(*ThemeMutation)
+
+// newThemeMutation creates new mutation for the Theme entity.
+func newThemeMutation(c config, op Op, opts ...themeOption) *ThemeMutation {
+	m := &ThemeMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTheme,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withThemeID sets the ID field of the mutation.
+func withThemeID(id int) themeOption {
+	return func(m *ThemeMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Theme
+		)
+		m.oldValue = func(ctx context.Context) (*Theme, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Theme.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTheme sets the old Theme of the mutation.
+func withTheme(node *Theme) themeOption {
+	return func(m *ThemeMutation) {
+		m.oldValue = func(context.Context) (*Theme, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ThemeMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ThemeMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ThemeMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ThemeMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Theme.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *ThemeMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *ThemeMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Theme entity.
+// If the Theme object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThemeMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *ThemeMutation) ResetName() {
+	m.name = nil
+}
+
+// SetBgColor sets the "bg_color" field.
+func (m *ThemeMutation) SetBgColor(s string) {
+	m.bg_color = &s
+}
+
+// BgColor returns the value of the "bg_color" field in the mutation.
+func (m *ThemeMutation) BgColor() (r string, exists bool) {
+	v := m.bg_color
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBgColor returns the old "bg_color" field's value of the Theme entity.
+// If the Theme object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThemeMutation) OldBgColor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBgColor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBgColor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBgColor: %w", err)
+	}
+	return oldValue.BgColor, nil
+}
+
+// ResetBgColor resets all changes to the "bg_color" field.
+func (m *ThemeMutation) ResetBgColor() {
+	m.bg_color = nil
+}
+
+// SetAccentColor sets the "accent_color" field.
+func (m *ThemeMutation) SetAccentColor(s string) {
+	m.accent_color = &s
+}
+
+// AccentColor returns the value of the "accent_color" field in the mutation.
+func (m *ThemeMutation) AccentColor() (r string, exists bool) {
+	v := m.accent_color
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccentColor returns the old "accent_color" field's value of the Theme entity.
+// If the Theme object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThemeMutation) OldAccentColor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccentColor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccentColor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccentColor: %w", err)
+	}
+	return oldValue.AccentColor, nil
+}
+
+// ResetAccentColor resets all changes to the "accent_color" field.
+func (m *ThemeMutation) ResetAccentColor() {
+	m.accent_color = nil
+}
+
+// SetTextColor sets the "text_color" field.
+func (m *ThemeMutation) SetTextColor(s string) {
+	m.text_color = &s
+}
+
+// TextColor returns the value of the "text_color" field in the mutation.
+func (m *ThemeMutation) TextColor() (r string, exists bool) {
+	v := m.text_color
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTextColor returns the old "text_color" field's value of the Theme entity.
+// If the Theme object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThemeMutation) OldTextColor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTextColor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTextColor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTextColor: %w", err)
+	}
+	return oldValue.TextColor, nil
+}
+
+// ResetTextColor resets all changes to the "text_color" field.
+func (m *ThemeMutation) ResetTextColor() {
+	m.text_color = nil
+}
+
+// SetTitle sets the "title" field.
+func (m *ThemeMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *ThemeMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the Theme entity.
+// If the Theme object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThemeMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *ThemeMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetFontSize sets the "font_size" field.
+func (m *ThemeMutation) SetFontSize(f float64) {
+	m.font_size = &f
+	m.addfont_size = nil
+}
+
+// FontSize returns the value of the "font_size" field in the mutation.
+func (m *ThemeMutation) FontSize() (r float64, exists bool) {
+	v := m.font_size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFontSize returns the old "font_size" field's value of the Theme entity.
+// If the Theme object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThemeMutation) OldFontSize(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFontSize is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFontSize requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFontSize: %w", err)
+	}
+	return oldValue.FontSize, nil
+}
+
+// AddFontSize adds f to the "font_size" field.
+func (m *ThemeMutation) AddFontSize(f float64) {
+	if m.addfont_size != nil {
+		*m.addfont_size += f
+	} else {
+		m.addfont_size = &f
+	}
+}
+
+// AddedFontSize returns the value that was added to the "font_size" field in this mutation.
+func (m *ThemeMutation) AddedFontSize() (r float64, exists bool) {
+	v := m.addfont_size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFontSize resets all changes to the "font_size" field.
+func (m *ThemeMutation) ResetFontSize() {
+	m.font_size = nil
+	m.addfont_size = nil
+}
+
+// SetBuiltIn sets the "built_in" field.
+func (m *ThemeMutation) SetBuiltIn(b bool) {
+	m.built_in = &b
+}
+
+// BuiltIn returns the value of the "built_in" field in the mutation.
+func (m *ThemeMutation) BuiltIn() (r bool, exists bool) {
+	v := m.built_in
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBuiltIn returns the old "built_in" field's value of the Theme entity.
+// If the Theme object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThemeMutation) OldBuiltIn(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBuiltIn is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBuiltIn requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBuiltIn: %w", err)
+	}
+	return oldValue.BuiltIn, nil
+}
+
+// ResetBuiltIn resets all changes to the "built_in" field.
+func (m *ThemeMutation) ResetBuiltIn() {
+	m.built_in = nil
+}
+
+// SetIsDefault sets the "is_default" field.
+func (m *ThemeMutation) SetIsDefault(b bool) {
+	m.is_default = &b
+}
+
+// IsDefault returns the value of the "is_default" field in the mutation.
+func (m *ThemeMutation) IsDefault() (r bool, exists bool) {
+	v := m.is_default
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsDefault returns the old "is_default" field's value of the Theme entity.
+// If the Theme object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThemeMutation) OldIsDefault(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsDefault is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsDefault requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsDefault: %w", err)
+	}
+	return oldValue.IsDefault, nil
+}
+
+// ResetIsDefault resets all changes to the "is_default" field.
+func (m *ThemeMutation) ResetIsDefault() {
+	m.is_default = nil
+}
+
+// AddAssignmentIDs adds the "assignments" edge to the ThemeAssignment entity by ids.
+func (m *ThemeMutation) AddAssignmentIDs(ids ...int) {
+	if m.assignments == nil {
+		m.assignments = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.assignments[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAssignments clears the "assignments" edge to the ThemeAssignment entity.
+func (m *ThemeMutation) ClearAssignments() {
+	m.clearedassignments = true
+}
+
+// AssignmentsCleared reports if the "assignments" edge to the ThemeAssignment entity was cleared.
+func (m *ThemeMutation) AssignmentsCleared() bool {
+	return m.clearedassignments
+}
+
+// RemoveAssignmentIDs removes the "assignments" edge to the ThemeAssignment entity by IDs.
+func (m *ThemeMutation) RemoveAssignmentIDs(ids ...int) {
+	if m.removedassignments == nil {
+		m.removedassignments = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.assignments, ids[i])
+		m.removedassignments[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAssignments returns the removed IDs of the "assignments" edge to the ThemeAssignment entity.
+func (m *ThemeMutation) RemovedAssignmentsIDs() (ids []int) {
+	for id := range m.removedassignments {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AssignmentsIDs returns the "assignments" edge IDs in the mutation.
+func (m *ThemeMutation) AssignmentsIDs() (ids []int) {
+	for id := range m.assignments {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAssignments resets all changes to the "assignments" edge.
+func (m *ThemeMutation) ResetAssignments() {
+	m.assignments = nil
+	m.clearedassignments = false
+	m.removedassignments = nil
+}
+
+// Where appends a list predicates to the ThemeMutation builder.
+func (m *ThemeMutation) Where(ps ...predicate.Theme) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ThemeMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ThemeMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Theme, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ThemeMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ThemeMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Theme).
+func (m *ThemeMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ThemeMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.name != nil {
+		fields = append(fields, theme.FieldName)
+	}
+	if m.bg_color != nil {
+		fields = append(fields, theme.FieldBgColor)
+	}
+	if m.accent_color != nil {
+		fields = append(fields, theme.FieldAccentColor)
+	}
+	if m.text_color != nil {
+		fields = append(fields, theme.FieldTextColor)
+	}
+	if m.title != nil {
+		fields = append(fields, theme.FieldTitle)
+	}
+	if m.font_size != nil {
+		fields = append(fields, theme.FieldFontSize)
+	}
+	if m.built_in != nil {
+		fields = append(fields, theme.FieldBuiltIn)
+	}
+	if m.is_default != nil {
+		fields = append(fields, theme.FieldIsDefault)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ThemeMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case theme.FieldName:
+		return m.Name()
+	case theme.FieldBgColor:
+		return m.BgColor()
+	case theme.FieldAccentColor:
+		return m.AccentColor()
+	case theme.FieldTextColor:
+		return m.TextColor()
+	case theme.FieldTitle:
+		return m.Title()
+	case theme.FieldFontSize:
+		return m.FontSize()
+	case theme.FieldBuiltIn:
+		return m.BuiltIn()
+	case theme.FieldIsDefault:
+		return m.IsDefault()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ThemeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case theme.FieldName:
+		return m.OldName(ctx)
+	case theme.FieldBgColor:
+		return m.OldBgColor(ctx)
+	case theme.FieldAccentColor:
+		return m.OldAccentColor(ctx)
+	case theme.FieldTextColor:
+		return m.OldTextColor(ctx)
+	case theme.FieldTitle:
+		return m.OldTitle(ctx)
+	case theme.FieldFontSize:
+		return m.OldFontSize(ctx)
+	case theme.FieldBuiltIn:
+		return m.OldBuiltIn(ctx)
+	case theme.FieldIsDefault:
+		return m.OldIsDefault(ctx)
+	}
+	return nil, fmt.Errorf("unknown Theme field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ThemeMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case theme.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case theme.FieldBgColor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBgColor(v)
+		return nil
+	case theme.FieldAccentColor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccentColor(v)
+		return nil
+	case theme.FieldTextColor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTextColor(v)
+		return nil
+	case theme.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case theme.FieldFontSize:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFontSize(v)
+		return nil
+	case theme.FieldBuiltIn:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBuiltIn(v)
+		return nil
+	case theme.FieldIsDefault:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsDefault(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Theme field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ThemeMutation) AddedFields() []string {
+	var fields []string
+	if m.addfont_size != nil {
+		fields = append(fields, theme.FieldFontSize)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ThemeMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case theme.FieldFontSize:
+		return m.AddedFontSize()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ThemeMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case theme.FieldFontSize:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFontSize(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Theme numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ThemeMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ThemeMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ThemeMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Theme nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ThemeMutation) ResetField(name string) error {
+	switch name {
+	case theme.FieldName:
+		m.ResetName()
+		return nil
+	case theme.FieldBgColor:
+		m.ResetBgColor()
+		return nil
+	case theme.FieldAccentColor:
+		m.ResetAccentColor()
+		return nil
+	case theme.FieldTextColor:
+		m.ResetTextColor()
+		return nil
+	case theme.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case theme.FieldFontSize:
+		m.ResetFontSize()
+		return nil
+	case theme.FieldBuiltIn:
+		m.ResetBuiltIn()
+		return nil
+	case theme.FieldIsDefault:
+		m.ResetIsDefault()
+		return nil
+	}
+	return fmt.Errorf("unknown Theme field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ThemeMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.assignments != nil {
+		edges = append(edges, theme.EdgeAssignments)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ThemeMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case theme.EdgeAssignments:
+		ids := make([]ent.Value, 0, len(m.assignments))
+		for id := range m.assignments {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ThemeMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedassignments != nil {
+		edges = append(edges, theme.EdgeAssignments)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ThemeMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case theme.EdgeAssignments:
+		ids := make([]ent.Value, 0, len(m.removedassignments))
+		for id := range m.removedassignments {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ThemeMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedassignments {
+		edges = append(edges, theme.EdgeAssignments)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ThemeMutation) EdgeCleared(name string) bool {
+	switch name {
+	case theme.EdgeAssignments:
+		return m.clearedassignments
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ThemeMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Theme unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ThemeMutation) ResetEdge(name string) error {
+	switch name {
+	case theme.EdgeAssignments:
+		m.ResetAssignments()
+		return nil
+	}
+	return fmt.Errorf("unknown Theme edge %s", name)
+}
+
+// ThemeAssignmentMutation represents an operation that mutates the ThemeAssignment nodes in the graph.
+type ThemeAssignmentMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	target_type   *string
+	target_id     *int
+	addtarget_id  *int
+	clearedFields map[string]struct{}
+	theme         *int
+	clearedtheme  bool
+	done          bool
+	oldValue      func(context.Context) (*ThemeAssignment, error)
+	predicates    []predicate.ThemeAssignment
+}
+
+var _ ent.Mutation = (*ThemeAssignmentMutation)(nil)
+
+// themeassignmentOption allows management of the mutation configuration using functional options.
+type themeassignmentOption func(*ThemeAssignmentMutation)
+
+// newThemeAssignmentMutation creates new mutation for the ThemeAssignment entity.
+func newThemeAssignmentMutation(c config, op Op, opts ...themeassignmentOption) *ThemeAssignmentMutation {
+	m := &ThemeAssignmentMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeThemeAssignment,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withThemeAssignmentID sets the ID field of the mutation.
+func withThemeAssignmentID(id int) themeassignmentOption {
+	return func(m *ThemeAssignmentMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ThemeAssignment
+		)
+		m.oldValue = func(ctx context.Context) (*ThemeAssignment, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ThemeAssignment.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withThemeAssignment sets the old ThemeAssignment of the mutation.
+func withThemeAssignment(node *ThemeAssignment) themeassignmentOption {
+	return func(m *ThemeAssignmentMutation) {
+		m.oldValue = func(context.Context) (*ThemeAssignment, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ThemeAssignmentMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ThemeAssignmentMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ThemeAssignmentMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ThemeAssignmentMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ThemeAssignment.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTargetType sets the "target_type" field.
+func (m *ThemeAssignmentMutation) SetTargetType(s string) {
+	m.target_type = &s
+}
+
+// TargetType returns the value of the "target_type" field in the mutation.
+func (m *ThemeAssignmentMutation) TargetType() (r string, exists bool) {
+	v := m.target_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetType returns the old "target_type" field's value of the ThemeAssignment entity.
+// If the ThemeAssignment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThemeAssignmentMutation) OldTargetType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetType: %w", err)
+	}
+	return oldValue.TargetType, nil
+}
+
+// ResetTargetType resets all changes to the "target_type" field.
+func (m *ThemeAssignmentMutation) ResetTargetType() {
+	m.target_type = nil
+}
+
+// SetTargetID sets the "target_id" field.
+func (m *ThemeAssignmentMutation) SetTargetID(i int) {
+	m.target_id = &i
+	m.addtarget_id = nil
+}
+
+// TargetID returns the value of the "target_id" field in the mutation.
+func (m *ThemeAssignmentMutation) TargetID() (r int, exists bool) {
+	v := m.target_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetID returns the old "target_id" field's value of the ThemeAssignment entity.
+// If the ThemeAssignment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThemeAssignmentMutation) OldTargetID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetID: %w", err)
+	}
+	return oldValue.TargetID, nil
+}
+
+// AddTargetID adds i to the "target_id" field.
+func (m *ThemeAssignmentMutation) AddTargetID(i int) {
+	if m.addtarget_id != nil {
+		*m.addtarget_id += i
+	} else {
+		m.addtarget_id = &i
+	}
+}
+
+// AddedTargetID returns the value that was added to the "target_id" field in this mutation.
+func (m *ThemeAssignmentMutation) AddedTargetID() (r int, exists bool) {
+	v := m.addtarget_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTargetID resets all changes to the "target_id" field.
+func (m *ThemeAssignmentMutation) ResetTargetID() {
+	m.target_id = nil
+	m.addtarget_id = nil
+}
+
+// SetThemeID sets the "theme" edge to the Theme entity by id.
+func (m *ThemeAssignmentMutation) SetThemeID(id int) {
+	m.theme = &id
+}
+
+// ClearTheme clears the "theme" edge to the Theme entity.
+func (m *ThemeAssignmentMutation) ClearTheme() {
+	m.clearedtheme = true
+}
+
+// ThemeCleared reports if the "theme" edge to the Theme entity was cleared.
+func (m *ThemeAssignmentMutation) ThemeCleared() bool {
+	return m.clearedtheme
+}
+
+// ThemeID returns the "theme" edge ID in the mutation.
+func (m *ThemeAssignmentMutation) ThemeID() (id int, exists bool) {
+	if m.theme != nil {
+		return *m.theme, true
+	}
+	return
+}
+
+// ThemeIDs returns the "theme" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ThemeID instead. It exists only for internal usage by the builders.
+func (m *ThemeAssignmentMutation) ThemeIDs() (ids []int) {
+	if id := m.theme; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTheme resets all changes to the "theme" edge.
+func (m *ThemeAssignmentMutation) ResetTheme() {
+	m.theme = nil
+	m.clearedtheme = false
+}
+
+// Where appends a list predicates to the ThemeAssignmentMutation builder.
+func (m *ThemeAssignmentMutation) Where(ps ...predicate.ThemeAssignment) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ThemeAssignmentMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ThemeAssignmentMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ThemeAssignment, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ThemeAssignmentMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ThemeAssignmentMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ThemeAssignment).
+func (m *ThemeAssignmentMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ThemeAssignmentMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.target_type != nil {
+		fields = append(fields, themeassignment.FieldTargetType)
+	}
+	if m.target_id != nil {
+		fields = append(fields, themeassignment.FieldTargetID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ThemeAssignmentMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case themeassignment.FieldTargetType:
+		return m.TargetType()
+	case themeassignment.FieldTargetID:
+		return m.TargetID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ThemeAssignmentMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case themeassignment.FieldTargetType:
+		return m.OldTargetType(ctx)
+	case themeassignment.FieldTargetID:
+		return m.OldTargetID(ctx)
+	}
+	return nil, fmt.Errorf("unknown ThemeAssignment field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ThemeAssignmentMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case themeassignment.FieldTargetType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetType(v)
+		return nil
+	case themeassignment.FieldTargetID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ThemeAssignment field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ThemeAssignmentMutation) AddedFields() []string {
+	var fields []string
+	if m.addtarget_id != nil {
+		fields = append(fields, themeassignment.FieldTargetID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ThemeAssignmentMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case themeassignment.FieldTargetID:
+		return m.AddedTargetID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ThemeAssignmentMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case themeassignment.FieldTargetID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTargetID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ThemeAssignment numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ThemeAssignmentMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ThemeAssignmentMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ThemeAssignmentMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ThemeAssignment nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ThemeAssignmentMutation) ResetField(name string) error {
+	switch name {
+	case themeassignment.FieldTargetType:
+		m.ResetTargetType()
+		return nil
+	case themeassignment.FieldTargetID:
+		m.ResetTargetID()
+		return nil
+	}
+	return fmt.Errorf("unknown ThemeAssignment field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ThemeAssignmentMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.theme != nil {
+		edges = append(edges, themeassignment.EdgeTheme)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ThemeAssignmentMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case themeassignment.EdgeTheme:
+		if id := m.theme; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ThemeAssignmentMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ThemeAssignmentMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ThemeAssignmentMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedtheme {
+		edges = append(edges, themeassignment.EdgeTheme)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ThemeAssignmentMutation) EdgeCleared(name string) bool {
+	switch name {
+	case themeassignment.EdgeTheme:
+		return m.clearedtheme
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ThemeAssignmentMutation) ClearEdge(name string) error {
+	switch name {
+	case themeassignment.EdgeTheme:
+		m.ClearTheme()
+		return nil
+	}
+	return fmt.Errorf("unknown ThemeAssignment unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ThemeAssignmentMutation) ResetEdge(name string) error {
+	switch name {
+	case themeassignment.EdgeTheme:
+		m.ResetTheme()
+		return nil
+	}
+	return fmt.Errorf("unknown ThemeAssignment edge %s", name)
 }
 
 // TimelapseFrameMutation represents an operation that mutates the TimelapseFrame nodes in the graph.

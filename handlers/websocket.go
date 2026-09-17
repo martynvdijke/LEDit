@@ -1269,14 +1269,17 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			// Render through the last-known-good cache: successful renders are
 			// cached, failures serve the cached frame marked stale. Health is
 			// recorded per source (and per device for device feeds).
-			cacheKey := lkgCacheKey(fc.cacheKeyPrefix+sw.cacheKey, renderWidth, height)
+			// Effective theme for this source (override -> global -> built-in).
+			sourceTheme := datasource.DefaultTheme()
 			// set chart context for sampler (type:id)
 			if parts := splitCacheKey(sw.cacheKey); len(parts) == 2 {
 				datasource.SetChartContext(parts[0], parts[1])
+				sourceTheme = ResolveTheme(parts[0], mustAtoi(parts[1]))
 			}
+			cacheKey := lkgCacheKey(fc.cacheKeyPrefix+sw.cacheKey, renderWidth, height) + "|" + themeCacheSig(sourceTheme)
 			img, stale, err := defaultLKG.GetPNG(cacheKey, datasourceConfigSig(sw.Source), func() (*render.RenderedImage, error) {
 				start := time.Now()
-				img, err := sw.Source.GetPNG(renderWidth, height)
+				img, err := datasource.RenderThemed(sw.Source, renderWidth, height, sourceTheme)
 				dur := time.Since(start)
 				if err != nil {
 					Health.RecordFailure(sw.cacheKey, err, dur)

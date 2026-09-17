@@ -37,7 +37,7 @@
         <a href="/admin/photo-frame" class="nav-link{{if eq $.active "photo-frame"}} active{{end}}"><span class="nav-icon" aria-hidden="true">▤</span>Guest Photo Frame</a>
         <a href="/admin/discovery" class="nav-link{{if eq $.active "discovery"}} active{{end}}"><span class="nav-icon" aria-hidden="true">◎</span>Discovery</a>
         <a href="/admin/firmware" class="nav-link{{if eq $.active "firmware"}} active{{end}}"><span class="nav-icon" aria-hidden="true">⭱</span>Firmware</a>
-        <a href="/admin/theme" class="nav-link{{if eq $.active "theme"}} active{{end}}"><span class="nav-icon" aria-hidden="true">✦</span>Theme</a>
+        <a href="/admin/themes" class="nav-link{{if or (eq $.active "themes") (eq $.active "theme")}} active{{end}}"><span class="nav-icon" aria-hidden="true">✦</span>Themes</a>
         <a href="/admin/password" class="nav-link{{if eq $.active "password"}} active{{end}}"><span class="nav-icon" aria-hidden="true">⌑</span>Password</a>
         {{if eq .user_role "admin"}}<a href="/admin/users" class="nav-link{{if eq $.active "users"}} active{{end}}"><span class="nav-icon">👥</span>Users</a>{{end}}
         {{if .isViewer}}<span class="badge">read-only viewer</span>{{end}}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Themes</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Themes</h1>
+                <a href="/admin/themes/new/edit" class="btn btn-primary">New Theme</a>
+            </div>
+            {{if .themes}}
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Background</th>
+                        <th>Accent</th>
+                        <th>Text</th>
+                        <th>Title</th>
+                        <th>Font size</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .themes}}
+                    <tr data-theme-list-item>
+                        <td>{{.Name}}</td>
+                        <td><span class="badge" style="background:{{.BgColor}}; color:#fff; border:1px solid var(--line)">{{.BgColor}}</span></td>
+                        <td><span class="badge" style="background:{{.AccentColor}}; color:#000; border:1px solid var(--line)">{{.AccentColor}}</span></td>
+                        <td><span class="badge" style="background:{{.TextColor}}; color:#000; border:1px solid var(--line)">{{.TextColor}}</span></td>
+                        <td>{{.Title}}</td>
+                        <td>{{.FontSize}}</td>
+                        <td>
+                            {{if .IsDefault}}<span class="badge bg-success">Default</span>{{end}}
+                            {{if .BuiltIn}}<span class="badge bg-secondary">Built-in</span>{{end}}
+                        </td>
+                        <td>
+                            {{if not .BuiltIn}}<a href="/admin/themes/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>{{end}}
+                            <form method="POST" action="/admin/themes/{{.ID}}/duplicate" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-secondary">Duplicate</button>
+                            </form>
+                            {{if not .BuiltIn}}
+                                {{if not .IsDefault}}
+                                <form method="POST" action="/admin/themes/{{.ID}}/delete" style="display:inline">
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                                {{end}}
+                            {{end}}
+                            {{if not .IsDefault}}
+                            <form method="POST" action="/admin/themes/{{.ID}}/default" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Set default</button>
+                            </form>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            {{else}}
+            <p class="text-muted mt-4">No themes yet. <a href="/admin/themes/new/edit">Create one</a>.</p>
+            {{end}}
+
+            <h2 class="mt-5">Assignments</h2>
+            <p class="text-muted">Assign a theme per source, or leave as Default to use the global default.</p>
+            {{if .targets}}
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Target</th>
+                        <th>Theme</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .targets}}
+                    {{$t := .}}
+                    <tr>
+                        <td>{{$t.Label}} <small class="text-muted">({{$t.Key}})</small></td>
+                        <td>
+                            <form method="POST" action="/admin/theme/assign" class="d-flex gap-2 align-items-center">
+                                <input type="hidden" name="target_type" value="{{$t.Type}}">
+                                <input type="hidden" name="target_id" value="{{$t.ID}}">
+                                <input type="hidden" name="redirect" value="/admin/themes">
+                                <select name="theme_id" class="form-select form-select-sm" style="max-width:220px">
+                                    <option value="" {{if eq (index $.assignments $t.Key) 0}}selected{{end}}>Default</option>
+                                    {{range $.themes}}
+                                    <option value="{{.ID}}" {{if eq (index $.assignments $t.Key) .ID}}selected{{end}}>{{.Name}}</option>
+                                    {{end}}
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                            </form>
+                        </td>
+                        <td></td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            {{else}}
+            <p class="text-muted">No assignable targets yet.</p>
+            {{end}}
+        </div>
+    </div>
+</body><script type="module" src="/static/assets/app.js"></script>
+</html>

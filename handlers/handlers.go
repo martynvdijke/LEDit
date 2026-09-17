@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"maps"
 	"net/http"
 	"path/filepath"
 	"runtime/debug"
@@ -1650,58 +1649,6 @@ func (s *Server) AdminDeviceSettingsDelete(c *gin.Context) {
 	StopTransportDevice(id)
 	SetFlash(c, "success", "Device deleted")
 	c.Redirect(http.StatusFound, "/admin/devices")
-}
-
-// ---------------------------------------------------------------------------
-// Custom Theme (Phase 8)
-// ---------------------------------------------------------------------------
-
-func (s *Server) AdminThemeEditor(c *gin.Context) {
-	settings, _ := s.DB.GeneralSettings.Query().Only(s.Ctx)
-	theme := map[string]any{
-		"bg_color":     "#282a36",
-		"accent_color": "#50fa7b",
-		"text_color":   "#8be9fd",
-		"title":        "CUSTOM",
-		"font_size":    24,
-	}
-	if settings != nil && settings.Theme != "" && settings.Theme != "{}" {
-		var saved map[string]any
-		if err := json.Unmarshal([]byte(settings.Theme), &saved); err == nil {
-			maps.Copy(theme, saved)
-		}
-	}
-	data := gin.H{"theme": theme}
-	if settings != nil {
-		data["has_settings"] = true
-	}
-	s.renderPage(c, http.StatusOK, "theme_editor.html", data)
-}
-
-func (s *Server) AdminThemeSave(c *gin.Context) {
-	bgColor := c.PostForm("bg_color")
-	accentColor := c.PostForm("accent_color")
-	textColor := c.PostForm("text_color")
-	title := c.PostForm("title")
-	fontSize, _ := strconv.Atoi(c.DefaultPostForm("font_size", "24"))
-
-	themeJSON, _ := json.Marshal(map[string]any{
-		"bg_color":     bgColor,
-		"accent_color": accentColor,
-		"text_color":   textColor,
-		"title":        title,
-		"font_size":    fontSize,
-	})
-
-	exists, _ := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Exist(s.Ctx)
-	if !exists {
-		s.DB.GeneralSettings.Create().SetTheme(string(themeJSON)).SetTimeout(5).SetRandom(false).SetWidth(64).SetHeight(64).SaveX(s.Ctx)
-	} else {
-		s.DB.GeneralSettings.UpdateOneID(1).SetTheme(string(themeJSON)).Exec(s.Ctx)
-	}
-
-	SetFlash(c, "success", "Theme saved successfully")
-	c.Redirect(http.StatusFound, "/admin/theme")
 }
 
 // ---------------------------------------------------------------------------

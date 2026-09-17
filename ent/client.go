@@ -71,6 +71,8 @@ import (
 	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/theme"
+	"ledit/ent/themeassignment"
 	"ledit/ent/timelapseframe"
 	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
@@ -214,6 +216,10 @@ type Client struct {
 	TelegramSettings *TelegramSettingsClient
 	// TextSlide is the client for interacting with the TextSlide builders.
 	TextSlide *TextSlideClient
+	// Theme is the client for interacting with the Theme builders.
+	Theme *ThemeClient
+	// ThemeAssignment is the client for interacting with the ThemeAssignment builders.
+	ThemeAssignment *ThemeAssignmentClient
 	// TimelapseFrame is the client for interacting with the TimelapseFrame builders.
 	TimelapseFrame *TimelapseFrameClient
 	// Transit is the client for interacting with the Transit builders.
@@ -307,6 +313,8 @@ func (c *Client) init() {
 	c.SunMoon = NewSunMoonClient(c.config)
 	c.TelegramSettings = NewTelegramSettingsClient(c.config)
 	c.TextSlide = NewTextSlideClient(c.config)
+	c.Theme = NewThemeClient(c.config)
+	c.ThemeAssignment = NewThemeAssignmentClient(c.config)
 	c.TimelapseFrame = NewTimelapseFrameClient(c.config)
 	c.Transit = NewTransitClient(c.config)
 	c.UmamiSettings = NewUmamiSettingsClient(c.config)
@@ -470,6 +478,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		SunMoon:          NewSunMoonClient(cfg),
 		TelegramSettings: NewTelegramSettingsClient(cfg),
 		TextSlide:        NewTextSlideClient(cfg),
+		Theme:            NewThemeClient(cfg),
+		ThemeAssignment:  NewThemeAssignmentClient(cfg),
 		TimelapseFrame:   NewTimelapseFrameClient(cfg),
 		Transit:          NewTransitClient(cfg),
 		UmamiSettings:    NewUmamiSettingsClient(cfg),
@@ -560,6 +570,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		SunMoon:          NewSunMoonClient(cfg),
 		TelegramSettings: NewTelegramSettingsClient(cfg),
 		TextSlide:        NewTextSlideClient(cfg),
+		Theme:            NewThemeClient(cfg),
+		ThemeAssignment:  NewThemeAssignmentClient(cfg),
 		TimelapseFrame:   NewTimelapseFrameClient(cfg),
 		Transit:          NewTransitClient(cfg),
 		UmamiSettings:    NewUmamiSettingsClient(cfg),
@@ -611,9 +623,9 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OutboundSettings, c.OutboundWebhook, c.Overseerr, c.PiHole, c.PixelArt,
 		c.Playlist, c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene,
 		c.Schedule, c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon,
-		c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit, c.UmamiSettings,
-		c.Untappd, c.Uptime, c.UptimeKuma, c.User, c.Video, c.WakeAlarm, c.Weather,
-		c.WebhookSettings,
+		c.TelegramSettings, c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame,
+		c.Transit, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma, c.User, c.Video,
+		c.WakeAlarm, c.Weather, c.WebhookSettings,
 	} {
 		n.Use(hooks...)
 	}
@@ -634,9 +646,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OutboundSettings, c.OutboundWebhook, c.Overseerr, c.PiHole, c.PixelArt,
 		c.Playlist, c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene,
 		c.Schedule, c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon,
-		c.TelegramSettings, c.TextSlide, c.TimelapseFrame, c.Transit, c.UmamiSettings,
-		c.Untappd, c.Uptime, c.UptimeKuma, c.User, c.Video, c.WakeAlarm, c.Weather,
-		c.WebhookSettings,
+		c.TelegramSettings, c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame,
+		c.Transit, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma, c.User, c.Video,
+		c.WakeAlarm, c.Weather, c.WebhookSettings,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -765,6 +777,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.TelegramSettings.mutate(ctx, m)
 	case *TextSlideMutation:
 		return c.TextSlide.mutate(ctx, m)
+	case *ThemeMutation:
+		return c.Theme.mutate(ctx, m)
+	case *ThemeAssignmentMutation:
+		return c.ThemeAssignment.mutate(ctx, m)
 	case *TimelapseFrameMutation:
 		return c.TimelapseFrame.mutate(ctx, m)
 	case *TransitMutation:
@@ -9620,6 +9636,304 @@ func (c *TextSlideClient) mutate(ctx context.Context, m *TextSlideMutation) (Val
 	}
 }
 
+// ThemeClient is a client for the Theme schema.
+type ThemeClient struct {
+	config
+}
+
+// NewThemeClient returns a client for the Theme from the given config.
+func NewThemeClient(c config) *ThemeClient {
+	return &ThemeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `theme.Hooks(f(g(h())))`.
+func (c *ThemeClient) Use(hooks ...Hook) {
+	c.hooks.Theme = append(c.hooks.Theme, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `theme.Intercept(f(g(h())))`.
+func (c *ThemeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Theme = append(c.inters.Theme, interceptors...)
+}
+
+// Create returns a builder for creating a Theme entity.
+func (c *ThemeClient) Create() *ThemeCreate {
+	mutation := newThemeMutation(c.config, OpCreate)
+	return &ThemeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Theme entities.
+func (c *ThemeClient) CreateBulk(builders ...*ThemeCreate) *ThemeCreateBulk {
+	return &ThemeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ThemeClient) MapCreateBulk(slice any, setFunc func(*ThemeCreate, int)) *ThemeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ThemeCreateBulk{err: fmt.Errorf("calling to ThemeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ThemeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ThemeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Theme.
+func (c *ThemeClient) Update() *ThemeUpdate {
+	mutation := newThemeMutation(c.config, OpUpdate)
+	return &ThemeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ThemeClient) UpdateOne(_m *Theme) *ThemeUpdateOne {
+	mutation := newThemeMutation(c.config, OpUpdateOne, withTheme(_m))
+	return &ThemeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ThemeClient) UpdateOneID(id int) *ThemeUpdateOne {
+	mutation := newThemeMutation(c.config, OpUpdateOne, withThemeID(id))
+	return &ThemeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Theme.
+func (c *ThemeClient) Delete() *ThemeDelete {
+	mutation := newThemeMutation(c.config, OpDelete)
+	return &ThemeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ThemeClient) DeleteOne(_m *Theme) *ThemeDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ThemeClient) DeleteOneID(id int) *ThemeDeleteOne {
+	builder := c.Delete().Where(theme.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ThemeDeleteOne{builder}
+}
+
+// Query returns a query builder for Theme.
+func (c *ThemeClient) Query() *ThemeQuery {
+	return &ThemeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTheme},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Theme entity by its id.
+func (c *ThemeClient) Get(ctx context.Context, id int) (*Theme, error) {
+	return c.Query().Where(theme.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ThemeClient) GetX(ctx context.Context, id int) *Theme {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAssignments queries the assignments edge of a Theme.
+func (c *ThemeClient) QueryAssignments(_m *Theme) *ThemeAssignmentQuery {
+	query := (&ThemeAssignmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(theme.Table, theme.FieldID, id),
+			sqlgraph.To(themeassignment.Table, themeassignment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, theme.AssignmentsTable, theme.AssignmentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ThemeClient) Hooks() []Hook {
+	return c.hooks.Theme
+}
+
+// Interceptors returns the client interceptors.
+func (c *ThemeClient) Interceptors() []Interceptor {
+	return c.inters.Theme
+}
+
+func (c *ThemeClient) mutate(ctx context.Context, m *ThemeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ThemeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ThemeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ThemeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ThemeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Theme mutation op: %q", m.Op())
+	}
+}
+
+// ThemeAssignmentClient is a client for the ThemeAssignment schema.
+type ThemeAssignmentClient struct {
+	config
+}
+
+// NewThemeAssignmentClient returns a client for the ThemeAssignment from the given config.
+func NewThemeAssignmentClient(c config) *ThemeAssignmentClient {
+	return &ThemeAssignmentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `themeassignment.Hooks(f(g(h())))`.
+func (c *ThemeAssignmentClient) Use(hooks ...Hook) {
+	c.hooks.ThemeAssignment = append(c.hooks.ThemeAssignment, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `themeassignment.Intercept(f(g(h())))`.
+func (c *ThemeAssignmentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ThemeAssignment = append(c.inters.ThemeAssignment, interceptors...)
+}
+
+// Create returns a builder for creating a ThemeAssignment entity.
+func (c *ThemeAssignmentClient) Create() *ThemeAssignmentCreate {
+	mutation := newThemeAssignmentMutation(c.config, OpCreate)
+	return &ThemeAssignmentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ThemeAssignment entities.
+func (c *ThemeAssignmentClient) CreateBulk(builders ...*ThemeAssignmentCreate) *ThemeAssignmentCreateBulk {
+	return &ThemeAssignmentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ThemeAssignmentClient) MapCreateBulk(slice any, setFunc func(*ThemeAssignmentCreate, int)) *ThemeAssignmentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ThemeAssignmentCreateBulk{err: fmt.Errorf("calling to ThemeAssignmentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ThemeAssignmentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ThemeAssignmentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ThemeAssignment.
+func (c *ThemeAssignmentClient) Update() *ThemeAssignmentUpdate {
+	mutation := newThemeAssignmentMutation(c.config, OpUpdate)
+	return &ThemeAssignmentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ThemeAssignmentClient) UpdateOne(_m *ThemeAssignment) *ThemeAssignmentUpdateOne {
+	mutation := newThemeAssignmentMutation(c.config, OpUpdateOne, withThemeAssignment(_m))
+	return &ThemeAssignmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ThemeAssignmentClient) UpdateOneID(id int) *ThemeAssignmentUpdateOne {
+	mutation := newThemeAssignmentMutation(c.config, OpUpdateOne, withThemeAssignmentID(id))
+	return &ThemeAssignmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ThemeAssignment.
+func (c *ThemeAssignmentClient) Delete() *ThemeAssignmentDelete {
+	mutation := newThemeAssignmentMutation(c.config, OpDelete)
+	return &ThemeAssignmentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ThemeAssignmentClient) DeleteOne(_m *ThemeAssignment) *ThemeAssignmentDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ThemeAssignmentClient) DeleteOneID(id int) *ThemeAssignmentDeleteOne {
+	builder := c.Delete().Where(themeassignment.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ThemeAssignmentDeleteOne{builder}
+}
+
+// Query returns a query builder for ThemeAssignment.
+func (c *ThemeAssignmentClient) Query() *ThemeAssignmentQuery {
+	return &ThemeAssignmentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeThemeAssignment},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ThemeAssignment entity by its id.
+func (c *ThemeAssignmentClient) Get(ctx context.Context, id int) (*ThemeAssignment, error) {
+	return c.Query().Where(themeassignment.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ThemeAssignmentClient) GetX(ctx context.Context, id int) *ThemeAssignment {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTheme queries the theme edge of a ThemeAssignment.
+func (c *ThemeAssignmentClient) QueryTheme(_m *ThemeAssignment) *ThemeQuery {
+	query := (&ThemeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(themeassignment.Table, themeassignment.FieldID, id),
+			sqlgraph.To(theme.Table, theme.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, themeassignment.ThemeTable, themeassignment.ThemeColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ThemeAssignmentClient) Hooks() []Hook {
+	return c.hooks.ThemeAssignment
+}
+
+// Interceptors returns the client interceptors.
+func (c *ThemeAssignmentClient) Interceptors() []Interceptor {
+	return c.inters.ThemeAssignment
+}
+
+func (c *ThemeAssignmentClient) mutate(ctx context.Context, m *ThemeAssignmentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ThemeAssignmentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ThemeAssignmentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ThemeAssignmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ThemeAssignmentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ThemeAssignment mutation op: %q", m.Op())
+	}
+}
+
 // TimelapseFrameClient is a client for the TimelapseFrame schema.
 type TimelapseFrameClient struct {
 	config
@@ -11095,9 +11409,9 @@ type (
 		MatrixLayout, NewsFeed, Notification, NowPlayingSource, OutboundSettings,
 		OutboundWebhook, Overseerr, PiHole, PixelArt, Playlist, Qbittorrent, Qrcode,
 		Radarr, RssFeed, Sabnzbd, Scene, Schedule, Sonarr, Speedtest, Sports, Stock,
-		SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings,
-		Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm, Weather,
-		WebhookSettings []ent.Hook
+		SunMoon, TelegramSettings, TextSlide, Theme, ThemeAssignment, TimelapseFrame,
+		Transit, UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm,
+		Weather, WebhookSettings []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdminSettings, AlertSettings, ApiToken, Calendar,
@@ -11109,8 +11423,8 @@ type (
 		MatrixLayout, NewsFeed, Notification, NowPlayingSource, OutboundSettings,
 		OutboundWebhook, Overseerr, PiHole, PixelArt, Playlist, Qbittorrent, Qrcode,
 		Radarr, RssFeed, Sabnzbd, Scene, Schedule, Sonarr, Speedtest, Sports, Stock,
-		SunMoon, TelegramSettings, TextSlide, TimelapseFrame, Transit, UmamiSettings,
-		Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm, Weather,
-		WebhookSettings []ent.Interceptor
+		SunMoon, TelegramSettings, TextSlide, Theme, ThemeAssignment, TimelapseFrame,
+		Transit, UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm,
+		Weather, WebhookSettings []ent.Interceptor
 	}
 )

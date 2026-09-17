@@ -54,8 +54,8 @@ func (s *Server) AdminPreview(c *gin.Context) {
 	h := clampPreviewSize(mustAtoi(c.DefaultQuery("h", "64")))
 	isTemplate := c.Query("template") == "1"
 
-	// Built-in ambience sources use id 0; every DB-backed source needs id > 0.
-	if id <= 0 && sourceType != "analog-clock" && sourceType != "matrix-rain" {
+	// Built-in sources use id 0; every DB-backed source needs id > 0.
+	if id <= 0 && sourceType != "analog-clock" && sourceType != "matrix-rain" && sourceType != "clock" {
 		c.Status(http.StatusBadRequest)
 		return
 	}
@@ -66,9 +66,14 @@ func (s *Server) AdminPreview(c *gin.Context) {
 		return
 	}
 
+	theme, hasThemeOverride := s.themeOverrideFrom(c)
+	if !hasThemeOverride {
+		theme = ResolveTheme(sourceType, id)
+	}
+
 	var img *render.RenderedImage
 	var stale bool
-	cacheKey := lkgCacheKey(fmt.Sprintf("%s:%d", sourceType, id), w, h)
+	cacheKey := lkgCacheKey(fmt.Sprintf("%s:%d", sourceType, id), w, h) + "|" + themeCacheSig(theme)
 	if sourceType == "matrix" {
 		ml, err := s.DB.MatrixLayout.Get(c.Request.Context(), id)
 		if err != nil {
@@ -79,6 +84,9 @@ func (s *Server) AdminPreview(c *gin.Context) {
 			img = renderMatrixTemplate(ml, buildSourceIndex(settings, s.aiConfig(c.Request.Context())), w, h)
 		} else {
 			mds := s.WSHub.buildMatrixDS(settings, ml, 0)
+			if mds != nil && hasThemeOverride {
+				mds.BaseTheme = theme
+			}
 			if mds == nil {
 				c.Status(http.StatusUnprocessableEntity)
 				return
@@ -107,7 +115,7 @@ func (s *Server) AdminPreview(c *gin.Context) {
 		}
 		img, stale, err = defaultLKG.GetPNG(cacheKey, datasourceConfigSig(src), func() (*render.RenderedImage, error) {
 			start := time.Now()
-			img, err := src.GetPNG(w, h)
+			img, err := datasource.RenderThemed(src, w, h, theme)
 			dur := time.Since(start)
 			if err != nil {
 				Health.RecordFailure(fmt.Sprintf("%s:%d", sourceType, id), err, dur)
@@ -237,7 +245,11 @@ func (s *Server) AdminPreviewDatasource(c *gin.Context) {
 		return
 	}
 
-	img, err := src.GetPNG(w, h)
+	theme, ok := s.themeOverrideFrom(c)
+	if !ok {
+		theme = ResolveTheme(endpoint, mustAtoi(c.PostForm("id")))
+	}
+	img, err := datasource.RenderThemed(src, w, h, theme)
 	if err != nil || img == nil {
 		c.Status(http.StatusBadGateway)
 		return
@@ -282,6 +294,10 @@ func (s *Server) AdminPreviewMatrix(c *gin.Context) {
 		names := namesGrid(rows, cols, gap, background, bindings, buildSourceIndex(settings, s.aiConfig(c.Request.Context())))
 		img, err = render.TemplateGrid(rows, cols, gap, parseHexColorRGBA(background), names, w, h)
 	} else {
+		theme, ok := s.themeOverrideFrom(c)
+		if !ok {
+			theme = ResolveTheme("matrix", mustAtoi(c.PostForm("id")))
+		}
 		mds := &datasource.MatrixDS{
 			Name:       c.DefaultPostForm("name", "PREVIEW"),
 			Rows:       rows,
@@ -289,6 +305,7 @@ func (s *Server) AdminPreviewMatrix(c *gin.Context) {
 			Gap:        gap,
 			Background: background,
 			Bindings:   datasource.ParseBindings(bindings),
+			BaseTheme:  theme,
 		}
 		idx := buildSourceIndex(settings, s.aiConfig(c.Request.Context()))
 		mds.Resolve = idx.Resolve

@@ -572,6 +572,7 @@ func (h *WSHub) buildMatrixDS(settings *ent.GeneralSettings, ml *ent.MatrixLayou
 		Background: ml.Background,
 		Bindings:   datasource.ParseBindings(ml.Bindings),
 		Depth:      depth,
+		BaseTheme:  ResolveTheme("matrix", ml.ID),
 	}
 	mds.Resolve = func(sourceType string, sourceID int) (datasource.Datasource, string, error) {
 		if sourceType == "matrix" {

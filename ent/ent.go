@@ -66,6 +66,8 @@ import (
 	"ledit/ent/sunmoon"
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
+	"ledit/ent/theme"
+	"ledit/ent/themeassignment"
 	"ledit/ent/timelapseframe"
 	"ledit/ent/transit"
 	"ledit/ent/umamisettings"
@@ -203,6 +205,8 @@ func checkColumn(t, c string) error {
 			sunmoon.Table:          sunmoon.ValidColumn,
 			telegramsettings.Table: telegramsettings.ValidColumn,
 			textslide.Table:        textslide.ValidColumn,
+			theme.Table:            theme.ValidColumn,
+			themeassignment.Table:  themeassignment.ValidColumn,
 			timelapseframe.Table:   timelapseframe.ValidColumn,
 			transit.Table:          transit.ValidColumn,
 			umamisettings.Table:    umamisettings.ValidColumn,

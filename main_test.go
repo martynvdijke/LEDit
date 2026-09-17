@@ -822,8 +822,18 @@ func TestServerAdminTheme(t *testing.T) {
 	req := httptest.NewRequest("GET", "/admin/theme", nil)
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
-	if w.Code != http.StatusOK && w.Code != http.StatusFound {
-		t.Errorf("expected 200 or 302, got %d", w.Code)
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302 redirect to /admin/themes, got %d", w.Code)
+	}
+	if loc := w.Header().Get("Location"); loc != "/admin/themes" {
+		t.Errorf("expected redirect to /admin/themes, got %q", loc)
+	}
+	// new theme list endpoint should be 200
+	req2 := httptest.NewRequest("GET", "/admin/themes", nil)
+	w2 := httptest.NewRecorder()
+	srv.ServeHTTP(w2, req2)
+	if w2.Code != http.StatusOK {
+		t.Errorf("expected 200 for /admin/themes, got %d", w2.Code)
 	}
 }
 

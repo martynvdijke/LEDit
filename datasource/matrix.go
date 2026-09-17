@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"ledit/render"
+	"ledit/render/themes"
 )
 
 // CellTheme holds optional per-cell theme overrides. Missing/empty fields
@@ -78,6 +79,9 @@ type MatrixDS struct {
 	// "matrix" source types to nested matrices; Depth guards recursion.
 	Resolve func(sourceType string, sourceID int) (Datasource, string, error)
 	Depth   int
+	// BaseTheme is the effective theme for cells without their own CellTheme.
+	// Zero value falls back to themes.DefaultTheme.
+	BaseTheme render.Theme
 }
 
 // ParseBindings decodes a bindings JSON array, tolerating malformed input.
@@ -151,14 +155,12 @@ func (m *MatrixDS) GetPNG(width, height int) (*render.RenderedImage, error) {
 	}
 	cellW, cellH := render.CellSize(m.Rows, m.Cols, m.Gap, width, height)
 
-	theme := render.Theme{
-		Name:            "cyber",
-		BackgroundColor: [3]uint8{40, 42, 54},
-		AccentColor:     [3]uint8{80, 250, 123},
-		TextColor:       [3]uint8{139, 233, 253},
-		Title:           strings.ToUpper(m.Name),
-		FontSize:        0, // scaled per panel by RenderPanel
+	theme := m.BaseTheme
+	if theme == (render.Theme{}) {
+		theme = themes.DefaultTheme
 	}
+	theme.Name = strings.ToUpper(m.Name) // Title is per-layout, not per-theme
+	theme.FontSize = 0                   // scaled per panel by RenderPanel
 
 	canvas := image.NewRGBA(image.Rect(0, 0, width, height))
 	bg := parseHexColor(m.Background, color.RGBA{theme.BackgroundColor[0], theme.BackgroundColor[1], theme.BackgroundColor[2], 255})

@@ -132,6 +132,10 @@ type Tx struct {
 	TelegramSettings *TelegramSettingsClient
 	// TextSlide is the client for interacting with the TextSlide builders.
 	TextSlide *TextSlideClient
+	// Theme is the client for interacting with the Theme builders.
+	Theme *ThemeClient
+	// ThemeAssignment is the client for interacting with the ThemeAssignment builders.
+	ThemeAssignment *ThemeAssignmentClient
 	// TimelapseFrame is the client for interacting with the TimelapseFrame builders.
 	TimelapseFrame *TimelapseFrameClient
 	// Transit is the client for interacting with the Transit builders.
@@ -345,6 +349,8 @@ func (tx *Tx) init() {
 	tx.SunMoon = NewSunMoonClient(tx.config)
 	tx.TelegramSettings = NewTelegramSettingsClient(tx.config)
 	tx.TextSlide = NewTextSlideClient(tx.config)
+	tx.Theme = NewThemeClient(tx.config)
+	tx.ThemeAssignment = NewThemeAssignmentClient(tx.config)
 	tx.TimelapseFrame = NewTimelapseFrameClient(tx.config)
 	tx.Transit = NewTransitClient(tx.config)
 	tx.UmamiSettings = NewUmamiSettingsClient(tx.config)

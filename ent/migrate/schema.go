@@ -1396,6 +1396,59 @@ var (
 			},
 		},
 	}
+	// ThemesColumns holds the columns for the "themes" table.
+	ThemesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 64},
+		{Name: "bg_color", Type: field.TypeString, Default: "#282a36"},
+		{Name: "accent_color", Type: field.TypeString, Default: "#50fa7b"},
+		{Name: "text_color", Type: field.TypeString, Default: "#8be9fd"},
+		{Name: "title", Type: field.TypeString, Size: 64, Default: "CUSTOM"},
+		{Name: "font_size", Type: field.TypeFloat64, Default: 24},
+		{Name: "built_in", Type: field.TypeBool, Default: false},
+		{Name: "is_default", Type: field.TypeBool, Default: false},
+	}
+	// ThemesTable holds the schema information for the "themes" table.
+	ThemesTable = &schema.Table{
+		Name:       "themes",
+		Columns:    ThemesColumns,
+		PrimaryKey: []*schema.Column{ThemesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "theme_name",
+				Unique:  true,
+				Columns: []*schema.Column{ThemesColumns[1]},
+			},
+		},
+	}
+	// ThemeAssignmentsColumns holds the columns for the "theme_assignments" table.
+	ThemeAssignmentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "target_type", Type: field.TypeString},
+		{Name: "target_id", Type: field.TypeInt},
+		{Name: "theme_assignments", Type: field.TypeInt},
+	}
+	// ThemeAssignmentsTable holds the schema information for the "theme_assignments" table.
+	ThemeAssignmentsTable = &schema.Table{
+		Name:       "theme_assignments",
+		Columns:    ThemeAssignmentsColumns,
+		PrimaryKey: []*schema.Column{ThemeAssignmentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "theme_assignments_themes_assignments",
+				Columns:    []*schema.Column{ThemeAssignmentsColumns[3]},
+				RefColumns: []*schema.Column{ThemesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "themeassignment_target_type_target_id",
+				Unique:  true,
+				Columns: []*schema.Column{ThemeAssignmentsColumns[1], ThemeAssignmentsColumns[2]},
+			},
+		},
+	}
 	// TimelapseFramesColumns holds the columns for the "timelapse_frames" table.
 	TimelapseFramesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1723,6 +1776,8 @@ var (
 		SunMoonsTable,
 		TelegramSettingsTable,
 		TextSlidesTable,
+		ThemesTable,
+		ThemeAssignmentsTable,
 		TimelapseFramesTable,
 		TransitsTable,
 		UmamiSettingsTable,
@@ -1780,6 +1835,7 @@ func init() {
 	SunMoonsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	TelegramSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	TextSlidesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	ThemeAssignmentsTable.ForeignKeys[0].RefTable = ThemesTable
 	TransitsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UmamiSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UntappdsTable.ForeignKeys[0].RefTable = GeneralSettingsTable

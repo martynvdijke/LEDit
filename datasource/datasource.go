@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ledit/render"
+	"ledit/render/themes"
 )
 
 type Datasource interface {
@@ -51,13 +52,24 @@ func DefaultGetPNG(width, height int) (*render.RenderedImage, error) {
 	return render.RenderDict(data, width, height, DefaultTheme(), "fonts/PixelifySans.ttf")
 }
 
+// DefaultTheme is the built-in fallback palette (cyber). Single source of
+// truth: render/themes.
 func DefaultTheme() render.Theme {
-	return render.Theme{
-		Name:            "cyber",
-		BackgroundColor: [3]uint8{40, 42, 54},
-		AccentColor:     [3]uint8{80, 250, 123},
-		TextColor:       [3]uint8{139, 233, 253},
-		Title:           "SYSTEM STATUS",
-		FontSize:        24,
+	return themes.DefaultTheme
+}
+
+// RenderThemed renders ds with theme when the source supports themed
+// rendering. Sources that do not implement ThemedRenderer render normally and
+// ignore the theme.
+func RenderThemed(ds Datasource, width, height int, theme render.Theme) (*render.RenderedImage, error) {
+	if tr, ok := ds.(ThemedRenderer); ok {
+		return tr.GetPNGThemed(width, height, theme)
 	}
+	return ds.GetPNG(width, height)
+}
+
+// SupportsTheme reports whether ds honors a caller-supplied theme.
+func SupportsTheme(ds Datasource) bool {
+	_, ok := ds.(ThemedRenderer)
+	return ok
 }

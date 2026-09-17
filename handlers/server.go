@@ -50,6 +50,10 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	// Backfill tokens for any legacy device rows that lack one.
 	backfillDeviceTokens(client, ctx)
 
+	// Seed built-in themes and import the legacy GeneralSettings.theme blob.
+	seedThemes(client, ctx)
+	InitThemeResolver(client, ctx)
+
 	// Initialize central logging system (DB-backed, OTEL-ready).
 	// This sets slog.SetDefault, so all subsequent slog calls use it.
 	logStore, otelExp, logCleanup := logging.InitLogging(client, "warn")
@@ -538,9 +542,17 @@ func (s *Server) setupRoutes() {
 		admin.POST("/api/groups/:id/feed/next", s.APIGroupFeedNext)
 		admin.POST("/api/groups/:id/feed/priority", s.APIGroupFeedPriority)
 
-		// Theme (Phase 8)
-		admin.GET("/theme", s.AdminThemeEditor)
-		admin.POST("/theme", s.AdminThemeSave)
+		// Themes (Phase 8)
+		admin.GET("/themes", s.AdminThemeList)
+		admin.GET("/themes/:id/edit", s.AdminThemeEditor)
+		admin.POST("/themes/:id/edit", s.AdminThemeSave)
+		admin.POST("/themes/:id/duplicate", s.AdminThemeDuplicate)
+		admin.POST("/themes/:id/delete", s.AdminThemeDelete)
+		admin.POST("/themes/:id/default", s.AdminThemeSetDefault)
+		admin.POST("/theme/assign", s.AdminThemeAssign)
+		// Legacy URL kept working.
+		admin.GET("/theme", s.AdminThemeLegacyRedirect)
+		admin.POST("/theme", s.AdminThemeLegacyRedirect)
 
 		// Stock
 		admin.GET("/datasources/stock/new", s.AdminStockNew)
