@@ -26,4 +26,5 @@ __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
+device/dist/
 .coverage

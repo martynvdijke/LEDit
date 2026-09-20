@@ -49,6 +49,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Python
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.14'
+
+      - name: Build Python package
+        if: steps.semantic.outputs.new_release_published == 'true'
+        working-directory: device
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+
+      - name: Publish Python package to PyPI
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          packages-dir: device/dist
+          password: ${{ secrets.PYPI_TOKEN }}
+
       - name: Login to Docker Hub
         if: steps.semantic.outputs.new_release_published == 'true'
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0

@@ -37,8 +37,14 @@ cd rpi-rgb-led-matrix
 make build-python PYTHON=$(which python3)
 sudo make install-python PYTHON=$(which python3)
 
-# This package (from the LEDit repo's device/ directory)
-pip3 install .
+# This package (published to PyPI on every LEDit release)
+pip3 install ledit
+```
+
+Or from a checkout of this repo:
+
+```bash
+pip3 install ./device
 ```
 
 For development (editable install):
@@ -139,7 +145,7 @@ Unprovisioned devices can advertise themselves via mDNS and be enrolled from the
 - **Advertisement**: DNS-SD service `_ledit._tcp.local` with TXT records `id` (stable fingerprint), `model`, `version`, `proto`, `nonce`. The token is never advertised.
 - **Fingerprint**: `fingerprint()` reads `/etc/machine-id` when available, otherwise a random ID persisted at `~/.config/ledit/device_id`. Stable across reboots.
 - **Nonce**: `new_nonce()` generates a fresh value per boot and is included in the TXT records.
-- **Optional dependency**: `zeroconf` is required only for discovery. Install with `pip install 'ledit-device[discovery]'`. If missing, advertising/provisioning is skipped with a warning and manual `LEDIT_TOKEN` mode is unaffected.
+- **Optional dependency**: `zeroconf` is required only for discovery. Install with `pip install 'ledit[discovery]'`. If missing, advertising/provisioning is skipped with a warning and manual `LEDIT_TOKEN` mode is unaffected.
 - **API**: `discovery.start_advertising()` / `discovery.stop_advertising()` and `discovery.provision(server_url, fingerprint, nonce, interval, timeout)` which polls `GET /api/device/provision?fingerprint=…&nonce=…`.
 
 **Enabling flow**:
