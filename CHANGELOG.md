@@ -1,3 +1,16 @@
+# [1.45.0](https://github.com/martynvdijke/LEDit/compare/v1.44.1...v1.45.0) (2026-09-20)
+
+
+### Bug Fixes
+
+* **chore:** upload python pacakge as well ([a46ffaf](https://github.com/martynvdijke/LEDit/commit/a46ffaf858d90107049e4117846caf3bf030769c))
+* point theme editor e2e test at new /admin/themes URL ([0942566](https://github.com/martynvdijke/LEDit/commit/0942566028b1be579df092ab5b0c161333bd6e80))
+
+
+### Features
+
+* add theme designer with named themes and live preview ([2499974](https://github.com/martynvdijke/LEDit/commit/24999741bae454501f6d9d493434d7f99968cb85))
+
 ## [1.44.1](https://github.com/martynvdijke/LEDit/compare/v1.44.0...v1.44.1) (2026-09-16)
 
 # [1.44.0](https://github.com/martynvdijke/LEDit/compare/v1.43.2...v1.44.0) (2026-09-16)
