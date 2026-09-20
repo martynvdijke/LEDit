@@ -205,14 +205,14 @@ test.describe('Devices', () => {
 
 test.describe('Theme Editor', () => {
   test('should load theme editor with color pickers', async ({ page }) => {
-    await page.goto('/admin/theme');
-    await expect(page.locator('h1')).toContainText('Theme Editor');
+    await page.goto('/admin/themes/new/edit');
+    await expect(page.locator('h1')).toContainText('New Theme');
     await expect(page.locator('#bg_color')).toBeAttached();
     await expect(page.locator('#accent_color')).toBeAttached();
     await expect(page.locator('#text_color')).toBeAttached();
     await expect(page.locator('#title')).toBeAttached();
     await expect(page.locator('#font_size')).toBeAttached();
-    await expect(page.getByRole('button', { name: 'Save Theme' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
   });
 });
 
