@@ -10,6 +10,6 @@ required. Each device authenticates with its own token (admin -> Devices).
 from .client import Client
 from .display import Display, FileDisplay, MatrixDisplay
 
-__version__ = "1.45.3"
+__version__ = "1.45.4"
 
 __all__ = ["Client", "Display", "MatrixDisplay", "FileDisplay", "__version__"]
