@@ -41,6 +41,10 @@
         <a href="/admin/password" class="nav-link{{if eq $.active "password"}} active{{end}}"><span class="nav-icon" aria-hidden="true">⌑</span>Password</a>
         {{if eq .user_role "admin"}}<a href="/admin/users" class="nav-link{{if eq $.active "users"}} active{{end}}"><span class="nav-icon">👥</span>Users</a>{{end}}
         {{if .isViewer}}<span class="badge">read-only viewer</span>{{end}}
+        <span class="nav-label">Sources & Plugins</span>
+        <a href="/admin/" class="nav-link{{if eq $.active "dashboard"}} active{{end}}"><span class="nav-icon" aria-hidden="true">◫</span>Datasources{{if $.total_sources}} <span class="badge bg-secondary ms-1">{{$.total_sources}}</span>{{end}}</a>
+        <a href="/admin/plugins" class="nav-link{{if or (eq $.active "plugins") (eq $.active "plugin_catalog")}} active{{end}}"><span class="nav-icon" aria-hidden="true">🧩</span>Plugins{{if $.plugin_count}} <span class="badge bg-secondary ms-1">{{$.plugin_count}}</span>{{end}}</a>
+        <a href="/admin/plugins/catalog" class="nav-link{{if eq $.active "plugin_catalog"}} active{{end}}"><span class="nav-icon" aria-hidden="true">⋯</span>Plugin Catalog</a>
         <span class="nav-label">System</span>
         <a href="/admin/settings/logs" class="nav-link{{if eq $.active "log-settings"}} active{{end}}"><span class="nav-icon">·</span>Log settings</a>
         <a href="/admin/settings/email" class="nav-link{{if eq $.active "email"}} active{{end}}"><span class="nav-icon">·</span>Email settings</a>

@@ -53,12 +53,20 @@ var pathToActive = map[string]string{
 	"/admin/webhook":         "webhook",
 	"/admin/mqtt":            "mqtt",
 	"/admin/telegram":        "telegram",
+	"/admin/plugins":         "plugins",
+	"/admin/plugins/catalog": "plugin_catalog",
 }
 
 func activePage(c *gin.Context) string {
 	path := c.Request.URL.Path
 	if a, ok := pathToActive[path]; ok {
 		return a
+	}
+	if strings.HasPrefix(path, "/admin/plugins") {
+		if strings.HasPrefix(path, "/admin/plugins/catalog") {
+			return "plugin_catalog"
+		}
+		return "plugins"
 	}
 	// Match prefix for edit pages, or the endpoint itself
 	if after, ok := strings.CutPrefix(path, "/admin/datasources/"); ok {
@@ -337,6 +345,7 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		if cacheHits+cacheMisses > 0 {
 			cacheRatio = int(float64(cacheHits) / float64(cacheHits+cacheMisses) * 100)
 		}
+		pluginCount, _ := s.DB.DatasourcePlugin.Query().Count(s.Ctx)
 
 		stats = gin.H{
 			"has_settings":            true,
@@ -381,7 +390,8 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 			"health_red":              healthRed,
 			"avg_ewma_ms":             avgEWMA,
 			"cache_hit_ratio_percent": cacheRatio,
-			"total_sources":           len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems) + len(compositionItems) + len(countdownItems) + len(aiDigestItems) + len(pixelArtItems) + len(transitItems) + len(uptimeItems) + len(piholeItems) + len(githubItems) + len(sportsItems) + len(sunMoonItems) + len(jellyfinItems) + len(immichItems) + len(qbittorrentItems) + len(sabnzbdItems) + len(overseerrItems) + len(uptimekumaItems) + len(speedtestItems),
+			"plugin_count":            pluginCount,
+			"total_sources":           len(sonarrItems) + len(radarrItems) + len(f1Items) + len(weatherItems) + len(haItems) + len(untappdItems) + len(imageItems) + len(videoItems) + len(cryptoItems) + len(rssItems) + len(calendarItems) + len(stockItems) + len(textSlideItems) + len(googleCalendarItems) + len(newsFeedItems) + len(genericAPIItems) + len(matrixLayoutItems) + len(compositionItems) + len(countdownItems) + len(aiDigestItems) + len(pixelArtItems) + len(transitItems) + len(uptimeItems) + len(piholeItems) + len(githubItems) + len(sportsItems) + len(sunMoonItems) + len(jellyfinItems) + len(immichItems) + len(qbittorrentItems) + len(sabnzbdItems) + len(overseerrItems) + len(uptimekumaItems) + len(speedtestItems) + pluginCount,
 		}
 	}
 	stats["pinned_by"] = GlobalFeed.Status()["pinned_by"]

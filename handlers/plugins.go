@@ -103,7 +103,8 @@ func validatePluginTarget(kind, target string) error {
 // AdminPlugins list
 func (s *Server) AdminPlugins(c *gin.Context) {
 	plugins, _ := s.DB.DatasourcePlugin.Query().All(s.Ctx)
-	c.HTML(http.StatusOK, "plugins.html", gin.H{"plugins": plugins})
+	pluginCount := len(plugins)
+	c.HTML(http.StatusOK, "plugins.html", gin.H{"plugins": plugins, "plugin_count": pluginCount})
 }
 
 func (s *Server) AdminPluginNew(c *gin.Context) {
@@ -454,7 +455,8 @@ func (s *Server) AdminPluginCatalog(c *gin.Context) {
 			errMsg = err.Error()
 		}
 	}
-	c.HTML(http.StatusOK, "plugin_catalog.html", gin.H{"catalogURL": raw, "entries": entries, "error": errMsg})
+	pluginCount, _ := s.DB.DatasourcePlugin.Query().Count(s.Ctx)
+	c.HTML(http.StatusOK, "plugin_catalog.html", gin.H{"catalogURL": raw, "entries": entries, "error": errMsg, "plugin_count": pluginCount})
 }
 
 func fetchPluginCatalog(ctx context.Context, rawURL string) ([]pluginCatalogEntry, error) {

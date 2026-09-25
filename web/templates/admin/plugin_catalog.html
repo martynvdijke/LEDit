@@ -5,7 +5,10 @@
 <div class="d-flex">{{template "sidebar" .}}
 <div class="container-fluid p-4">
 <h1>Plugin Catalog</h1>
-<a href="/admin/plugins" class="btn btn-secondary mb-3">Back to Plugins</a>
+<div class="alert alert-secondary d-flex justify-content-between align-items-center" role="alert">
+    <span>Looking for built-in sources instead? <a href="/admin/">Browse datasources</a> on the dashboard.</span>
+    <a href="/admin/plugins" class="btn btn-sm btn-secondary">Back to Plugins</a>
+</div>
 {{if not .catalogURL}}
 <div class="alert alert-info">No catalog configured. Set <code>PLUGINS_CATALOG_URL</code> to a JSON document like <code>{"plugins":[{"name":"...","description":"...","url":"..."}]}</code>.</div>
 {{else if .error}}

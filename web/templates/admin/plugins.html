@@ -6,6 +6,10 @@
 <div class="container-fluid p-4">
 <h1>Datasource Plugins</h1>
 <p class="text-muted">Plugins are trusted executables or localhost HTTP endpoints. No sandboxing — run only trusted plugins. HTTP must be localhost.</p>
+<div class="alert alert-secondary d-flex justify-content-between align-items-center" role="alert">
+    <span>Plugins provide datasource-like fetches. Manage built-in sources on the <a href="/admin/">dashboard</a>.</span>
+    <a href="/admin/" class="btn btn-sm btn-outline-secondary">View Datasources</a>
+</div>
 <a href="/admin/plugins/new" class="btn btn-primary mb-3">New Plugin</a> <a href="/admin/plugins/catalog" class="btn btn-secondary mb-3">Catalog</a>
 <form method="POST" action="/admin/plugins/install" class="row g-2 mb-3">
 <div class="col-auto"><input name="url" class="form-control" placeholder="https://host/plugin-manifest.json" size="48" required></div>

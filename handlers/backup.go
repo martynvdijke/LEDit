@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -25,6 +27,9 @@ const BundleVersion = "1.1"
 const (
 	maxUncompressedSize = 100 * 1024 * 1024
 	maxZipEntries       = 1000
+	// ponytail: per-file 10MB and total media 50MB caps to keep backup bounded; stream/chunk or raise limits if legit media exceeds this.
+	mediaMaxFileSize  = 10 * 1024 * 1024
+	mediaMaxTotalSize = 50 * 1024 * 1024
 )
 
 type Bundle struct {
@@ -120,6 +125,125 @@ func toMapSlice[T any](items []*T) []map[string]any {
 		out = append(out, m)
 	}
 	return out
+}
+
+func mediaZipPath(fsPath string) string {
+	return filepath.ToSlash(filepath.Join("media", strings.TrimPrefix(filepath.ToSlash(fsPath), "web/media/")))
+}
+
+func collectMediaManifest() ([]MediaManifestEntry, map[string]string) {
+	// Returns manifest entries and map zipPath -> fsPath
+	manifest := []MediaManifestEntry{}
+	pathMap := map[string]string{}
+	var total int64
+	roots := []string{}
+	// Discover whatever dirs exist under web/media (skip backups)
+	if entries, err := os.ReadDir("web/media"); err == nil {
+		for _, e := range entries {
+			if !e.IsDir() {
+				continue
+			}
+			if e.Name() == "backups" {
+				continue
+			}
+			roots = append(roots, filepath.Join("web/media", e.Name()))
+		}
+	}
+	// fallback explicit list if web/media missing but subdirs exist
+	if len(roots) == 0 {
+		for _, r := range []string{"web/media/timelapse", "web/media/guest_uploads", "web/media/custom_images", "web/media/custom_videos"} {
+			if _, err := os.Stat(r); err == nil {
+				roots = append(roots, r)
+			}
+		}
+	}
+	for _, root := range roots {
+		_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+			if err != nil || d.IsDir() {
+				return nil
+			}
+			info, err := d.Info()
+			if err != nil {
+				return nil
+			}
+			if info.Size() > mediaMaxFileSize {
+				return nil
+			}
+			if total+info.Size() > mediaMaxTotalSize {
+				return nil
+			}
+			data, err := os.ReadFile(path)
+			if err != nil {
+				return nil
+			}
+			if int64(len(data)) > mediaMaxFileSize {
+				return nil
+			}
+			h := sha256.Sum256(data)
+			zp := mediaZipPath(path)
+			manifest = append(manifest, MediaManifestEntry{Path: zp, SHA256: hex.EncodeToString(h[:])})
+			pathMap[zp] = path
+			total += int64(len(data))
+			if len(manifest) >= maxZipEntries-1 {
+				return fs.SkipAll
+			}
+			return nil
+		})
+	}
+	return manifest, pathMap
+}
+
+func restoreMediaFiles(zr *zip.Reader, bundle Bundle) error {
+	// Build expected hash map
+	want := map[string]string{}
+	for _, me := range bundle.MediaManifest {
+		want[me.Path] = me.SHA256
+	}
+	for _, f := range zr.File {
+		if !strings.HasPrefix(f.Name, "media/") {
+			continue
+		}
+		clean := filepath.Clean(f.Name)
+		if strings.Contains(clean, "..") {
+			return fmt.Errorf("invalid_path")
+		}
+		// Cap per-file
+		if f.UncompressedSize64 > mediaMaxFileSize {
+			continue
+		}
+		rc, err := f.Open()
+		if err != nil {
+			return err
+		}
+		content, err := io.ReadAll(io.LimitReader(rc, mediaMaxFileSize+1))
+		rc.Close()
+		if err != nil {
+			return err
+		}
+		if int64(len(content)) > mediaMaxFileSize {
+			continue
+		}
+		if expected, ok := want[f.Name]; ok && expected != "" {
+			h := sha256.Sum256(content)
+			if hex.EncodeToString(h[:]) != expected {
+				return fmt.Errorf("hash_mismatch: %s", f.Name)
+			}
+		}
+		// Map zip path media/... -> filesystem web/media/...
+		rel := strings.TrimPrefix(f.Name, "media/")
+		fsPath := filepath.Join("web/media", filepath.FromSlash(rel))
+		// Prevent traversal
+		if !strings.HasPrefix(filepath.Clean(fsPath), filepath.Clean("web/media")) {
+			return fmt.Errorf("invalid_path")
+		}
+		if err := os.MkdirAll(filepath.Dir(fsPath), 0755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(fsPath, content, 0644); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *Server) ExportBundle(includeSecrets, includeMedia bool) (Bundle, error) {
@@ -254,7 +378,11 @@ func (s *Server) ExportBundle(includeSecrets, includeMedia bool) (Bundle, error)
 		Entities:     entities,
 	}
 	if includeMedia {
-		bundle.MediaManifest = []MediaManifestEntry{}
+		manifest, _ := collectMediaManifest()
+		if manifest == nil {
+			manifest = []MediaManifestEntry{}
+		}
+		bundle.MediaManifest = manifest
 	}
 	return bundle, nil
 }
@@ -1038,20 +1166,29 @@ func (s *Server) BackupExportHandler(c *gin.Context) {
 		s.LogStore.Submit(time.Now(), "info", "backup", fmt.Sprintf("backup export include_secrets=%v", includeSecrets), "")
 	}
 	if includeMedia {
+		_, pathMap := collectMediaManifest()
+		// Re-collect to ensure manifest matches what we zip (ExportBundle already did one scan;
+		// reuse pathMap from fresh scan to avoid skew, but bundle.MediaManifest is authoritative)
 		buf := new(bytes.Buffer)
 		zw := zip.NewWriter(buf)
 		fw, _ := zw.Create("bundle.json")
 		enc := json.NewEncoder(fw)
 		enc.SetIndent("", "  ")
 		_ = enc.Encode(bundle)
-		// add media_manifest entries as empty files for test? Not needed
-		if len(bundle.MediaManifest) > 0 {
-			for _, me := range bundle.MediaManifest {
-				mf, _ := zw.Create(me.Path)
-				h := sha256.Sum256([]byte(me.Path))
-				_ = hex.EncodeToString(h[:])
-				_, _ = mf.Write([]byte{})
+		for _, me := range bundle.MediaManifest {
+			fsPath, ok := pathMap[me.Path]
+			if !ok {
+				continue
 			}
+			data, err := os.ReadFile(fsPath)
+			if err != nil {
+				continue
+			}
+			if int64(len(data)) > mediaMaxFileSize {
+				continue
+			}
+			mf, _ := zw.Create(me.Path)
+			_, _ = mf.Write(data)
 		}
 		zw.Close()
 		filename := fmt.Sprintf("ledit-backup-%s.json.zip", time.Now().Format("20060102"))
@@ -1088,8 +1225,10 @@ func (s *Server) BackupImportHandler(c *gin.Context) {
 		return
 	}
 	var bundle Bundle
+	var zipReader *zip.Reader
 	if len(data) >= 2 && data[0] == 0x50 && data[1] == 0x4B {
 		zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+		zipReader = zr
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid_zip"})
 			return
@@ -1134,25 +1273,26 @@ func (s *Server) BackupImportHandler(c *gin.Context) {
 			return
 		}
 		if !dryRun && len(bundle.MediaManifest) > 0 {
+			// Verify hashes pre-import (reuse restore helper's verification without writing)
+			want := map[string]string{}
+			for _, me := range bundle.MediaManifest {
+				want[me.Path] = me.SHA256
+			}
 			for _, f := range zr.File {
-				if strings.HasPrefix(f.Name, "media/") {
-					expected := ""
-					for _, me := range bundle.MediaManifest {
-						if me.Path == f.Name {
-							expected = me.SHA256
-							break
-						}
-					}
-					rc, _ := f.Open()
-					content, _ := io.ReadAll(rc)
-					rc.Close()
-					if expected != "" {
-						h := sha256.Sum256(content)
-						if hex.EncodeToString(h[:]) != expected {
-							c.JSON(http.StatusBadRequest, gin.H{"error": "hash_mismatch"})
-							return
-						}
-					}
+				if !strings.HasPrefix(f.Name, "media/") {
+					continue
+				}
+				expected := want[f.Name]
+				if expected == "" {
+					continue
+				}
+				rc, _ := f.Open()
+				content, _ := io.ReadAll(io.LimitReader(rc, mediaMaxFileSize+1))
+				rc.Close()
+				h := sha256.Sum256(content)
+				if hex.EncodeToString(h[:]) != expected {
+					c.JSON(http.StatusBadRequest, gin.H{"error": "hash_mismatch"})
+					return
 				}
 			}
 		}
@@ -1207,8 +1347,21 @@ func (s *Server) BackupImportHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": result.Error})
 		return
 	}
+	var mediaWarning string
+	if zipReader != nil && len(bundle.MediaManifest) > 0 {
+		if err := restoreMediaFiles(zipReader, bundle); err != nil {
+			// Pre-verify already rejected hash_mismatch/invalid_path before ImportBundle;
+			// post-commit media errors must not abort the already-committed DB import.
+			mediaWarning = err.Error()
+			slog.Warn("backup media restore warning (DB already committed)", "error", err)
+		}
+	}
 	slog.Info("backup import", "completed", result.CompletedTypes)
-	c.JSON(http.StatusOK, gin.H{"imported": true, "completed_types": result.CompletedTypes, "per_type": result.PerType})
+	resp := gin.H{"imported": true, "completed_types": result.CompletedTypes, "per_type": result.PerType}
+	if mediaWarning != "" {
+		resp["media_warning"] = mediaWarning
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // Bundle version bump procedure:

@@ -97,6 +97,7 @@ type feedConn struct {
 	panelCols      int // physical panels chained horizontally (0/1 = single panel)
 	panelGap       int // hidden bezel pixels between panels (0 = none)
 	protocol       int // negotiated device protocol (0/1 = v1, 2 = v2); zero value keeps v1
+	reschedule     func() []sourceWithName
 }
 
 // overlaySpecForDevice maps persisted device columns to the render overlay spec.
@@ -672,6 +673,18 @@ func (h *WSHub) composeScheduledSources(device *ent.DeviceSettings, settings *en
 	return srcs
 }
 
+func sameSources(a, b []sourceWithName) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].cacheKey != b[i].cacheKey {
+			return false
+		}
+	}
+	return true
+}
+
 func (h *WSHub) idleFallback(device *ent.DeviceSettings) []sourceWithName {
 	if device == nil || device.IdleScreensaver == nil || *device.IdleScreensaver == "" {
 		return nil
@@ -867,23 +880,42 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 
 	// Each device gets its own feed controller so pause/skip/next are
 	// independent of the shared preview feed.
-	// TODO(slot re-eval): scheduled resolution is done at connection setup via
-	// composeScheduledSources. Per-slot re-evaluation (at each refresh_interval
-	// boundary before selecting nextSource) requires device-aware
-	// re-resolution inside serveFeed. Current design keeps sources fixed for
-	// the connection lifetime to avoid DB per-tick; future work can extend
-	// serveFeed to accept a device-aware re-resolve callback and swap sources
-	// at the top of its outer loop. Precedence remains:
-	// notification > event pin > scheduled playlist > static playlist/global fallback.
 	fc := &FeedController{}
 	registerDeviceFeed(device.ID, fc)
 	defer unregisterDeviceFeed(device.ID)
+	// ponytail: poll every 60s at rotation boundary; cheap vs per-frame DB, catches window changes without scheduler refactor.
+	var reschedule func() []sourceWithName
+	if device.ContentMode == "scheduled" || func() bool {
+		if !isDeviceContentExplicit(device) {
+			if grp, err := device.Edges.GroupOrErr(); err == nil && grp != nil && isGroupContentSet(grp) {
+				return grp.ContentMode == "scheduled"
+			}
+		}
+		return false
+	}() {
+		deviceID := device.ID
+		reschedule = func() []sourceWithName {
+			dev, err := h.Client.DeviceSettings.Query().Where(devicesettings.ID(deviceID)).Only(context.Background())
+			if err != nil {
+				return nil
+			}
+			gs, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().Only(context.Background())
+			if err != nil {
+				return h.composeDeviceSources(dev, settings)
+			}
+			if fresh := h.composeDeviceSources(dev, gs); len(fresh) > 0 {
+				return fresh
+			}
+			return nil
+		}
+	}
 	serveFeed(conn, feedConn{
-		deviceID:  device.ID,
-		overlay:   overlaySpecForDevice(device),
-		panelCols: device.PanelCols,
-		panelGap:  device.PanelGap,
-		protocol:  protocol,
+		deviceID:   device.ID,
+		overlay:    overlaySpecForDevice(device),
+		panelCols:  device.PanelCols,
+		panelGap:   device.PanelGap,
+		protocol:   protocol,
+		reschedule: reschedule,
 		frames: func() {
 			if err := h.Client.DeviceSettings.UpdateOneID(device.ID).AddFramesServed(1).Exec(context.Background()); err != nil {
 				slog.Warn("failed to increment device frames_served", "device", device.Name, "error", err)
@@ -1167,7 +1199,17 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 	var tlLastCapture time.Time
 	var tlLastSourceID string
 	tlInterval := TimelapseInterval()
+	// ponytail: 60s throttle avoids per-frame DB load; per-rotation would still hit DB every ~refreshInterval.
+	lastReschedule := time.Now()
 	for {
+		// Re-resolve scheduled sources at rotation boundary (throttled).
+		if fc.reschedule != nil && time.Since(lastReschedule) >= 60*time.Second {
+			lastReschedule = time.Now()
+			if fresh := fc.reschedule(); fresh != nil && !sameSources(sources, fresh) {
+				sources = fresh
+				slog.Info("scheduled sources re-resolved", "device", fc.deviceID, "sources", len(sources))
+			}
+		}
 		for i, sw := range sources {
 			// Broadcast any new notifications to this connection.
 			if notifs := NotificationsAfter(cursor); len(notifs) > 0 {
