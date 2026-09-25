@@ -26,6 +26,7 @@ import (
 	"ledit/ent/datasourceplugin"
 	"ledit/ent/deliverylog"
 	"ledit/ent/devicegroup"
+	"ledit/ent/devicemessagestate"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
@@ -134,6 +135,8 @@ type Client struct {
 	DeliveryLog *DeliveryLogClient
 	// DeviceGroup is the client for interacting with the DeviceGroup builders.
 	DeviceGroup *DeviceGroupClient
+	// DeviceMessageState is the client for interacting with the DeviceMessageState builders.
+	DeviceMessageState *DeviceMessageStateClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
 	DeviceSettings *DeviceSettingsClient
 	// DisplayRule is the client for interacting with the DisplayRule builders.
@@ -292,6 +295,7 @@ func (c *Client) init() {
 	c.DatasourcePlugin = NewDatasourcePluginClient(c.config)
 	c.DeliveryLog = NewDeliveryLogClient(c.config)
 	c.DeviceGroup = NewDeviceGroupClient(c.config)
+	c.DeviceMessageState = NewDeviceMessageStateClient(c.config)
 	c.DeviceSettings = NewDeviceSettingsClient(c.config)
 	c.DisplayRule = NewDisplayRuleClient(c.config)
 	c.EmailSettings = NewEmailSettingsClient(c.config)
@@ -448,89 +452,90 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		AIDigest:         NewAIDigestClient(cfg),
-		AISettings:       NewAISettingsClient(cfg),
-		AdGuard:          NewAdGuardClient(cfg),
-		AdminSettings:    NewAdminSettingsClient(cfg),
-		AirQuality:       NewAirQualityClient(cfg),
-		AlertSettings:    NewAlertSettingsClient(cfg),
-		ApiToken:         NewApiTokenClient(cfg),
-		Calendar:         NewCalendarClient(cfg),
-		ChartSample:      NewChartSampleClient(cfg),
-		Composition:      NewCompositionClient(cfg),
-		Countdown:        NewCountdownClient(cfg),
-		Crypto:           NewCryptoClient(cfg),
-		DatasourcePlugin: NewDatasourcePluginClient(cfg),
-		DeliveryLog:      NewDeliveryLogClient(cfg),
-		DeviceGroup:      NewDeviceGroupClient(cfg),
-		DeviceSettings:   NewDeviceSettingsClient(cfg),
-		DisplayRule:      NewDisplayRuleClient(cfg),
-		EmailSettings:    NewEmailSettingsClient(cfg),
-		F1:               NewF1Client(cfg),
-		FirmwareRelease:  NewFirmwareReleaseClient(cfg),
-		FirmwareSettings: NewFirmwareSettingsClient(cfg),
-		Frigate:          NewFrigateClient(cfg),
-		GeneralSettings:  NewGeneralSettingsClient(cfg),
-		GenericAPI:       NewGenericAPIClient(cfg),
-		GitHub:           NewGitHubClient(cfg),
-		GoogleCalendar:   NewGoogleCalendarClient(cfg),
-		GreetingRule:     NewGreetingRuleClient(cfg),
-		GuestPhoto:       NewGuestPhotoClient(cfg),
-		GuestToken:       NewGuestTokenClient(cfg),
-		HomeAssistant:    NewHomeAssistantClient(cfg),
-		Image:            NewImageClient(cfg),
-		Immich:           NewImmichClient(cfg),
-		InboundAdapter:   NewInboundAdapterClient(cfg),
-		Incident:         NewIncidentClient(cfg),
-		Jellyfin:         NewJellyfinClient(cfg),
-		LogEntry:         NewLogEntryClient(cfg),
-		LogSettings:      NewLogSettingsClient(cfg),
-		MPD:              NewMPDClient(cfg),
-		MQTTSettings:     NewMQTTSettingsClient(cfg),
-		MatrixLayout:     NewMatrixLayoutClient(cfg),
-		NewsFeed:         NewNewsFeedClient(cfg),
-		Notification:     NewNotificationClient(cfg),
-		NowPlayingSource: NewNowPlayingSourceClient(cfg),
-		OutboundSettings: NewOutboundSettingsClient(cfg),
-		OutboundWebhook:  NewOutboundWebhookClient(cfg),
-		Overseerr:        NewOverseerrClient(cfg),
-		Parcel:           NewParcelClient(cfg),
-		PiHole:           NewPiHoleClient(cfg),
-		PixelArt:         NewPixelArtClient(cfg),
-		Playlist:         NewPlaylistClient(cfg),
-		Proxmox:          NewProxmoxClient(cfg),
-		Qbittorrent:      NewQbittorrentClient(cfg),
-		Qrcode:           NewQrcodeClient(cfg),
-		Radarr:           NewRadarrClient(cfg),
-		RssFeed:          NewRssFeedClient(cfg),
-		Sabnzbd:          NewSabnzbdClient(cfg),
-		Scene:            NewSceneClient(cfg),
-		Schedule:         NewScheduleClient(cfg),
-		Sonarr:           NewSonarrClient(cfg),
-		Speedtest:        NewSpeedtestClient(cfg),
-		Sports:           NewSportsClient(cfg),
-		Stock:            NewStockClient(cfg),
-		SunMoon:          NewSunMoonClient(cfg),
-		TelegramSettings: NewTelegramSettingsClient(cfg),
-		TextSlide:        NewTextSlideClient(cfg),
-		Theme:            NewThemeClient(cfg),
-		ThemeAssignment:  NewThemeAssignmentClient(cfg),
-		TimelapseFrame:   NewTimelapseFrameClient(cfg),
-		Transit:          NewTransitClient(cfg),
-		Transmission:     NewTransmissionClient(cfg),
-		UmamiSettings:    NewUmamiSettingsClient(cfg),
-		Untappd:          NewUntappdClient(cfg),
-		Uptime:           NewUptimeClient(cfg),
-		UptimeKuma:       NewUptimeKumaClient(cfg),
-		User:             NewUserClient(cfg),
-		Video:            NewVideoClient(cfg),
-		WakeAlarm:        NewWakeAlarmClient(cfg),
-		Waste:            NewWasteClient(cfg),
-		Weather:          NewWeatherClient(cfg),
-		WebhookSettings:  NewWebhookSettingsClient(cfg),
-		Zigbee2MQTT:      NewZigbee2MQTTClient(cfg),
+		ctx:                ctx,
+		config:             cfg,
+		AIDigest:           NewAIDigestClient(cfg),
+		AISettings:         NewAISettingsClient(cfg),
+		AdGuard:            NewAdGuardClient(cfg),
+		AdminSettings:      NewAdminSettingsClient(cfg),
+		AirQuality:         NewAirQualityClient(cfg),
+		AlertSettings:      NewAlertSettingsClient(cfg),
+		ApiToken:           NewApiTokenClient(cfg),
+		Calendar:           NewCalendarClient(cfg),
+		ChartSample:        NewChartSampleClient(cfg),
+		Composition:        NewCompositionClient(cfg),
+		Countdown:          NewCountdownClient(cfg),
+		Crypto:             NewCryptoClient(cfg),
+		DatasourcePlugin:   NewDatasourcePluginClient(cfg),
+		DeliveryLog:        NewDeliveryLogClient(cfg),
+		DeviceGroup:        NewDeviceGroupClient(cfg),
+		DeviceMessageState: NewDeviceMessageStateClient(cfg),
+		DeviceSettings:     NewDeviceSettingsClient(cfg),
+		DisplayRule:        NewDisplayRuleClient(cfg),
+		EmailSettings:      NewEmailSettingsClient(cfg),
+		F1:                 NewF1Client(cfg),
+		FirmwareRelease:    NewFirmwareReleaseClient(cfg),
+		FirmwareSettings:   NewFirmwareSettingsClient(cfg),
+		Frigate:            NewFrigateClient(cfg),
+		GeneralSettings:    NewGeneralSettingsClient(cfg),
+		GenericAPI:         NewGenericAPIClient(cfg),
+		GitHub:             NewGitHubClient(cfg),
+		GoogleCalendar:     NewGoogleCalendarClient(cfg),
+		GreetingRule:       NewGreetingRuleClient(cfg),
+		GuestPhoto:         NewGuestPhotoClient(cfg),
+		GuestToken:         NewGuestTokenClient(cfg),
+		HomeAssistant:      NewHomeAssistantClient(cfg),
+		Image:              NewImageClient(cfg),
+		Immich:             NewImmichClient(cfg),
+		InboundAdapter:     NewInboundAdapterClient(cfg),
+		Incident:           NewIncidentClient(cfg),
+		Jellyfin:           NewJellyfinClient(cfg),
+		LogEntry:           NewLogEntryClient(cfg),
+		LogSettings:        NewLogSettingsClient(cfg),
+		MPD:                NewMPDClient(cfg),
+		MQTTSettings:       NewMQTTSettingsClient(cfg),
+		MatrixLayout:       NewMatrixLayoutClient(cfg),
+		NewsFeed:           NewNewsFeedClient(cfg),
+		Notification:       NewNotificationClient(cfg),
+		NowPlayingSource:   NewNowPlayingSourceClient(cfg),
+		OutboundSettings:   NewOutboundSettingsClient(cfg),
+		OutboundWebhook:    NewOutboundWebhookClient(cfg),
+		Overseerr:          NewOverseerrClient(cfg),
+		Parcel:             NewParcelClient(cfg),
+		PiHole:             NewPiHoleClient(cfg),
+		PixelArt:           NewPixelArtClient(cfg),
+		Playlist:           NewPlaylistClient(cfg),
+		Proxmox:            NewProxmoxClient(cfg),
+		Qbittorrent:        NewQbittorrentClient(cfg),
+		Qrcode:             NewQrcodeClient(cfg),
+		Radarr:             NewRadarrClient(cfg),
+		RssFeed:            NewRssFeedClient(cfg),
+		Sabnzbd:            NewSabnzbdClient(cfg),
+		Scene:              NewSceneClient(cfg),
+		Schedule:           NewScheduleClient(cfg),
+		Sonarr:             NewSonarrClient(cfg),
+		Speedtest:          NewSpeedtestClient(cfg),
+		Sports:             NewSportsClient(cfg),
+		Stock:              NewStockClient(cfg),
+		SunMoon:            NewSunMoonClient(cfg),
+		TelegramSettings:   NewTelegramSettingsClient(cfg),
+		TextSlide:          NewTextSlideClient(cfg),
+		Theme:              NewThemeClient(cfg),
+		ThemeAssignment:    NewThemeAssignmentClient(cfg),
+		TimelapseFrame:     NewTimelapseFrameClient(cfg),
+		Transit:            NewTransitClient(cfg),
+		Transmission:       NewTransmissionClient(cfg),
+		UmamiSettings:      NewUmamiSettingsClient(cfg),
+		Untappd:            NewUntappdClient(cfg),
+		Uptime:             NewUptimeClient(cfg),
+		UptimeKuma:         NewUptimeKumaClient(cfg),
+		User:               NewUserClient(cfg),
+		Video:              NewVideoClient(cfg),
+		WakeAlarm:          NewWakeAlarmClient(cfg),
+		Waste:              NewWasteClient(cfg),
+		Weather:            NewWeatherClient(cfg),
+		WebhookSettings:    NewWebhookSettingsClient(cfg),
+		Zigbee2MQTT:        NewZigbee2MQTTClient(cfg),
 	}, nil
 }
 
@@ -548,89 +553,90 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		AIDigest:         NewAIDigestClient(cfg),
-		AISettings:       NewAISettingsClient(cfg),
-		AdGuard:          NewAdGuardClient(cfg),
-		AdminSettings:    NewAdminSettingsClient(cfg),
-		AirQuality:       NewAirQualityClient(cfg),
-		AlertSettings:    NewAlertSettingsClient(cfg),
-		ApiToken:         NewApiTokenClient(cfg),
-		Calendar:         NewCalendarClient(cfg),
-		ChartSample:      NewChartSampleClient(cfg),
-		Composition:      NewCompositionClient(cfg),
-		Countdown:        NewCountdownClient(cfg),
-		Crypto:           NewCryptoClient(cfg),
-		DatasourcePlugin: NewDatasourcePluginClient(cfg),
-		DeliveryLog:      NewDeliveryLogClient(cfg),
-		DeviceGroup:      NewDeviceGroupClient(cfg),
-		DeviceSettings:   NewDeviceSettingsClient(cfg),
-		DisplayRule:      NewDisplayRuleClient(cfg),
-		EmailSettings:    NewEmailSettingsClient(cfg),
-		F1:               NewF1Client(cfg),
-		FirmwareRelease:  NewFirmwareReleaseClient(cfg),
-		FirmwareSettings: NewFirmwareSettingsClient(cfg),
-		Frigate:          NewFrigateClient(cfg),
-		GeneralSettings:  NewGeneralSettingsClient(cfg),
-		GenericAPI:       NewGenericAPIClient(cfg),
-		GitHub:           NewGitHubClient(cfg),
-		GoogleCalendar:   NewGoogleCalendarClient(cfg),
-		GreetingRule:     NewGreetingRuleClient(cfg),
-		GuestPhoto:       NewGuestPhotoClient(cfg),
-		GuestToken:       NewGuestTokenClient(cfg),
-		HomeAssistant:    NewHomeAssistantClient(cfg),
-		Image:            NewImageClient(cfg),
-		Immich:           NewImmichClient(cfg),
-		InboundAdapter:   NewInboundAdapterClient(cfg),
-		Incident:         NewIncidentClient(cfg),
-		Jellyfin:         NewJellyfinClient(cfg),
-		LogEntry:         NewLogEntryClient(cfg),
-		LogSettings:      NewLogSettingsClient(cfg),
-		MPD:              NewMPDClient(cfg),
-		MQTTSettings:     NewMQTTSettingsClient(cfg),
-		MatrixLayout:     NewMatrixLayoutClient(cfg),
-		NewsFeed:         NewNewsFeedClient(cfg),
-		Notification:     NewNotificationClient(cfg),
-		NowPlayingSource: NewNowPlayingSourceClient(cfg),
-		OutboundSettings: NewOutboundSettingsClient(cfg),
-		OutboundWebhook:  NewOutboundWebhookClient(cfg),
-		Overseerr:        NewOverseerrClient(cfg),
-		Parcel:           NewParcelClient(cfg),
-		PiHole:           NewPiHoleClient(cfg),
-		PixelArt:         NewPixelArtClient(cfg),
-		Playlist:         NewPlaylistClient(cfg),
-		Proxmox:          NewProxmoxClient(cfg),
-		Qbittorrent:      NewQbittorrentClient(cfg),
-		Qrcode:           NewQrcodeClient(cfg),
-		Radarr:           NewRadarrClient(cfg),
-		RssFeed:          NewRssFeedClient(cfg),
-		Sabnzbd:          NewSabnzbdClient(cfg),
-		Scene:            NewSceneClient(cfg),
-		Schedule:         NewScheduleClient(cfg),
-		Sonarr:           NewSonarrClient(cfg),
-		Speedtest:        NewSpeedtestClient(cfg),
-		Sports:           NewSportsClient(cfg),
-		Stock:            NewStockClient(cfg),
-		SunMoon:          NewSunMoonClient(cfg),
-		TelegramSettings: NewTelegramSettingsClient(cfg),
-		TextSlide:        NewTextSlideClient(cfg),
-		Theme:            NewThemeClient(cfg),
-		ThemeAssignment:  NewThemeAssignmentClient(cfg),
-		TimelapseFrame:   NewTimelapseFrameClient(cfg),
-		Transit:          NewTransitClient(cfg),
-		Transmission:     NewTransmissionClient(cfg),
-		UmamiSettings:    NewUmamiSettingsClient(cfg),
-		Untappd:          NewUntappdClient(cfg),
-		Uptime:           NewUptimeClient(cfg),
-		UptimeKuma:       NewUptimeKumaClient(cfg),
-		User:             NewUserClient(cfg),
-		Video:            NewVideoClient(cfg),
-		WakeAlarm:        NewWakeAlarmClient(cfg),
-		Waste:            NewWasteClient(cfg),
-		Weather:          NewWeatherClient(cfg),
-		WebhookSettings:  NewWebhookSettingsClient(cfg),
-		Zigbee2MQTT:      NewZigbee2MQTTClient(cfg),
+		ctx:                ctx,
+		config:             cfg,
+		AIDigest:           NewAIDigestClient(cfg),
+		AISettings:         NewAISettingsClient(cfg),
+		AdGuard:            NewAdGuardClient(cfg),
+		AdminSettings:      NewAdminSettingsClient(cfg),
+		AirQuality:         NewAirQualityClient(cfg),
+		AlertSettings:      NewAlertSettingsClient(cfg),
+		ApiToken:           NewApiTokenClient(cfg),
+		Calendar:           NewCalendarClient(cfg),
+		ChartSample:        NewChartSampleClient(cfg),
+		Composition:        NewCompositionClient(cfg),
+		Countdown:          NewCountdownClient(cfg),
+		Crypto:             NewCryptoClient(cfg),
+		DatasourcePlugin:   NewDatasourcePluginClient(cfg),
+		DeliveryLog:        NewDeliveryLogClient(cfg),
+		DeviceGroup:        NewDeviceGroupClient(cfg),
+		DeviceMessageState: NewDeviceMessageStateClient(cfg),
+		DeviceSettings:     NewDeviceSettingsClient(cfg),
+		DisplayRule:        NewDisplayRuleClient(cfg),
+		EmailSettings:      NewEmailSettingsClient(cfg),
+		F1:                 NewF1Client(cfg),
+		FirmwareRelease:    NewFirmwareReleaseClient(cfg),
+		FirmwareSettings:   NewFirmwareSettingsClient(cfg),
+		Frigate:            NewFrigateClient(cfg),
+		GeneralSettings:    NewGeneralSettingsClient(cfg),
+		GenericAPI:         NewGenericAPIClient(cfg),
+		GitHub:             NewGitHubClient(cfg),
+		GoogleCalendar:     NewGoogleCalendarClient(cfg),
+		GreetingRule:       NewGreetingRuleClient(cfg),
+		GuestPhoto:         NewGuestPhotoClient(cfg),
+		GuestToken:         NewGuestTokenClient(cfg),
+		HomeAssistant:      NewHomeAssistantClient(cfg),
+		Image:              NewImageClient(cfg),
+		Immich:             NewImmichClient(cfg),
+		InboundAdapter:     NewInboundAdapterClient(cfg),
+		Incident:           NewIncidentClient(cfg),
+		Jellyfin:           NewJellyfinClient(cfg),
+		LogEntry:           NewLogEntryClient(cfg),
+		LogSettings:        NewLogSettingsClient(cfg),
+		MPD:                NewMPDClient(cfg),
+		MQTTSettings:       NewMQTTSettingsClient(cfg),
+		MatrixLayout:       NewMatrixLayoutClient(cfg),
+		NewsFeed:           NewNewsFeedClient(cfg),
+		Notification:       NewNotificationClient(cfg),
+		NowPlayingSource:   NewNowPlayingSourceClient(cfg),
+		OutboundSettings:   NewOutboundSettingsClient(cfg),
+		OutboundWebhook:    NewOutboundWebhookClient(cfg),
+		Overseerr:          NewOverseerrClient(cfg),
+		Parcel:             NewParcelClient(cfg),
+		PiHole:             NewPiHoleClient(cfg),
+		PixelArt:           NewPixelArtClient(cfg),
+		Playlist:           NewPlaylistClient(cfg),
+		Proxmox:            NewProxmoxClient(cfg),
+		Qbittorrent:        NewQbittorrentClient(cfg),
+		Qrcode:             NewQrcodeClient(cfg),
+		Radarr:             NewRadarrClient(cfg),
+		RssFeed:            NewRssFeedClient(cfg),
+		Sabnzbd:            NewSabnzbdClient(cfg),
+		Scene:              NewSceneClient(cfg),
+		Schedule:           NewScheduleClient(cfg),
+		Sonarr:             NewSonarrClient(cfg),
+		Speedtest:          NewSpeedtestClient(cfg),
+		Sports:             NewSportsClient(cfg),
+		Stock:              NewStockClient(cfg),
+		SunMoon:            NewSunMoonClient(cfg),
+		TelegramSettings:   NewTelegramSettingsClient(cfg),
+		TextSlide:          NewTextSlideClient(cfg),
+		Theme:              NewThemeClient(cfg),
+		ThemeAssignment:    NewThemeAssignmentClient(cfg),
+		TimelapseFrame:     NewTimelapseFrameClient(cfg),
+		Transit:            NewTransitClient(cfg),
+		Transmission:       NewTransmissionClient(cfg),
+		UmamiSettings:      NewUmamiSettingsClient(cfg),
+		Untappd:            NewUntappdClient(cfg),
+		Uptime:             NewUptimeClient(cfg),
+		UptimeKuma:         NewUptimeKumaClient(cfg),
+		User:               NewUserClient(cfg),
+		Video:              NewVideoClient(cfg),
+		WakeAlarm:          NewWakeAlarmClient(cfg),
+		Waste:              NewWasteClient(cfg),
+		Weather:            NewWeatherClient(cfg),
+		WebhookSettings:    NewWebhookSettingsClient(cfg),
+		Zigbee2MQTT:        NewZigbee2MQTTClient(cfg),
 	}, nil
 }
 
@@ -663,18 +669,19 @@ func (c *Client) Use(hooks ...Hook) {
 		c.AIDigest, c.AISettings, c.AdGuard, c.AdminSettings, c.AirQuality,
 		c.AlertSettings, c.ApiToken, c.Calendar, c.ChartSample, c.Composition,
 		c.Countdown, c.Crypto, c.DatasourcePlugin, c.DeliveryLog, c.DeviceGroup,
-		c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1, c.FirmwareRelease,
-		c.FirmwareSettings, c.Frigate, c.GeneralSettings, c.GenericAPI, c.GitHub,
-		c.GoogleCalendar, c.GreetingRule, c.GuestPhoto, c.GuestToken, c.HomeAssistant,
-		c.Image, c.Immich, c.InboundAdapter, c.Incident, c.Jellyfin, c.LogEntry,
-		c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
-		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
-		c.Overseerr, c.Parcel, c.PiHole, c.PixelArt, c.Playlist, c.Proxmox,
-		c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene, c.Schedule,
-		c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings,
-		c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame, c.Transit,
-		c.Transmission, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma, c.User,
-		c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings, c.Zigbee2MQTT,
+		c.DeviceMessageState, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
+		c.FirmwareRelease, c.FirmwareSettings, c.Frigate, c.GeneralSettings,
+		c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule, c.GuestPhoto,
+		c.GuestToken, c.HomeAssistant, c.Image, c.Immich, c.InboundAdapter, c.Incident,
+		c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout,
+		c.NewsFeed, c.Notification, c.NowPlayingSource, c.OutboundSettings,
+		c.OutboundWebhook, c.Overseerr, c.Parcel, c.PiHole, c.PixelArt, c.Playlist,
+		c.Proxmox, c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene,
+		c.Schedule, c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon,
+		c.TelegramSettings, c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame,
+		c.Transit, c.Transmission, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma,
+		c.User, c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings,
+		c.Zigbee2MQTT,
 	} {
 		n.Use(hooks...)
 	}
@@ -687,18 +694,19 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.AIDigest, c.AISettings, c.AdGuard, c.AdminSettings, c.AirQuality,
 		c.AlertSettings, c.ApiToken, c.Calendar, c.ChartSample, c.Composition,
 		c.Countdown, c.Crypto, c.DatasourcePlugin, c.DeliveryLog, c.DeviceGroup,
-		c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1, c.FirmwareRelease,
-		c.FirmwareSettings, c.Frigate, c.GeneralSettings, c.GenericAPI, c.GitHub,
-		c.GoogleCalendar, c.GreetingRule, c.GuestPhoto, c.GuestToken, c.HomeAssistant,
-		c.Image, c.Immich, c.InboundAdapter, c.Incident, c.Jellyfin, c.LogEntry,
-		c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
-		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
-		c.Overseerr, c.Parcel, c.PiHole, c.PixelArt, c.Playlist, c.Proxmox,
-		c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene, c.Schedule,
-		c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings,
-		c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame, c.Transit,
-		c.Transmission, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma, c.User,
-		c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings, c.Zigbee2MQTT,
+		c.DeviceMessageState, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
+		c.FirmwareRelease, c.FirmwareSettings, c.Frigate, c.GeneralSettings,
+		c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule, c.GuestPhoto,
+		c.GuestToken, c.HomeAssistant, c.Image, c.Immich, c.InboundAdapter, c.Incident,
+		c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout,
+		c.NewsFeed, c.Notification, c.NowPlayingSource, c.OutboundSettings,
+		c.OutboundWebhook, c.Overseerr, c.Parcel, c.PiHole, c.PixelArt, c.Playlist,
+		c.Proxmox, c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene,
+		c.Schedule, c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon,
+		c.TelegramSettings, c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame,
+		c.Transit, c.Transmission, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma,
+		c.User, c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings,
+		c.Zigbee2MQTT,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -737,6 +745,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.DeliveryLog.mutate(ctx, m)
 	case *DeviceGroupMutation:
 		return c.DeviceGroup.mutate(ctx, m)
+	case *DeviceMessageStateMutation:
+		return c.DeviceMessageState.mutate(ctx, m)
 	case *DeviceSettingsMutation:
 		return c.DeviceSettings.mutate(ctx, m)
 	case *DisplayRuleMutation:
@@ -2882,6 +2892,139 @@ func (c *DeviceGroupClient) mutate(ctx context.Context, m *DeviceGroupMutation) 
 		return (&DeviceGroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown DeviceGroup mutation op: %q", m.Op())
+	}
+}
+
+// DeviceMessageStateClient is a client for the DeviceMessageState schema.
+type DeviceMessageStateClient struct {
+	config
+}
+
+// NewDeviceMessageStateClient returns a client for the DeviceMessageState from the given config.
+func NewDeviceMessageStateClient(c config) *DeviceMessageStateClient {
+	return &DeviceMessageStateClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `devicemessagestate.Hooks(f(g(h())))`.
+func (c *DeviceMessageStateClient) Use(hooks ...Hook) {
+	c.hooks.DeviceMessageState = append(c.hooks.DeviceMessageState, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `devicemessagestate.Intercept(f(g(h())))`.
+func (c *DeviceMessageStateClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DeviceMessageState = append(c.inters.DeviceMessageState, interceptors...)
+}
+
+// Create returns a builder for creating a DeviceMessageState entity.
+func (c *DeviceMessageStateClient) Create() *DeviceMessageStateCreate {
+	mutation := newDeviceMessageStateMutation(c.config, OpCreate)
+	return &DeviceMessageStateCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DeviceMessageState entities.
+func (c *DeviceMessageStateClient) CreateBulk(builders ...*DeviceMessageStateCreate) *DeviceMessageStateCreateBulk {
+	return &DeviceMessageStateCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DeviceMessageStateClient) MapCreateBulk(slice any, setFunc func(*DeviceMessageStateCreate, int)) *DeviceMessageStateCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DeviceMessageStateCreateBulk{err: fmt.Errorf("calling to DeviceMessageStateClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DeviceMessageStateCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DeviceMessageStateCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DeviceMessageState.
+func (c *DeviceMessageStateClient) Update() *DeviceMessageStateUpdate {
+	mutation := newDeviceMessageStateMutation(c.config, OpUpdate)
+	return &DeviceMessageStateUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DeviceMessageStateClient) UpdateOne(_m *DeviceMessageState) *DeviceMessageStateUpdateOne {
+	mutation := newDeviceMessageStateMutation(c.config, OpUpdateOne, withDeviceMessageState(_m))
+	return &DeviceMessageStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DeviceMessageStateClient) UpdateOneID(id int) *DeviceMessageStateUpdateOne {
+	mutation := newDeviceMessageStateMutation(c.config, OpUpdateOne, withDeviceMessageStateID(id))
+	return &DeviceMessageStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DeviceMessageState.
+func (c *DeviceMessageStateClient) Delete() *DeviceMessageStateDelete {
+	mutation := newDeviceMessageStateMutation(c.config, OpDelete)
+	return &DeviceMessageStateDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DeviceMessageStateClient) DeleteOne(_m *DeviceMessageState) *DeviceMessageStateDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DeviceMessageStateClient) DeleteOneID(id int) *DeviceMessageStateDeleteOne {
+	builder := c.Delete().Where(devicemessagestate.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DeviceMessageStateDeleteOne{builder}
+}
+
+// Query returns a query builder for DeviceMessageState.
+func (c *DeviceMessageStateClient) Query() *DeviceMessageStateQuery {
+	return &DeviceMessageStateQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDeviceMessageState},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DeviceMessageState entity by its id.
+func (c *DeviceMessageStateClient) Get(ctx context.Context, id int) (*DeviceMessageState, error) {
+	return c.Query().Where(devicemessagestate.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DeviceMessageStateClient) GetX(ctx context.Context, id int) *DeviceMessageState {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DeviceMessageStateClient) Hooks() []Hook {
+	return c.hooks.DeviceMessageState
+}
+
+// Interceptors returns the client interceptors.
+func (c *DeviceMessageStateClient) Interceptors() []Interceptor {
+	return c.inters.DeviceMessageState
+}
+
+func (c *DeviceMessageStateClient) mutate(ctx context.Context, m *DeviceMessageStateMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DeviceMessageStateCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DeviceMessageStateUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DeviceMessageStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DeviceMessageStateDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DeviceMessageState mutation op: %q", m.Op())
 	}
 }
 
@@ -12660,11 +12803,11 @@ type (
 	hooks struct {
 		AIDigest, AISettings, AdGuard, AdminSettings, AirQuality, AlertSettings,
 		ApiToken, Calendar, ChartSample, Composition, Countdown, Crypto,
-		DatasourcePlugin, DeliveryLog, DeviceGroup, DeviceSettings, DisplayRule,
-		EmailSettings, F1, FirmwareRelease, FirmwareSettings, Frigate, GeneralSettings,
-		GenericAPI, GitHub, GoogleCalendar, GreetingRule, GuestPhoto, GuestToken,
-		HomeAssistant, Image, Immich, InboundAdapter, Incident, Jellyfin, LogEntry,
-		LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
+		DatasourcePlugin, DeliveryLog, DeviceGroup, DeviceMessageState, DeviceSettings,
+		DisplayRule, EmailSettings, F1, FirmwareRelease, FirmwareSettings, Frigate,
+		GeneralSettings, GenericAPI, GitHub, GoogleCalendar, GreetingRule, GuestPhoto,
+		GuestToken, HomeAssistant, Image, Immich, InboundAdapter, Incident, Jellyfin,
+		LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
 		NowPlayingSource, OutboundSettings, OutboundWebhook, Overseerr, Parcel, PiHole,
 		PixelArt, Playlist, Proxmox, Qbittorrent, Qrcode, Radarr, RssFeed, Sabnzbd,
 		Scene, Schedule, Sonarr, Speedtest, Sports, Stock, SunMoon, TelegramSettings,
@@ -12675,11 +12818,11 @@ type (
 	inters struct {
 		AIDigest, AISettings, AdGuard, AdminSettings, AirQuality, AlertSettings,
 		ApiToken, Calendar, ChartSample, Composition, Countdown, Crypto,
-		DatasourcePlugin, DeliveryLog, DeviceGroup, DeviceSettings, DisplayRule,
-		EmailSettings, F1, FirmwareRelease, FirmwareSettings, Frigate, GeneralSettings,
-		GenericAPI, GitHub, GoogleCalendar, GreetingRule, GuestPhoto, GuestToken,
-		HomeAssistant, Image, Immich, InboundAdapter, Incident, Jellyfin, LogEntry,
-		LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
+		DatasourcePlugin, DeliveryLog, DeviceGroup, DeviceMessageState, DeviceSettings,
+		DisplayRule, EmailSettings, F1, FirmwareRelease, FirmwareSettings, Frigate,
+		GeneralSettings, GenericAPI, GitHub, GoogleCalendar, GreetingRule, GuestPhoto,
+		GuestToken, HomeAssistant, Image, Immich, InboundAdapter, Incident, Jellyfin,
+		LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
 		NowPlayingSource, OutboundSettings, OutboundWebhook, Overseerr, Parcel, PiHole,
 		PixelArt, Playlist, Proxmox, Qbittorrent, Qrcode, Radarr, RssFeed, Sabnzbd,
 		Scene, Schedule, Sonarr, Speedtest, Sports, Stock, SunMoon, TelegramSettings,

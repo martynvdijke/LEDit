@@ -15,6 +15,12 @@
                 Bounded delivery log for every outbound surface (MQTT, webhook) and device
                 acknowledgement. Rows older than 7 days or beyond 1000 entries are pruned on insert.
             </p>
+            <form method="GET" class="row g-2 mt-2">
+                <div class="col-auto"><input name="surface" value="{{.filter_surface}}" placeholder="surface" class="form-control form-control-sm"></div>
+                <div class="col-auto"><input name="status" value="{{.filter_status}}" placeholder="status" class="form-control form-control-sm"></div>
+                <div class="col-auto"><input name="kind" value="{{.filter_kind}}" placeholder="kind" class="form-control form-control-sm"></div>
+                <div class="col-auto"><button class="btn btn-sm btn-primary">Filter</button></div>
+            </form>
 
             <h3 class="mt-4">Device acknowledgements</h3>
             <table class="table table-striped mt-3">
@@ -39,6 +45,16 @@
                     {{end}}
                 </tbody>
             </table>
+
+            {{if .states}}
+            <h3 class="mt-4">Device message states</h3>
+            <table class="table table-striped mt-3">
+                <thead><tr><th>Device</th><th>Message</th><th>Status</th><th>Updated</th></tr></thead>
+                <tbody>
+                    {{range .states}}<tr><td>{{.DeviceID}}</td><td><code>{{.MessageID}}</code></td><td>{{.Status}}</td><td>{{.UpdatedAt.Format "2006-01-02 15:04:05"}}</td></tr>{{end}}
+                </tbody>
+            </table>
+            {{end}}
 
             <h3 class="mt-4">Recent delivery log</h3>
             <table class="table table-striped mt-3">

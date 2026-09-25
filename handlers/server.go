@@ -78,6 +78,7 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 		Telemetry:    telemetry,
 	}
 
+	globalServerDB = func() *ent.Client { return client }
 	srv.setupRoutes()
 	// Init sun/holiday context from DB
 	if gs, err := client.GeneralSettings.Query().First(ctx); err == nil {

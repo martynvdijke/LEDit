@@ -188,6 +188,18 @@ func (f DeviceGroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DeviceGroupMutation", m)
 }
 
+// The DeviceMessageStateFunc type is an adapter to allow the use of ordinary
+// function as DeviceMessageState mutator.
+type DeviceMessageStateFunc func(context.Context, *ent.DeviceMessageStateMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DeviceMessageStateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DeviceMessageStateMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DeviceMessageStateMutation", m)
+}
+
 // The DeviceSettingsFunc type is an adapter to allow the use of ordinary
 // function as DeviceSettings mutator.
 type DeviceSettingsFunc func(context.Context, *ent.DeviceSettingsMutation) (ent.Value, error)

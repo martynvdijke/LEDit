@@ -360,6 +360,27 @@ var (
 			},
 		},
 	}
+	// DeviceMessageStatesColumns holds the columns for the "device_message_states" table.
+	DeviceMessageStatesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "device_id", Type: field.TypeInt},
+		{Name: "message_id", Type: field.TypeString},
+		{Name: "status", Type: field.TypeString, Default: "acked"},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// DeviceMessageStatesTable holds the schema information for the "device_message_states" table.
+	DeviceMessageStatesTable = &schema.Table{
+		Name:       "device_message_states",
+		Columns:    DeviceMessageStatesColumns,
+		PrimaryKey: []*schema.Column{DeviceMessageStatesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "devicemessagestate_device_id_message_id",
+				Unique:  true,
+				Columns: []*schema.Column{DeviceMessageStatesColumns[1], DeviceMessageStatesColumns[2]},
+			},
+		},
+	}
 	// DeviceSettingsColumns holds the columns for the "device_settings" table.
 	DeviceSettingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1911,6 +1932,7 @@ var (
 		DatasourcePluginsTable,
 		DeliveryLogsTable,
 		DeviceGroupsTable,
+		DeviceMessageStatesTable,
 		DeviceSettingsTable,
 		DisplayRulesTable,
 		EmailSettingsTable,

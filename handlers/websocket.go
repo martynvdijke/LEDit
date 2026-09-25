@@ -1118,6 +1118,14 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				recordAck(fc.deviceID, ack)
 				continue
 			}
+			if r, _ := cmd["read"].(string); r != "" {
+				recordRead(fc.deviceID, r)
+				continue
+			}
+			if d, _ := cmd["dismiss"].(string); d != "" {
+				recordDismiss(fc.deviceID, d)
+				continue
+			}
 			// v2 client spectrum tap: {"type":"spectrum","bins":[...]} at ~20Hz.
 			// Validated (16-32 ints, 0-255); malformed frames are ignored. v1
 			// connections never ingest spectrum.

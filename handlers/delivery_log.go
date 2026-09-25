@@ -10,6 +10,7 @@ import (
 
 	"ledit/ent"
 	"ledit/ent/deliverylog"
+	"ledit/ent/devicemessagestate"
 	"ledit/ent/predicate"
 )
 
@@ -108,8 +109,23 @@ func (s *Server) APIDeliveryLog(c *gin.Context) {
 	if limit > 500 {
 		limit = 500
 	}
-	rows, err := s.DB.DeliveryLog.Query().
-		Order(ent.Desc(deliverylog.FieldAttemptedAt), ent.Desc(deliverylog.FieldID)).
+	q := s.DB.DeliveryLog.Query()
+	if v := c.Query("surface"); v != "" {
+		if v == "ws" || v == "trmnl" || v == "mqtt" || v == "webhook" || v == "inbound" {
+			q = q.Where(deliverylog.SurfaceEQ(deliverylog.Surface(v)))
+		}
+	}
+	if v := c.Query("status"); v != "" {
+		if v == "delivered" || v == "failed" || v == "acked" {
+			q = q.Where(deliverylog.StatusEQ(deliverylog.Status(v)))
+		}
+	}
+	if v := c.Query("kind"); v != "" {
+		if v == "notification" || v == "incident" || v == "discord" || v == "slack" || v == "ntfy" || v == "gotify" || v == "pushover" {
+			q = q.Where(deliverylog.KindEQ(v))
+		}
+	}
+	rows, err := q.Order(ent.Desc(deliverylog.FieldAttemptedAt), ent.Desc(deliverylog.FieldID)).
 		Limit(limit).
 		All(c.Request.Context())
 	if err != nil {
@@ -122,12 +138,39 @@ func (s *Server) APIDeliveryLog(c *gin.Context) {
 
 // AdminDeliveryLog renders the delivery/ack console.
 func (s *Server) AdminDeliveryLog(c *gin.Context) {
-	rows, _ := s.DB.DeliveryLog.Query().
-		Order(ent.Desc(deliverylog.FieldAttemptedAt), ent.Desc(deliverylog.FieldID)).
+	q := s.DB.DeliveryLog.Query()
+	if v := c.Query("surface"); v != "" {
+		if v == "ws" || v == "trmnl" || v == "mqtt" || v == "webhook" || v == "inbound" {
+			q = q.Where(deliverylog.SurfaceEQ(deliverylog.Surface(v)))
+		}
+	}
+	if v := c.Query("status"); v != "" {
+		if v == "delivered" || v == "failed" || v == "acked" {
+			q = q.Where(deliverylog.StatusEQ(deliverylog.Status(v)))
+		}
+	}
+	if v := c.Query("kind"); v != "" {
+		if v == "notification" || v == "incident" {
+			q = q.Where(deliverylog.KindEQ(v))
+		}
+	}
+	rows, _ := q.Order(ent.Desc(deliverylog.FieldAttemptedAt), ent.Desc(deliverylog.FieldID)).
 		Limit(100).
 		All(s.Ctx)
+	// load device states for template
+	var states []*ent.DeviceMessageState
+	if s.DB != nil {
+		states, _ = s.DB.DeviceMessageState.Query().
+			Order(ent.Desc(devicemessagestate.FieldUpdatedAt)).
+			Limit(500).
+			All(s.Ctx)
+	}
 	s.renderPage(c, 200, "delivery.html", gin.H{
-		"deliveries": rows,
-		"acks":       DeviceAcks(),
+		"deliveries":     rows,
+		"acks":           DeviceAcks(),
+		"states":         states,
+		"filter_surface": c.Query("surface"),
+		"filter_status":  c.Query("status"),
+		"filter_kind":    c.Query("kind"),
 	})
 }

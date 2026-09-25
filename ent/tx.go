@@ -42,6 +42,8 @@ type Tx struct {
 	DeliveryLog *DeliveryLogClient
 	// DeviceGroup is the client for interacting with the DeviceGroup builders.
 	DeviceGroup *DeviceGroupClient
+	// DeviceMessageState is the client for interacting with the DeviceMessageState builders.
+	DeviceMessageState *DeviceMessageStateClient
 	// DeviceSettings is the client for interacting with the DeviceSettings builders.
 	DeviceSettings *DeviceSettingsClient
 	// DisplayRule is the client for interacting with the DisplayRule builders.
@@ -320,6 +322,7 @@ func (tx *Tx) init() {
 	tx.DatasourcePlugin = NewDatasourcePluginClient(tx.config)
 	tx.DeliveryLog = NewDeliveryLogClient(tx.config)
 	tx.DeviceGroup = NewDeviceGroupClient(tx.config)
+	tx.DeviceMessageState = NewDeviceMessageStateClient(tx.config)
 	tx.DeviceSettings = NewDeviceSettingsClient(tx.config)
 	tx.DisplayRule = NewDisplayRuleClient(tx.config)
 	tx.EmailSettings = NewEmailSettingsClient(tx.config)

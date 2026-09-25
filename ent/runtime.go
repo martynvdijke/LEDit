@@ -17,6 +17,7 @@ import (
 	"ledit/ent/datasourceplugin"
 	"ledit/ent/deliverylog"
 	"ledit/ent/devicegroup"
+	"ledit/ent/devicemessagestate"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
@@ -424,6 +425,24 @@ func init() {
 	devicegroupDescOverlayFg := devicegroupFields[17].Descriptor()
 	// devicegroup.DefaultOverlayFg holds the default value on creation for the overlay_fg field.
 	devicegroup.DefaultOverlayFg = devicegroupDescOverlayFg.Default.(string)
+	devicemessagestateFields := schema.DeviceMessageState{}.Fields()
+	_ = devicemessagestateFields
+	// devicemessagestateDescMessageID is the schema descriptor for message_id field.
+	devicemessagestateDescMessageID := devicemessagestateFields[1].Descriptor()
+	// devicemessagestate.MessageIDValidator is a validator for the "message_id" field. It is called by the builders before save.
+	devicemessagestate.MessageIDValidator = devicemessagestateDescMessageID.Validators[0].(func(string) error)
+	// devicemessagestateDescStatus is the schema descriptor for status field.
+	devicemessagestateDescStatus := devicemessagestateFields[2].Descriptor()
+	// devicemessagestate.DefaultStatus holds the default value on creation for the status field.
+	devicemessagestate.DefaultStatus = devicemessagestateDescStatus.Default.(string)
+	// devicemessagestate.StatusValidator is a validator for the "status" field. It is called by the builders before save.
+	devicemessagestate.StatusValidator = devicemessagestateDescStatus.Validators[0].(func(string) error)
+	// devicemessagestateDescUpdatedAt is the schema descriptor for updated_at field.
+	devicemessagestateDescUpdatedAt := devicemessagestateFields[3].Descriptor()
+	// devicemessagestate.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	devicemessagestate.DefaultUpdatedAt = devicemessagestateDescUpdatedAt.Default.(func() time.Time)
+	// devicemessagestate.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	devicemessagestate.UpdateDefaultUpdatedAt = devicemessagestateDescUpdatedAt.UpdateDefault.(func() time.Time)
 	devicesettingsFields := schema.DeviceSettings{}.Fields()
 	_ = devicesettingsFields
 	// devicesettingsDescName is the schema descriptor for name field.

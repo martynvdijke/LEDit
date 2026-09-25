@@ -11,6 +11,12 @@
         {{template "sidebar" .}}
         <div class="container-fluid p-4">
             <h1>Notifications</h1>
+            <form method="GET" class="row g-2 mt-2">
+                <div class="col-auto"><input name="kind" value="{{.filter_kind}}" placeholder="kind" class="form-control form-control-sm"></div>
+                <div class="col-auto"><input name="priority_min" value="{{.filter_prio}}" placeholder="priority_min" class="form-control form-control-sm"></div>
+                <div class="col-auto"><input name="unread_for" value="{{.filter_unread}}" placeholder="unread_for device id" class="form-control form-control-sm"></div>
+                <div class="col-auto"><button class="btn btn-sm btn-primary">Filter</button></div>
+            </form>
             <table class="table table-striped mt-3">
                 <thead>
                     <tr>

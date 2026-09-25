@@ -170,15 +170,14 @@ func (s *Server) DeliverInbound(msg InboundMessage) {
 	if title == "" {
 		title = strings.ToUpper(msg.Source)
 	}
-	s.AddNotification(title, msg.Body, opts...)
+	entry := s.AddNotification(title, msg.Body, opts...)
 
 	// Delivery log is best-effort and off the caller's goroutine: a failing log
 	// must never block or fail delivery.
 	target := msg.SourceID
-	kind := msg.Source
 	go recordDelivery(DeliveryLogEntry{
-		MessageID:   "inbound:" + kind,
-		Kind:        kind,
+		MessageID:   "notif:" + strconv.Itoa(entry.ID),
+		Kind:        "notification",
 		Surface:     "inbound",
 		Target:      target,
 		Status:      "delivered",

@@ -21,6 +21,7 @@ import (
 	"ledit/ent/datasourceplugin"
 	"ledit/ent/deliverylog"
 	"ledit/ent/devicegroup"
+	"ledit/ent/devicemessagestate"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
@@ -104,87 +105,88 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAIDigest         = "AIDigest"
-	TypeAISettings       = "AISettings"
-	TypeAdGuard          = "AdGuard"
-	TypeAdminSettings    = "AdminSettings"
-	TypeAirQuality       = "AirQuality"
-	TypeAlertSettings    = "AlertSettings"
-	TypeApiToken         = "ApiToken"
-	TypeCalendar         = "Calendar"
-	TypeChartSample      = "ChartSample"
-	TypeComposition      = "Composition"
-	TypeCountdown        = "Countdown"
-	TypeCrypto           = "Crypto"
-	TypeDatasourcePlugin = "DatasourcePlugin"
-	TypeDeliveryLog      = "DeliveryLog"
-	TypeDeviceGroup      = "DeviceGroup"
-	TypeDeviceSettings   = "DeviceSettings"
-	TypeDisplayRule      = "DisplayRule"
-	TypeEmailSettings    = "EmailSettings"
-	TypeF1               = "F1"
-	TypeFirmwareRelease  = "FirmwareRelease"
-	TypeFirmwareSettings = "FirmwareSettings"
-	TypeFrigate          = "Frigate"
-	TypeGeneralSettings  = "GeneralSettings"
-	TypeGenericAPI       = "GenericAPI"
-	TypeGitHub           = "GitHub"
-	TypeGoogleCalendar   = "GoogleCalendar"
-	TypeGreetingRule     = "GreetingRule"
-	TypeGuestPhoto       = "GuestPhoto"
-	TypeGuestToken       = "GuestToken"
-	TypeHomeAssistant    = "HomeAssistant"
-	TypeImage            = "Image"
-	TypeImmich           = "Immich"
-	TypeInboundAdapter   = "InboundAdapter"
-	TypeIncident         = "Incident"
-	TypeJellyfin         = "Jellyfin"
-	TypeLogEntry         = "LogEntry"
-	TypeLogSettings      = "LogSettings"
-	TypeMPD              = "MPD"
-	TypeMQTTSettings     = "MQTTSettings"
-	TypeMatrixLayout     = "MatrixLayout"
-	TypeNewsFeed         = "NewsFeed"
-	TypeNotification     = "Notification"
-	TypeNowPlayingSource = "NowPlayingSource"
-	TypeOutboundSettings = "OutboundSettings"
-	TypeOutboundWebhook  = "OutboundWebhook"
-	TypeOverseerr        = "Overseerr"
-	TypeParcel           = "Parcel"
-	TypePiHole           = "PiHole"
-	TypePixelArt         = "PixelArt"
-	TypePlaylist         = "Playlist"
-	TypeProxmox          = "Proxmox"
-	TypeQbittorrent      = "Qbittorrent"
-	TypeQrcode           = "Qrcode"
-	TypeRadarr           = "Radarr"
-	TypeRssFeed          = "RssFeed"
-	TypeSabnzbd          = "Sabnzbd"
-	TypeScene            = "Scene"
-	TypeSchedule         = "Schedule"
-	TypeSonarr           = "Sonarr"
-	TypeSpeedtest        = "Speedtest"
-	TypeSports           = "Sports"
-	TypeStock            = "Stock"
-	TypeSunMoon          = "SunMoon"
-	TypeTelegramSettings = "TelegramSettings"
-	TypeTextSlide        = "TextSlide"
-	TypeTheme            = "Theme"
-	TypeThemeAssignment  = "ThemeAssignment"
-	TypeTimelapseFrame   = "TimelapseFrame"
-	TypeTransit          = "Transit"
-	TypeTransmission     = "Transmission"
-	TypeUmamiSettings    = "UmamiSettings"
-	TypeUntappd          = "Untappd"
-	TypeUptime           = "Uptime"
-	TypeUptimeKuma       = "UptimeKuma"
-	TypeUser             = "User"
-	TypeVideo            = "Video"
-	TypeWakeAlarm        = "WakeAlarm"
-	TypeWaste            = "Waste"
-	TypeWeather          = "Weather"
-	TypeWebhookSettings  = "WebhookSettings"
-	TypeZigbee2MQTT      = "Zigbee2MQTT"
+	TypeAIDigest           = "AIDigest"
+	TypeAISettings         = "AISettings"
+	TypeAdGuard            = "AdGuard"
+	TypeAdminSettings      = "AdminSettings"
+	TypeAirQuality         = "AirQuality"
+	TypeAlertSettings      = "AlertSettings"
+	TypeApiToken           = "ApiToken"
+	TypeCalendar           = "Calendar"
+	TypeChartSample        = "ChartSample"
+	TypeComposition        = "Composition"
+	TypeCountdown          = "Countdown"
+	TypeCrypto             = "Crypto"
+	TypeDatasourcePlugin   = "DatasourcePlugin"
+	TypeDeliveryLog        = "DeliveryLog"
+	TypeDeviceGroup        = "DeviceGroup"
+	TypeDeviceMessageState = "DeviceMessageState"
+	TypeDeviceSettings     = "DeviceSettings"
+	TypeDisplayRule        = "DisplayRule"
+	TypeEmailSettings      = "EmailSettings"
+	TypeF1                 = "F1"
+	TypeFirmwareRelease    = "FirmwareRelease"
+	TypeFirmwareSettings   = "FirmwareSettings"
+	TypeFrigate            = "Frigate"
+	TypeGeneralSettings    = "GeneralSettings"
+	TypeGenericAPI         = "GenericAPI"
+	TypeGitHub             = "GitHub"
+	TypeGoogleCalendar     = "GoogleCalendar"
+	TypeGreetingRule       = "GreetingRule"
+	TypeGuestPhoto         = "GuestPhoto"
+	TypeGuestToken         = "GuestToken"
+	TypeHomeAssistant      = "HomeAssistant"
+	TypeImage              = "Image"
+	TypeImmich             = "Immich"
+	TypeInboundAdapter     = "InboundAdapter"
+	TypeIncident           = "Incident"
+	TypeJellyfin           = "Jellyfin"
+	TypeLogEntry           = "LogEntry"
+	TypeLogSettings        = "LogSettings"
+	TypeMPD                = "MPD"
+	TypeMQTTSettings       = "MQTTSettings"
+	TypeMatrixLayout       = "MatrixLayout"
+	TypeNewsFeed           = "NewsFeed"
+	TypeNotification       = "Notification"
+	TypeNowPlayingSource   = "NowPlayingSource"
+	TypeOutboundSettings   = "OutboundSettings"
+	TypeOutboundWebhook    = "OutboundWebhook"
+	TypeOverseerr          = "Overseerr"
+	TypeParcel             = "Parcel"
+	TypePiHole             = "PiHole"
+	TypePixelArt           = "PixelArt"
+	TypePlaylist           = "Playlist"
+	TypeProxmox            = "Proxmox"
+	TypeQbittorrent        = "Qbittorrent"
+	TypeQrcode             = "Qrcode"
+	TypeRadarr             = "Radarr"
+	TypeRssFeed            = "RssFeed"
+	TypeSabnzbd            = "Sabnzbd"
+	TypeScene              = "Scene"
+	TypeSchedule           = "Schedule"
+	TypeSonarr             = "Sonarr"
+	TypeSpeedtest          = "Speedtest"
+	TypeSports             = "Sports"
+	TypeStock              = "Stock"
+	TypeSunMoon            = "SunMoon"
+	TypeTelegramSettings   = "TelegramSettings"
+	TypeTextSlide          = "TextSlide"
+	TypeTheme              = "Theme"
+	TypeThemeAssignment    = "ThemeAssignment"
+	TypeTimelapseFrame     = "TimelapseFrame"
+	TypeTransit            = "Transit"
+	TypeTransmission       = "Transmission"
+	TypeUmamiSettings      = "UmamiSettings"
+	TypeUntappd            = "Untappd"
+	TypeUptime             = "Uptime"
+	TypeUptimeKuma         = "UptimeKuma"
+	TypeUser               = "User"
+	TypeVideo              = "Video"
+	TypeWakeAlarm          = "WakeAlarm"
+	TypeWaste              = "Waste"
+	TypeWeather            = "Weather"
+	TypeWebhookSettings    = "WebhookSettings"
+	TypeZigbee2MQTT        = "Zigbee2MQTT"
 )
 
 // AIDigestMutation represents an operation that mutates the AIDigest nodes in the graph.
@@ -10879,6 +10881,530 @@ func (m *DeviceGroupMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown DeviceGroup edge %s", name)
+}
+
+// DeviceMessageStateMutation represents an operation that mutates the DeviceMessageState nodes in the graph.
+type DeviceMessageStateMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	device_id     *int
+	adddevice_id  *int
+	message_id    *string
+	status        *string
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*DeviceMessageState, error)
+	predicates    []predicate.DeviceMessageState
+}
+
+var _ ent.Mutation = (*DeviceMessageStateMutation)(nil)
+
+// devicemessagestateOption allows management of the mutation configuration using functional options.
+type devicemessagestateOption func(*DeviceMessageStateMutation)
+
+// newDeviceMessageStateMutation creates new mutation for the DeviceMessageState entity.
+func newDeviceMessageStateMutation(c config, op Op, opts ...devicemessagestateOption) *DeviceMessageStateMutation {
+	m := &DeviceMessageStateMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDeviceMessageState,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDeviceMessageStateID sets the ID field of the mutation.
+func withDeviceMessageStateID(id int) devicemessagestateOption {
+	return func(m *DeviceMessageStateMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DeviceMessageState
+		)
+		m.oldValue = func(ctx context.Context) (*DeviceMessageState, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DeviceMessageState.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDeviceMessageState sets the old DeviceMessageState of the mutation.
+func withDeviceMessageState(node *DeviceMessageState) devicemessagestateOption {
+	return func(m *DeviceMessageStateMutation) {
+		m.oldValue = func(context.Context) (*DeviceMessageState, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DeviceMessageStateMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DeviceMessageStateMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DeviceMessageStateMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DeviceMessageStateMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DeviceMessageState.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDeviceID sets the "device_id" field.
+func (m *DeviceMessageStateMutation) SetDeviceID(i int) {
+	m.device_id = &i
+	m.adddevice_id = nil
+}
+
+// DeviceID returns the value of the "device_id" field in the mutation.
+func (m *DeviceMessageStateMutation) DeviceID() (r int, exists bool) {
+	v := m.device_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeviceID returns the old "device_id" field's value of the DeviceMessageState entity.
+// If the DeviceMessageState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceMessageStateMutation) OldDeviceID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeviceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeviceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeviceID: %w", err)
+	}
+	return oldValue.DeviceID, nil
+}
+
+// AddDeviceID adds i to the "device_id" field.
+func (m *DeviceMessageStateMutation) AddDeviceID(i int) {
+	if m.adddevice_id != nil {
+		*m.adddevice_id += i
+	} else {
+		m.adddevice_id = &i
+	}
+}
+
+// AddedDeviceID returns the value that was added to the "device_id" field in this mutation.
+func (m *DeviceMessageStateMutation) AddedDeviceID() (r int, exists bool) {
+	v := m.adddevice_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDeviceID resets all changes to the "device_id" field.
+func (m *DeviceMessageStateMutation) ResetDeviceID() {
+	m.device_id = nil
+	m.adddevice_id = nil
+}
+
+// SetMessageID sets the "message_id" field.
+func (m *DeviceMessageStateMutation) SetMessageID(s string) {
+	m.message_id = &s
+}
+
+// MessageID returns the value of the "message_id" field in the mutation.
+func (m *DeviceMessageStateMutation) MessageID() (r string, exists bool) {
+	v := m.message_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMessageID returns the old "message_id" field's value of the DeviceMessageState entity.
+// If the DeviceMessageState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceMessageStateMutation) OldMessageID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMessageID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMessageID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMessageID: %w", err)
+	}
+	return oldValue.MessageID, nil
+}
+
+// ResetMessageID resets all changes to the "message_id" field.
+func (m *DeviceMessageStateMutation) ResetMessageID() {
+	m.message_id = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *DeviceMessageStateMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *DeviceMessageStateMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the DeviceMessageState entity.
+// If the DeviceMessageState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceMessageStateMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *DeviceMessageStateMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *DeviceMessageStateMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *DeviceMessageStateMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the DeviceMessageState entity.
+// If the DeviceMessageState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceMessageStateMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *DeviceMessageStateMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the DeviceMessageStateMutation builder.
+func (m *DeviceMessageStateMutation) Where(ps ...predicate.DeviceMessageState) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DeviceMessageStateMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DeviceMessageStateMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DeviceMessageState, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DeviceMessageStateMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DeviceMessageStateMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DeviceMessageState).
+func (m *DeviceMessageStateMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DeviceMessageStateMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.device_id != nil {
+		fields = append(fields, devicemessagestate.FieldDeviceID)
+	}
+	if m.message_id != nil {
+		fields = append(fields, devicemessagestate.FieldMessageID)
+	}
+	if m.status != nil {
+		fields = append(fields, devicemessagestate.FieldStatus)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, devicemessagestate.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DeviceMessageStateMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case devicemessagestate.FieldDeviceID:
+		return m.DeviceID()
+	case devicemessagestate.FieldMessageID:
+		return m.MessageID()
+	case devicemessagestate.FieldStatus:
+		return m.Status()
+	case devicemessagestate.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DeviceMessageStateMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case devicemessagestate.FieldDeviceID:
+		return m.OldDeviceID(ctx)
+	case devicemessagestate.FieldMessageID:
+		return m.OldMessageID(ctx)
+	case devicemessagestate.FieldStatus:
+		return m.OldStatus(ctx)
+	case devicemessagestate.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown DeviceMessageState field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DeviceMessageStateMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case devicemessagestate.FieldDeviceID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeviceID(v)
+		return nil
+	case devicemessagestate.FieldMessageID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMessageID(v)
+		return nil
+	case devicemessagestate.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case devicemessagestate.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DeviceMessageState field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DeviceMessageStateMutation) AddedFields() []string {
+	var fields []string
+	if m.adddevice_id != nil {
+		fields = append(fields, devicemessagestate.FieldDeviceID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DeviceMessageStateMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case devicemessagestate.FieldDeviceID:
+		return m.AddedDeviceID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DeviceMessageStateMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case devicemessagestate.FieldDeviceID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeviceID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DeviceMessageState numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DeviceMessageStateMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DeviceMessageStateMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DeviceMessageStateMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown DeviceMessageState nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DeviceMessageStateMutation) ResetField(name string) error {
+	switch name {
+	case devicemessagestate.FieldDeviceID:
+		m.ResetDeviceID()
+		return nil
+	case devicemessagestate.FieldMessageID:
+		m.ResetMessageID()
+		return nil
+	case devicemessagestate.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case devicemessagestate.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown DeviceMessageState field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DeviceMessageStateMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DeviceMessageStateMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DeviceMessageStateMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DeviceMessageStateMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DeviceMessageStateMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DeviceMessageStateMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DeviceMessageStateMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown DeviceMessageState unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DeviceMessageStateMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown DeviceMessageState edge %s", name)
 }
 
 // DeviceSettingsMutation represents an operation that mutates the DeviceSettings nodes in the graph.

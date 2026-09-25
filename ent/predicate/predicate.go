@@ -51,6 +51,9 @@ type DeliveryLog func(*sql.Selector)
 // DeviceGroup is the predicate function for devicegroup builders.
 type DeviceGroup func(*sql.Selector)
 
+// DeviceMessageState is the predicate function for devicemessagestate builders.
+type DeviceMessageState func(*sql.Selector)
+
 // DeviceSettings is the predicate function for devicesettings builders.
 type DeviceSettings func(*sql.Selector)
 

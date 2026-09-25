@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -256,13 +257,73 @@ func (s *Server) APIWebhookNotify(c *gin.Context) {
 func (s *Server) APINotificationHistory(c *gin.Context) {
 	c.Header("Cache-Control", "no-store")
 	c.Header("Vary", "Cookie, Authorization")
-	c.JSON(http.StatusOK, s.GetNotificationHistory())
+	history := s.GetNotificationHistory()
+	filtered := filterNotifications(history, c.Query("kind"), c.Query("priority_min"), c.Query("unread_for"))
+	c.JSON(http.StatusOK, filtered)
 }
 
 func (s *Server) AdminNotifications(c *gin.Context) {
+	kind := c.Query("kind")
+	prioMin := c.Query("priority_min")
+	unreadFor := c.Query("unread_for")
+	history := s.GetNotificationHistory()
+	filtered := filterNotifications(history, kind, prioMin, unreadFor)
 	s.renderPage(c, http.StatusOK, "notifications.html", gin.H{
-		"notifications": s.GetNotificationHistory(),
+		"notifications": filtered,
+		"filter_kind":   kind,
+		"filter_prio":   prioMin,
+		"filter_unread": unreadFor,
 	})
+}
+
+func filterNotifications(in []notifEntry, kind, prioMinRaw, unreadForRaw string) []notifEntry {
+	var prioMin *int
+	if prioMinRaw != "" {
+		if v, err := strconv.Atoi(prioMinRaw); err == nil {
+			prioMin = &v
+		}
+	}
+	var unreadFor *int
+	if unreadForRaw != "" {
+		if v, err := strconv.Atoi(unreadForRaw); err == nil && v > 0 {
+			unreadFor = &v
+		}
+	}
+	// kind filter: only "notification" makes sense for notif history; unknown ignored
+	if kind != "" && kind != "notification" && kind != "incident" {
+		kind = ""
+	}
+	// if no filter return as is
+	if prioMin == nil && unreadFor == nil && kind == "" {
+		return in
+	}
+	// build unread set if needed (one DB query for all states of this device)
+	unreadHidden := map[string]bool{}
+	if unreadFor != nil {
+		for _, st := range DeviceMessageStates(*unreadFor) {
+			if st.Status == "read" || st.Status == "dismissed" {
+				unreadHidden[st.MessageID] = true
+			}
+		}
+	}
+	var out []notifEntry
+	for _, n := range in {
+		if kind == "incident" {
+			// notifications list has no incidents; filter yields none
+			continue
+		}
+		if prioMin != nil && n.Priority < *prioMin {
+			continue
+		}
+		if unreadFor != nil {
+			id := "notif:" + strconv.Itoa(n.ID)
+			if unreadHidden[id] {
+				continue
+			}
+		}
+		out = append(out, n)
+	}
+	return out
 }
 
 type priorityMsg struct {
@@ -415,13 +476,14 @@ func NotificationsAfter(cursor int) []notifEntry {
 
 // AddNotification persists a notification to DB and adds to the in-memory queue.
 // Variadic opts keep existing call sites compiling unchanged. TTL via WithTTL.
-func (s *Server) AddNotification(title, message string, opts ...NotifOption) {
+func (s *Server) AddNotification(title, message string, opts ...NotifOption) notifEntry {
 	if s.DB != nil {
 		s.DB.Notification.Create().SetTitle(title).SetMessage(message).SetCreatedAt(time.Now()).SaveX(s.Ctx)
 	}
 	entry := addToMemoryQueueWithOptions(title, message, opts...)
 	GlobalBus.Emit(Event{Type: EventNotificationFired, Timestamp: time.Now(), Data: map[string]any{"title": title, "message": message}})
 	emitMessageFired(NotificationToMessage(entry))
+	return entry
 }
 
 // GetNotificationHistory returns merged DB + in-memory notification history (up to 50).

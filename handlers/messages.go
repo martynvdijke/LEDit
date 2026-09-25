@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"context"
+	"log/slog"
 	"sort"
 	"strconv"
 	"strings"
@@ -8,6 +10,7 @@ import (
 	"time"
 
 	"ledit/ent"
+	"ledit/ent/devicemessagestate"
 )
 
 // Message kinds.
@@ -228,6 +231,123 @@ func recordAck(deviceID int, id string) {
 		}
 		go GlobalDeliveryLog.Record(entry)
 	}
+	// ponytail: best-effort persistence, never blocks feed
+	go upsertDeviceMessageState(deviceID, id, "acked")
+}
+
+func recordRead(deviceID int, id string) {
+	if deviceID <= 0 || !messageRecentlyActive(id) {
+		return
+	}
+	// read is persisted but must not masquerade as an ack in DeviceAcks().
+	go upsertDeviceMessageState(deviceID, id, "read")
+}
+
+func recordDismiss(deviceID int, id string) {
+	if deviceID <= 0 || !messageRecentlyActive(id) {
+		return
+	}
+	go upsertDeviceMessageState(deviceID, id, "dismissed")
+}
+
+func upsertDeviceMessageState(deviceID int, messageID, status string) {
+	client := deviceStateClient()
+	if client == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	// Try update, else create. Unique index on (device_id,message_id)
+	existing, err := client.DeviceMessageState.Query().
+		Where(devicemessagestate.DeviceID(deviceID), devicemessagestate.MessageIDEQ(messageID)).
+		Only(ctx)
+	if err == nil && existing != nil {
+		_, err = client.DeviceMessageState.UpdateOneID(existing.ID).SetStatus(status).SetUpdatedAt(time.Now()).Save(ctx)
+		if err != nil {
+			slog.Warn("device message state update failed", "device", deviceID, "message", messageID, "error", err)
+		}
+		return
+	}
+	_, err = client.DeviceMessageState.Create().
+		SetDeviceID(deviceID).SetMessageID(messageID).SetStatus(status).Save(ctx)
+	if err != nil {
+		// possible race: try update once more
+		if existing2, err2 := client.DeviceMessageState.Query().Where(devicemessagestate.DeviceID(deviceID), devicemessagestate.MessageIDEQ(messageID)).Only(ctx); err2 == nil {
+			_, _ = client.DeviceMessageState.UpdateOneID(existing2.ID).SetStatus(status).SetUpdatedAt(time.Now()).Save(ctx)
+			return
+		}
+		slog.Warn("device message state create failed", "device", deviceID, "message", messageID, "error", err)
+	}
+}
+
+func deviceStateClient() *ent.Client {
+	if GlobalDeliveryLog != nil && GlobalDeliveryLog.db != nil {
+		if c := GlobalDeliveryLog.db(); c != nil {
+			return c
+		}
+	}
+	if globalServerDB != nil {
+		if c := globalServerDB(); c != nil {
+			return c
+		}
+	}
+	return nil
+}
+
+var globalServerDB func() *ent.Client
+
+func messageStateFor(deviceID int, messageID string) *ent.DeviceMessageState {
+	client := deviceStateClient()
+	if client == nil {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	row, _ := client.DeviceMessageState.Query().
+		Where(devicemessagestate.DeviceID(deviceID), devicemessagestate.MessageIDEQ(messageID)).
+		Only(ctx)
+	return row
+}
+
+func DeviceMessageStates(deviceID int) []*ent.DeviceMessageState {
+	client := deviceStateClient()
+	if client == nil {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	rows, _ := client.DeviceMessageState.Query().Where(devicemessagestate.DeviceID(deviceID)).All(ctx)
+	return rows
+}
+
+func UnreadMessagesFor(deviceID int) []Message {
+	active := ActiveMessages()
+	if deviceID <= 0 {
+		return active
+	}
+	client := deviceStateClient()
+	if client == nil {
+		return active
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	rows, _ := client.DeviceMessageState.Query().Where(devicemessagestate.DeviceID(deviceID)).All(ctx)
+	hidden := map[string]bool{}
+	for _, r := range rows {
+		if r.Status == "read" || r.Status == "dismissed" {
+			hidden[r.MessageID] = true
+		}
+	}
+	if len(hidden) == 0 {
+		return active
+	}
+	var out []Message
+	for _, m := range active {
+		if !hidden[m.ID] {
+			out = append(out, m)
+		}
+	}
+	return out
 }
 
 // emitMessageFired publishes a newly active message to the bus and remembers
