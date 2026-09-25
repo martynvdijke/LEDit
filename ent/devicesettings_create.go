@@ -623,6 +623,48 @@ func (_c *DeviceSettingsCreate) SetNillableOutputMatrixLayout(v *string) *Device
 	return _c
 }
 
+// SetOutputBilinear sets the "output_bilinear" field.
+func (_c *DeviceSettingsCreate) SetOutputBilinear(v bool) *DeviceSettingsCreate {
+	_c.mutation.SetOutputBilinear(v)
+	return _c
+}
+
+// SetNillableOutputBilinear sets the "output_bilinear" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableOutputBilinear(v *bool) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetOutputBilinear(*v)
+	}
+	return _c
+}
+
+// SetOutputPanelGammas sets the "output_panel_gammas" field.
+func (_c *DeviceSettingsCreate) SetOutputPanelGammas(v string) *DeviceSettingsCreate {
+	_c.mutation.SetOutputPanelGammas(v)
+	return _c
+}
+
+// SetNillableOutputPanelGammas sets the "output_panel_gammas" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableOutputPanelGammas(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetOutputPanelGammas(*v)
+	}
+	return _c
+}
+
+// SetOutputPanelColorOrders sets the "output_panel_color_orders" field.
+func (_c *DeviceSettingsCreate) SetOutputPanelColorOrders(v string) *DeviceSettingsCreate {
+	_c.mutation.SetOutputPanelColorOrders(v)
+	return _c
+}
+
+// SetNillableOutputPanelColorOrders sets the "output_panel_color_orders" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableOutputPanelColorOrders(v *string) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetOutputPanelColorOrders(*v)
+	}
+	return _c
+}
+
 // SetFingerprint sets the "fingerprint" field.
 func (_c *DeviceSettingsCreate) SetFingerprint(v string) *DeviceSettingsCreate {
 	_c.mutation.SetFingerprint(v)
@@ -891,6 +933,18 @@ func (_c *DeviceSettingsCreate) defaults() {
 		v := devicesettings.DefaultOutputMatrixLayout
 		_c.mutation.SetOutputMatrixLayout(v)
 	}
+	if _, ok := _c.mutation.OutputBilinear(); !ok {
+		v := devicesettings.DefaultOutputBilinear
+		_c.mutation.SetOutputBilinear(v)
+	}
+	if _, ok := _c.mutation.OutputPanelGammas(); !ok {
+		v := devicesettings.DefaultOutputPanelGammas
+		_c.mutation.SetOutputPanelGammas(v)
+	}
+	if _, ok := _c.mutation.OutputPanelColorOrders(); !ok {
+		v := devicesettings.DefaultOutputPanelColorOrders
+		_c.mutation.SetOutputPanelColorOrders(v)
+	}
 	if _, ok := _c.mutation.Fingerprint(); !ok {
 		v := devicesettings.DefaultFingerprint
 		_c.mutation.SetFingerprint(v)
@@ -1049,6 +1103,15 @@ func (_c *DeviceSettingsCreate) check() error {
 		if err := devicesettings.OutputMatrixLayoutValidator(v); err != nil {
 			return &ValidationError{Name: "output_matrix_layout", err: fmt.Errorf(`ent: validator failed for field "DeviceSettings.output_matrix_layout": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.OutputBilinear(); !ok {
+		return &ValidationError{Name: "output_bilinear", err: errors.New(`ent: missing required field "DeviceSettings.output_bilinear"`)}
+	}
+	if _, ok := _c.mutation.OutputPanelGammas(); !ok {
+		return &ValidationError{Name: "output_panel_gammas", err: errors.New(`ent: missing required field "DeviceSettings.output_panel_gammas"`)}
+	}
+	if _, ok := _c.mutation.OutputPanelColorOrders(); !ok {
+		return &ValidationError{Name: "output_panel_color_orders", err: errors.New(`ent: missing required field "DeviceSettings.output_panel_color_orders"`)}
 	}
 	if _, ok := _c.mutation.Fingerprint(); !ok {
 		return &ValidationError{Name: "fingerprint", err: errors.New(`ent: missing required field "DeviceSettings.fingerprint"`)}
@@ -1252,6 +1315,18 @@ func (_c *DeviceSettingsCreate) createSpec() (*DeviceSettings, *sqlgraph.CreateS
 	if value, ok := _c.mutation.OutputMatrixLayout(); ok {
 		_spec.SetField(devicesettings.FieldOutputMatrixLayout, field.TypeString, value)
 		_node.OutputMatrixLayout = value
+	}
+	if value, ok := _c.mutation.OutputBilinear(); ok {
+		_spec.SetField(devicesettings.FieldOutputBilinear, field.TypeBool, value)
+		_node.OutputBilinear = value
+	}
+	if value, ok := _c.mutation.OutputPanelGammas(); ok {
+		_spec.SetField(devicesettings.FieldOutputPanelGammas, field.TypeString, value)
+		_node.OutputPanelGammas = value
+	}
+	if value, ok := _c.mutation.OutputPanelColorOrders(); ok {
+		_spec.SetField(devicesettings.FieldOutputPanelColorOrders, field.TypeString, value)
+		_node.OutputPanelColorOrders = value
 	}
 	if value, ok := _c.mutation.Fingerprint(); ok {
 		_spec.SetField(devicesettings.FieldFingerprint, field.TypeString, value)

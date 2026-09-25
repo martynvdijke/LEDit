@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/draw"
 	"image/png"
+	"math"
 	"math/rand"
 )
 
@@ -57,6 +58,65 @@ func scaledNext(prev, next *image.NRGBA) *image.NRGBA {
 		return next
 	}
 	return scaleNearestNeighbor(next, pb.Dx(), pb.Dy())
+}
+
+func scaleBilinear(src *image.NRGBA, w, h int) *image.NRGBA {
+	sb := src.Bounds()
+	sw := sb.Dx()
+	sh := sb.Dy()
+	dst := image.NewNRGBA(image.Rect(0, 0, w, h))
+	if sw == 0 || sh == 0 || w == 0 || h == 0 {
+		return dst
+	}
+	for y := 0; y < h; y++ {
+		// Center-aligned source coordinate; floor (not truncate) so upscale
+		// never yields a negative interpolation weight.
+		fy := (float64(y)+0.5)*float64(sh)/float64(h) - 0.5
+		y0 := int(math.Floor(fy))
+		dy := fy - float64(y0)
+		if y0 < 0 {
+			y0, dy = 0, 0
+		}
+		if y0 > sh-1 {
+			y0, dy = sh-1, 0
+		}
+		y1 := y0 + 1
+		if y1 > sh-1 {
+			y1 = sh - 1
+		}
+		for x := 0; x < w; x++ {
+			fx := (float64(x)+0.5)*float64(sw)/float64(w) - 0.5
+			x0 := int(math.Floor(fx))
+			dx := fx - float64(x0)
+			if x0 < 0 {
+				x0, dx = 0, 0
+			}
+			if x0 > sw-1 {
+				x0, dx = sw-1, 0
+			}
+			x1 := x0 + 1
+			if x1 > sw-1 {
+				x1 = sw - 1
+			}
+			i00 := src.PixOffset(sb.Min.X+x0, sb.Min.Y+y0)
+			i10 := src.PixOffset(sb.Min.X+x1, sb.Min.Y+y0)
+			i01 := src.PixOffset(sb.Min.X+x0, sb.Min.Y+y1)
+			i11 := src.PixOffset(sb.Min.X+x1, sb.Min.Y+y1)
+			di := dst.PixOffset(x, y)
+			for c := 0; c < 3; c++ {
+				v00 := float64(src.Pix[i00+c])
+				v10 := float64(src.Pix[i10+c])
+				v01 := float64(src.Pix[i01+c])
+				v11 := float64(src.Pix[i11+c])
+				v0 := v00*(1-dx) + v10*dx
+				v1 := v01*(1-dx) + v11*dx
+				v := v0*(1-dy) + v1*dy
+				dst.Pix[di+c] = uint8(v + 0.5)
+			}
+			dst.Pix[di+3] = 255
+		}
+	}
+	return dst
 }
 
 func scaleNearestNeighbor(src *image.NRGBA, w, h int) *image.NRGBA {

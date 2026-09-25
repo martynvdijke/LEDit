@@ -98,6 +98,12 @@ const (
 	FieldOutputGamma = "output_gamma"
 	// FieldOutputMatrixLayout holds the string denoting the output_matrix_layout field in the database.
 	FieldOutputMatrixLayout = "output_matrix_layout"
+	// FieldOutputBilinear holds the string denoting the output_bilinear field in the database.
+	FieldOutputBilinear = "output_bilinear"
+	// FieldOutputPanelGammas holds the string denoting the output_panel_gammas field in the database.
+	FieldOutputPanelGammas = "output_panel_gammas"
+	// FieldOutputPanelColorOrders holds the string denoting the output_panel_color_orders field in the database.
+	FieldOutputPanelColorOrders = "output_panel_color_orders"
 	// FieldFingerprint holds the string denoting the fingerprint field in the database.
 	FieldFingerprint = "fingerprint"
 	// FieldApprovedAt holds the string denoting the approved_at field in the database.
@@ -169,6 +175,9 @@ var Columns = []string{
 	FieldOutputColorOrder,
 	FieldOutputGamma,
 	FieldOutputMatrixLayout,
+	FieldOutputBilinear,
+	FieldOutputPanelGammas,
+	FieldOutputPanelColorOrders,
 	FieldFingerprint,
 	FieldApprovedAt,
 	FieldFirmwareVersion,
@@ -285,6 +294,12 @@ var (
 	DefaultOutputMatrixLayout string
 	// OutputMatrixLayoutValidator is a validator for the "output_matrix_layout" field. It is called by the builders before save.
 	OutputMatrixLayoutValidator func(string) error
+	// DefaultOutputBilinear holds the default value on creation for the "output_bilinear" field.
+	DefaultOutputBilinear bool
+	// DefaultOutputPanelGammas holds the default value on creation for the "output_panel_gammas" field.
+	DefaultOutputPanelGammas string
+	// DefaultOutputPanelColorOrders holds the default value on creation for the "output_panel_color_orders" field.
+	DefaultOutputPanelColorOrders string
 	// DefaultFingerprint holds the default value on creation for the "fingerprint" field.
 	DefaultFingerprint string
 	// DefaultFirmwareVersion holds the default value on creation for the "firmware_version" field.
@@ -514,6 +529,21 @@ func ByOutputGamma(opts ...sql.OrderTermOption) OrderOption {
 // ByOutputMatrixLayout orders the results by the output_matrix_layout field.
 func ByOutputMatrixLayout(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOutputMatrixLayout, opts...).ToFunc()
+}
+
+// ByOutputBilinear orders the results by the output_bilinear field.
+func ByOutputBilinear(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOutputBilinear, opts...).ToFunc()
+}
+
+// ByOutputPanelGammas orders the results by the output_panel_gammas field.
+func ByOutputPanelGammas(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOutputPanelGammas, opts...).ToFunc()
+}
+
+// ByOutputPanelColorOrders orders the results by the output_panel_color_orders field.
+func ByOutputPanelColorOrders(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOutputPanelColorOrders, opts...).ToFunc()
 }
 
 // ByFingerprint orders the results by the fingerprint field.

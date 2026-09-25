@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"image/color"
 	"log/slog"
+	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -17,6 +19,8 @@ import (
 	"ledit/render"
 	"ledit/render/themes"
 )
+
+// ponytail: fonts are selected from the bundled fonts/ dir; uploads deferred (attack surface).
 
 // ---------------------------------------------------------------------------
 // Theme resolution (Phase 8)
@@ -62,6 +66,55 @@ func (r *themeResolver) resolve(targetType string, targetID int) render.Theme {
 	return themes.DefaultTheme
 }
 
+func ThemeFontPath(name string) string {
+	if name == "" {
+		return ""
+	}
+	if strings.Contains(name, "/") || strings.Contains(name, "\\") || strings.Contains(name, "..") {
+		return ""
+	}
+	for _, dir := range []string{"fonts", "../fonts"} {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+		for _, e := range entries {
+			if e.IsDir() {
+				continue
+			}
+			if e.Name() == name {
+				return "fonts/" + name
+			}
+		}
+	}
+	return ""
+}
+
+func listBundledFonts() []string {
+	for _, dir := range []string{"fonts", "../fonts"} {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+		var out []string
+		for _, e := range entries {
+			if e.IsDir() {
+				continue
+			}
+			name := e.Name()
+			if strings.HasSuffix(strings.ToLower(name), ".ttf") || strings.HasSuffix(strings.ToLower(name), ".otf") {
+				out = append(out, name)
+			}
+		}
+		if out != nil {
+			return out
+		}
+	}
+	return nil
+}
+
+func themeFontPath(name string) string { return ThemeFontPath(name) }
+
 // ThemeToRender maps a persisted theme row onto the render palette.
 func ThemeToRender(t *ent.Theme) render.Theme {
 	bg := parseHexColorRGBA(t.BgColor)
@@ -78,6 +131,7 @@ func ThemeToRender(t *ent.Theme) render.Theme {
 		TextColor:       [3]uint8{text.R, text.G, text.B},
 		Title:           title,
 		FontSize:        t.FontSize,
+		FontPath:        ThemeFontPath(t.FontName),
 	}
 }
 
@@ -240,6 +294,7 @@ func (s *Server) themeEditor(c *gin.Context, t *ent.Theme) {
 		"targets":     targets,
 		"previewType": preview.Type,
 		"previewID":   preview.ID,
+		"fonts":       listBundledFonts(),
 	})
 }
 
@@ -268,13 +323,14 @@ func (s *Server) AdminThemeEditor(c *gin.Context) {
 }
 
 // themeFormValues validates and returns the submitted palette values.
-func themeFormValues(c *gin.Context) (name, bg, accent, text, title string, fontSize float64, ok bool) {
+func themeFormValues(c *gin.Context) (name, bg, accent, text, title string, fontSize float64, fontName string, ok bool) {
 	name = strings.TrimSpace(c.PostForm("name"))
 	bg = strings.TrimSpace(c.PostForm("bg_color"))
 	accent = strings.TrimSpace(c.PostForm("accent_color"))
 	text = strings.TrimSpace(c.PostForm("text_color"))
 	title = strings.TrimSpace(c.PostForm("title"))
 	fontSize, _ = strconv.ParseFloat(c.DefaultPostForm("font_size", "24"), 64)
+	fontName = strings.TrimSpace(c.PostForm("font_name"))
 
 	switch {
 	case name == "":
@@ -283,6 +339,8 @@ func themeFormValues(c *gin.Context) (name, bg, accent, text, title string, font
 		SetFlash(c, "danger", "Colors must be hex like #rrggbb")
 	case fontSize < 8 || fontSize > 100:
 		SetFlash(c, "danger", "Font size must be between 8 and 100")
+	case fontName != "" && ThemeFontPath(fontName) == "":
+		SetFlash(c, "danger", "Invalid font selection")
 	default:
 		ok = true
 	}
@@ -294,9 +352,9 @@ func (s *Server) AdminThemeSave(c *gin.Context) {
 	if c.Param("id") != "new" {
 		id, _ = strconv.Atoi(c.Param("id"))
 	}
-	name, bg, accent, text, title, fontSize, ok := themeFormValues(c)
+	name, bg, accent, text, title, fontSize, fontName, ok := themeFormValues(c)
 	if !ok {
-		c.Redirect(302, themeBackURL(c, id))
+		themeSaveRedirect(c, id, false)
 		return
 	}
 
@@ -314,7 +372,7 @@ func (s *Server) AdminThemeSave(c *gin.Context) {
 		}
 		_, err = s.DB.Theme.UpdateOneID(id).
 			SetName(name).SetBgColor(bg).SetAccentColor(accent).SetTextColor(text).
-			SetTitle(title).SetFontSize(fontSize).Save(s.Ctx)
+			SetTitle(title).SetFontSize(fontSize).SetFontName(fontName).Save(s.Ctx)
 		if err != nil {
 			SetFlash(c, "danger", "Failed to save theme: "+err.Error())
 			c.Redirect(302, themeBackURL(c, id))
@@ -324,7 +382,7 @@ func (s *Server) AdminThemeSave(c *gin.Context) {
 	} else {
 		create := s.DB.Theme.Create().
 			SetName(name).SetBgColor(bg).SetAccentColor(accent).SetTextColor(text).
-			SetTitle(title).SetFontSize(fontSize)
+			SetTitle(title).SetFontSize(fontSize).SetFontName(fontName)
 		if c.PostForm("is_default") != "" {
 			_, _ = s.DB.Theme.Update().Where(theme.IsDefaultEQ(true)).SetIsDefault(false).Save(s.Ctx)
 			create.SetIsDefault(true)
@@ -344,6 +402,17 @@ func themeBackURL(c *gin.Context, id int) string {
 		return fmt.Sprintf("/admin/themes/%d/edit", id)
 	}
 	return "/admin/themes/new"
+}
+
+// themeSaveRedirect returns the post-save redirect target. On validation
+// failure it re-renders the form (200) instead of redirecting, so callers can
+// detect rejection via the absence of a Location header.
+func themeSaveRedirect(c *gin.Context, id int, ok bool) {
+	if !ok {
+		c.Status(http.StatusOK)
+		return
+	}
+	c.Redirect(302, themeBackURL(c, id))
 }
 
 func (s *Server) AdminThemeDuplicate(c *gin.Context) {
@@ -369,7 +438,7 @@ func (s *Server) AdminThemeDuplicate(c *gin.Context) {
 	}
 	created, err := s.DB.Theme.Create().
 		SetName(name).SetBgColor(src.BgColor).SetAccentColor(src.AccentColor).
-		SetTextColor(src.TextColor).SetTitle(src.Title).SetFontSize(src.FontSize).
+		SetTextColor(src.TextColor).SetTitle(src.Title).SetFontSize(src.FontSize).SetFontName(src.FontName).
 		Save(s.Ctx)
 	if err != nil {
 		SetFlash(c, "danger", "Failed to duplicate theme")
@@ -544,9 +613,9 @@ func rgb3(c color.RGBA, fallback [3]uint8) [3]uint8 {
 // themeCacheSig fingerprints a palette so frames cached for one theme are not
 // served for another.
 func themeCacheSig(t render.Theme) string {
-	return fmt.Sprintf("%02x%02x%02x%02x%02x%02x%02x%02x%02x|%s|%.1f",
+	return fmt.Sprintf("%02x%02x%02x%02x%02x%02x%02x%02x%02x|%s|%.1f|%s",
 		t.BackgroundColor[0], t.BackgroundColor[1], t.BackgroundColor[2],
 		t.AccentColor[0], t.AccentColor[1], t.AccentColor[2],
 		t.TextColor[0], t.TextColor[1], t.TextColor[2],
-		t.Title, t.FontSize)
+		t.Title, t.FontSize, t.FontPath)
 }

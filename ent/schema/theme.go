@@ -27,6 +27,7 @@ func (Theme) Fields() []ent.Field {
 		field.Float("font_size").Default(24).Min(8).Max(100),
 		field.Bool("built_in").Default(false),
 		field.Bool("is_default").Default(false),
+		field.String("font_name").Default(""),
 	}
 }
 

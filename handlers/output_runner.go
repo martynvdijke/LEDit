@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"strconv"
 	"sync"
@@ -342,13 +343,27 @@ func frameToPixels(pngBytes []byte, width, height int, d *ent.DeviceSettings) ([
 	if err != nil {
 		return nil, err
 	}
+	// ponytail: websocket transport sends PNG so FrameToPixels only affects push (wled/artnet) path.
+	// ponytail: per-frame JSON parsing of panel gammas/orders at OutputFps; cache if it shows up in profiles.
+	var gammas []float64
+	if d.OutputPanelGammas != "" && d.OutputPanelGammas != "[]" {
+		_ = json.Unmarshal([]byte(d.OutputPanelGammas), &gammas)
+	}
+	var cos []string
+	if d.OutputPanelColorOrders != "" && d.OutputPanelColorOrders != "[]" {
+		_ = json.Unmarshal([]byte(d.OutputPanelColorOrders), &cos)
+	}
 	pCfg := render.PixelMapConfig{
-		Width:      width,
-		Height:     height,
-		ColorOrder: d.OutputColorOrder,
-		Gamma:      d.OutputGamma,
-		Serpentine: d.OutputMatrixLayout == "serpentine",
-		OriginTop:  true,
+		Width:            width,
+		Height:           height,
+		ColorOrder:       d.OutputColorOrder,
+		Gamma:            d.OutputGamma,
+		Serpentine:       d.OutputMatrixLayout == "serpentine",
+		OriginTop:        true,
+		Bilinear:         d.OutputBilinear,
+		PanelCols:        d.PanelCols,
+		PanelGammas:      gammas,
+		PanelColorOrders: cos,
 	}
 	pixels := render.FrameToPixels(nrgba, pCfg)
 	return pixels, nil

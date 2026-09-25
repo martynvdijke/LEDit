@@ -270,6 +270,21 @@ func OutputMatrixLayout(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputMatrixLayout, v))
 }
 
+// OutputBilinear applies equality check predicate on the "output_bilinear" field. It's identical to OutputBilinearEQ.
+func OutputBilinear(v bool) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputBilinear, v))
+}
+
+// OutputPanelGammas applies equality check predicate on the "output_panel_gammas" field. It's identical to OutputPanelGammasEQ.
+func OutputPanelGammas(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelColorOrders applies equality check predicate on the "output_panel_color_orders" field. It's identical to OutputPanelColorOrdersEQ.
+func OutputPanelColorOrders(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputPanelColorOrders, v))
+}
+
 // Fingerprint applies equality check predicate on the "fingerprint" field. It's identical to FingerprintEQ.
 func Fingerprint(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldEQ(FieldFingerprint, v))
@@ -2478,6 +2493,146 @@ func OutputMatrixLayoutEqualFold(v string) predicate.DeviceSettings {
 // OutputMatrixLayoutContainsFold applies the ContainsFold predicate on the "output_matrix_layout" field.
 func OutputMatrixLayoutContainsFold(v string) predicate.DeviceSettings {
 	return predicate.DeviceSettings(sql.FieldContainsFold(FieldOutputMatrixLayout, v))
+}
+
+// OutputBilinearEQ applies the EQ predicate on the "output_bilinear" field.
+func OutputBilinearEQ(v bool) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputBilinear, v))
+}
+
+// OutputBilinearNEQ applies the NEQ predicate on the "output_bilinear" field.
+func OutputBilinearNEQ(v bool) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOutputBilinear, v))
+}
+
+// OutputPanelGammasEQ applies the EQ predicate on the "output_panel_gammas" field.
+func OutputPanelGammasEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelGammasNEQ applies the NEQ predicate on the "output_panel_gammas" field.
+func OutputPanelGammasNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelGammasIn applies the In predicate on the "output_panel_gammas" field.
+func OutputPanelGammasIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOutputPanelGammas, vs...))
+}
+
+// OutputPanelGammasNotIn applies the NotIn predicate on the "output_panel_gammas" field.
+func OutputPanelGammasNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOutputPanelGammas, vs...))
+}
+
+// OutputPanelGammasGT applies the GT predicate on the "output_panel_gammas" field.
+func OutputPanelGammasGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelGammasGTE applies the GTE predicate on the "output_panel_gammas" field.
+func OutputPanelGammasGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelGammasLT applies the LT predicate on the "output_panel_gammas" field.
+func OutputPanelGammasLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelGammasLTE applies the LTE predicate on the "output_panel_gammas" field.
+func OutputPanelGammasLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelGammasContains applies the Contains predicate on the "output_panel_gammas" field.
+func OutputPanelGammasContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelGammasHasPrefix applies the HasPrefix predicate on the "output_panel_gammas" field.
+func OutputPanelGammasHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelGammasHasSuffix applies the HasSuffix predicate on the "output_panel_gammas" field.
+func OutputPanelGammasHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelGammasEqualFold applies the EqualFold predicate on the "output_panel_gammas" field.
+func OutputPanelGammasEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelGammasContainsFold applies the ContainsFold predicate on the "output_panel_gammas" field.
+func OutputPanelGammasContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldOutputPanelGammas, v))
+}
+
+// OutputPanelColorOrdersEQ applies the EQ predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEQ(FieldOutputPanelColorOrders, v))
+}
+
+// OutputPanelColorOrdersNEQ applies the NEQ predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersNEQ(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNEQ(FieldOutputPanelColorOrders, v))
+}
+
+// OutputPanelColorOrdersIn applies the In predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldIn(FieldOutputPanelColorOrders, vs...))
+}
+
+// OutputPanelColorOrdersNotIn applies the NotIn predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersNotIn(vs ...string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldNotIn(FieldOutputPanelColorOrders, vs...))
+}
+
+// OutputPanelColorOrdersGT applies the GT predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersGT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGT(FieldOutputPanelColorOrders, v))
+}
+
+// OutputPanelColorOrdersGTE applies the GTE predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersGTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldGTE(FieldOutputPanelColorOrders, v))
+}
+
+// OutputPanelColorOrdersLT applies the LT predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersLT(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLT(FieldOutputPanelColorOrders, v))
+}
+
+// OutputPanelColorOrdersLTE applies the LTE predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersLTE(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldLTE(FieldOutputPanelColorOrders, v))
+}
+
+// OutputPanelColorOrdersContains applies the Contains predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersContains(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContains(FieldOutputPanelColorOrders, v))
+}
+
+// OutputPanelColorOrdersHasPrefix applies the HasPrefix predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersHasPrefix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasPrefix(FieldOutputPanelColorOrders, v))
+}
+
+// OutputPanelColorOrdersHasSuffix applies the HasSuffix predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersHasSuffix(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldHasSuffix(FieldOutputPanelColorOrders, v))
+}
+
+// OutputPanelColorOrdersEqualFold applies the EqualFold predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersEqualFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldEqualFold(FieldOutputPanelColorOrders, v))
+}
+
+// OutputPanelColorOrdersContainsFold applies the ContainsFold predicate on the "output_panel_color_orders" field.
+func OutputPanelColorOrdersContainsFold(v string) predicate.DeviceSettings {
+	return predicate.DeviceSettings(sql.FieldContainsFold(FieldOutputPanelColorOrders, v))
 }
 
 // FingerprintEQ applies the EQ predicate on the "fingerprint" field.

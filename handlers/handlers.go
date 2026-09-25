@@ -1166,6 +1166,51 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		}
 		outputGamma = v
 	}
+	outputBilinear := c.PostForm("output_bilinear") == "on"
+	panelGammasRaw := strings.TrimSpace(c.PostForm("output_panel_gammas"))
+	if panelGammasRaw == "" {
+		panelGammasRaw = "[]"
+	}
+	var panelGammas []float64
+	if err := json.Unmarshal([]byte(panelGammasRaw), &panelGammas); err != nil {
+		SetFlash(c, "danger", "output_panel_gammas: invalid JSON")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	if len(panelGammas) > panelCols {
+		SetFlash(c, "danger", "output_panel_gammas: too many entries")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	for _, g := range panelGammas {
+		if g != 0 && (g < 0.1 || g > 4) {
+			SetFlash(c, "danger", "output_panel_gammas: gamma must be 0.1..4")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+	}
+	panelCORaw := strings.TrimSpace(c.PostForm("output_panel_color_orders"))
+	if panelCORaw == "" {
+		panelCORaw = "[]"
+	}
+	var panelCOs []string
+	if err := json.Unmarshal([]byte(panelCORaw), &panelCOs); err != nil {
+		SetFlash(c, "danger", "output_panel_color_orders: invalid JSON")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	if len(panelCOs) > panelCols {
+		SetFlash(c, "danger", "output_panel_color_orders: too many entries")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	for _, co := range panelCOs {
+		if co != "" && co != "RGB" && co != "GRB" && co != "BGR" {
+			SetFlash(c, "danger", "output_panel_color_orders: must be RGB/GRB/BGR")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+	}
 	wledHost := strings.TrimSpace(c.PostForm("wled_host"))
 	artnetHost := strings.TrimSpace(c.PostForm("artnet_host"))
 	wledPortRaw := strings.TrimSpace(c.PostForm("wled_port"))
@@ -1252,7 +1297,7 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		SetTransport(transport).
 		SetWledHost(wledHost).SetWledPort(wledPort).SetWledRealtimeMode(wledRealtimeMode).SetWledChannel(wledChannel).
 		SetArtnetHost(artnetHost).SetArtnetPort(artnetPort).SetArtnetUniverse(artnetUniverse).
-		SetOutputFps(outputFps).SetOutputColorOrder(outputColorOrder).SetOutputGamma(outputGamma).SetOutputMatrixLayout(outputMatrixLayout)
+		SetOutputFps(outputFps).SetOutputColorOrder(outputColorOrder).SetOutputGamma(outputGamma).SetOutputMatrixLayout(outputMatrixLayout).SetOutputBilinear(outputBilinear).SetOutputPanelGammas(panelGammasRaw).SetOutputPanelColorOrders(panelCORaw)
 	if idleRaw != "" {
 		builder.SetIdleScreensaver(idleRaw)
 	}
@@ -1526,6 +1571,51 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		}
 		outputGamma = v
 	}
+	outputBilinear2 := c.PostForm("output_bilinear") == "on"
+	panelGammasRaw2 := strings.TrimSpace(c.PostForm("output_panel_gammas"))
+	if panelGammasRaw2 == "" {
+		panelGammasRaw2 = "[]"
+	}
+	var panelGammas2 []float64
+	if err := json.Unmarshal([]byte(panelGammasRaw2), &panelGammas2); err != nil {
+		SetFlash(c, "danger", "output_panel_gammas: invalid JSON")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	if len(panelGammas2) > panelCols {
+		SetFlash(c, "danger", "output_panel_gammas: too many entries")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	for _, g := range panelGammas2 {
+		if g != 0 && (g < 0.1 || g > 4) {
+			SetFlash(c, "danger", "output_panel_gammas: gamma must be 0.1..4")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+	}
+	panelCORaw2 := strings.TrimSpace(c.PostForm("output_panel_color_orders"))
+	if panelCORaw2 == "" {
+		panelCORaw2 = "[]"
+	}
+	var panelCOs2 []string
+	if err := json.Unmarshal([]byte(panelCORaw2), &panelCOs2); err != nil {
+		SetFlash(c, "danger", "output_panel_color_orders: invalid JSON")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	if len(panelCOs2) > panelCols {
+		SetFlash(c, "danger", "output_panel_color_orders: too many entries")
+		c.Redirect(http.StatusFound, "/admin/devices")
+		return
+	}
+	for _, co := range panelCOs2 {
+		if co != "" && co != "RGB" && co != "GRB" && co != "BGR" {
+			SetFlash(c, "danger", "output_panel_color_orders: must be RGB/GRB/BGR")
+			c.Redirect(http.StatusFound, "/admin/devices")
+			return
+		}
+	}
 	wledHost := strings.TrimSpace(c.PostForm("wled_host"))
 	artnetHost := strings.TrimSpace(c.PostForm("artnet_host"))
 	wledPortRaw := strings.TrimSpace(c.PostForm("wled_port"))
@@ -1612,7 +1702,7 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		SetTransport(transport).
 		SetWledHost(wledHost).SetWledPort(wledPort).SetWledRealtimeMode(wledRealtimeMode).SetWledChannel(wledChannel).
 		SetArtnetHost(artnetHost).SetArtnetPort(artnetPort).SetArtnetUniverse(artnetUniverse).
-		SetOutputFps(outputFps).SetOutputColorOrder(outputColorOrder).SetOutputGamma(outputGamma).SetOutputMatrixLayout(outputMatrixLayout)
+		SetOutputFps(outputFps).SetOutputColorOrder(outputColorOrder).SetOutputGamma(outputGamma).SetOutputMatrixLayout(outputMatrixLayout).SetOutputBilinear(outputBilinear2).SetOutputPanelGammas(panelGammasRaw2).SetOutputPanelColorOrders(panelCORaw2)
 	if idleRaw2 != "" {
 		upd.SetIdleScreensaver(idleRaw2)
 	} else {

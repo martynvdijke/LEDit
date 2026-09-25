@@ -612,16 +612,28 @@ func init() {
 	devicesettings.DefaultOutputMatrixLayout = devicesettingsDescOutputMatrixLayout.Default.(string)
 	// devicesettings.OutputMatrixLayoutValidator is a validator for the "output_matrix_layout" field. It is called by the builders before save.
 	devicesettings.OutputMatrixLayoutValidator = devicesettingsDescOutputMatrixLayout.Validators[0].(func(string) error)
+	// devicesettingsDescOutputBilinear is the schema descriptor for output_bilinear field.
+	devicesettingsDescOutputBilinear := devicesettingsFields[43].Descriptor()
+	// devicesettings.DefaultOutputBilinear holds the default value on creation for the output_bilinear field.
+	devicesettings.DefaultOutputBilinear = devicesettingsDescOutputBilinear.Default.(bool)
+	// devicesettingsDescOutputPanelGammas is the schema descriptor for output_panel_gammas field.
+	devicesettingsDescOutputPanelGammas := devicesettingsFields[44].Descriptor()
+	// devicesettings.DefaultOutputPanelGammas holds the default value on creation for the output_panel_gammas field.
+	devicesettings.DefaultOutputPanelGammas = devicesettingsDescOutputPanelGammas.Default.(string)
+	// devicesettingsDescOutputPanelColorOrders is the schema descriptor for output_panel_color_orders field.
+	devicesettingsDescOutputPanelColorOrders := devicesettingsFields[45].Descriptor()
+	// devicesettings.DefaultOutputPanelColorOrders holds the default value on creation for the output_panel_color_orders field.
+	devicesettings.DefaultOutputPanelColorOrders = devicesettingsDescOutputPanelColorOrders.Default.(string)
 	// devicesettingsDescFingerprint is the schema descriptor for fingerprint field.
-	devicesettingsDescFingerprint := devicesettingsFields[43].Descriptor()
+	devicesettingsDescFingerprint := devicesettingsFields[46].Descriptor()
 	// devicesettings.DefaultFingerprint holds the default value on creation for the fingerprint field.
 	devicesettings.DefaultFingerprint = devicesettingsDescFingerprint.Default.(string)
 	// devicesettingsDescFirmwareVersion is the schema descriptor for firmware_version field.
-	devicesettingsDescFirmwareVersion := devicesettingsFields[45].Descriptor()
+	devicesettingsDescFirmwareVersion := devicesettingsFields[48].Descriptor()
 	// devicesettings.DefaultFirmwareVersion holds the default value on creation for the firmware_version field.
 	devicesettings.DefaultFirmwareVersion = devicesettingsDescFirmwareVersion.Default.(string)
 	// devicesettingsDescLastUpdateStatus is the schema descriptor for last_update_status field.
-	devicesettingsDescLastUpdateStatus := devicesettingsFields[47].Descriptor()
+	devicesettingsDescLastUpdateStatus := devicesettingsFields[50].Descriptor()
 	// devicesettings.DefaultLastUpdateStatus holds the default value on creation for the last_update_status field.
 	devicesettings.DefaultLastUpdateStatus = devicesettingsDescLastUpdateStatus.Default.(string)
 	displayruleFields := schema.DisplayRule{}.Fields()
@@ -1692,6 +1704,10 @@ func init() {
 	themeDescIsDefault := themeFields[7].Descriptor()
 	// theme.DefaultIsDefault holds the default value on creation for the is_default field.
 	theme.DefaultIsDefault = themeDescIsDefault.Default.(bool)
+	// themeDescFontName is the schema descriptor for font_name field.
+	themeDescFontName := themeFields[8].Descriptor()
+	// theme.DefaultFontName holds the default value on creation for the font_name field.
+	theme.DefaultFontName = themeDescFontName.Default.(string)
 	themeassignmentFields := schema.ThemeAssignment{}.Fields()
 	_ = themeassignmentFields
 	// themeassignmentDescTargetType is the schema descriptor for target_type field.

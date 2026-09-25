@@ -94,8 +94,8 @@ func TestThemeValidation(t *testing.T) {
 		"title":        {"T"},
 		"font_size":    {"24"},
 	})
-	if w.Header().Get("Location") == "" {
-		t.Fatalf("bad hex expected redirect, got code %d header %v", w.Code, w.Header())
+	if w.Header().Get("Location") != "" {
+		t.Fatalf("bad hex should re-render form, got redirect %v", w.Header())
 	}
 	if client.Theme.Query().Where(theme.NameEQ("badhex")).ExistX(themeCtx) {
 		t.Error("bad hex theme should not be created")
@@ -108,8 +108,8 @@ func TestThemeValidation(t *testing.T) {
 		"title":        {"T"},
 		"font_size":    {"24"},
 	})
-	if w2.Header().Get("Location") == "" {
-		t.Fatalf("empty name expected redirect, got %d", w2.Code)
+	if w2.Header().Get("Location") != "" {
+		t.Fatalf("empty name should re-render form, got redirect %d", w2.Code)
 	}
 	w3 := callSave(srv, "new", themeForm("uniqtheme"))
 	if w3.Header().Get("Location") == "" {

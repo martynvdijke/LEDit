@@ -25,7 +25,14 @@ type RenderedImage struct {
 	Scrolls bool
 }
 
+func effectiveFontPath(theme Theme, fontPath string) string {
+	if theme.FontPath != "" {
+		return theme.FontPath
+	}
+	return fontPath
+}
 func RenderDict(dataDict map[string]string, width, height int, theme Theme, fontPath string) (*RenderedImage, error) {
+	fontPath = effectiveFontPath(theme, fontPath)
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
 	fillBG := color.RGBA{theme.BackgroundColor[0], theme.BackgroundColor[1], theme.BackgroundColor[2], 255}
@@ -122,6 +129,7 @@ func RenderDict(dataDict map[string]string, width, height int, theme Theme, font
 }
 
 func RenderText(text string, width, height int, bgColor, textColor string, fontSize float64, fontPath string) (*RenderedImage, error) {
+	// Theme font override not applicable here (no theme param); caller passes desired fontPath directly.
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
 	bg := parseHexColor(bgColor, color.RGBA{0, 0, 0, 255})

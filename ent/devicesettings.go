@@ -104,6 +104,12 @@ type DeviceSettings struct {
 	OutputGamma float64 `json:"output_gamma,omitempty"`
 	// OutputMatrixLayout holds the value of the "output_matrix_layout" field.
 	OutputMatrixLayout string `json:"output_matrix_layout,omitempty"`
+	// OutputBilinear holds the value of the "output_bilinear" field.
+	OutputBilinear bool `json:"output_bilinear,omitempty"`
+	// OutputPanelGammas holds the value of the "output_panel_gammas" field.
+	OutputPanelGammas string `json:"output_panel_gammas,omitempty"`
+	// OutputPanelColorOrders holds the value of the "output_panel_color_orders" field.
+	OutputPanelColorOrders string `json:"output_panel_color_orders,omitempty"`
 	// Fingerprint holds the value of the "fingerprint" field.
 	Fingerprint string `json:"fingerprint,omitempty"`
 	// ApprovedAt holds the value of the "approved_at" field.
@@ -148,13 +154,13 @@ func (*DeviceSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case devicesettings.FieldEnabled, devicesettings.FieldBrightnessEnabled, devicesettings.FieldOverlayEnabled:
+		case devicesettings.FieldEnabled, devicesettings.FieldBrightnessEnabled, devicesettings.FieldOverlayEnabled, devicesettings.FieldOutputBilinear:
 			values[i] = new(sql.NullBool)
 		case devicesettings.FieldOutputGamma:
 			values[i] = new(sql.NullFloat64)
 		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldPanelCols, devicesettings.FieldPanelGap, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed, devicesettings.FieldPlaylistID, devicesettings.FieldFallbackPlaylistID, devicesettings.FieldBrightnessOverride, devicesettings.FieldGroupID, devicesettings.FieldOverlayHeight, devicesettings.FieldOverlaySpeedPx, devicesettings.FieldWledPort, devicesettings.FieldWledChannel, devicesettings.FieldArtnetPort, devicesettings.FieldArtnetUniverse, devicesettings.FieldOutputFps:
 			values[i] = new(sql.NullInt64)
-		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken, devicesettings.FieldContentMode, devicesettings.FieldScheduledPlaylistIds, devicesettings.FieldBrightnessSchedules, devicesettings.FieldBrightnessSensorConfig, devicesettings.FieldIdleScreensaver, devicesettings.FieldOverlayPosition, devicesettings.FieldOverlayText, devicesettings.FieldOverlayBg, devicesettings.FieldOverlayFg, devicesettings.FieldTransport, devicesettings.FieldWledHost, devicesettings.FieldWledRealtimeMode, devicesettings.FieldArtnetHost, devicesettings.FieldOutputColorOrder, devicesettings.FieldOutputMatrixLayout, devicesettings.FieldFingerprint, devicesettings.FieldFirmwareVersion, devicesettings.FieldFirmwareVersionPin, devicesettings.FieldLastUpdateStatus:
+		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken, devicesettings.FieldContentMode, devicesettings.FieldScheduledPlaylistIds, devicesettings.FieldBrightnessSchedules, devicesettings.FieldBrightnessSensorConfig, devicesettings.FieldIdleScreensaver, devicesettings.FieldOverlayPosition, devicesettings.FieldOverlayText, devicesettings.FieldOverlayBg, devicesettings.FieldOverlayFg, devicesettings.FieldTransport, devicesettings.FieldWledHost, devicesettings.FieldWledRealtimeMode, devicesettings.FieldArtnetHost, devicesettings.FieldOutputColorOrder, devicesettings.FieldOutputMatrixLayout, devicesettings.FieldOutputPanelGammas, devicesettings.FieldOutputPanelColorOrders, devicesettings.FieldFingerprint, devicesettings.FieldFirmwareVersion, devicesettings.FieldFirmwareVersionPin, devicesettings.FieldLastUpdateStatus:
 			values[i] = new(sql.NullString)
 		case devicesettings.FieldLastSeenAt, devicesettings.FieldApprovedAt, devicesettings.FieldLastUpdateAt:
 			values[i] = new(sql.NullTime)
@@ -446,6 +452,24 @@ func (_m *DeviceSettings) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.OutputMatrixLayout = value.String
 			}
+		case devicesettings.FieldOutputBilinear:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field output_bilinear", values[i])
+			} else if value.Valid {
+				_m.OutputBilinear = value.Bool
+			}
+		case devicesettings.FieldOutputPanelGammas:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field output_panel_gammas", values[i])
+			} else if value.Valid {
+				_m.OutputPanelGammas = value.String
+			}
+		case devicesettings.FieldOutputPanelColorOrders:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field output_panel_color_orders", values[i])
+			} else if value.Valid {
+				_m.OutputPanelColorOrders = value.String
+			}
 		case devicesettings.FieldFingerprint:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field fingerprint", values[i])
@@ -675,6 +699,15 @@ func (_m *DeviceSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("output_matrix_layout=")
 	builder.WriteString(_m.OutputMatrixLayout)
+	builder.WriteString(", ")
+	builder.WriteString("output_bilinear=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OutputBilinear))
+	builder.WriteString(", ")
+	builder.WriteString("output_panel_gammas=")
+	builder.WriteString(_m.OutputPanelGammas)
+	builder.WriteString(", ")
+	builder.WriteString("output_panel_color_orders=")
+	builder.WriteString(_m.OutputPanelColorOrders)
 	builder.WriteString(", ")
 	builder.WriteString("fingerprint=")
 	builder.WriteString(_m.Fingerprint)

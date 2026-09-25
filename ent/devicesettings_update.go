@@ -799,6 +799,48 @@ func (_u *DeviceSettingsUpdate) SetNillableOutputMatrixLayout(v *string) *Device
 	return _u
 }
 
+// SetOutputBilinear sets the "output_bilinear" field.
+func (_u *DeviceSettingsUpdate) SetOutputBilinear(v bool) *DeviceSettingsUpdate {
+	_u.mutation.SetOutputBilinear(v)
+	return _u
+}
+
+// SetNillableOutputBilinear sets the "output_bilinear" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableOutputBilinear(v *bool) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetOutputBilinear(*v)
+	}
+	return _u
+}
+
+// SetOutputPanelGammas sets the "output_panel_gammas" field.
+func (_u *DeviceSettingsUpdate) SetOutputPanelGammas(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetOutputPanelGammas(v)
+	return _u
+}
+
+// SetNillableOutputPanelGammas sets the "output_panel_gammas" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableOutputPanelGammas(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetOutputPanelGammas(*v)
+	}
+	return _u
+}
+
+// SetOutputPanelColorOrders sets the "output_panel_color_orders" field.
+func (_u *DeviceSettingsUpdate) SetOutputPanelColorOrders(v string) *DeviceSettingsUpdate {
+	_u.mutation.SetOutputPanelColorOrders(v)
+	return _u
+}
+
+// SetNillableOutputPanelColorOrders sets the "output_panel_color_orders" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableOutputPanelColorOrders(v *string) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetOutputPanelColorOrders(*v)
+	}
+	return _u
+}
+
 // SetFingerprint sets the "fingerprint" field.
 func (_u *DeviceSettingsUpdate) SetFingerprint(v string) *DeviceSettingsUpdate {
 	_u.mutation.SetFingerprint(v)
@@ -1193,6 +1235,15 @@ func (_u *DeviceSettingsUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.OutputMatrixLayout(); ok {
 		_spec.SetField(devicesettings.FieldOutputMatrixLayout, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OutputBilinear(); ok {
+		_spec.SetField(devicesettings.FieldOutputBilinear, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.OutputPanelGammas(); ok {
+		_spec.SetField(devicesettings.FieldOutputPanelGammas, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OutputPanelColorOrders(); ok {
+		_spec.SetField(devicesettings.FieldOutputPanelColorOrders, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Fingerprint(); ok {
 		_spec.SetField(devicesettings.FieldFingerprint, field.TypeString, value)
@@ -2040,6 +2091,48 @@ func (_u *DeviceSettingsUpdateOne) SetNillableOutputMatrixLayout(v *string) *Dev
 	return _u
 }
 
+// SetOutputBilinear sets the "output_bilinear" field.
+func (_u *DeviceSettingsUpdateOne) SetOutputBilinear(v bool) *DeviceSettingsUpdateOne {
+	_u.mutation.SetOutputBilinear(v)
+	return _u
+}
+
+// SetNillableOutputBilinear sets the "output_bilinear" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableOutputBilinear(v *bool) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetOutputBilinear(*v)
+	}
+	return _u
+}
+
+// SetOutputPanelGammas sets the "output_panel_gammas" field.
+func (_u *DeviceSettingsUpdateOne) SetOutputPanelGammas(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetOutputPanelGammas(v)
+	return _u
+}
+
+// SetNillableOutputPanelGammas sets the "output_panel_gammas" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableOutputPanelGammas(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetOutputPanelGammas(*v)
+	}
+	return _u
+}
+
+// SetOutputPanelColorOrders sets the "output_panel_color_orders" field.
+func (_u *DeviceSettingsUpdateOne) SetOutputPanelColorOrders(v string) *DeviceSettingsUpdateOne {
+	_u.mutation.SetOutputPanelColorOrders(v)
+	return _u
+}
+
+// SetNillableOutputPanelColorOrders sets the "output_panel_color_orders" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableOutputPanelColorOrders(v *string) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetOutputPanelColorOrders(*v)
+	}
+	return _u
+}
+
 // SetFingerprint sets the "fingerprint" field.
 func (_u *DeviceSettingsUpdateOne) SetFingerprint(v string) *DeviceSettingsUpdateOne {
 	_u.mutation.SetFingerprint(v)
@@ -2464,6 +2557,15 @@ func (_u *DeviceSettingsUpdateOne) sqlSave(ctx context.Context) (_node *DeviceSe
 	}
 	if value, ok := _u.mutation.OutputMatrixLayout(); ok {
 		_spec.SetField(devicesettings.FieldOutputMatrixLayout, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OutputBilinear(); ok {
+		_spec.SetField(devicesettings.FieldOutputBilinear, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.OutputPanelGammas(); ok {
+		_spec.SetField(devicesettings.FieldOutputPanelGammas, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OutputPanelColorOrders(); ok {
+		_spec.SetField(devicesettings.FieldOutputPanelColorOrders, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Fingerprint(); ok {
 		_spec.SetField(devicesettings.FieldFingerprint, field.TypeString, value)

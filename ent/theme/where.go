@@ -94,6 +94,11 @@ func IsDefault(v bool) predicate.Theme {
 	return predicate.Theme(sql.FieldEQ(FieldIsDefault, v))
 }
 
+// FontName applies equality check predicate on the "font_name" field. It's identical to FontNameEQ.
+func FontName(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldEQ(FieldFontName, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Theme {
 	return predicate.Theme(sql.FieldEQ(FieldName, v))
@@ -477,6 +482,71 @@ func IsDefaultEQ(v bool) predicate.Theme {
 // IsDefaultNEQ applies the NEQ predicate on the "is_default" field.
 func IsDefaultNEQ(v bool) predicate.Theme {
 	return predicate.Theme(sql.FieldNEQ(FieldIsDefault, v))
+}
+
+// FontNameEQ applies the EQ predicate on the "font_name" field.
+func FontNameEQ(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldEQ(FieldFontName, v))
+}
+
+// FontNameNEQ applies the NEQ predicate on the "font_name" field.
+func FontNameNEQ(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldNEQ(FieldFontName, v))
+}
+
+// FontNameIn applies the In predicate on the "font_name" field.
+func FontNameIn(vs ...string) predicate.Theme {
+	return predicate.Theme(sql.FieldIn(FieldFontName, vs...))
+}
+
+// FontNameNotIn applies the NotIn predicate on the "font_name" field.
+func FontNameNotIn(vs ...string) predicate.Theme {
+	return predicate.Theme(sql.FieldNotIn(FieldFontName, vs...))
+}
+
+// FontNameGT applies the GT predicate on the "font_name" field.
+func FontNameGT(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldGT(FieldFontName, v))
+}
+
+// FontNameGTE applies the GTE predicate on the "font_name" field.
+func FontNameGTE(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldGTE(FieldFontName, v))
+}
+
+// FontNameLT applies the LT predicate on the "font_name" field.
+func FontNameLT(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldLT(FieldFontName, v))
+}
+
+// FontNameLTE applies the LTE predicate on the "font_name" field.
+func FontNameLTE(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldLTE(FieldFontName, v))
+}
+
+// FontNameContains applies the Contains predicate on the "font_name" field.
+func FontNameContains(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldContains(FieldFontName, v))
+}
+
+// FontNameHasPrefix applies the HasPrefix predicate on the "font_name" field.
+func FontNameHasPrefix(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldHasPrefix(FieldFontName, v))
+}
+
+// FontNameHasSuffix applies the HasSuffix predicate on the "font_name" field.
+func FontNameHasSuffix(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldHasSuffix(FieldFontName, v))
+}
+
+// FontNameEqualFold applies the EqualFold predicate on the "font_name" field.
+func FontNameEqualFold(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldEqualFold(FieldFontName, v))
+}
+
+// FontNameContainsFold applies the ContainsFold predicate on the "font_name" field.
+func FontNameContainsFold(v string) predicate.Theme {
+	return predicate.Theme(sql.FieldContainsFold(FieldFontName, v))
 }
 
 // HasAssignments applies the HasEdge predicate on the "assignments" edge.

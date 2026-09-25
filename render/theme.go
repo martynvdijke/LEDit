@@ -7,4 +7,5 @@ type Theme struct {
 	TextColor       [3]uint8
 	Title           string
 	FontSize        float64
+	FontPath        string
 }

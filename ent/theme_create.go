@@ -124,6 +124,20 @@ func (_c *ThemeCreate) SetNillableIsDefault(v *bool) *ThemeCreate {
 	return _c
 }
 
+// SetFontName sets the "font_name" field.
+func (_c *ThemeCreate) SetFontName(v string) *ThemeCreate {
+	_c.mutation.SetFontName(v)
+	return _c
+}
+
+// SetNillableFontName sets the "font_name" field if the given value is not nil.
+func (_c *ThemeCreate) SetNillableFontName(v *string) *ThemeCreate {
+	if v != nil {
+		_c.SetFontName(*v)
+	}
+	return _c
+}
+
 // AddAssignmentIDs adds the "assignments" edge to the ThemeAssignment entity by IDs.
 func (_c *ThemeCreate) AddAssignmentIDs(ids ...int) *ThemeCreate {
 	_c.mutation.AddAssignmentIDs(ids...)
@@ -202,6 +216,10 @@ func (_c *ThemeCreate) defaults() {
 		v := theme.DefaultIsDefault
 		_c.mutation.SetIsDefault(v)
 	}
+	if _, ok := _c.mutation.FontName(); !ok {
+		v := theme.DefaultFontName
+		_c.mutation.SetFontName(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -260,6 +278,9 @@ func (_c *ThemeCreate) check() error {
 	if _, ok := _c.mutation.IsDefault(); !ok {
 		return &ValidationError{Name: "is_default", err: errors.New(`ent: missing required field "Theme.is_default"`)}
 	}
+	if _, ok := _c.mutation.FontName(); !ok {
+		return &ValidationError{Name: "font_name", err: errors.New(`ent: missing required field "Theme.font_name"`)}
+	}
 	return nil
 }
 
@@ -317,6 +338,10 @@ func (_c *ThemeCreate) createSpec() (*Theme, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IsDefault(); ok {
 		_spec.SetField(theme.FieldIsDefault, field.TypeBool, value)
 		_node.IsDefault = value
+	}
+	if value, ok := _c.mutation.FontName(); ok {
+		_spec.SetField(theme.FieldFontName, field.TypeString, value)
+		_node.FontName = value
 	}
 	if nodes := _c.mutation.AssignmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

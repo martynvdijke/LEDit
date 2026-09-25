@@ -7,11 +7,15 @@ import (
 
 // PixelMapConfig controls FrameToPixels mapping.
 type PixelMapConfig struct {
-	Width, Height int
-	ColorOrder    string
-	Gamma         float64
-	Serpentine    bool
-	OriginTop     bool
+	Width, Height    int
+	ColorOrder       string
+	Gamma            float64
+	Serpentine       bool
+	OriginTop        bool
+	Bilinear         bool
+	PanelCols        int
+	PanelGammas      []float64
+	PanelColorOrders []string
 }
 
 // GammaLUT builds a gamma correction lookup table.
@@ -58,14 +62,37 @@ func FrameToPixels(img *image.NRGBA, cfg PixelMapConfig) []byte {
 	sb := img.Bounds()
 	sw, sh := sb.Dx(), sb.Dy()
 	if sw != w || sh != h {
-		scaled = scaleNearestNeighbor(img, w, h)
+		if cfg.Bilinear {
+			scaled = scaleBilinear(img, w, h)
+		} else {
+			scaled = scaleNearestNeighbor(img, w, h)
+		}
 	}
 
-	// Build LUT if needed.
+	// Build LUTs: per-panel if applicable, else global.
 	var lut *[256]byte
 	useLUT := cfg.Gamma != 1 && cfg.Gamma > 0 && cfg.Gamma != 0
 	if useLUT {
 		lut = GammaLUT(cfg.Gamma)
+	}
+	var panelLUTs []*[256]byte
+	var panelCOs []string
+	if cfg.PanelCols > 1 && (len(cfg.PanelGammas) > 0 || len(cfg.PanelColorOrders) > 0) {
+		panelLUTs = make([]*[256]byte, cfg.PanelCols)
+		panelCOs = make([]string, cfg.PanelCols)
+		for i := 0; i < cfg.PanelCols; i++ {
+			if i < len(cfg.PanelGammas) && cfg.PanelGammas[i] > 0 {
+				// Gamma==1 yields an identity LUT, which explicitly overrides
+				// any device-level gamma for this panel.
+				panelLUTs[i] = GammaLUT(cfg.PanelGammas[i])
+			}
+			if i < len(cfg.PanelColorOrders) {
+				co := cfg.PanelColorOrders[i]
+				if co == "RGB" || co == "GRB" || co == "BGR" {
+					panelCOs[i] = co
+				}
+			}
+		}
 	}
 
 	for row := 0; row < h; row++ {
@@ -88,13 +115,32 @@ func FrameToPixels(img *image.NRGBA, cfg PixelMapConfig) []byte {
 			r := scaled.Pix[si+0]
 			g := scaled.Pix[si+1]
 			b := scaled.Pix[si+2]
-			if useLUT {
-				r = lut[r]
-				g = lut[g]
-				b = lut[b]
+			// Per-panel overrides.
+			effLUT := lut
+			effCO := cfg.ColorOrder
+			if cfg.PanelCols > 1 && len(panelLUTs) > 0 {
+				panelIdx := (col * cfg.PanelCols) / w
+				if panelIdx < 0 {
+					panelIdx = 0
+				}
+				if panelIdx >= cfg.PanelCols {
+					panelIdx = cfg.PanelCols - 1
+				}
+				// nil entry = no per-panel override; keep device-level value.
+				if panelLUTs[panelIdx] != nil {
+					effLUT = panelLUTs[panelIdx]
+				}
+				if panelCOs[panelIdx] != "" {
+					effCO = panelCOs[panelIdx]
+				}
+			}
+			if effLUT != nil {
+				r = effLUT[r]
+				g = effLUT[g]
+				b = effLUT[b]
 			}
 			off := start + col*3
-			switch cfg.ColorOrder {
+			switch effCO {
 			case "GRB":
 				out[off+0] = g
 				out[off+1] = r

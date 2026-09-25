@@ -427,6 +427,9 @@ var (
 		{Name: "output_color_order", Type: field.TypeString, Default: "RGB"},
 		{Name: "output_gamma", Type: field.TypeFloat64, Default: 1},
 		{Name: "output_matrix_layout", Type: field.TypeString, Default: "row-major"},
+		{Name: "output_bilinear", Type: field.TypeBool, Default: false},
+		{Name: "output_panel_gammas", Type: field.TypeString, Size: 2147483647, Default: "[]"},
+		{Name: "output_panel_color_orders", Type: field.TypeString, Size: 2147483647, Default: "[]"},
 		{Name: "fingerprint", Type: field.TypeString, Default: ""},
 		{Name: "approved_at", Type: field.TypeTime, Nullable: true},
 		{Name: "firmware_version", Type: field.TypeString, Default: ""},
@@ -444,13 +447,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "device_settings_device_groups_devices",
-				Columns:    []*schema.Column{DeviceSettingsColumns[49]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[52]},
 				RefColumns: []*schema.Column{DeviceGroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "device_settings_general_settings_device_settings",
-				Columns:    []*schema.Column{DeviceSettingsColumns[50]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[53]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -1546,6 +1549,7 @@ var (
 		{Name: "font_size", Type: field.TypeFloat64, Default: 24},
 		{Name: "built_in", Type: field.TypeBool, Default: false},
 		{Name: "is_default", Type: field.TypeBool, Default: false},
+		{Name: "font_name", Type: field.TypeString, Default: ""},
 	}
 	// ThemesTable holds the schema information for the "themes" table.
 	ThemesTable = &schema.Table{

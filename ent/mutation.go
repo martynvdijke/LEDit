@@ -11464,81 +11464,84 @@ func (m *DeviceMessageStateMutation) ResetEdge(name string) error {
 // DeviceSettingsMutation represents an operation that mutates the DeviceSettings nodes in the graph.
 type DeviceSettingsMutation struct {
 	config
-	op                       Op
-	typ                      string
-	id                       *int
-	name                     *string
-	ip                       *string
-	port                     *int
-	addport                  *int
-	username                 *string
-	password                 *string
-	width                    *int
-	addwidth                 *int
-	height                   *int
-	addheight                *int
-	panel_cols               *int
-	addpanel_cols            *int
-	panel_gap                *int
-	addpanel_gap             *int
-	enabled                  *bool
-	token                    *string
-	refresh_interval         *int
-	addrefresh_interval      *int
-	last_seen_at             *time.Time
-	frames_served            *int
-	addframes_served         *int
-	content_mode             *string
-	playlist_id              *int
-	addplaylist_id           *int
-	scheduled_playlist_ids   *string
-	fallback_playlist_id     *int
-	addfallback_playlist_id  *int
-	brightness_enabled       *bool
-	brightness_schedules     *string
-	brightness_override      *int
-	addbrightness_override   *int
-	brightness_sensor_config *string
-	idle_screensaver         *string
-	overlay_enabled          *bool
-	overlay_position         *string
-	overlay_height           *int
-	addoverlay_height        *int
-	overlay_text             *string
-	overlay_speed_px         *int
-	addoverlay_speed_px      *int
-	overlay_bg               *string
-	overlay_fg               *string
-	transport                *string
-	wled_host                *string
-	wled_port                *int
-	addwled_port             *int
-	wled_realtime_mode       *string
-	wled_channel             *int
-	addwled_channel          *int
-	artnet_host              *string
-	artnet_port              *int
-	addartnet_port           *int
-	artnet_universe          *int
-	addartnet_universe       *int
-	output_fps               *int
-	addoutput_fps            *int
-	output_color_order       *string
-	output_gamma             *float64
-	addoutput_gamma          *float64
-	output_matrix_layout     *string
-	fingerprint              *string
-	approved_at              *time.Time
-	firmware_version         *string
-	firmware_version_pin     *string
-	last_update_status       *string
-	last_update_at           *time.Time
-	clearedFields            map[string]struct{}
-	group                    *int
-	clearedgroup             bool
-	done                     bool
-	oldValue                 func(context.Context) (*DeviceSettings, error)
-	predicates               []predicate.DeviceSettings
+	op                        Op
+	typ                       string
+	id                        *int
+	name                      *string
+	ip                        *string
+	port                      *int
+	addport                   *int
+	username                  *string
+	password                  *string
+	width                     *int
+	addwidth                  *int
+	height                    *int
+	addheight                 *int
+	panel_cols                *int
+	addpanel_cols             *int
+	panel_gap                 *int
+	addpanel_gap              *int
+	enabled                   *bool
+	token                     *string
+	refresh_interval          *int
+	addrefresh_interval       *int
+	last_seen_at              *time.Time
+	frames_served             *int
+	addframes_served          *int
+	content_mode              *string
+	playlist_id               *int
+	addplaylist_id            *int
+	scheduled_playlist_ids    *string
+	fallback_playlist_id      *int
+	addfallback_playlist_id   *int
+	brightness_enabled        *bool
+	brightness_schedules      *string
+	brightness_override       *int
+	addbrightness_override    *int
+	brightness_sensor_config  *string
+	idle_screensaver          *string
+	overlay_enabled           *bool
+	overlay_position          *string
+	overlay_height            *int
+	addoverlay_height         *int
+	overlay_text              *string
+	overlay_speed_px          *int
+	addoverlay_speed_px       *int
+	overlay_bg                *string
+	overlay_fg                *string
+	transport                 *string
+	wled_host                 *string
+	wled_port                 *int
+	addwled_port              *int
+	wled_realtime_mode        *string
+	wled_channel              *int
+	addwled_channel           *int
+	artnet_host               *string
+	artnet_port               *int
+	addartnet_port            *int
+	artnet_universe           *int
+	addartnet_universe        *int
+	output_fps                *int
+	addoutput_fps             *int
+	output_color_order        *string
+	output_gamma              *float64
+	addoutput_gamma           *float64
+	output_matrix_layout      *string
+	output_bilinear           *bool
+	output_panel_gammas       *string
+	output_panel_color_orders *string
+	fingerprint               *string
+	approved_at               *time.Time
+	firmware_version          *string
+	firmware_version_pin      *string
+	last_update_status        *string
+	last_update_at            *time.Time
+	clearedFields             map[string]struct{}
+	group                     *int
+	clearedgroup              bool
+	done                      bool
+	oldValue                  func(context.Context) (*DeviceSettings, error)
+	predicates                []predicate.DeviceSettings
 }
 
 var _ ent.Mutation = (*DeviceSettingsMutation)(nil)
@@ -13641,6 +13644,114 @@ func (m *DeviceSettingsMutation) ResetOutputMatrixLayout() {
 	m.output_matrix_layout = nil
 }
 
+// SetOutputBilinear sets the "output_bilinear" field.
+func (m *DeviceSettingsMutation) SetOutputBilinear(b bool) {
+	m.output_bilinear = &b
+}
+
+// OutputBilinear returns the value of the "output_bilinear" field in the mutation.
+func (m *DeviceSettingsMutation) OutputBilinear() (r bool, exists bool) {
+	v := m.output_bilinear
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOutputBilinear returns the old "output_bilinear" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldOutputBilinear(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOutputBilinear is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOutputBilinear requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOutputBilinear: %w", err)
+	}
+	return oldValue.OutputBilinear, nil
+}
+
+// ResetOutputBilinear resets all changes to the "output_bilinear" field.
+func (m *DeviceSettingsMutation) ResetOutputBilinear() {
+	m.output_bilinear = nil
+}
+
+// SetOutputPanelGammas sets the "output_panel_gammas" field.
+func (m *DeviceSettingsMutation) SetOutputPanelGammas(s string) {
+	m.output_panel_gammas = &s
+}
+
+// OutputPanelGammas returns the value of the "output_panel_gammas" field in the mutation.
+func (m *DeviceSettingsMutation) OutputPanelGammas() (r string, exists bool) {
+	v := m.output_panel_gammas
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOutputPanelGammas returns the old "output_panel_gammas" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldOutputPanelGammas(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOutputPanelGammas is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOutputPanelGammas requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOutputPanelGammas: %w", err)
+	}
+	return oldValue.OutputPanelGammas, nil
+}
+
+// ResetOutputPanelGammas resets all changes to the "output_panel_gammas" field.
+func (m *DeviceSettingsMutation) ResetOutputPanelGammas() {
+	m.output_panel_gammas = nil
+}
+
+// SetOutputPanelColorOrders sets the "output_panel_color_orders" field.
+func (m *DeviceSettingsMutation) SetOutputPanelColorOrders(s string) {
+	m.output_panel_color_orders = &s
+}
+
+// OutputPanelColorOrders returns the value of the "output_panel_color_orders" field in the mutation.
+func (m *DeviceSettingsMutation) OutputPanelColorOrders() (r string, exists bool) {
+	v := m.output_panel_color_orders
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOutputPanelColorOrders returns the old "output_panel_color_orders" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldOutputPanelColorOrders(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOutputPanelColorOrders is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOutputPanelColorOrders requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOutputPanelColorOrders: %w", err)
+	}
+	return oldValue.OutputPanelColorOrders, nil
+}
+
+// ResetOutputPanelColorOrders resets all changes to the "output_panel_color_orders" field.
+func (m *DeviceSettingsMutation) ResetOutputPanelColorOrders() {
+	m.output_panel_color_orders = nil
+}
+
 // SetFingerprint sets the "fingerprint" field.
 func (m *DeviceSettingsMutation) SetFingerprint(s string) {
 	m.fingerprint = &s
@@ -13957,7 +14068,7 @@ func (m *DeviceSettingsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DeviceSettingsMutation) Fields() []string {
-	fields := make([]string, 0, 49)
+	fields := make([]string, 0, 52)
 	if m.name != nil {
 		fields = append(fields, devicesettings.FieldName)
 	}
@@ -14087,6 +14198,15 @@ func (m *DeviceSettingsMutation) Fields() []string {
 	if m.output_matrix_layout != nil {
 		fields = append(fields, devicesettings.FieldOutputMatrixLayout)
 	}
+	if m.output_bilinear != nil {
+		fields = append(fields, devicesettings.FieldOutputBilinear)
+	}
+	if m.output_panel_gammas != nil {
+		fields = append(fields, devicesettings.FieldOutputPanelGammas)
+	}
+	if m.output_panel_color_orders != nil {
+		fields = append(fields, devicesettings.FieldOutputPanelColorOrders)
+	}
 	if m.fingerprint != nil {
 		fields = append(fields, devicesettings.FieldFingerprint)
 	}
@@ -14199,6 +14319,12 @@ func (m *DeviceSettingsMutation) Field(name string) (ent.Value, bool) {
 		return m.OutputGamma()
 	case devicesettings.FieldOutputMatrixLayout:
 		return m.OutputMatrixLayout()
+	case devicesettings.FieldOutputBilinear:
+		return m.OutputBilinear()
+	case devicesettings.FieldOutputPanelGammas:
+		return m.OutputPanelGammas()
+	case devicesettings.FieldOutputPanelColorOrders:
+		return m.OutputPanelColorOrders()
 	case devicesettings.FieldFingerprint:
 		return m.Fingerprint()
 	case devicesettings.FieldApprovedAt:
@@ -14306,6 +14432,12 @@ func (m *DeviceSettingsMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldOutputGamma(ctx)
 	case devicesettings.FieldOutputMatrixLayout:
 		return m.OldOutputMatrixLayout(ctx)
+	case devicesettings.FieldOutputBilinear:
+		return m.OldOutputBilinear(ctx)
+	case devicesettings.FieldOutputPanelGammas:
+		return m.OldOutputPanelGammas(ctx)
+	case devicesettings.FieldOutputPanelColorOrders:
+		return m.OldOutputPanelColorOrders(ctx)
 	case devicesettings.FieldFingerprint:
 		return m.OldFingerprint(ctx)
 	case devicesettings.FieldApprovedAt:
@@ -14627,6 +14759,27 @@ func (m *DeviceSettingsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOutputMatrixLayout(v)
+		return nil
+	case devicesettings.FieldOutputBilinear:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOutputBilinear(v)
+		return nil
+	case devicesettings.FieldOutputPanelGammas:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOutputPanelGammas(v)
+		return nil
+	case devicesettings.FieldOutputPanelColorOrders:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOutputPanelColorOrders(v)
 		return nil
 	case devicesettings.FieldFingerprint:
 		v, ok := value.(string)
@@ -15129,6 +15282,15 @@ func (m *DeviceSettingsMutation) ResetField(name string) error {
 		return nil
 	case devicesettings.FieldOutputMatrixLayout:
 		m.ResetOutputMatrixLayout()
+		return nil
+	case devicesettings.FieldOutputBilinear:
+		m.ResetOutputBilinear()
+		return nil
+	case devicesettings.FieldOutputPanelGammas:
+		m.ResetOutputPanelGammas()
+		return nil
+	case devicesettings.FieldOutputPanelColorOrders:
+		m.ResetOutputPanelColorOrders()
 		return nil
 	case devicesettings.FieldFingerprint:
 		m.ResetFingerprint()
@@ -47708,6 +47870,7 @@ type ThemeMutation struct {
 	addfont_size       *float64
 	built_in           *bool
 	is_default         *bool
+	font_name          *string
 	clearedFields      map[string]struct{}
 	assignments        map[int]struct{}
 	removedassignments map[int]struct{}
@@ -48123,6 +48286,42 @@ func (m *ThemeMutation) ResetIsDefault() {
 	m.is_default = nil
 }
 
+// SetFontName sets the "font_name" field.
+func (m *ThemeMutation) SetFontName(s string) {
+	m.font_name = &s
+}
+
+// FontName returns the value of the "font_name" field in the mutation.
+func (m *ThemeMutation) FontName() (r string, exists bool) {
+	v := m.font_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFontName returns the old "font_name" field's value of the Theme entity.
+// If the Theme object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThemeMutation) OldFontName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFontName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFontName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFontName: %w", err)
+	}
+	return oldValue.FontName, nil
+}
+
+// ResetFontName resets all changes to the "font_name" field.
+func (m *ThemeMutation) ResetFontName() {
+	m.font_name = nil
+}
+
 // AddAssignmentIDs adds the "assignments" edge to the ThemeAssignment entity by ids.
 func (m *ThemeMutation) AddAssignmentIDs(ids ...int) {
 	if m.assignments == nil {
@@ -48211,7 +48410,7 @@ func (m *ThemeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ThemeMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.name != nil {
 		fields = append(fields, theme.FieldName)
 	}
@@ -48235,6 +48434,9 @@ func (m *ThemeMutation) Fields() []string {
 	}
 	if m.is_default != nil {
 		fields = append(fields, theme.FieldIsDefault)
+	}
+	if m.font_name != nil {
+		fields = append(fields, theme.FieldFontName)
 	}
 	return fields
 }
@@ -48260,6 +48462,8 @@ func (m *ThemeMutation) Field(name string) (ent.Value, bool) {
 		return m.BuiltIn()
 	case theme.FieldIsDefault:
 		return m.IsDefault()
+	case theme.FieldFontName:
+		return m.FontName()
 	}
 	return nil, false
 }
@@ -48285,6 +48489,8 @@ func (m *ThemeMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldBuiltIn(ctx)
 	case theme.FieldIsDefault:
 		return m.OldIsDefault(ctx)
+	case theme.FieldFontName:
+		return m.OldFontName(ctx)
 	}
 	return nil, fmt.Errorf("unknown Theme field %s", name)
 }
@@ -48349,6 +48555,13 @@ func (m *ThemeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsDefault(v)
+		return nil
+	case theme.FieldFontName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFontName(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Theme field %s", name)
@@ -48437,6 +48650,9 @@ func (m *ThemeMutation) ResetField(name string) error {
 		return nil
 	case theme.FieldIsDefault:
 		m.ResetIsDefault()
+		return nil
+	case theme.FieldFontName:
+		m.ResetFontName()
 		return nil
 	}
 	return fmt.Errorf("unknown Theme field %s", name)

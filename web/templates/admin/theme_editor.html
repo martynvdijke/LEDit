@@ -39,6 +39,13 @@
                             <label for="font_size" class="form-label">Font Size</label>
                             <input type="number" class="form-control" id="font_size" name="font_size" min="8" max="100" step="1" value="{{if .theme}}{{.theme.FontSize}}{{else}}24{{end}}" {{if .theme}}{{if .theme.BuiltIn}}disabled{{end}}{{end}}>
                         </div>
+                        <div class="mb-3">
+                            <label for="font_name" class="form-label">Font</label>
+                            <select class="form-select" id="font_name" name="font_name" {{if .theme}}{{if .theme.BuiltIn}}disabled{{end}}{{end}}>
+                                <option value="">Default</option>
+                                {{range .fonts}}<option value="{{.}}" {{if $.theme}}{{if eq $.theme.FontName .}}selected{{end}}{{end}}>{{.}}</option>{{end}}
+                            </select>
+                        </div>
                         {{if not .theme}}
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="is_default" name="is_default">

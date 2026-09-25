@@ -61,6 +61,9 @@ func RenderPanel(data map[string]string, width, height int, theme Theme, fontPat
 	// Font scaled to panel height.
 	size := PanelFontSize(height)
 	theme.FontSize = size
+	if theme.FontPath != "" {
+		fontPath = theme.FontPath
+	}
 	face, fontErr := loadFont(fontPath, size)
 	margin := width / 10
 	if margin < 4 {

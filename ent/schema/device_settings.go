@@ -108,6 +108,9 @@ func (DeviceSettings) Fields() []ent.Field {
 				return fmt.Errorf("output_matrix_layout must be one of row-major, serpentine")
 			}
 		}),
+		field.Bool("output_bilinear").Default(false),
+		field.Text("output_panel_gammas").Default("[]"),
+		field.Text("output_panel_color_orders").Default("[]"),
 		// discovery / enrollment
 		field.String("fingerprint").Default(""),
 		field.Time("approved_at").Optional().Nillable(),

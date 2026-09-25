@@ -32,6 +32,8 @@ type Theme struct {
 	BuiltIn bool `json:"built_in,omitempty"`
 	// IsDefault holds the value of the "is_default" field.
 	IsDefault bool `json:"is_default,omitempty"`
+	// FontName holds the value of the "font_name" field.
+	FontName string `json:"font_name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ThemeQuery when eager-loading is set.
 	Edges        ThemeEdges `json:"edges"`
@@ -67,7 +69,7 @@ func (*Theme) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case theme.FieldID:
 			values[i] = new(sql.NullInt64)
-		case theme.FieldName, theme.FieldBgColor, theme.FieldAccentColor, theme.FieldTextColor, theme.FieldTitle:
+		case theme.FieldName, theme.FieldBgColor, theme.FieldAccentColor, theme.FieldTextColor, theme.FieldTitle, theme.FieldFontName:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -138,6 +140,12 @@ func (_m *Theme) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.IsDefault = value.Bool
 			}
+		case theme.FieldFontName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field font_name", values[i])
+			} else if value.Valid {
+				_m.FontName = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -202,6 +210,9 @@ func (_m *Theme) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("is_default=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsDefault))
+	builder.WriteString(", ")
+	builder.WriteString("font_name=")
+	builder.WriteString(_m.FontName)
 	builder.WriteByte(')')
 	return builder.String()
 }

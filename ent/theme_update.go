@@ -147,6 +147,20 @@ func (_u *ThemeUpdate) SetNillableIsDefault(v *bool) *ThemeUpdate {
 	return _u
 }
 
+// SetFontName sets the "font_name" field.
+func (_u *ThemeUpdate) SetFontName(v string) *ThemeUpdate {
+	_u.mutation.SetFontName(v)
+	return _u
+}
+
+// SetNillableFontName sets the "font_name" field if the given value is not nil.
+func (_u *ThemeUpdate) SetNillableFontName(v *string) *ThemeUpdate {
+	if v != nil {
+		_u.SetFontName(*v)
+	}
+	return _u
+}
+
 // AddAssignmentIDs adds the "assignments" edge to the ThemeAssignment entity by IDs.
 func (_u *ThemeUpdate) AddAssignmentIDs(ids ...int) *ThemeUpdate {
 	_u.mutation.AddAssignmentIDs(ids...)
@@ -288,6 +302,9 @@ func (_u *ThemeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.IsDefault(); ok {
 		_spec.SetField(theme.FieldIsDefault, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.FontName(); ok {
+		_spec.SetField(theme.FieldFontName, field.TypeString, value)
 	}
 	if _u.mutation.AssignmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -473,6 +490,20 @@ func (_u *ThemeUpdateOne) SetNillableIsDefault(v *bool) *ThemeUpdateOne {
 	return _u
 }
 
+// SetFontName sets the "font_name" field.
+func (_u *ThemeUpdateOne) SetFontName(v string) *ThemeUpdateOne {
+	_u.mutation.SetFontName(v)
+	return _u
+}
+
+// SetNillableFontName sets the "font_name" field if the given value is not nil.
+func (_u *ThemeUpdateOne) SetNillableFontName(v *string) *ThemeUpdateOne {
+	if v != nil {
+		_u.SetFontName(*v)
+	}
+	return _u
+}
+
 // AddAssignmentIDs adds the "assignments" edge to the ThemeAssignment entity by IDs.
 func (_u *ThemeUpdateOne) AddAssignmentIDs(ids ...int) *ThemeUpdateOne {
 	_u.mutation.AddAssignmentIDs(ids...)
@@ -644,6 +675,9 @@ func (_u *ThemeUpdateOne) sqlSave(ctx context.Context) (_node *Theme, err error)
 	}
 	if value, ok := _u.mutation.IsDefault(); ok {
 		_spec.SetField(theme.FieldIsDefault, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.FontName(); ok {
+		_spec.SetField(theme.FieldFontName, field.TypeString, value)
 	}
 	if _u.mutation.AssignmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{

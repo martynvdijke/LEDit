@@ -28,6 +28,8 @@ const (
 	FieldBuiltIn = "built_in"
 	// FieldIsDefault holds the string denoting the is_default field in the database.
 	FieldIsDefault = "is_default"
+	// FieldFontName holds the string denoting the font_name field in the database.
+	FieldFontName = "font_name"
 	// EdgeAssignments holds the string denoting the assignments edge name in mutations.
 	EdgeAssignments = "assignments"
 	// Table holds the table name of the theme in the database.
@@ -52,6 +54,7 @@ var Columns = []string{
 	FieldFontSize,
 	FieldBuiltIn,
 	FieldIsDefault,
+	FieldFontName,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -91,6 +94,8 @@ var (
 	DefaultBuiltIn bool
 	// DefaultIsDefault holds the default value on creation for the "is_default" field.
 	DefaultIsDefault bool
+	// DefaultFontName holds the default value on creation for the "font_name" field.
+	DefaultFontName string
 )
 
 // OrderOption defines the ordering options for the Theme queries.
@@ -139,6 +144,11 @@ func ByBuiltIn(opts ...sql.OrderTermOption) OrderOption {
 // ByIsDefault orders the results by the is_default field.
 func ByIsDefault(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsDefault, opts...).ToFunc()
+}
+
+// ByFontName orders the results by the font_name field.
+func ByFontName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFontName, opts...).ToFunc()
 }
 
 // ByAssignmentsCount orders the results by assignments count.
