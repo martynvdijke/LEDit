@@ -1,3 +1,10 @@
+# [1.48.0](https://github.com/martynvdijke/LEDit/compare/v1.47.0...v1.48.0) (2026-09-25)
+
+
+### Features
+
+* control plane — actuation, rule then-actions, scene control steps ([b4cadc2](https://github.com/martynvdijke/LEDit/commit/b4cadc298bcf55eafdb6d9c9180e94c4fec83586))
+
 # [1.47.0](https://github.com/martynvdijke/LEDit/compare/v1.46.0...v1.47.0) (2026-09-25)
 
 
