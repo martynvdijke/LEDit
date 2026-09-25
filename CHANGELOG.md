@@ -1,3 +1,10 @@
+# [1.47.0](https://github.com/martynvdijke/LEDit/compare/v1.46.0...v1.47.0) (2026-09-25)
+
+
+### Features
+
+* content expansion — adguard, frigate, zigbee2mqtt, transmission, proxmox, waste, airquality, parcel ([0d4d50d](https://github.com/martynvdijke/LEDit/commit/0d4d50da2641f05025febc78a1e83cc09bf74000))
+
 # [1.46.0](https://github.com/martynvdijke/LEDit/compare/v1.45.4...v1.46.0) (2026-09-25)
 
 
