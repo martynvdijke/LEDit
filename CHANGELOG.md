@@ -1,3 +1,10 @@
+# [1.53.0](https://github.com/martynvdijke/LEDit/compare/v1.52.0...v1.53.0) (2026-09-25)
+
+
+### Features
+
+* rendering quality — bilinear scaling, theme fonts, per-panel palette ([7ef7db2](https://github.com/martynvdijke/LEDit/commit/7ef7db29d8f03f2659be009a63033b5af432c06a))
+
 # [1.52.0](https://github.com/martynvdijke/LEDit/compare/v1.51.0...v1.52.0) (2026-09-25)
 
 
