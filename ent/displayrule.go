@@ -31,7 +31,9 @@ type DisplayRule struct {
 	// CheckIntervalSeconds holds the value of the "check_interval_seconds" field.
 	CheckIntervalSeconds int `json:"check_interval_seconds,omitempty"`
 	// CooldownSeconds holds the value of the "cooldown_seconds" field.
-	CooldownSeconds               int `json:"cooldown_seconds,omitempty"`
+	CooldownSeconds int `json:"cooldown_seconds,omitempty"`
+	// ThenActions holds the value of the "then_actions" field.
+	ThenActions                   string `json:"then_actions,omitempty"`
 	general_settings_displayrules *int
 	selectValues                  sql.SelectValues
 }
@@ -45,7 +47,7 @@ func (*DisplayRule) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case displayrule.FieldID, displayrule.FieldSourceID, displayrule.FieldCheckIntervalSeconds, displayrule.FieldCooldownSeconds:
 			values[i] = new(sql.NullInt64)
-		case displayrule.FieldName, displayrule.FieldSourceType, displayrule.FieldCondition, displayrule.FieldStatePath:
+		case displayrule.FieldName, displayrule.FieldSourceType, displayrule.FieldCondition, displayrule.FieldStatePath, displayrule.FieldThenActions:
 			values[i] = new(sql.NullString)
 		case displayrule.ForeignKeys[0]: // general_settings_displayrules
 			values[i] = new(sql.NullInt64)
@@ -118,6 +120,12 @@ func (_m *DisplayRule) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.CooldownSeconds = int(value.Int64)
 			}
+		case displayrule.FieldThenActions:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field then_actions", values[i])
+			} else if value.Valid {
+				_m.ThenActions = value.String
+			}
 		case displayrule.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field general_settings_displayrules", value)
@@ -184,6 +192,9 @@ func (_m *DisplayRule) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("cooldown_seconds=")
 	builder.WriteString(fmt.Sprintf("%v", _m.CooldownSeconds))
+	builder.WriteString(", ")
+	builder.WriteString("then_actions=")
+	builder.WriteString(_m.ThenActions)
 	builder.WriteByte(')')
 	return builder.String()
 }

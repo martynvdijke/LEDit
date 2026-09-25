@@ -131,6 +131,20 @@ func (_c *DisplayRuleCreate) SetNillableCooldownSeconds(v *int) *DisplayRuleCrea
 	return _c
 }
 
+// SetThenActions sets the "then_actions" field.
+func (_c *DisplayRuleCreate) SetThenActions(v string) *DisplayRuleCreate {
+	_c.mutation.SetThenActions(v)
+	return _c
+}
+
+// SetNillableThenActions sets the "then_actions" field if the given value is not nil.
+func (_c *DisplayRuleCreate) SetNillableThenActions(v *string) *DisplayRuleCreate {
+	if v != nil {
+		_c.SetThenActions(*v)
+	}
+	return _c
+}
+
 // Mutation returns the DisplayRuleMutation object of the builder.
 func (_c *DisplayRuleCreate) Mutation() *DisplayRuleMutation {
 	return _c.mutation
@@ -198,6 +212,10 @@ func (_c *DisplayRuleCreate) defaults() {
 		v := displayrule.DefaultCooldownSeconds
 		_c.mutation.SetCooldownSeconds(v)
 	}
+	if _, ok := _c.mutation.ThenActions(); !ok {
+		v := displayrule.DefaultThenActions
+		_c.mutation.SetThenActions(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -235,6 +253,9 @@ func (_c *DisplayRuleCreate) check() error {
 		if err := displayrule.CooldownSecondsValidator(v); err != nil {
 			return &ValidationError{Name: "cooldown_seconds", err: fmt.Errorf(`ent: validator failed for field "DisplayRule.cooldown_seconds": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.ThenActions(); !ok {
+		return &ValidationError{Name: "then_actions", err: errors.New(`ent: missing required field "DisplayRule.then_actions"`)}
 	}
 	return nil
 }
@@ -293,6 +314,10 @@ func (_c *DisplayRuleCreate) createSpec() (*DisplayRule, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CooldownSeconds(); ok {
 		_spec.SetField(displayrule.FieldCooldownSeconds, field.TypeInt, value)
 		_node.CooldownSeconds = value
+	}
+	if value, ok := _c.mutation.ThenActions(); ok {
+		_spec.SetField(displayrule.FieldThenActions, field.TypeString, value)
+		_node.ThenActions = value
 	}
 	return _node, _spec
 }

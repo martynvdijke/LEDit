@@ -598,6 +598,10 @@ func init() {
 	displayrule.DefaultCooldownSeconds = displayruleDescCooldownSeconds.Default.(int)
 	// displayrule.CooldownSecondsValidator is a validator for the "cooldown_seconds" field. It is called by the builders before save.
 	displayrule.CooldownSecondsValidator = displayruleDescCooldownSeconds.Validators[0].(func(int) error)
+	// displayruleDescThenActions is the schema descriptor for then_actions field.
+	displayruleDescThenActions := displayruleFields[8].Descriptor()
+	// displayrule.DefaultThenActions holds the default value on creation for the then_actions field.
+	displayrule.DefaultThenActions = displayruleDescThenActions.Default.(string)
 	emailsettingsFields := schema.EmailSettings{}.Fields()
 	_ = emailsettingsFields
 	// emailsettingsDescUseTLS is the schema descriptor for use_tls field.

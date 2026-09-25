@@ -78,6 +78,43 @@
                     </div>
                 </div>
 
+                <fieldset class="border p-3 mb-3">
+                    <legend class="float-none w-auto px-2" style="font-size:1rem">Then (action)</legend>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="then_kind" class="form-label">Kind</label>
+                            <select class="form-select" id="then_kind" name="then_kind">
+                                <option value="none" {{if eq .fThenKind "none"}}selected{{end}}>none</option>
+                                <option value="scene" {{if eq .fThenKind "scene"}}selected{{end}}>scene</option>
+                                <option value="notification" {{if eq .fThenKind "notification"}}selected{{end}}>notification</option>
+                                <option value="webhook" {{if eq .fThenKind "webhook"}}selected{{end}}>webhook</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="then_scene_id" class="form-label">Scene ID</label>
+                            <input type="number" class="form-control" id="then_scene_id" name="then_scene_id" value="{{.fThenScene}}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="then_ttl_seconds" class="form-label">TTL seconds</label>
+                            <input type="number" class="form-control" id="then_ttl_seconds" name="then_ttl_seconds" min="0" value="{{.fThenTTL}}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="then_event" class="form-label">Event</label>
+                            <input type="text" class="form-control" id="then_event" name="then_event" placeholder="webhook event name" value="{{.fThenEvent}}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="then_title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="then_title" name="then_title" value="{{.fThenTitle}}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="then_message" class="form-label">Message</label>
+                            <input type="text" class="form-control" id="then_message" name="then_message" value="{{.fThenMsg}}">
+                        </div>
+                    </div>
+                </fieldset>
+
                 <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
                 <a href="/admin/eventrules" class="btn btn-secondary">Cancel</a>
             </form>

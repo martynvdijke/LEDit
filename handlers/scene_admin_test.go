@@ -117,6 +117,52 @@ func TestAdminScenePreview(t *testing.T) {
 	}
 }
 
+func TestAdminSceneCreateWithControls(t *testing.T) {
+	srv := newGroupTestServer(t)
+	cookie := loginGroupTest(t, srv)
+	srv.DB.GeneralSettings.Create().SetTimeout(60).SetRandom(false).SaveX(srv.Ctx)
+	form := url.Values{}
+	form.Set("name", "With Controls")
+	form.Set("enabled", "on")
+	form.Set("triggers", `[]`)
+	form.Set("source_type", "clock")
+	form.Set("source_id", "0")
+	form.Set("controls", `[{"source_type":"clock","source_id":0,"action":"call_service","params":{"entity_id":"light.kitchen"}}]`)
+	w := sceneFormRequest(t, srv, cookie, http.MethodPost, "/admin/scenes/new", form.Encode())
+	if w.Code != http.StatusFound {
+		t.Fatalf("expected 302 got %d body %s", w.Code, w.Body.String())
+	}
+	rows, _ := srv.DB.Scene.Query().All(srv.Ctx)
+	sc, _ := sceneFromEnt(rows[0])
+	if len(sc.Actions.Controls) != 1 || sc.Actions.Controls[0].Action != "call_service" {
+		t.Fatalf("unexpected controls %+v", sc.Actions.Controls)
+	}
+}
+
+func TestAdminSceneCreateRejectsTooManyControls(t *testing.T) {
+	srv := newGroupTestServer(t)
+	cookie := loginGroupTest(t, srv)
+	srv.DB.GeneralSettings.Create().SetTimeout(60).SetRandom(false).SaveX(srv.Ctx)
+	var ctrls string
+	ctrls = "["
+	for i := 0; i < 11; i++ {
+		if i > 0 {
+			ctrls += ","
+		}
+		ctrls += `{"source_type":"clock","source_id":0,"action":"call_service"}`
+	}
+	ctrls += "]"
+	form := url.Values{}
+	form.Set("name", "Too Many")
+	form.Set("enabled", "on")
+	form.Set("triggers", `[]`)
+	form.Set("controls", ctrls)
+	w := sceneFormRequest(t, srv, cookie, http.MethodPost, "/admin/scenes/new", form.Encode())
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for too many controls, got %d", w.Code)
+	}
+}
+
 func TestSceneConditionStatus(t *testing.T) {
 	states := map[string]string{"sensor.temp": "26", "binary_sensor.motion": "on", "sensor.unknown": "unavailable"}
 	cases := []struct {

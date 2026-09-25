@@ -13931,6 +13931,7 @@ type DisplayRuleMutation struct {
 	addcheck_interval_seconds *int
 	cooldown_seconds          *int
 	addcooldown_seconds       *int
+	then_actions              *string
 	clearedFields             map[string]struct{}
 	done                      bool
 	oldValue                  func(context.Context) (*DisplayRule, error)
@@ -14383,6 +14384,42 @@ func (m *DisplayRuleMutation) ResetCooldownSeconds() {
 	m.addcooldown_seconds = nil
 }
 
+// SetThenActions sets the "then_actions" field.
+func (m *DisplayRuleMutation) SetThenActions(s string) {
+	m.then_actions = &s
+}
+
+// ThenActions returns the value of the "then_actions" field in the mutation.
+func (m *DisplayRuleMutation) ThenActions() (r string, exists bool) {
+	v := m.then_actions
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldThenActions returns the old "then_actions" field's value of the DisplayRule entity.
+// If the DisplayRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DisplayRuleMutation) OldThenActions(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldThenActions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldThenActions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldThenActions: %w", err)
+	}
+	return oldValue.ThenActions, nil
+}
+
+// ResetThenActions resets all changes to the "then_actions" field.
+func (m *DisplayRuleMutation) ResetThenActions() {
+	m.then_actions = nil
+}
+
 // Where appends a list predicates to the DisplayRuleMutation builder.
 func (m *DisplayRuleMutation) Where(ps ...predicate.DisplayRule) {
 	m.predicates = append(m.predicates, ps...)
@@ -14417,7 +14454,7 @@ func (m *DisplayRuleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DisplayRuleMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.name != nil {
 		fields = append(fields, displayrule.FieldName)
 	}
@@ -14441,6 +14478,9 @@ func (m *DisplayRuleMutation) Fields() []string {
 	}
 	if m.cooldown_seconds != nil {
 		fields = append(fields, displayrule.FieldCooldownSeconds)
+	}
+	if m.then_actions != nil {
+		fields = append(fields, displayrule.FieldThenActions)
 	}
 	return fields
 }
@@ -14466,6 +14506,8 @@ func (m *DisplayRuleMutation) Field(name string) (ent.Value, bool) {
 		return m.CheckIntervalSeconds()
 	case displayrule.FieldCooldownSeconds:
 		return m.CooldownSeconds()
+	case displayrule.FieldThenActions:
+		return m.ThenActions()
 	}
 	return nil, false
 }
@@ -14491,6 +14533,8 @@ func (m *DisplayRuleMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldCheckIntervalSeconds(ctx)
 	case displayrule.FieldCooldownSeconds:
 		return m.OldCooldownSeconds(ctx)
+	case displayrule.FieldThenActions:
+		return m.OldThenActions(ctx)
 	}
 	return nil, fmt.Errorf("unknown DisplayRule field %s", name)
 }
@@ -14555,6 +14599,13 @@ func (m *DisplayRuleMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCooldownSeconds(v)
+		return nil
+	case displayrule.FieldThenActions:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetThenActions(v)
 		return nil
 	}
 	return fmt.Errorf("unknown DisplayRule field %s", name)
@@ -14667,6 +14718,9 @@ func (m *DisplayRuleMutation) ResetField(name string) error {
 		return nil
 	case displayrule.FieldCooldownSeconds:
 		m.ResetCooldownSeconds()
+		return nil
+	case displayrule.FieldThenActions:
+		m.ResetThenActions()
 		return nil
 	}
 	return fmt.Errorf("unknown DisplayRule field %s", name)

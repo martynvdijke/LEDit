@@ -160,6 +160,20 @@ func (_u *DisplayRuleUpdate) AddCooldownSeconds(v int) *DisplayRuleUpdate {
 	return _u
 }
 
+// SetThenActions sets the "then_actions" field.
+func (_u *DisplayRuleUpdate) SetThenActions(v string) *DisplayRuleUpdate {
+	_u.mutation.SetThenActions(v)
+	return _u
+}
+
+// SetNillableThenActions sets the "then_actions" field if the given value is not nil.
+func (_u *DisplayRuleUpdate) SetNillableThenActions(v *string) *DisplayRuleUpdate {
+	if v != nil {
+		_u.SetThenActions(*v)
+	}
+	return _u
+}
+
 // Mutation returns the DisplayRuleMutation object of the builder.
 func (_u *DisplayRuleUpdate) Mutation() *DisplayRuleMutation {
 	return _u.mutation
@@ -251,6 +265,9 @@ func (_u *DisplayRuleUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if value, ok := _u.mutation.AddedCooldownSeconds(); ok {
 		_spec.AddField(displayrule.FieldCooldownSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ThenActions(); ok {
+		_spec.SetField(displayrule.FieldThenActions, field.TypeString, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -405,6 +422,20 @@ func (_u *DisplayRuleUpdateOne) AddCooldownSeconds(v int) *DisplayRuleUpdateOne 
 	return _u
 }
 
+// SetThenActions sets the "then_actions" field.
+func (_u *DisplayRuleUpdateOne) SetThenActions(v string) *DisplayRuleUpdateOne {
+	_u.mutation.SetThenActions(v)
+	return _u
+}
+
+// SetNillableThenActions sets the "then_actions" field if the given value is not nil.
+func (_u *DisplayRuleUpdateOne) SetNillableThenActions(v *string) *DisplayRuleUpdateOne {
+	if v != nil {
+		_u.SetThenActions(*v)
+	}
+	return _u
+}
+
 // Mutation returns the DisplayRuleMutation object of the builder.
 func (_u *DisplayRuleUpdateOne) Mutation() *DisplayRuleMutation {
 	return _u.mutation
@@ -526,6 +557,9 @@ func (_u *DisplayRuleUpdateOne) sqlSave(ctx context.Context) (_node *DisplayRule
 	}
 	if value, ok := _u.mutation.AddedCooldownSeconds(); ok {
 		_spec.AddField(displayrule.FieldCooldownSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ThenActions(); ok {
+		_spec.SetField(displayrule.FieldThenActions, field.TypeString, value)
 	}
 	_node = &DisplayRule{config: _u.config}
 	_spec.Assign = _node.assignValues

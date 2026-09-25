@@ -93,6 +93,11 @@ func CooldownSeconds(v int) predicate.DisplayRule {
 	return predicate.DisplayRule(sql.FieldEQ(FieldCooldownSeconds, v))
 }
 
+// ThenActions applies equality check predicate on the "then_actions" field. It's identical to ThenActionsEQ.
+func ThenActions(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEQ(FieldThenActions, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.DisplayRule {
 	return predicate.DisplayRule(sql.FieldEQ(FieldName, v))
@@ -481,6 +486,71 @@ func CooldownSecondsLT(v int) predicate.DisplayRule {
 // CooldownSecondsLTE applies the LTE predicate on the "cooldown_seconds" field.
 func CooldownSecondsLTE(v int) predicate.DisplayRule {
 	return predicate.DisplayRule(sql.FieldLTE(FieldCooldownSeconds, v))
+}
+
+// ThenActionsEQ applies the EQ predicate on the "then_actions" field.
+func ThenActionsEQ(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEQ(FieldThenActions, v))
+}
+
+// ThenActionsNEQ applies the NEQ predicate on the "then_actions" field.
+func ThenActionsNEQ(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldNEQ(FieldThenActions, v))
+}
+
+// ThenActionsIn applies the In predicate on the "then_actions" field.
+func ThenActionsIn(vs ...string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldIn(FieldThenActions, vs...))
+}
+
+// ThenActionsNotIn applies the NotIn predicate on the "then_actions" field.
+func ThenActionsNotIn(vs ...string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldNotIn(FieldThenActions, vs...))
+}
+
+// ThenActionsGT applies the GT predicate on the "then_actions" field.
+func ThenActionsGT(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldGT(FieldThenActions, v))
+}
+
+// ThenActionsGTE applies the GTE predicate on the "then_actions" field.
+func ThenActionsGTE(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldGTE(FieldThenActions, v))
+}
+
+// ThenActionsLT applies the LT predicate on the "then_actions" field.
+func ThenActionsLT(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldLT(FieldThenActions, v))
+}
+
+// ThenActionsLTE applies the LTE predicate on the "then_actions" field.
+func ThenActionsLTE(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldLTE(FieldThenActions, v))
+}
+
+// ThenActionsContains applies the Contains predicate on the "then_actions" field.
+func ThenActionsContains(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldContains(FieldThenActions, v))
+}
+
+// ThenActionsHasPrefix applies the HasPrefix predicate on the "then_actions" field.
+func ThenActionsHasPrefix(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldHasPrefix(FieldThenActions, v))
+}
+
+// ThenActionsHasSuffix applies the HasSuffix predicate on the "then_actions" field.
+func ThenActionsHasSuffix(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldHasSuffix(FieldThenActions, v))
+}
+
+// ThenActionsEqualFold applies the EqualFold predicate on the "then_actions" field.
+func ThenActionsEqualFold(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEqualFold(FieldThenActions, v))
+}
+
+// ThenActionsContainsFold applies the ContainsFold predicate on the "then_actions" field.
+func ThenActionsContainsFold(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldContainsFold(FieldThenActions, v))
 }
 
 // And groups predicates with the AND operator between them.

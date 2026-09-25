@@ -81,6 +81,12 @@
                     </div>
                 </div>
 
+                <div class="mb-3">
+                    <label for="controls" class="form-label">Controls (JSON array)</label>
+                    <textarea class="form-control" id="controls" name="controls" rows="4" placeholder='[{"source_type":"homeassistant","source_id":1,"action":"call_service","params":{"domain":"light","service":"turn_on","entity_id":"light.kitchen"}}]'>{{.fControls}}</textarea>
+                    <small class="text-muted">Optional: up to 10 controls executed when the scene activates. Each entry needs source_type, source_id, action, and optional params.</small>
+                </div>
+
                 <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
                 <a href="/admin/scenes" class="btn btn-secondary">Cancel</a>
             </form>

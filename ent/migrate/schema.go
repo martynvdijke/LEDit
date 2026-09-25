@@ -434,6 +434,7 @@ var (
 		{Name: "state_path", Type: field.TypeString, Default: ""},
 		{Name: "check_interval_seconds", Type: field.TypeInt, Default: 30},
 		{Name: "cooldown_seconds", Type: field.TypeInt, Default: 0},
+		{Name: "then_actions", Type: field.TypeString, Size: 2147483647, Default: "{}"},
 		{Name: "general_settings_displayrules", Type: field.TypeInt, Nullable: true},
 	}
 	// DisplayRulesTable holds the schema information for the "display_rules" table.
@@ -444,7 +445,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "display_rules_general_settings_displayrules",
-				Columns:    []*schema.Column{DisplayRulesColumns[9]},
+				Columns:    []*schema.Column{DisplayRulesColumns[10]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

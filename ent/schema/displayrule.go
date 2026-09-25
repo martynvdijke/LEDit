@@ -23,5 +23,6 @@ func (DisplayRule) Fields() []ent.Field {
 		field.String("state_path").Default(""),
 		field.Int("check_interval_seconds").Default(30).Min(5),
 		field.Int("cooldown_seconds").Default(0).Min(0),
+		field.Text("then_actions").Default("{}"),
 	}
 }

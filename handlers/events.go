@@ -15,6 +15,7 @@ const (
 	// Unified message lifecycle (additive): carries a Message in Event.Data.
 	EventMessageFired    = "message_fired"
 	EventMessageResolved = "message_resolved"
+	EventRuleTriggered   = "rule_triggered"
 )
 
 type Event struct {

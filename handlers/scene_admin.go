@@ -94,7 +94,7 @@ func (s *Server) sceneFormBase(c *gin.Context) gin.H {
 	}
 }
 
-func sceneFormVars(name string, enabled bool, priority int, ttl, triggers, srcType string, srcID int, playlistID, brightness, overlay string) gin.H {
+func sceneFormVars(name string, enabled bool, priority int, ttl, triggers, srcType string, srcID int, playlistID, brightness, overlay, controlsRaw string) gin.H {
 	return gin.H{
 		"fName":       name,
 		"fEnabled":    enabled,
@@ -106,6 +106,7 @@ func sceneFormVars(name string, enabled bool, priority int, ttl, triggers, srcTy
 		"fPlaylistID": playlistID,
 		"fBrightness": brightness,
 		"fOverlay":    overlay,
+		"fControls":   controlsRaw,
 	}
 }
 
@@ -148,14 +149,14 @@ func (s *Server) AdminSceneList(c *gin.Context) {
 
 func (s *Server) AdminSceneNew(c *gin.Context) {
 	vars := s.sceneFormBase(c)
-	for k, v := range sceneFormVars("", true, 0, "", "[]", "", 0, "", "", "") {
+	for k, v := range sceneFormVars("", true, 0, "", "[]", "", 0, "", "", "", "") {
 		vars[k] = v
 	}
 	s.renderPage(c, http.StatusOK, "scene_form.html", vars)
 }
 
 // validateSceneForm parses and validates trigger/action/ttl form values.
-func (s *Server) validateSceneForm(c *gin.Context, name, triggersRaw, ttlRaw, srcType string, srcID int, playlistRaw, brightnessRaw, overlay string) ([]TriggerGroup, *int, SceneActions, string) {
+func (s *Server) validateSceneForm(c *gin.Context, name, triggersRaw, ttlRaw, srcType string, srcID int, playlistRaw, brightnessRaw, overlay, controlsRaw string) ([]TriggerGroup, *int, SceneActions, string) {
 	var actions SceneActions
 	if strings.TrimSpace(name) == "" {
 		return nil, nil, actions, "name is required"
@@ -226,12 +227,45 @@ func (s *Server) validateSceneForm(c *gin.Context, name, triggersRaw, ttlRaw, sr
 		return nil, nil, actions, "overlay_text must be 200 characters or fewer"
 	}
 	actions.OverlayText = strings.TrimSpace(overlay)
+	// controls field: JSON array of SceneControl
+	controlsRaw = strings.TrimSpace(controlsRaw)
+	if controlsRaw != "" {
+		var controls []SceneControl
+		if err := json.Unmarshal([]byte(controlsRaw), &controls); err != nil {
+			return nil, nil, actions, "controls must be a JSON array"
+		}
+		if len(controls) > 10 {
+			return nil, nil, actions, "too many controls (max 10)"
+		}
+		for i, ctrl := range controls {
+			if strings.TrimSpace(ctrl.SourceType) == "" {
+				return nil, nil, actions, fmt.Sprintf("controls[%d]: source_type is required", i)
+			}
+			if strings.TrimSpace(ctrl.Action) == "" {
+				return nil, nil, actions, fmt.Sprintf("controls[%d]: action is required", i)
+			}
+			opts := s.bindingOptions(c)
+			found := false
+			if list, ok := opts[ctrl.SourceType]; ok {
+				for _, o := range list {
+					if o.ID == ctrl.SourceID {
+						found = true
+						break
+					}
+				}
+			}
+			if !found {
+				return nil, nil, actions, fmt.Sprintf("controls[%d]: source %s:%d not found", i, ctrl.SourceType, ctrl.SourceID)
+			}
+		}
+		actions.Controls = controls
+	}
 	return groups, ttl, actions, ""
 }
 
-func (s *Server) renderSceneFormError(c *gin.Context, code int, msg string, name string, enabled bool, priority int, ttl, triggers, srcType string, srcID int, playlistRaw, brightness, overlay string, edit bool, id int) {
+func (s *Server) renderSceneFormError(c *gin.Context, code int, msg string, name string, enabled bool, priority int, ttl, triggers, srcType string, srcID int, playlistRaw, brightness, overlay, controlsRaw string, edit bool, id int) {
 	vars := s.sceneFormBase(c)
-	for k, v := range sceneFormVars(name, enabled, priority, ttl, triggers, srcType, srcID, playlistRaw, brightness, overlay) {
+	for k, v := range sceneFormVars(name, enabled, priority, ttl, triggers, srcType, srcID, playlistRaw, brightness, overlay, controlsRaw) {
 		vars[k] = v
 	}
 	vars["error"] = msg
@@ -256,11 +290,12 @@ func (s *Server) AdminSceneCreate(c *gin.Context) {
 	playlistRaw := strings.TrimSpace(c.PostForm("playlist_id"))
 	brightnessRaw := strings.TrimSpace(c.PostForm("brightness_level"))
 	overlay := strings.TrimSpace(c.PostForm("overlay_text"))
+	controlsRaw := strings.TrimSpace(c.PostForm("controls"))
 
-	groups, ttl, actions, msg := s.validateSceneForm(c, name, triggersRaw, ttlRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay)
+	groups, ttl, actions, msg := s.validateSceneForm(c, name, triggersRaw, ttlRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay, controlsRaw)
 	if msg != "" {
 		SetFlash(c, "danger", msg)
-		s.renderSceneFormError(c, http.StatusBadRequest, msg, name, enabled, priority, ttlRaw, triggersRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay, false, 0)
+		s.renderSceneFormError(c, http.StatusBadRequest, msg, name, enabled, priority, ttlRaw, triggersRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay, controlsRaw, false, 0)
 		return
 	}
 	if groups == nil {
@@ -274,7 +309,7 @@ func (s *Server) AdminSceneCreate(c *gin.Context) {
 		SetNillableTTLSeconds(ttl).Save(s.Ctx)
 	if err != nil {
 		SetFlash(c, "danger", "Failed to create: "+err.Error())
-		s.renderSceneFormError(c, http.StatusOK, err.Error(), name, enabled, priority, ttlRaw, triggersRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay, false, 0)
+		s.renderSceneFormError(c, http.StatusOK, err.Error(), name, enabled, priority, ttlRaw, triggersRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay, controlsRaw, false, 0)
 		return
 	}
 	if gs, gerr := s.DB.GeneralSettings.Query().Only(s.Ctx); gerr == nil && gs != nil {
@@ -310,8 +345,14 @@ func (s *Server) AdminSceneEdit(c *gin.Context) {
 	if actions.BrightnessLevel != nil {
 		brightness = strconv.Itoa(*actions.BrightnessLevel)
 	}
+	controlsRaw := ""
+	if len(actions.Controls) > 0 {
+		if b, err := json.Marshal(actions.Controls); err == nil {
+			controlsRaw = string(b)
+		}
+	}
 	vars := s.sceneFormBase(c)
-	for k, v := range sceneFormVars(obj.Name, obj.Enabled, obj.Priority, ttl, string(triggersJSON), actions.SourceType, actions.SourceID, playlistRaw, brightness, actions.OverlayText) {
+	for k, v := range sceneFormVars(obj.Name, obj.Enabled, obj.Priority, ttl, string(triggersJSON), actions.SourceType, actions.SourceID, playlistRaw, brightness, actions.OverlayText, controlsRaw) {
 		vars[k] = v
 	}
 	vars["obj"] = obj
@@ -335,11 +376,12 @@ func (s *Server) AdminSceneUpdate(c *gin.Context) {
 	playlistRaw := strings.TrimSpace(c.PostForm("playlist_id"))
 	brightnessRaw := strings.TrimSpace(c.PostForm("brightness_level"))
 	overlay := strings.TrimSpace(c.PostForm("overlay_text"))
+	controlsRaw := strings.TrimSpace(c.PostForm("controls"))
 
-	groups, ttl, actions, msg := s.validateSceneForm(c, name, triggersRaw, ttlRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay)
+	groups, ttl, actions, msg := s.validateSceneForm(c, name, triggersRaw, ttlRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay, controlsRaw)
 	if msg != "" {
 		SetFlash(c, "danger", msg)
-		s.renderSceneFormError(c, http.StatusBadRequest, msg, name, enabled, priority, ttlRaw, triggersRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay, true, id)
+		s.renderSceneFormError(c, http.StatusBadRequest, msg, name, enabled, priority, ttlRaw, triggersRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay, controlsRaw, true, id)
 		return
 	}
 	if groups == nil {
@@ -357,7 +399,7 @@ func (s *Server) AdminSceneUpdate(c *gin.Context) {
 	}
 	if err := upd.Exec(s.Ctx); err != nil {
 		SetFlash(c, "danger", "Failed to update: "+err.Error())
-		s.renderSceneFormError(c, http.StatusOK, err.Error(), name, enabled, priority, ttlRaw, triggersRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay, true, id)
+		s.renderSceneFormError(c, http.StatusOK, err.Error(), name, enabled, priority, ttlRaw, triggersRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay, controlsRaw, true, id)
 		return
 	}
 	SetFlash(c, "success", "Scene updated")

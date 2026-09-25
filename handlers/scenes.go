@@ -35,13 +35,21 @@ type TriggerGroup struct {
 	Conditions []SceneCondition `json:"conditions"`
 }
 
+type SceneControl struct {
+	SourceType string            `json:"source_type"`
+	SourceID   int               `json:"source_id"`
+	Action     string            `json:"action"`
+	Params     map[string]string `json:"params,omitempty"`
+}
+
 // SceneActions is the bundled effect applied atomically on activation.
 type SceneActions struct {
-	SourceType      string `json:"source_type,omitempty"`
-	SourceID        int    `json:"source_id,omitempty"`
-	PlaylistID      *int   `json:"playlist_id,omitempty"`
-	BrightnessLevel *int   `json:"brightness_level,omitempty"`
-	OverlayText     string `json:"overlay_text,omitempty"`
+	SourceType      string         `json:"source_type,omitempty"`
+	SourceID        int            `json:"source_id,omitempty"`
+	PlaylistID      *int           `json:"playlist_id,omitempty"`
+	BrightnessLevel *int           `json:"brightness_level,omitempty"`
+	OverlayText     string         `json:"overlay_text,omitempty"`
+	Controls        []SceneControl `json:"controls,omitempty"`
 }
 
 // Scene is the plain value type used by the pure resolver and manager. The ent
@@ -448,6 +456,16 @@ func (m *SceneManager) Scenes() []Scene {
 	return out
 }
 
+// ActiveScene returns the active (non-preview) scene. Copy under lock.
+func (m *SceneManager) ActiveScene() (Scene, bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.active == nil {
+		return Scene{}, false
+	}
+	return *m.active, true
+}
+
 // Active returns the active (non-preview) scene, if any.
 func (m *SceneManager) Active() (*Scene, bool) {
 	m.mu.Lock()
@@ -775,6 +793,36 @@ func resolveSceneSource(client *ent.Client, s *Scene) (*sourceWithName, bool) {
 	return nil, false
 }
 
+func runSceneControls(ctx context.Context, client *ent.Client, sc Scene) {
+	controls := sc.Actions.Controls
+	if len(controls) > 10 {
+		controls = controls[:10]
+	}
+	for _, ctrl := range controls {
+		idx, ok := sceneSourceIndex(client)
+		if !ok {
+			slog.Warn("scene control: no source index", "scene", sc.Name, "source_type", ctrl.SourceType, "source_id", ctrl.SourceID, "action", ctrl.Action)
+			continue
+		}
+		ds, _, err := idx.Resolve(ctrl.SourceType, ctrl.SourceID)
+		if err != nil {
+			slog.Warn("scene control: source not resolvable", "scene", sc.Name, "source_type", ctrl.SourceType, "source_id", ctrl.SourceID, "action", ctrl.Action, "error", err)
+			continue
+		}
+		act, ok := ds.(datasource.Actuator)
+		if !ok {
+			slog.Warn("scene control: not actuatable", "scene", sc.Name, "source_type", ctrl.SourceType, "source_id", ctrl.SourceID, "action", ctrl.Action)
+			continue
+		}
+		actCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		err = act.Actuate(actCtx, ctrl.Action, ctrl.Params)
+		cancel()
+		if err != nil {
+			slog.Warn("scene control: actuate failed", "scene", sc.Name, "source_type", ctrl.SourceType, "source_id", ctrl.SourceID, "action", ctrl.Action, "error", err)
+		}
+	}
+}
+
 // evaluateScenesTick runs the scene pass for one evaluator tick: refresh the
 // ambient snapshot, resolve the active scene, and broadcast on transition.
 func evaluateScenesTick(ctx context.Context, client *ent.Client, now time.Time) bool {
@@ -783,6 +831,10 @@ func evaluateScenesTick(ctx context.Context, client *ent.Client, now time.Time) 
 	changed := globalSceneManager.Evaluate(now, SceneSourceResolver)
 	if changed {
 		sceneAll(globalSceneManager.ActiveSource())
+		// ponytail: rule-triggered scene previews and manual previews skip controls; only real scene transitions fire controls.
+		if sc, ok := globalSceneManager.ActiveScene(); ok && len(sc.Actions.Controls) > 0 {
+			runSceneControls(ctx, client, sc)
+		}
 	}
 	return changed
 }

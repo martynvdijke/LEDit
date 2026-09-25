@@ -27,6 +27,8 @@ const (
 	FieldCheckIntervalSeconds = "check_interval_seconds"
 	// FieldCooldownSeconds holds the string denoting the cooldown_seconds field in the database.
 	FieldCooldownSeconds = "cooldown_seconds"
+	// FieldThenActions holds the string denoting the then_actions field in the database.
+	FieldThenActions = "then_actions"
 	// Table holds the table name of the displayrule in the database.
 	Table = "display_rules"
 )
@@ -42,6 +44,7 @@ var Columns = []string{
 	FieldStatePath,
 	FieldCheckIntervalSeconds,
 	FieldCooldownSeconds,
+	FieldThenActions,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "display_rules"
@@ -86,6 +89,8 @@ var (
 	DefaultCooldownSeconds int
 	// CooldownSecondsValidator is a validator for the "cooldown_seconds" field. It is called by the builders before save.
 	CooldownSecondsValidator func(int) error
+	// DefaultThenActions holds the default value on creation for the "then_actions" field.
+	DefaultThenActions string
 )
 
 // OrderOption defines the ordering options for the DisplayRule queries.
@@ -134,4 +139,9 @@ func ByCheckIntervalSeconds(opts ...sql.OrderTermOption) OrderOption {
 // ByCooldownSeconds orders the results by the cooldown_seconds field.
 func ByCooldownSeconds(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCooldownSeconds, opts...).ToFunc()
+}
+
+// ByThenActions orders the results by the then_actions field.
+func ByThenActions(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldThenActions, opts...).ToFunc()
 }
