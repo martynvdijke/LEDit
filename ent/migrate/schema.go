@@ -55,6 +55,27 @@ var (
 			},
 		},
 	}
+	// AdGuardsColumns holds the columns for the "ad_guards" table.
+	AdGuardsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: "http://adguard:3000/control/stats"},
+		{Name: "general_settings_adguards", Type: field.TypeInt, Nullable: true},
+	}
+	// AdGuardsTable holds the schema information for the "ad_guards" table.
+	AdGuardsTable = &schema.Table{
+		Name:       "ad_guards",
+		Columns:    AdGuardsColumns,
+		PrimaryKey: []*schema.Column{AdGuardsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "ad_guards_general_settings_adguards",
+				Columns:    []*schema.Column{AdGuardsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// AdminSettingsColumns holds the columns for the "admin_settings" table.
 	AdminSettingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -66,6 +87,27 @@ var (
 		Name:       "admin_settings",
 		Columns:    AdminSettingsColumns,
 		PrimaryKey: []*schema.Column{AdminSettingsColumns[0]},
+	}
+	// AirQualitiesColumns holds the columns for the "air_qualities" table.
+	AirQualitiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: ""},
+		{Name: "general_settings_airqualities", Type: field.TypeInt, Nullable: true},
+	}
+	// AirQualitiesTable holds the schema information for the "air_qualities" table.
+	AirQualitiesTable = &schema.Table{
+		Name:       "air_qualities",
+		Columns:    AirQualitiesColumns,
+		PrimaryKey: []*schema.Column{AirQualitiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "air_qualities_general_settings_airqualities",
+				Columns:    []*schema.Column{AirQualitiesColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// AlertSettingsColumns holds the columns for the "alert_settings" table.
 	AlertSettingsColumns = []*schema.Column{
@@ -494,6 +536,27 @@ var (
 		Name:       "firmware_settings",
 		Columns:    FirmwareSettingsColumns,
 		PrimaryKey: []*schema.Column{FirmwareSettingsColumns[0]},
+	}
+	// FrigatesColumns holds the columns for the "frigates" table.
+	FrigatesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: "http://frigate:5000/api/stats"},
+		{Name: "general_settings_frigates", Type: field.TypeInt, Nullable: true},
+	}
+	// FrigatesTable holds the schema information for the "frigates" table.
+	FrigatesTable = &schema.Table{
+		Name:       "frigates",
+		Columns:    FrigatesColumns,
+		PrimaryKey: []*schema.Column{FrigatesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "frigates_general_settings_frigates",
+				Columns:    []*schema.Column{FrigatesColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// GeneralSettingsColumns holds the columns for the "general_settings" table.
 	GeneralSettingsColumns = []*schema.Column{
@@ -1010,6 +1073,27 @@ var (
 			},
 		},
 	}
+	// ParcelsColumns holds the columns for the "parcels" table.
+	ParcelsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: ""},
+		{Name: "general_settings_parcels", Type: field.TypeInt, Nullable: true},
+	}
+	// ParcelsTable holds the schema information for the "parcels" table.
+	ParcelsTable = &schema.Table{
+		Name:       "parcels",
+		Columns:    ParcelsColumns,
+		PrimaryKey: []*schema.Column{ParcelsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "parcels_general_settings_parcels",
+				Columns:    []*schema.Column{ParcelsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// PiHolesColumns holds the columns for the "pi_holes" table.
 	PiHolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1077,6 +1161,27 @@ var (
 			{
 				Symbol:     "playlists_general_settings_playlists",
 				Columns:    []*schema.Column{PlaylistsColumns[5]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// ProxmoxesColumns holds the columns for the "proxmoxes" table.
+	ProxmoxesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: "https://proxmox:8006/api2/json/nodes"},
+		{Name: "general_settings_proxmoxs", Type: field.TypeInt, Nullable: true},
+	}
+	// ProxmoxesTable holds the schema information for the "proxmoxes" table.
+	ProxmoxesTable = &schema.Table{
+		Name:       "proxmoxes",
+		Columns:    ProxmoxesColumns,
+		PrimaryKey: []*schema.Column{ProxmoxesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "proxmoxes_general_settings_proxmoxs",
+				Columns:    []*schema.Column{ProxmoxesColumns[3]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -1503,6 +1608,27 @@ var (
 			},
 		},
 	}
+	// TransmissionsColumns holds the columns for the "transmissions" table.
+	TransmissionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: "http://transmission:9091/transmission/rpc"},
+		{Name: "general_settings_transmissions", Type: field.TypeInt, Nullable: true},
+	}
+	// TransmissionsTable holds the schema information for the "transmissions" table.
+	TransmissionsTable = &schema.Table{
+		Name:       "transmissions",
+		Columns:    TransmissionsColumns,
+		PrimaryKey: []*schema.Column{TransmissionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "transmissions_general_settings_transmissions",
+				Columns:    []*schema.Column{TransmissionsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UmamiSettingsColumns holds the columns for the "umami_settings" table.
 	UmamiSettingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1670,6 +1796,27 @@ var (
 			},
 		},
 	}
+	// WastesColumns holds the columns for the "wastes" table.
+	WastesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: ""},
+		{Name: "general_settings_wastes", Type: field.TypeInt, Nullable: true},
+	}
+	// WastesTable holds the schema information for the "wastes" table.
+	WastesTable = &schema.Table{
+		Name:       "wastes",
+		Columns:    WastesColumns,
+		PrimaryKey: []*schema.Column{WastesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "wastes_general_settings_wastes",
+				Columns:    []*schema.Column{WastesColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// WeathersColumns holds the columns for the "weathers" table.
 	WeathersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1714,11 +1861,34 @@ var (
 			},
 		},
 	}
+	// Zigbee2mqtTsColumns holds the columns for the "zigbee2mqt_ts" table.
+	Zigbee2mqtTsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Default: ""},
+		{Name: "url", Type: field.TypeString, Default: "http://zigbee2mqtt:8080/api/devices"},
+		{Name: "general_settings_zigbee2mqtts", Type: field.TypeInt, Nullable: true},
+	}
+	// Zigbee2mqtTsTable holds the schema information for the "zigbee2mqt_ts" table.
+	Zigbee2mqtTsTable = &schema.Table{
+		Name:       "zigbee2mqt_ts",
+		Columns:    Zigbee2mqtTsColumns,
+		PrimaryKey: []*schema.Column{Zigbee2mqtTsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "zigbee2mqt_ts_general_settings_zigbee2mqtts",
+				Columns:    []*schema.Column{Zigbee2mqtTsColumns[3]},
+				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AiDigestsTable,
 		AiSettingsTable,
+		AdGuardsTable,
 		AdminSettingsTable,
+		AirQualitiesTable,
 		AlertSettingsTable,
 		APITokensTable,
 		CalendarsTable,
@@ -1735,6 +1905,7 @@ var (
 		F1sTable,
 		FirmwareReleasesTable,
 		FirmwareSettingsTable,
+		FrigatesTable,
 		GeneralSettingsTable,
 		GenericApIsTable,
 		GitHubsTable,
@@ -1759,9 +1930,11 @@ var (
 		OutboundSettingsTable,
 		OutboundWebhooksTable,
 		OverseerrsTable,
+		ParcelsTable,
 		PiHolesTable,
 		PixelArtsTable,
 		PlaylistsTable,
+		ProxmoxesTable,
 		QbittorrentsTable,
 		QrcodesTable,
 		RadarrsTable,
@@ -1780,6 +1953,7 @@ var (
 		ThemeAssignmentsTable,
 		TimelapseFramesTable,
 		TransitsTable,
+		TransmissionsTable,
 		UmamiSettingsTable,
 		UntappdsTable,
 		UptimesTable,
@@ -1787,14 +1961,18 @@ var (
 		UsersTable,
 		VideosTable,
 		WakeAlarmsTable,
+		WastesTable,
 		WeathersTable,
 		WebhookSettingsTable,
+		Zigbee2mqtTsTable,
 	}
 )
 
 func init() {
 	AiDigestsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	AiSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	AdGuardsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	AirQualitiesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	AlertSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	CalendarsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	CompositionsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
@@ -1805,6 +1983,7 @@ func init() {
 	DisplayRulesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	EmailSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	F1sTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	FrigatesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	GenericApIsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	GitHubsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	GoogleCalendarsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
@@ -1818,9 +1997,11 @@ func init() {
 	NewsFeedsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	NowPlayingSourcesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	OverseerrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	ParcelsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PiHolesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PixelArtsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	PlaylistsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	ProxmoxesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	QbittorrentsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	QrcodesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	RadarrsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
@@ -1837,12 +2018,15 @@ func init() {
 	TextSlidesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	ThemeAssignmentsTable.ForeignKeys[0].RefTable = ThemesTable
 	TransitsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	TransmissionsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UmamiSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UntappdsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UptimesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	UptimeKumasTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	VideosTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	WakeAlarmsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	WastesTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	WeathersTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 	WebhookSettingsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
+	Zigbee2mqtTsTable.ForeignKeys[0].RefTable = GeneralSettingsTable
 }

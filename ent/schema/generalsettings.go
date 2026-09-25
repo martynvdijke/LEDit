@@ -106,5 +106,13 @@ func (GeneralSettings) Edges() []ent.Edge {
 		edge.To("overseerrs", Overseerr.Type),
 		edge.To("uptime_kumas", UptimeKuma.Type),
 		edge.To("speedtests", Speedtest.Type),
+		edge.To("adguards", AdGuard.Type),
+		edge.To("frigates", Frigate.Type),
+		edge.To("zigbee2mqtts", Zigbee2MQTT.Type),
+		edge.To("transmissions", Transmission.Type),
+		edge.To("proxmoxs", Proxmox.Type),
+		edge.To("wastes", Waste.Type),
+		edge.To("airqualities", AirQuality.Type),
+		edge.To("parcels", Parcel.Type),
 	}
 }

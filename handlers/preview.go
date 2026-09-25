@@ -34,7 +34,7 @@ func (s *Server) loadSettingsWithAll(c *gin.Context) (*ent.GeneralSettings, erro
 		WithImages().WithVideos().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
 		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithNowPlayingSources().WithTransits().
 		WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithQrcodes().
-		WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().Only(c.Request.Context())
+		WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().WithAdguards().WithFrigates().WithZigbee2mqtts().WithTransmissions().WithProxmoxs().WithWastes().WithAirqualities().WithParcels().Only(c.Request.Context())
 	if err != nil {
 		return nil, err
 	}
@@ -221,6 +221,22 @@ func (s *Server) AdminPreviewDatasource(c *gin.Context) {
 		src = &datasource.UptimeKumaDS{URL: c.PostForm("url"), Token: c.PostForm("token")}
 	case "speedtest":
 		src = &datasource.SpeedtestDS{URL: c.PostForm("url"), Token: c.PostForm("token")}
+	case "adguard":
+		src = &datasource.AdGuardDS{Token: c.PostForm("token"), URL: c.PostForm("url")}
+	case "frigate":
+		src = &datasource.FrigateDS{Token: c.PostForm("token"), URL: c.PostForm("url")}
+	case "zigbee2mqtt":
+		src = &datasource.Zigbee2MQTTDS{Token: c.PostForm("token"), URL: c.PostForm("url")}
+	case "transmission":
+		src = &datasource.TransmissionDS{Token: c.PostForm("token"), URL: c.PostForm("url")}
+	case "proxmox":
+		src = &datasource.ProxmoxDS{Token: c.PostForm("token"), URL: c.PostForm("url")}
+	case "waste":
+		src = &datasource.WasteDS{Token: c.PostForm("token"), URL: c.PostForm("url")}
+	case "airquality":
+		src = &datasource.AirQualityDS{Token: c.PostForm("token"), URL: c.PostForm("url")}
+	case "parcel":
+		src = &datasource.ParcelDS{Token: c.PostForm("token"), URL: c.PostForm("url")}
 	case "aidigest":
 		ttl := mustAtoi(c.DefaultPostForm("ttl_minutes", "30"))
 		if ttl < 1 {

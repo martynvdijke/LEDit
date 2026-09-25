@@ -158,6 +158,22 @@ const (
 	EdgeUptimeKumas = "uptime_kumas"
 	// EdgeSpeedtests holds the string denoting the speedtests edge name in mutations.
 	EdgeSpeedtests = "speedtests"
+	// EdgeAdguards holds the string denoting the adguards edge name in mutations.
+	EdgeAdguards = "adguards"
+	// EdgeFrigates holds the string denoting the frigates edge name in mutations.
+	EdgeFrigates = "frigates"
+	// EdgeZigbee2mqtts holds the string denoting the zigbee2mqtts edge name in mutations.
+	EdgeZigbee2mqtts = "zigbee2mqtts"
+	// EdgeTransmissions holds the string denoting the transmissions edge name in mutations.
+	EdgeTransmissions = "transmissions"
+	// EdgeProxmoxs holds the string denoting the proxmoxs edge name in mutations.
+	EdgeProxmoxs = "proxmoxs"
+	// EdgeWastes holds the string denoting the wastes edge name in mutations.
+	EdgeWastes = "wastes"
+	// EdgeAirqualities holds the string denoting the airqualities edge name in mutations.
+	EdgeAirqualities = "airqualities"
+	// EdgeParcels holds the string denoting the parcels edge name in mutations.
+	EdgeParcels = "parcels"
 	// Table holds the table name of the generalsettings in the database.
 	Table = "general_settings"
 	// SonarrTable is the table that holds the sonarr relation/edge.
@@ -510,6 +526,62 @@ const (
 	SpeedtestsInverseTable = "speedtests"
 	// SpeedtestsColumn is the table column denoting the speedtests relation/edge.
 	SpeedtestsColumn = "general_settings_speedtests"
+	// AdguardsTable is the table that holds the adguards relation/edge.
+	AdguardsTable = "ad_guards"
+	// AdguardsInverseTable is the table name for the AdGuard entity.
+	// It exists in this package in order to avoid circular dependency with the "adguard" package.
+	AdguardsInverseTable = "ad_guards"
+	// AdguardsColumn is the table column denoting the adguards relation/edge.
+	AdguardsColumn = "general_settings_adguards"
+	// FrigatesTable is the table that holds the frigates relation/edge.
+	FrigatesTable = "frigates"
+	// FrigatesInverseTable is the table name for the Frigate entity.
+	// It exists in this package in order to avoid circular dependency with the "frigate" package.
+	FrigatesInverseTable = "frigates"
+	// FrigatesColumn is the table column denoting the frigates relation/edge.
+	FrigatesColumn = "general_settings_frigates"
+	// Zigbee2mqttsTable is the table that holds the zigbee2mqtts relation/edge.
+	Zigbee2mqttsTable = "zigbee2mqt_ts"
+	// Zigbee2mqttsInverseTable is the table name for the Zigbee2MQTT entity.
+	// It exists in this package in order to avoid circular dependency with the "zigbee2mqtt" package.
+	Zigbee2mqttsInverseTable = "zigbee2mqt_ts"
+	// Zigbee2mqttsColumn is the table column denoting the zigbee2mqtts relation/edge.
+	Zigbee2mqttsColumn = "general_settings_zigbee2mqtts"
+	// TransmissionsTable is the table that holds the transmissions relation/edge.
+	TransmissionsTable = "transmissions"
+	// TransmissionsInverseTable is the table name for the Transmission entity.
+	// It exists in this package in order to avoid circular dependency with the "transmission" package.
+	TransmissionsInverseTable = "transmissions"
+	// TransmissionsColumn is the table column denoting the transmissions relation/edge.
+	TransmissionsColumn = "general_settings_transmissions"
+	// ProxmoxsTable is the table that holds the proxmoxs relation/edge.
+	ProxmoxsTable = "proxmoxes"
+	// ProxmoxsInverseTable is the table name for the Proxmox entity.
+	// It exists in this package in order to avoid circular dependency with the "proxmox" package.
+	ProxmoxsInverseTable = "proxmoxes"
+	// ProxmoxsColumn is the table column denoting the proxmoxs relation/edge.
+	ProxmoxsColumn = "general_settings_proxmoxs"
+	// WastesTable is the table that holds the wastes relation/edge.
+	WastesTable = "wastes"
+	// WastesInverseTable is the table name for the Waste entity.
+	// It exists in this package in order to avoid circular dependency with the "waste" package.
+	WastesInverseTable = "wastes"
+	// WastesColumn is the table column denoting the wastes relation/edge.
+	WastesColumn = "general_settings_wastes"
+	// AirqualitiesTable is the table that holds the airqualities relation/edge.
+	AirqualitiesTable = "air_qualities"
+	// AirqualitiesInverseTable is the table name for the AirQuality entity.
+	// It exists in this package in order to avoid circular dependency with the "airquality" package.
+	AirqualitiesInverseTable = "air_qualities"
+	// AirqualitiesColumn is the table column denoting the airqualities relation/edge.
+	AirqualitiesColumn = "general_settings_airqualities"
+	// ParcelsTable is the table that holds the parcels relation/edge.
+	ParcelsTable = "parcels"
+	// ParcelsInverseTable is the table name for the Parcel entity.
+	// It exists in this package in order to avoid circular dependency with the "parcel" package.
+	ParcelsInverseTable = "parcels"
+	// ParcelsColumn is the table column denoting the parcels relation/edge.
+	ParcelsColumn = "general_settings_parcels"
 )
 
 // Columns holds all SQL columns for generalsettings fields.
@@ -1417,6 +1489,118 @@ func BySpeedtests(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newSpeedtestsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAdguardsCount orders the results by adguards count.
+func ByAdguardsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAdguardsStep(), opts...)
+	}
+}
+
+// ByAdguards orders the results by adguards terms.
+func ByAdguards(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAdguardsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByFrigatesCount orders the results by frigates count.
+func ByFrigatesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newFrigatesStep(), opts...)
+	}
+}
+
+// ByFrigates orders the results by frigates terms.
+func ByFrigates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newFrigatesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByZigbee2mqttsCount orders the results by zigbee2mqtts count.
+func ByZigbee2mqttsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newZigbee2mqttsStep(), opts...)
+	}
+}
+
+// ByZigbee2mqtts orders the results by zigbee2mqtts terms.
+func ByZigbee2mqtts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newZigbee2mqttsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByTransmissionsCount orders the results by transmissions count.
+func ByTransmissionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTransmissionsStep(), opts...)
+	}
+}
+
+// ByTransmissions orders the results by transmissions terms.
+func ByTransmissions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTransmissionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByProxmoxsCount orders the results by proxmoxs count.
+func ByProxmoxsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProxmoxsStep(), opts...)
+	}
+}
+
+// ByProxmoxs orders the results by proxmoxs terms.
+func ByProxmoxs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProxmoxsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByWastesCount orders the results by wastes count.
+func ByWastesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newWastesStep(), opts...)
+	}
+}
+
+// ByWastes orders the results by wastes terms.
+func ByWastes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newWastesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByAirqualitiesCount orders the results by airqualities count.
+func ByAirqualitiesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAirqualitiesStep(), opts...)
+	}
+}
+
+// ByAirqualities orders the results by airqualities terms.
+func ByAirqualities(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAirqualitiesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByParcelsCount orders the results by parcels count.
+func ByParcelsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newParcelsStep(), opts...)
+	}
+}
+
+// ByParcels orders the results by parcels terms.
+func ByParcels(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newParcelsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSonarrStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -1765,5 +1949,61 @@ func newSpeedtestsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SpeedtestsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, SpeedtestsTable, SpeedtestsColumn),
+	)
+}
+func newAdguardsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AdguardsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AdguardsTable, AdguardsColumn),
+	)
+}
+func newFrigatesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(FrigatesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, FrigatesTable, FrigatesColumn),
+	)
+}
+func newZigbee2mqttsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Zigbee2mqttsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, Zigbee2mqttsTable, Zigbee2mqttsColumn),
+	)
+}
+func newTransmissionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TransmissionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TransmissionsTable, TransmissionsColumn),
+	)
+}
+func newProxmoxsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProxmoxsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ProxmoxsTable, ProxmoxsColumn),
+	)
+}
+func newWastesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(WastesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, WastesTable, WastesColumn),
+	)
+}
+func newAirqualitiesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AirqualitiesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AirqualitiesTable, AirqualitiesColumn),
+	)
+}
+func newParcelsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ParcelsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ParcelsTable, ParcelsColumn),
 	)
 }

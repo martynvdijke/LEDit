@@ -493,6 +493,124 @@ func init() {
 				return u.AddNowPlayingSources(obj.(*ent.NowPlayingSource))
 			},
 		},
+		"adguard": {
+			TypeName: "AdGuard",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.AdGuard.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.AdGuard.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.AdGuard.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.AdGuard.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddAdguards(obj.(*ent.AdGuard))
+			},
+		},
+		"frigate": {
+			TypeName: "Frigate",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Frigate.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Frigate.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Frigate.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Frigate.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddFrigates(obj.(*ent.Frigate))
+			},
+		},
+		"zigbee2mqtt": {
+			TypeName: "Zigbee2MQTT",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Zigbee2MQTT.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Zigbee2MQTT.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Zigbee2MQTT.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error {
+				return db.Zigbee2MQTT.DeleteOneID(id).Exec(ctx)
+			},
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddZigbee2mqtts(obj.(*ent.Zigbee2MQTT))
+			},
+		},
+		"transmission": {
+			TypeName: "Transmission",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Transmission.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Transmission.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Transmission.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error {
+				return db.Transmission.DeleteOneID(id).Exec(ctx)
+			},
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddTransmissions(obj.(*ent.Transmission))
+			},
+		},
+		"proxmox": {
+			TypeName: "Proxmox",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Proxmox.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Proxmox.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Proxmox.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Proxmox.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddProxmoxs(obj.(*ent.Proxmox))
+			},
+		},
+		"waste": {
+			TypeName: "Waste",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Waste.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Waste.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Waste.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Waste.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddWastes(obj.(*ent.Waste))
+			},
+		},
+		"airquality": {
+			TypeName: "AirQuality",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.AirQuality.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.AirQuality.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.AirQuality.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error {
+				return db.AirQuality.DeleteOneID(id).Exec(ctx)
+			},
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddAirqualities(obj.(*ent.AirQuality))
+			},
+		},
+		"parcel": {
+			TypeName: "Parcel",
+			Create: func(db *ent.Client, ctx context.Context, token, url string) (any, error) {
+				return db.Parcel.Create().SetToken(token).SetURL(url).Save(ctx)
+			},
+			Get: func(db *ent.Client, ctx context.Context, id int) (any, error) { return db.Parcel.Get(ctx, id) },
+			Update: func(db *ent.Client, ctx context.Context, id int, token, url string) error {
+				return db.Parcel.UpdateOneID(id).SetToken(token).SetURL(url).Exec(ctx)
+			},
+			Delete: func(db *ent.Client, ctx context.Context, id int) error { return db.Parcel.DeleteOneID(id).Exec(ctx) },
+			AddEdge: func(u *ent.GeneralSettingsUpdateOne, obj any) *ent.GeneralSettingsUpdateOne {
+				return u.AddParcels(obj.(*ent.Parcel))
+			},
+		},
 	}
 }
 

@@ -3,8 +3,10 @@
 package ent
 
 import (
+	"ledit/ent/adguard"
 	"ledit/ent/adminsettings"
 	"ledit/ent/aidigest"
+	"ledit/ent/airquality"
 	"ledit/ent/alertsettings"
 	"ledit/ent/apitoken"
 	"ledit/ent/calendar"
@@ -21,6 +23,7 @@ import (
 	"ledit/ent/f1"
 	"ledit/ent/firmwarerelease"
 	"ledit/ent/firmwaresettings"
+	"ledit/ent/frigate"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
 	"ledit/ent/github"
@@ -43,9 +46,11 @@ import (
 	"ledit/ent/outboundsettings"
 	"ledit/ent/outboundwebhook"
 	"ledit/ent/overseerr"
+	"ledit/ent/parcel"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
+	"ledit/ent/proxmox"
 	"ledit/ent/qbittorrent"
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
@@ -65,14 +70,17 @@ import (
 	"ledit/ent/themeassignment"
 	"ledit/ent/timelapseframe"
 	"ledit/ent/transit"
+	"ledit/ent/transmission"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
 	"ledit/ent/uptimekuma"
 	"ledit/ent/user"
 	"ledit/ent/wakealarm"
+	"ledit/ent/waste"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
+	"ledit/ent/zigbee2mqtt"
 	"time"
 )
 
@@ -98,6 +106,16 @@ func init() {
 	aidigestDescEnabled := aidigestFields[4].Descriptor()
 	// aidigest.DefaultEnabled holds the default value on creation for the enabled field.
 	aidigest.DefaultEnabled = aidigestDescEnabled.Default.(bool)
+	adguardFields := schema.AdGuard{}.Fields()
+	_ = adguardFields
+	// adguardDescToken is the schema descriptor for token field.
+	adguardDescToken := adguardFields[0].Descriptor()
+	// adguard.DefaultToken holds the default value on creation for the token field.
+	adguard.DefaultToken = adguardDescToken.Default.(string)
+	// adguardDescURL is the schema descriptor for url field.
+	adguardDescURL := adguardFields[1].Descriptor()
+	// adguard.DefaultURL holds the default value on creation for the url field.
+	adguard.DefaultURL = adguardDescURL.Default.(string)
 	adminsettingsFields := schema.AdminSettings{}.Fields()
 	_ = adminsettingsFields
 	// adminsettingsDescUsername is the schema descriptor for username field.
@@ -108,6 +126,16 @@ func init() {
 	adminsettingsDescPasswordHash := adminsettingsFields[2].Descriptor()
 	// adminsettings.DefaultPasswordHash holds the default value on creation for the password_hash field.
 	adminsettings.DefaultPasswordHash = adminsettingsDescPasswordHash.Default.(string)
+	airqualityFields := schema.AirQuality{}.Fields()
+	_ = airqualityFields
+	// airqualityDescToken is the schema descriptor for token field.
+	airqualityDescToken := airqualityFields[0].Descriptor()
+	// airquality.DefaultToken holds the default value on creation for the token field.
+	airquality.DefaultToken = airqualityDescToken.Default.(string)
+	// airqualityDescURL is the schema descriptor for url field.
+	airqualityDescURL := airqualityFields[1].Descriptor()
+	// airquality.DefaultURL holds the default value on creation for the url field.
+	airquality.DefaultURL = airqualityDescURL.Default.(string)
 	alertsettingsFields := schema.AlertSettings{}.Fields()
 	_ = alertsettingsFields
 	// alertsettingsDescGotifyEnabled is the schema descriptor for gotify_enabled field.
@@ -650,6 +678,16 @@ func init() {
 	firmwaresettingsDescPaused := firmwaresettingsFields[3].Descriptor()
 	// firmwaresettings.DefaultPaused holds the default value on creation for the paused field.
 	firmwaresettings.DefaultPaused = firmwaresettingsDescPaused.Default.(bool)
+	frigateFields := schema.Frigate{}.Fields()
+	_ = frigateFields
+	// frigateDescToken is the schema descriptor for token field.
+	frigateDescToken := frigateFields[0].Descriptor()
+	// frigate.DefaultToken holds the default value on creation for the token field.
+	frigate.DefaultToken = frigateDescToken.Default.(string)
+	// frigateDescURL is the schema descriptor for url field.
+	frigateDescURL := frigateFields[1].Descriptor()
+	// frigate.DefaultURL holds the default value on creation for the url field.
+	frigate.DefaultURL = frigateDescURL.Default.(string)
 	generalsettingsFields := schema.GeneralSettings{}.Fields()
 	_ = generalsettingsFields
 	// generalsettingsDescWidth is the schema descriptor for width field.
@@ -1182,6 +1220,16 @@ func init() {
 	overseerrDescURL := overseerrFields[1].Descriptor()
 	// overseerr.DefaultURL holds the default value on creation for the url field.
 	overseerr.DefaultURL = overseerrDescURL.Default.(string)
+	parcelFields := schema.Parcel{}.Fields()
+	_ = parcelFields
+	// parcelDescToken is the schema descriptor for token field.
+	parcelDescToken := parcelFields[0].Descriptor()
+	// parcel.DefaultToken holds the default value on creation for the token field.
+	parcel.DefaultToken = parcelDescToken.Default.(string)
+	// parcelDescURL is the schema descriptor for url field.
+	parcelDescURL := parcelFields[1].Descriptor()
+	// parcel.DefaultURL holds the default value on creation for the url field.
+	parcel.DefaultURL = parcelDescURL.Default.(string)
 	piholeFields := schema.PiHole{}.Fields()
 	_ = piholeFields
 	// piholeDescToken is the schema descriptor for token field.
@@ -1244,6 +1292,16 @@ func init() {
 	playlistDescScheduleWindows := playlistFields[3].Descriptor()
 	// playlist.DefaultScheduleWindows holds the default value on creation for the schedule_windows field.
 	playlist.DefaultScheduleWindows = playlistDescScheduleWindows.Default.(string)
+	proxmoxFields := schema.Proxmox{}.Fields()
+	_ = proxmoxFields
+	// proxmoxDescToken is the schema descriptor for token field.
+	proxmoxDescToken := proxmoxFields[0].Descriptor()
+	// proxmox.DefaultToken holds the default value on creation for the token field.
+	proxmox.DefaultToken = proxmoxDescToken.Default.(string)
+	// proxmoxDescURL is the schema descriptor for url field.
+	proxmoxDescURL := proxmoxFields[1].Descriptor()
+	// proxmox.DefaultURL holds the default value on creation for the url field.
+	proxmox.DefaultURL = proxmoxDescURL.Default.(string)
 	qbittorrentFields := schema.Qbittorrent{}.Fields()
 	_ = qbittorrentFields
 	// qbittorrentDescToken is the schema descriptor for token field.
@@ -1648,6 +1706,16 @@ func init() {
 	transit.DefaultTimezone = transitDescTimezone.Default.(string)
 	// transit.TimezoneValidator is a validator for the "timezone" field. It is called by the builders before save.
 	transit.TimezoneValidator = transitDescTimezone.Validators[0].(func(string) error)
+	transmissionFields := schema.Transmission{}.Fields()
+	_ = transmissionFields
+	// transmissionDescToken is the schema descriptor for token field.
+	transmissionDescToken := transmissionFields[0].Descriptor()
+	// transmission.DefaultToken holds the default value on creation for the token field.
+	transmission.DefaultToken = transmissionDescToken.Default.(string)
+	// transmissionDescURL is the schema descriptor for url field.
+	transmissionDescURL := transmissionFields[1].Descriptor()
+	// transmission.DefaultURL holds the default value on creation for the url field.
+	transmission.DefaultURL = transmissionDescURL.Default.(string)
 	umamisettingsFields := schema.UmamiSettings{}.Fields()
 	_ = umamisettingsFields
 	// umamisettingsDescEnable is the schema descriptor for enable field.
@@ -1805,6 +1873,16 @@ func init() {
 	wakealarm.DefaultUpdatedAt = wakealarmDescUpdatedAt.Default.(func() time.Time)
 	// wakealarm.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	wakealarm.UpdateDefaultUpdatedAt = wakealarmDescUpdatedAt.UpdateDefault.(func() time.Time)
+	wasteFields := schema.Waste{}.Fields()
+	_ = wasteFields
+	// wasteDescToken is the schema descriptor for token field.
+	wasteDescToken := wasteFields[0].Descriptor()
+	// waste.DefaultToken holds the default value on creation for the token field.
+	waste.DefaultToken = wasteDescToken.Default.(string)
+	// wasteDescURL is the schema descriptor for url field.
+	wasteDescURL := wasteFields[1].Descriptor()
+	// waste.DefaultURL holds the default value on creation for the url field.
+	waste.DefaultURL = wasteDescURL.Default.(string)
 	weatherFields := schema.Weather{}.Fields()
 	_ = weatherFields
 	// weatherDescToken is the schema descriptor for token field.
@@ -1865,4 +1943,14 @@ func init() {
 			return nil
 		}
 	}()
+	zigbee2mqttFields := schema.Zigbee2MQTT{}.Fields()
+	_ = zigbee2mqttFields
+	// zigbee2mqttDescToken is the schema descriptor for token field.
+	zigbee2mqttDescToken := zigbee2mqttFields[0].Descriptor()
+	// zigbee2mqtt.DefaultToken holds the default value on creation for the token field.
+	zigbee2mqtt.DefaultToken = zigbee2mqttDescToken.Default.(string)
+	// zigbee2mqttDescURL is the schema descriptor for url field.
+	zigbee2mqttDescURL := zigbee2mqttFields[1].Descriptor()
+	// zigbee2mqtt.DefaultURL holds the default value on creation for the url field.
+	zigbee2mqtt.DefaultURL = zigbee2mqttDescURL.Default.(string)
 }

@@ -68,7 +68,7 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
 		WithSonarr().WithRadarr().WithF1().WithWeather().WithHomeAssistant().WithUntappd().
 		WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
-		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithQrcodes().WithNowPlayingSources().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().Only(c.Request.Context())
+		WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithQrcodes().WithNowPlayingSources().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().WithAdguards().WithFrigates().WithZigbee2mqtts().WithTransmissions().WithProxmoxs().WithWastes().WithAirqualities().WithParcels().Only(c.Request.Context())
 	if err != nil || settings == nil {
 		return opts
 	}
@@ -218,6 +218,38 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	speedtests, _ := settings.Edges.SpeedtestsOrErr()
 	for _, st := range speedtests {
 		add("speedtest", st.ID, "Speedtest #"+strconv.Itoa(st.ID))
+	}
+	adguards, _ := settings.Edges.AdguardsOrErr()
+	for _, e := range adguards {
+		add("adguard", e.ID, "AdGuard #"+strconv.Itoa(e.ID))
+	}
+	frigates, _ := settings.Edges.FrigatesOrErr()
+	for _, e := range frigates {
+		add("frigate", e.ID, "Frigate #"+strconv.Itoa(e.ID))
+	}
+	zigbee2mqtts, _ := settings.Edges.Zigbee2mqttsOrErr()
+	for _, e := range zigbee2mqtts {
+		add("zigbee2mqtt", e.ID, "Zigbee2MQTT #"+strconv.Itoa(e.ID))
+	}
+	transmissions, _ := settings.Edges.TransmissionsOrErr()
+	for _, e := range transmissions {
+		add("transmission", e.ID, "Transmission #"+strconv.Itoa(e.ID))
+	}
+	proxmoxs, _ := settings.Edges.ProxmoxsOrErr()
+	for _, e := range proxmoxs {
+		add("proxmox", e.ID, "Proxmox #"+strconv.Itoa(e.ID))
+	}
+	wastes, _ := settings.Edges.WastesOrErr()
+	for _, e := range wastes {
+		add("waste", e.ID, "Waste #"+strconv.Itoa(e.ID))
+	}
+	airqualities, _ := settings.Edges.AirqualitiesOrErr()
+	for _, e := range airqualities {
+		add("airquality", e.ID, "AirQuality #"+strconv.Itoa(e.ID))
+	}
+	parcels, _ := settings.Edges.ParcelsOrErr()
+	for _, e := range parcels {
+		add("parcel", e.ID, "Parcel #"+strconv.Itoa(e.ID))
 	}
 	// Audio group — stylized visualizer, synced to tempo, not live FFT
 	add("audio", 0, "Now Playing — Stylized visualizer — synced to tempo, not live FFT")
@@ -466,6 +498,46 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 	for _, st := range speedtests {
 		idx.byKey[key("speedtest", st.ID)] = &datasource.SpeedtestDS{Token: st.Token, URL: st.URL}
 		idx.names[key("speedtest", st.ID)] = "Speedtest"
+	}
+	adguards, _ := settings.Edges.AdguardsOrErr()
+	for _, e := range adguards {
+		idx.byKey[key("adguard", e.ID)] = &datasource.AdGuardDS{Token: e.Token, URL: e.URL}
+		idx.names[key("adguard", e.ID)] = "AdGuard"
+	}
+	frigates, _ := settings.Edges.FrigatesOrErr()
+	for _, e := range frigates {
+		idx.byKey[key("frigate", e.ID)] = &datasource.FrigateDS{Token: e.Token, URL: e.URL}
+		idx.names[key("frigate", e.ID)] = "Frigate"
+	}
+	zigbee2mqtts, _ := settings.Edges.Zigbee2mqttsOrErr()
+	for _, e := range zigbee2mqtts {
+		idx.byKey[key("zigbee2mqtt", e.ID)] = &datasource.Zigbee2MQTTDS{Token: e.Token, URL: e.URL}
+		idx.names[key("zigbee2mqtt", e.ID)] = "Zigbee2MQTT"
+	}
+	transmissions, _ := settings.Edges.TransmissionsOrErr()
+	for _, e := range transmissions {
+		idx.byKey[key("transmission", e.ID)] = &datasource.TransmissionDS{Token: e.Token, URL: e.URL}
+		idx.names[key("transmission", e.ID)] = "Transmission"
+	}
+	proxmoxs, _ := settings.Edges.ProxmoxsOrErr()
+	for _, e := range proxmoxs {
+		idx.byKey[key("proxmox", e.ID)] = &datasource.ProxmoxDS{Token: e.Token, URL: e.URL}
+		idx.names[key("proxmox", e.ID)] = "Proxmox"
+	}
+	wastes, _ := settings.Edges.WastesOrErr()
+	for _, e := range wastes {
+		idx.byKey[key("waste", e.ID)] = &datasource.WasteDS{Token: e.Token, URL: e.URL}
+		idx.names[key("waste", e.ID)] = "Waste"
+	}
+	airqualities, _ := settings.Edges.AirqualitiesOrErr()
+	for _, e := range airqualities {
+		idx.byKey[key("airquality", e.ID)] = &datasource.AirQualityDS{Token: e.Token, URL: e.URL}
+		idx.names[key("airquality", e.ID)] = "AirQuality"
+	}
+	parcels, _ := settings.Edges.ParcelsOrErr()
+	for _, e := range parcels {
+		idx.byKey[key("parcel", e.ID)] = &datasource.ParcelDS{Token: e.Token, URL: e.URL}
+		idx.names[key("parcel", e.ID)] = "Parcel"
 	}
 	qrcodes, _ := settings.Edges.QrcodesOrErr()
 	for _, q := range qrcodes {

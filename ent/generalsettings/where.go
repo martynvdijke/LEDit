@@ -2470,6 +2470,190 @@ func HasSpeedtestsWith(preds ...predicate.Speedtest) predicate.GeneralSettings {
 	})
 }
 
+// HasAdguards applies the HasEdge predicate on the "adguards" edge.
+func HasAdguards() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AdguardsTable, AdguardsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAdguardsWith applies the HasEdge predicate on the "adguards" edge with a given conditions (other predicates).
+func HasAdguardsWith(preds ...predicate.AdGuard) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newAdguardsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasFrigates applies the HasEdge predicate on the "frigates" edge.
+func HasFrigates() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FrigatesTable, FrigatesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasFrigatesWith applies the HasEdge predicate on the "frigates" edge with a given conditions (other predicates).
+func HasFrigatesWith(preds ...predicate.Frigate) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newFrigatesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasZigbee2mqtts applies the HasEdge predicate on the "zigbee2mqtts" edge.
+func HasZigbee2mqtts() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, Zigbee2mqttsTable, Zigbee2mqttsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasZigbee2mqttsWith applies the HasEdge predicate on the "zigbee2mqtts" edge with a given conditions (other predicates).
+func HasZigbee2mqttsWith(preds ...predicate.Zigbee2MQTT) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newZigbee2mqttsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTransmissions applies the HasEdge predicate on the "transmissions" edge.
+func HasTransmissions() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TransmissionsTable, TransmissionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTransmissionsWith applies the HasEdge predicate on the "transmissions" edge with a given conditions (other predicates).
+func HasTransmissionsWith(preds ...predicate.Transmission) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newTransmissionsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProxmoxs applies the HasEdge predicate on the "proxmoxs" edge.
+func HasProxmoxs() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProxmoxsTable, ProxmoxsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProxmoxsWith applies the HasEdge predicate on the "proxmoxs" edge with a given conditions (other predicates).
+func HasProxmoxsWith(preds ...predicate.Proxmox) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newProxmoxsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasWastes applies the HasEdge predicate on the "wastes" edge.
+func HasWastes() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, WastesTable, WastesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWastesWith applies the HasEdge predicate on the "wastes" edge with a given conditions (other predicates).
+func HasWastesWith(preds ...predicate.Waste) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newWastesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAirqualities applies the HasEdge predicate on the "airqualities" edge.
+func HasAirqualities() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AirqualitiesTable, AirqualitiesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAirqualitiesWith applies the HasEdge predicate on the "airqualities" edge with a given conditions (other predicates).
+func HasAirqualitiesWith(preds ...predicate.AirQuality) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newAirqualitiesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasParcels applies the HasEdge predicate on the "parcels" edge.
+func HasParcels() predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ParcelsTable, ParcelsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasParcelsWith applies the HasEdge predicate on the "parcels" edge with a given conditions (other predicates).
+func HasParcelsWith(preds ...predicate.Parcel) predicate.GeneralSettings {
+	return predicate.GeneralSettings(func(s *sql.Selector) {
+		step := newParcelsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.GeneralSettings) predicate.GeneralSettings {
 	return predicate.GeneralSettings(sql.AndPredicates(predicates...))

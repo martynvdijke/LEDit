@@ -6,8 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/adguard"
 	"ledit/ent/adminsettings"
 	"ledit/ent/aidigest"
+	"ledit/ent/airquality"
 	"ledit/ent/aisettings"
 	"ledit/ent/alertsettings"
 	"ledit/ent/apitoken"
@@ -25,6 +27,7 @@ import (
 	"ledit/ent/f1"
 	"ledit/ent/firmwarerelease"
 	"ledit/ent/firmwaresettings"
+	"ledit/ent/frigate"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
 	"ledit/ent/github"
@@ -49,9 +52,11 @@ import (
 	"ledit/ent/outboundsettings"
 	"ledit/ent/outboundwebhook"
 	"ledit/ent/overseerr"
+	"ledit/ent/parcel"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
+	"ledit/ent/proxmox"
 	"ledit/ent/qbittorrent"
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
@@ -70,6 +75,7 @@ import (
 	"ledit/ent/themeassignment"
 	"ledit/ent/timelapseframe"
 	"ledit/ent/transit"
+	"ledit/ent/transmission"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
@@ -77,8 +83,10 @@ import (
 	"ledit/ent/user"
 	"ledit/ent/video"
 	"ledit/ent/wakealarm"
+	"ledit/ent/waste"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
+	"ledit/ent/zigbee2mqtt"
 	"reflect"
 	"sync"
 
@@ -147,7 +155,9 @@ func checkColumn(t, c string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			aidigest.Table:         aidigest.ValidColumn,
 			aisettings.Table:       aisettings.ValidColumn,
+			adguard.Table:          adguard.ValidColumn,
 			adminsettings.Table:    adminsettings.ValidColumn,
+			airquality.Table:       airquality.ValidColumn,
 			alertsettings.Table:    alertsettings.ValidColumn,
 			apitoken.Table:         apitoken.ValidColumn,
 			calendar.Table:         calendar.ValidColumn,
@@ -164,6 +174,7 @@ func checkColumn(t, c string) error {
 			f1.Table:               f1.ValidColumn,
 			firmwarerelease.Table:  firmwarerelease.ValidColumn,
 			firmwaresettings.Table: firmwaresettings.ValidColumn,
+			frigate.Table:          frigate.ValidColumn,
 			generalsettings.Table:  generalsettings.ValidColumn,
 			genericapi.Table:       genericapi.ValidColumn,
 			github.Table:           github.ValidColumn,
@@ -188,9 +199,11 @@ func checkColumn(t, c string) error {
 			outboundsettings.Table: outboundsettings.ValidColumn,
 			outboundwebhook.Table:  outboundwebhook.ValidColumn,
 			overseerr.Table:        overseerr.ValidColumn,
+			parcel.Table:           parcel.ValidColumn,
 			pihole.Table:           pihole.ValidColumn,
 			pixelart.Table:         pixelart.ValidColumn,
 			playlist.Table:         playlist.ValidColumn,
+			proxmox.Table:          proxmox.ValidColumn,
 			qbittorrent.Table:      qbittorrent.ValidColumn,
 			qrcode.Table:           qrcode.ValidColumn,
 			radarr.Table:           radarr.ValidColumn,
@@ -209,6 +222,7 @@ func checkColumn(t, c string) error {
 			themeassignment.Table:  themeassignment.ValidColumn,
 			timelapseframe.Table:   timelapseframe.ValidColumn,
 			transit.Table:          transit.ValidColumn,
+			transmission.Table:     transmission.ValidColumn,
 			umamisettings.Table:    umamisettings.ValidColumn,
 			untappd.Table:          untappd.ValidColumn,
 			uptime.Table:           uptime.ValidColumn,
@@ -216,8 +230,10 @@ func checkColumn(t, c string) error {
 			user.Table:             user.ValidColumn,
 			video.Table:            video.ValidColumn,
 			wakealarm.Table:        wakealarm.ValidColumn,
+			waste.Table:            waste.ValidColumn,
 			weather.Table:          weather.ValidColumn,
 			webhooksettings.Table:  webhooksettings.ValidColumn,
+			zigbee2mqtt.Table:      zigbee2mqtt.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

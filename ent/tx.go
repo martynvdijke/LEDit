@@ -16,8 +16,12 @@ type Tx struct {
 	AIDigest *AIDigestClient
 	// AISettings is the client for interacting with the AISettings builders.
 	AISettings *AISettingsClient
+	// AdGuard is the client for interacting with the AdGuard builders.
+	AdGuard *AdGuardClient
 	// AdminSettings is the client for interacting with the AdminSettings builders.
 	AdminSettings *AdminSettingsClient
+	// AirQuality is the client for interacting with the AirQuality builders.
+	AirQuality *AirQualityClient
 	// AlertSettings is the client for interacting with the AlertSettings builders.
 	AlertSettings *AlertSettingsClient
 	// ApiToken is the client for interacting with the ApiToken builders.
@@ -50,6 +54,8 @@ type Tx struct {
 	FirmwareRelease *FirmwareReleaseClient
 	// FirmwareSettings is the client for interacting with the FirmwareSettings builders.
 	FirmwareSettings *FirmwareSettingsClient
+	// Frigate is the client for interacting with the Frigate builders.
+	Frigate *FrigateClient
 	// GeneralSettings is the client for interacting with the GeneralSettings builders.
 	GeneralSettings *GeneralSettingsClient
 	// GenericAPI is the client for interacting with the GenericAPI builders.
@@ -98,12 +104,16 @@ type Tx struct {
 	OutboundWebhook *OutboundWebhookClient
 	// Overseerr is the client for interacting with the Overseerr builders.
 	Overseerr *OverseerrClient
+	// Parcel is the client for interacting with the Parcel builders.
+	Parcel *ParcelClient
 	// PiHole is the client for interacting with the PiHole builders.
 	PiHole *PiHoleClient
 	// PixelArt is the client for interacting with the PixelArt builders.
 	PixelArt *PixelArtClient
 	// Playlist is the client for interacting with the Playlist builders.
 	Playlist *PlaylistClient
+	// Proxmox is the client for interacting with the Proxmox builders.
+	Proxmox *ProxmoxClient
 	// Qbittorrent is the client for interacting with the Qbittorrent builders.
 	Qbittorrent *QbittorrentClient
 	// Qrcode is the client for interacting with the Qrcode builders.
@@ -140,6 +150,8 @@ type Tx struct {
 	TimelapseFrame *TimelapseFrameClient
 	// Transit is the client for interacting with the Transit builders.
 	Transit *TransitClient
+	// Transmission is the client for interacting with the Transmission builders.
+	Transmission *TransmissionClient
 	// UmamiSettings is the client for interacting with the UmamiSettings builders.
 	UmamiSettings *UmamiSettingsClient
 	// Untappd is the client for interacting with the Untappd builders.
@@ -154,10 +166,14 @@ type Tx struct {
 	Video *VideoClient
 	// WakeAlarm is the client for interacting with the WakeAlarm builders.
 	WakeAlarm *WakeAlarmClient
+	// Waste is the client for interacting with the Waste builders.
+	Waste *WasteClient
 	// Weather is the client for interacting with the Weather builders.
 	Weather *WeatherClient
 	// WebhookSettings is the client for interacting with the WebhookSettings builders.
 	WebhookSettings *WebhookSettingsClient
+	// Zigbee2MQTT is the client for interacting with the Zigbee2MQTT builders.
+	Zigbee2MQTT *Zigbee2MQTTClient
 
 	// lazily loaded.
 	client     *Client
@@ -291,7 +307,9 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.AIDigest = NewAIDigestClient(tx.config)
 	tx.AISettings = NewAISettingsClient(tx.config)
+	tx.AdGuard = NewAdGuardClient(tx.config)
 	tx.AdminSettings = NewAdminSettingsClient(tx.config)
+	tx.AirQuality = NewAirQualityClient(tx.config)
 	tx.AlertSettings = NewAlertSettingsClient(tx.config)
 	tx.ApiToken = NewApiTokenClient(tx.config)
 	tx.Calendar = NewCalendarClient(tx.config)
@@ -308,6 +326,7 @@ func (tx *Tx) init() {
 	tx.F1 = NewF1Client(tx.config)
 	tx.FirmwareRelease = NewFirmwareReleaseClient(tx.config)
 	tx.FirmwareSettings = NewFirmwareSettingsClient(tx.config)
+	tx.Frigate = NewFrigateClient(tx.config)
 	tx.GeneralSettings = NewGeneralSettingsClient(tx.config)
 	tx.GenericAPI = NewGenericAPIClient(tx.config)
 	tx.GitHub = NewGitHubClient(tx.config)
@@ -332,9 +351,11 @@ func (tx *Tx) init() {
 	tx.OutboundSettings = NewOutboundSettingsClient(tx.config)
 	tx.OutboundWebhook = NewOutboundWebhookClient(tx.config)
 	tx.Overseerr = NewOverseerrClient(tx.config)
+	tx.Parcel = NewParcelClient(tx.config)
 	tx.PiHole = NewPiHoleClient(tx.config)
 	tx.PixelArt = NewPixelArtClient(tx.config)
 	tx.Playlist = NewPlaylistClient(tx.config)
+	tx.Proxmox = NewProxmoxClient(tx.config)
 	tx.Qbittorrent = NewQbittorrentClient(tx.config)
 	tx.Qrcode = NewQrcodeClient(tx.config)
 	tx.Radarr = NewRadarrClient(tx.config)
@@ -353,6 +374,7 @@ func (tx *Tx) init() {
 	tx.ThemeAssignment = NewThemeAssignmentClient(tx.config)
 	tx.TimelapseFrame = NewTimelapseFrameClient(tx.config)
 	tx.Transit = NewTransitClient(tx.config)
+	tx.Transmission = NewTransmissionClient(tx.config)
 	tx.UmamiSettings = NewUmamiSettingsClient(tx.config)
 	tx.Untappd = NewUntappdClient(tx.config)
 	tx.Uptime = NewUptimeClient(tx.config)
@@ -360,8 +382,10 @@ func (tx *Tx) init() {
 	tx.User = NewUserClient(tx.config)
 	tx.Video = NewVideoClient(tx.config)
 	tx.WakeAlarm = NewWakeAlarmClient(tx.config)
+	tx.Waste = NewWasteClient(tx.config)
 	tx.Weather = NewWeatherClient(tx.config)
 	tx.WebhookSettings = NewWebhookSettingsClient(tx.config)
+	tx.Zigbee2MQTT = NewZigbee2MQTTClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ledit/ent/adguard"
 	"ledit/ent/aidigest"
+	"ledit/ent/airquality"
 	"ledit/ent/aisettings"
 	"ledit/ent/alertsettings"
 	"ledit/ent/calendar"
@@ -17,6 +19,7 @@ import (
 	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
+	"ledit/ent/frigate"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
 	"ledit/ent/github"
@@ -31,10 +34,12 @@ import (
 	"ledit/ent/newsfeed"
 	"ledit/ent/nowplayingsource"
 	"ledit/ent/overseerr"
+	"ledit/ent/parcel"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/predicate"
+	"ledit/ent/proxmox"
 	"ledit/ent/qbittorrent"
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
@@ -50,14 +55,17 @@ import (
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
 	"ledit/ent/transit"
+	"ledit/ent/transmission"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
 	"ledit/ent/uptimekuma"
 	"ledit/ent/video"
 	"ledit/ent/wakealarm"
+	"ledit/ent/waste"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
+	"ledit/ent/zigbee2mqtt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -1288,6 +1296,126 @@ func (_u *GeneralSettingsUpdate) AddSpeedtests(v ...*Speedtest) *GeneralSettings
 	return _u.AddSpeedtestIDs(ids...)
 }
 
+// AddAdguardIDs adds the "adguards" edge to the AdGuard entity by IDs.
+func (_u *GeneralSettingsUpdate) AddAdguardIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddAdguardIDs(ids...)
+	return _u
+}
+
+// AddAdguards adds the "adguards" edges to the AdGuard entity.
+func (_u *GeneralSettingsUpdate) AddAdguards(v ...*AdGuard) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAdguardIDs(ids...)
+}
+
+// AddFrigateIDs adds the "frigates" edge to the Frigate entity by IDs.
+func (_u *GeneralSettingsUpdate) AddFrigateIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddFrigateIDs(ids...)
+	return _u
+}
+
+// AddFrigates adds the "frigates" edges to the Frigate entity.
+func (_u *GeneralSettingsUpdate) AddFrigates(v ...*Frigate) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFrigateIDs(ids...)
+}
+
+// AddZigbee2mqttIDs adds the "zigbee2mqtts" edge to the Zigbee2MQTT entity by IDs.
+func (_u *GeneralSettingsUpdate) AddZigbee2mqttIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddZigbee2mqttIDs(ids...)
+	return _u
+}
+
+// AddZigbee2mqtts adds the "zigbee2mqtts" edges to the Zigbee2MQTT entity.
+func (_u *GeneralSettingsUpdate) AddZigbee2mqtts(v ...*Zigbee2MQTT) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddZigbee2mqttIDs(ids...)
+}
+
+// AddTransmissionIDs adds the "transmissions" edge to the Transmission entity by IDs.
+func (_u *GeneralSettingsUpdate) AddTransmissionIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddTransmissionIDs(ids...)
+	return _u
+}
+
+// AddTransmissions adds the "transmissions" edges to the Transmission entity.
+func (_u *GeneralSettingsUpdate) AddTransmissions(v ...*Transmission) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTransmissionIDs(ids...)
+}
+
+// AddProxmoxIDs adds the "proxmoxs" edge to the Proxmox entity by IDs.
+func (_u *GeneralSettingsUpdate) AddProxmoxIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddProxmoxIDs(ids...)
+	return _u
+}
+
+// AddProxmoxs adds the "proxmoxs" edges to the Proxmox entity.
+func (_u *GeneralSettingsUpdate) AddProxmoxs(v ...*Proxmox) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddProxmoxIDs(ids...)
+}
+
+// AddWasteIDs adds the "wastes" edge to the Waste entity by IDs.
+func (_u *GeneralSettingsUpdate) AddWasteIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddWasteIDs(ids...)
+	return _u
+}
+
+// AddWastes adds the "wastes" edges to the Waste entity.
+func (_u *GeneralSettingsUpdate) AddWastes(v ...*Waste) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddWasteIDs(ids...)
+}
+
+// AddAirqualityIDs adds the "airqualities" edge to the AirQuality entity by IDs.
+func (_u *GeneralSettingsUpdate) AddAirqualityIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddAirqualityIDs(ids...)
+	return _u
+}
+
+// AddAirqualities adds the "airqualities" edges to the AirQuality entity.
+func (_u *GeneralSettingsUpdate) AddAirqualities(v ...*AirQuality) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAirqualityIDs(ids...)
+}
+
+// AddParcelIDs adds the "parcels" edge to the Parcel entity by IDs.
+func (_u *GeneralSettingsUpdate) AddParcelIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.AddParcelIDs(ids...)
+	return _u
+}
+
+// AddParcels adds the "parcels" edges to the Parcel entity.
+func (_u *GeneralSettingsUpdate) AddParcels(v ...*Parcel) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddParcelIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdate) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -2341,6 +2469,174 @@ func (_u *GeneralSettingsUpdate) RemoveSpeedtests(v ...*Speedtest) *GeneralSetti
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSpeedtestIDs(ids...)
+}
+
+// ClearAdguards clears all "adguards" edges to the AdGuard entity.
+func (_u *GeneralSettingsUpdate) ClearAdguards() *GeneralSettingsUpdate {
+	_u.mutation.ClearAdguards()
+	return _u
+}
+
+// RemoveAdguardIDs removes the "adguards" edge to AdGuard entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveAdguardIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveAdguardIDs(ids...)
+	return _u
+}
+
+// RemoveAdguards removes "adguards" edges to AdGuard entities.
+func (_u *GeneralSettingsUpdate) RemoveAdguards(v ...*AdGuard) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAdguardIDs(ids...)
+}
+
+// ClearFrigates clears all "frigates" edges to the Frigate entity.
+func (_u *GeneralSettingsUpdate) ClearFrigates() *GeneralSettingsUpdate {
+	_u.mutation.ClearFrigates()
+	return _u
+}
+
+// RemoveFrigateIDs removes the "frigates" edge to Frigate entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveFrigateIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveFrigateIDs(ids...)
+	return _u
+}
+
+// RemoveFrigates removes "frigates" edges to Frigate entities.
+func (_u *GeneralSettingsUpdate) RemoveFrigates(v ...*Frigate) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFrigateIDs(ids...)
+}
+
+// ClearZigbee2mqtts clears all "zigbee2mqtts" edges to the Zigbee2MQTT entity.
+func (_u *GeneralSettingsUpdate) ClearZigbee2mqtts() *GeneralSettingsUpdate {
+	_u.mutation.ClearZigbee2mqtts()
+	return _u
+}
+
+// RemoveZigbee2mqttIDs removes the "zigbee2mqtts" edge to Zigbee2MQTT entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveZigbee2mqttIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveZigbee2mqttIDs(ids...)
+	return _u
+}
+
+// RemoveZigbee2mqtts removes "zigbee2mqtts" edges to Zigbee2MQTT entities.
+func (_u *GeneralSettingsUpdate) RemoveZigbee2mqtts(v ...*Zigbee2MQTT) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveZigbee2mqttIDs(ids...)
+}
+
+// ClearTransmissions clears all "transmissions" edges to the Transmission entity.
+func (_u *GeneralSettingsUpdate) ClearTransmissions() *GeneralSettingsUpdate {
+	_u.mutation.ClearTransmissions()
+	return _u
+}
+
+// RemoveTransmissionIDs removes the "transmissions" edge to Transmission entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveTransmissionIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveTransmissionIDs(ids...)
+	return _u
+}
+
+// RemoveTransmissions removes "transmissions" edges to Transmission entities.
+func (_u *GeneralSettingsUpdate) RemoveTransmissions(v ...*Transmission) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTransmissionIDs(ids...)
+}
+
+// ClearProxmoxs clears all "proxmoxs" edges to the Proxmox entity.
+func (_u *GeneralSettingsUpdate) ClearProxmoxs() *GeneralSettingsUpdate {
+	_u.mutation.ClearProxmoxs()
+	return _u
+}
+
+// RemoveProxmoxIDs removes the "proxmoxs" edge to Proxmox entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveProxmoxIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveProxmoxIDs(ids...)
+	return _u
+}
+
+// RemoveProxmoxs removes "proxmoxs" edges to Proxmox entities.
+func (_u *GeneralSettingsUpdate) RemoveProxmoxs(v ...*Proxmox) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveProxmoxIDs(ids...)
+}
+
+// ClearWastes clears all "wastes" edges to the Waste entity.
+func (_u *GeneralSettingsUpdate) ClearWastes() *GeneralSettingsUpdate {
+	_u.mutation.ClearWastes()
+	return _u
+}
+
+// RemoveWasteIDs removes the "wastes" edge to Waste entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveWasteIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveWasteIDs(ids...)
+	return _u
+}
+
+// RemoveWastes removes "wastes" edges to Waste entities.
+func (_u *GeneralSettingsUpdate) RemoveWastes(v ...*Waste) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveWasteIDs(ids...)
+}
+
+// ClearAirqualities clears all "airqualities" edges to the AirQuality entity.
+func (_u *GeneralSettingsUpdate) ClearAirqualities() *GeneralSettingsUpdate {
+	_u.mutation.ClearAirqualities()
+	return _u
+}
+
+// RemoveAirqualityIDs removes the "airqualities" edge to AirQuality entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveAirqualityIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveAirqualityIDs(ids...)
+	return _u
+}
+
+// RemoveAirqualities removes "airqualities" edges to AirQuality entities.
+func (_u *GeneralSettingsUpdate) RemoveAirqualities(v ...*AirQuality) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAirqualityIDs(ids...)
+}
+
+// ClearParcels clears all "parcels" edges to the Parcel entity.
+func (_u *GeneralSettingsUpdate) ClearParcels() *GeneralSettingsUpdate {
+	_u.mutation.ClearParcels()
+	return _u
+}
+
+// RemoveParcelIDs removes the "parcels" edge to Parcel entities by IDs.
+func (_u *GeneralSettingsUpdate) RemoveParcelIDs(ids ...int) *GeneralSettingsUpdate {
+	_u.mutation.RemoveParcelIDs(ids...)
+	return _u
+}
+
+// RemoveParcels removes "parcels" edges to Parcel entities.
+func (_u *GeneralSettingsUpdate) RemoveParcels(v ...*Parcel) *GeneralSettingsUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveParcelIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -4784,6 +5080,366 @@ func (_u *GeneralSettingsUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.AdguardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AdguardsTable,
+			Columns: []string{generalsettings.AdguardsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(adguard.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAdguardsIDs(); len(nodes) > 0 && !_u.mutation.AdguardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AdguardsTable,
+			Columns: []string{generalsettings.AdguardsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(adguard.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AdguardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AdguardsTable,
+			Columns: []string{generalsettings.AdguardsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(adguard.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.FrigatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.FrigatesTable,
+			Columns: []string{generalsettings.FrigatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(frigate.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFrigatesIDs(); len(nodes) > 0 && !_u.mutation.FrigatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.FrigatesTable,
+			Columns: []string{generalsettings.FrigatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(frigate.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FrigatesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.FrigatesTable,
+			Columns: []string{generalsettings.FrigatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(frigate.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.Zigbee2mqttsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.Zigbee2mqttsTable,
+			Columns: []string{generalsettings.Zigbee2mqttsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zigbee2mqtt.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedZigbee2mqttsIDs(); len(nodes) > 0 && !_u.mutation.Zigbee2mqttsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.Zigbee2mqttsTable,
+			Columns: []string{generalsettings.Zigbee2mqttsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zigbee2mqtt.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.Zigbee2mqttsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.Zigbee2mqttsTable,
+			Columns: []string{generalsettings.Zigbee2mqttsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zigbee2mqtt.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TransmissionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransmissionsTable,
+			Columns: []string{generalsettings.TransmissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transmission.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTransmissionsIDs(); len(nodes) > 0 && !_u.mutation.TransmissionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransmissionsTable,
+			Columns: []string{generalsettings.TransmissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transmission.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransmissionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransmissionsTable,
+			Columns: []string{generalsettings.TransmissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transmission.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ProxmoxsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ProxmoxsTable,
+			Columns: []string{generalsettings.ProxmoxsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(proxmox.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedProxmoxsIDs(); len(nodes) > 0 && !_u.mutation.ProxmoxsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ProxmoxsTable,
+			Columns: []string{generalsettings.ProxmoxsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(proxmox.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProxmoxsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ProxmoxsTable,
+			Columns: []string{generalsettings.ProxmoxsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(proxmox.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.WastesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WastesTable,
+			Columns: []string{generalsettings.WastesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(waste.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedWastesIDs(); len(nodes) > 0 && !_u.mutation.WastesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WastesTable,
+			Columns: []string{generalsettings.WastesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(waste.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.WastesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WastesTable,
+			Columns: []string{generalsettings.WastesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(waste.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AirqualitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AirqualitiesTable,
+			Columns: []string{generalsettings.AirqualitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(airquality.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAirqualitiesIDs(); len(nodes) > 0 && !_u.mutation.AirqualitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AirqualitiesTable,
+			Columns: []string{generalsettings.AirqualitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(airquality.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AirqualitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AirqualitiesTable,
+			Columns: []string{generalsettings.AirqualitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(airquality.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ParcelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ParcelsTable,
+			Columns: []string{generalsettings.ParcelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(parcel.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedParcelsIDs(); len(nodes) > 0 && !_u.mutation.ParcelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ParcelsTable,
+			Columns: []string{generalsettings.ParcelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(parcel.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ParcelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ParcelsTable,
+			Columns: []string{generalsettings.ParcelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(parcel.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{generalsettings.Label}
@@ -6014,6 +6670,126 @@ func (_u *GeneralSettingsUpdateOne) AddSpeedtests(v ...*Speedtest) *GeneralSetti
 	return _u.AddSpeedtestIDs(ids...)
 }
 
+// AddAdguardIDs adds the "adguards" edge to the AdGuard entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddAdguardIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddAdguardIDs(ids...)
+	return _u
+}
+
+// AddAdguards adds the "adguards" edges to the AdGuard entity.
+func (_u *GeneralSettingsUpdateOne) AddAdguards(v ...*AdGuard) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAdguardIDs(ids...)
+}
+
+// AddFrigateIDs adds the "frigates" edge to the Frigate entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddFrigateIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddFrigateIDs(ids...)
+	return _u
+}
+
+// AddFrigates adds the "frigates" edges to the Frigate entity.
+func (_u *GeneralSettingsUpdateOne) AddFrigates(v ...*Frigate) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFrigateIDs(ids...)
+}
+
+// AddZigbee2mqttIDs adds the "zigbee2mqtts" edge to the Zigbee2MQTT entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddZigbee2mqttIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddZigbee2mqttIDs(ids...)
+	return _u
+}
+
+// AddZigbee2mqtts adds the "zigbee2mqtts" edges to the Zigbee2MQTT entity.
+func (_u *GeneralSettingsUpdateOne) AddZigbee2mqtts(v ...*Zigbee2MQTT) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddZigbee2mqttIDs(ids...)
+}
+
+// AddTransmissionIDs adds the "transmissions" edge to the Transmission entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddTransmissionIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddTransmissionIDs(ids...)
+	return _u
+}
+
+// AddTransmissions adds the "transmissions" edges to the Transmission entity.
+func (_u *GeneralSettingsUpdateOne) AddTransmissions(v ...*Transmission) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTransmissionIDs(ids...)
+}
+
+// AddProxmoxIDs adds the "proxmoxs" edge to the Proxmox entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddProxmoxIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddProxmoxIDs(ids...)
+	return _u
+}
+
+// AddProxmoxs adds the "proxmoxs" edges to the Proxmox entity.
+func (_u *GeneralSettingsUpdateOne) AddProxmoxs(v ...*Proxmox) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddProxmoxIDs(ids...)
+}
+
+// AddWasteIDs adds the "wastes" edge to the Waste entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddWasteIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddWasteIDs(ids...)
+	return _u
+}
+
+// AddWastes adds the "wastes" edges to the Waste entity.
+func (_u *GeneralSettingsUpdateOne) AddWastes(v ...*Waste) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddWasteIDs(ids...)
+}
+
+// AddAirqualityIDs adds the "airqualities" edge to the AirQuality entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddAirqualityIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddAirqualityIDs(ids...)
+	return _u
+}
+
+// AddAirqualities adds the "airqualities" edges to the AirQuality entity.
+func (_u *GeneralSettingsUpdateOne) AddAirqualities(v ...*AirQuality) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAirqualityIDs(ids...)
+}
+
+// AddParcelIDs adds the "parcels" edge to the Parcel entity by IDs.
+func (_u *GeneralSettingsUpdateOne) AddParcelIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.AddParcelIDs(ids...)
+	return _u
+}
+
+// AddParcels adds the "parcels" edges to the Parcel entity.
+func (_u *GeneralSettingsUpdateOne) AddParcels(v ...*Parcel) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddParcelIDs(ids...)
+}
+
 // Mutation returns the GeneralSettingsMutation object of the builder.
 func (_u *GeneralSettingsUpdateOne) Mutation() *GeneralSettingsMutation {
 	return _u.mutation
@@ -7067,6 +7843,174 @@ func (_u *GeneralSettingsUpdateOne) RemoveSpeedtests(v ...*Speedtest) *GeneralSe
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSpeedtestIDs(ids...)
+}
+
+// ClearAdguards clears all "adguards" edges to the AdGuard entity.
+func (_u *GeneralSettingsUpdateOne) ClearAdguards() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearAdguards()
+	return _u
+}
+
+// RemoveAdguardIDs removes the "adguards" edge to AdGuard entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveAdguardIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveAdguardIDs(ids...)
+	return _u
+}
+
+// RemoveAdguards removes "adguards" edges to AdGuard entities.
+func (_u *GeneralSettingsUpdateOne) RemoveAdguards(v ...*AdGuard) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAdguardIDs(ids...)
+}
+
+// ClearFrigates clears all "frigates" edges to the Frigate entity.
+func (_u *GeneralSettingsUpdateOne) ClearFrigates() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearFrigates()
+	return _u
+}
+
+// RemoveFrigateIDs removes the "frigates" edge to Frigate entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveFrigateIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveFrigateIDs(ids...)
+	return _u
+}
+
+// RemoveFrigates removes "frigates" edges to Frigate entities.
+func (_u *GeneralSettingsUpdateOne) RemoveFrigates(v ...*Frigate) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFrigateIDs(ids...)
+}
+
+// ClearZigbee2mqtts clears all "zigbee2mqtts" edges to the Zigbee2MQTT entity.
+func (_u *GeneralSettingsUpdateOne) ClearZigbee2mqtts() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearZigbee2mqtts()
+	return _u
+}
+
+// RemoveZigbee2mqttIDs removes the "zigbee2mqtts" edge to Zigbee2MQTT entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveZigbee2mqttIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveZigbee2mqttIDs(ids...)
+	return _u
+}
+
+// RemoveZigbee2mqtts removes "zigbee2mqtts" edges to Zigbee2MQTT entities.
+func (_u *GeneralSettingsUpdateOne) RemoveZigbee2mqtts(v ...*Zigbee2MQTT) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveZigbee2mqttIDs(ids...)
+}
+
+// ClearTransmissions clears all "transmissions" edges to the Transmission entity.
+func (_u *GeneralSettingsUpdateOne) ClearTransmissions() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearTransmissions()
+	return _u
+}
+
+// RemoveTransmissionIDs removes the "transmissions" edge to Transmission entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveTransmissionIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveTransmissionIDs(ids...)
+	return _u
+}
+
+// RemoveTransmissions removes "transmissions" edges to Transmission entities.
+func (_u *GeneralSettingsUpdateOne) RemoveTransmissions(v ...*Transmission) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTransmissionIDs(ids...)
+}
+
+// ClearProxmoxs clears all "proxmoxs" edges to the Proxmox entity.
+func (_u *GeneralSettingsUpdateOne) ClearProxmoxs() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearProxmoxs()
+	return _u
+}
+
+// RemoveProxmoxIDs removes the "proxmoxs" edge to Proxmox entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveProxmoxIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveProxmoxIDs(ids...)
+	return _u
+}
+
+// RemoveProxmoxs removes "proxmoxs" edges to Proxmox entities.
+func (_u *GeneralSettingsUpdateOne) RemoveProxmoxs(v ...*Proxmox) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveProxmoxIDs(ids...)
+}
+
+// ClearWastes clears all "wastes" edges to the Waste entity.
+func (_u *GeneralSettingsUpdateOne) ClearWastes() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearWastes()
+	return _u
+}
+
+// RemoveWasteIDs removes the "wastes" edge to Waste entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveWasteIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveWasteIDs(ids...)
+	return _u
+}
+
+// RemoveWastes removes "wastes" edges to Waste entities.
+func (_u *GeneralSettingsUpdateOne) RemoveWastes(v ...*Waste) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveWasteIDs(ids...)
+}
+
+// ClearAirqualities clears all "airqualities" edges to the AirQuality entity.
+func (_u *GeneralSettingsUpdateOne) ClearAirqualities() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearAirqualities()
+	return _u
+}
+
+// RemoveAirqualityIDs removes the "airqualities" edge to AirQuality entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveAirqualityIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveAirqualityIDs(ids...)
+	return _u
+}
+
+// RemoveAirqualities removes "airqualities" edges to AirQuality entities.
+func (_u *GeneralSettingsUpdateOne) RemoveAirqualities(v ...*AirQuality) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAirqualityIDs(ids...)
+}
+
+// ClearParcels clears all "parcels" edges to the Parcel entity.
+func (_u *GeneralSettingsUpdateOne) ClearParcels() *GeneralSettingsUpdateOne {
+	_u.mutation.ClearParcels()
+	return _u
+}
+
+// RemoveParcelIDs removes the "parcels" edge to Parcel entities by IDs.
+func (_u *GeneralSettingsUpdateOne) RemoveParcelIDs(ids ...int) *GeneralSettingsUpdateOne {
+	_u.mutation.RemoveParcelIDs(ids...)
+	return _u
+}
+
+// RemoveParcels removes "parcels" edges to Parcel entities.
+func (_u *GeneralSettingsUpdateOne) RemoveParcels(v ...*Parcel) *GeneralSettingsUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveParcelIDs(ids...)
 }
 
 // Where appends a list predicates to the GeneralSettingsUpdate builder.
@@ -9533,6 +10477,366 @@ func (_u *GeneralSettingsUpdateOne) sqlSave(ctx context.Context) (_node *General
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(speedtest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AdguardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AdguardsTable,
+			Columns: []string{generalsettings.AdguardsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(adguard.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAdguardsIDs(); len(nodes) > 0 && !_u.mutation.AdguardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AdguardsTable,
+			Columns: []string{generalsettings.AdguardsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(adguard.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AdguardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AdguardsTable,
+			Columns: []string{generalsettings.AdguardsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(adguard.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.FrigatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.FrigatesTable,
+			Columns: []string{generalsettings.FrigatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(frigate.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFrigatesIDs(); len(nodes) > 0 && !_u.mutation.FrigatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.FrigatesTable,
+			Columns: []string{generalsettings.FrigatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(frigate.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FrigatesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.FrigatesTable,
+			Columns: []string{generalsettings.FrigatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(frigate.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.Zigbee2mqttsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.Zigbee2mqttsTable,
+			Columns: []string{generalsettings.Zigbee2mqttsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zigbee2mqtt.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedZigbee2mqttsIDs(); len(nodes) > 0 && !_u.mutation.Zigbee2mqttsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.Zigbee2mqttsTable,
+			Columns: []string{generalsettings.Zigbee2mqttsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zigbee2mqtt.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.Zigbee2mqttsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.Zigbee2mqttsTable,
+			Columns: []string{generalsettings.Zigbee2mqttsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zigbee2mqtt.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TransmissionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransmissionsTable,
+			Columns: []string{generalsettings.TransmissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transmission.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTransmissionsIDs(); len(nodes) > 0 && !_u.mutation.TransmissionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransmissionsTable,
+			Columns: []string{generalsettings.TransmissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transmission.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransmissionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.TransmissionsTable,
+			Columns: []string{generalsettings.TransmissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transmission.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ProxmoxsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ProxmoxsTable,
+			Columns: []string{generalsettings.ProxmoxsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(proxmox.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedProxmoxsIDs(); len(nodes) > 0 && !_u.mutation.ProxmoxsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ProxmoxsTable,
+			Columns: []string{generalsettings.ProxmoxsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(proxmox.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProxmoxsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ProxmoxsTable,
+			Columns: []string{generalsettings.ProxmoxsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(proxmox.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.WastesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WastesTable,
+			Columns: []string{generalsettings.WastesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(waste.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedWastesIDs(); len(nodes) > 0 && !_u.mutation.WastesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WastesTable,
+			Columns: []string{generalsettings.WastesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(waste.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.WastesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.WastesTable,
+			Columns: []string{generalsettings.WastesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(waste.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AirqualitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AirqualitiesTable,
+			Columns: []string{generalsettings.AirqualitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(airquality.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAirqualitiesIDs(); len(nodes) > 0 && !_u.mutation.AirqualitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AirqualitiesTable,
+			Columns: []string{generalsettings.AirqualitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(airquality.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AirqualitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.AirqualitiesTable,
+			Columns: []string{generalsettings.AirqualitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(airquality.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ParcelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ParcelsTable,
+			Columns: []string{generalsettings.ParcelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(parcel.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedParcelsIDs(); len(nodes) > 0 && !_u.mutation.ParcelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ParcelsTable,
+			Columns: []string{generalsettings.ParcelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(parcel.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ParcelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   generalsettings.ParcelsTable,
+			Columns: []string{generalsettings.ParcelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(parcel.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

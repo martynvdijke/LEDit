@@ -32,6 +32,18 @@ func (f AISettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AISettingsMutation", m)
 }
 
+// The AdGuardFunc type is an adapter to allow the use of ordinary
+// function as AdGuard mutator.
+type AdGuardFunc func(context.Context, *ent.AdGuardMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AdGuardFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AdGuardMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AdGuardMutation", m)
+}
+
 // The AdminSettingsFunc type is an adapter to allow the use of ordinary
 // function as AdminSettings mutator.
 type AdminSettingsFunc func(context.Context, *ent.AdminSettingsMutation) (ent.Value, error)
@@ -42,6 +54,18 @@ func (f AdminSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AdminSettingsMutation", m)
+}
+
+// The AirQualityFunc type is an adapter to allow the use of ordinary
+// function as AirQuality mutator.
+type AirQualityFunc func(context.Context, *ent.AirQualityMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AirQualityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AirQualityMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AirQualityMutation", m)
 }
 
 // The AlertSettingsFunc type is an adapter to allow the use of ordinary
@@ -234,6 +258,18 @@ func (f FirmwareSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FirmwareSettingsMutation", m)
+}
+
+// The FrigateFunc type is an adapter to allow the use of ordinary
+// function as Frigate mutator.
+type FrigateFunc func(context.Context, *ent.FrigateMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f FrigateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.FrigateMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FrigateMutation", m)
 }
 
 // The GeneralSettingsFunc type is an adapter to allow the use of ordinary
@@ -524,6 +560,18 @@ func (f OverseerrFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OverseerrMutation", m)
 }
 
+// The ParcelFunc type is an adapter to allow the use of ordinary
+// function as Parcel mutator.
+type ParcelFunc func(context.Context, *ent.ParcelMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ParcelFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ParcelMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ParcelMutation", m)
+}
+
 // The PiHoleFunc type is an adapter to allow the use of ordinary
 // function as PiHole mutator.
 type PiHoleFunc func(context.Context, *ent.PiHoleMutation) (ent.Value, error)
@@ -558,6 +606,18 @@ func (f PlaylistFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlaylistMutation", m)
+}
+
+// The ProxmoxFunc type is an adapter to allow the use of ordinary
+// function as Proxmox mutator.
+type ProxmoxFunc func(context.Context, *ent.ProxmoxMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProxmoxFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProxmoxMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProxmoxMutation", m)
 }
 
 // The QbittorrentFunc type is an adapter to allow the use of ordinary
@@ -776,6 +836,18 @@ func (f TransitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TransitMutation", m)
 }
 
+// The TransmissionFunc type is an adapter to allow the use of ordinary
+// function as Transmission mutator.
+type TransmissionFunc func(context.Context, *ent.TransmissionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TransmissionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TransmissionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TransmissionMutation", m)
+}
+
 // The UmamiSettingsFunc type is an adapter to allow the use of ordinary
 // function as UmamiSettings mutator.
 type UmamiSettingsFunc func(context.Context, *ent.UmamiSettingsMutation) (ent.Value, error)
@@ -860,6 +932,18 @@ func (f WakeAlarmFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WakeAlarmMutation", m)
 }
 
+// The WasteFunc type is an adapter to allow the use of ordinary
+// function as Waste mutator.
+type WasteFunc func(context.Context, *ent.WasteMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WasteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WasteMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WasteMutation", m)
+}
+
 // The WeatherFunc type is an adapter to allow the use of ordinary
 // function as Weather mutator.
 type WeatherFunc func(context.Context, *ent.WeatherMutation) (ent.Value, error)
@@ -882,6 +966,18 @@ func (f WebhookSettingsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WebhookSettingsMutation", m)
+}
+
+// The Zigbee2MQTTFunc type is an adapter to allow the use of ordinary
+// function as Zigbee2MQTT mutator.
+type Zigbee2MQTTFunc func(context.Context, *ent.Zigbee2MQTTMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f Zigbee2MQTTFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.Zigbee2MQTTMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.Zigbee2MQTTMutation", m)
 }
 
 // Condition is a hook condition function.

@@ -725,7 +725,7 @@ func sceneSourceIndex(client *ent.Client) (*sourceIndex, bool) {
 		WithUntappd().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
 		WithGoogleCalendars().WithNewsFeeds().WithMatrixLayouts().WithCountdowns().WithAiDigests().
 		WithImages().WithVideos().WithTransits().WithUptimes().WithPiholes().WithGithubs().
-		WithSports().WithSunmoons().WithJellyfins().WithQrcodes().WithNowPlayingSources().Only(ctx)
+		WithSports().WithSunmoons().WithJellyfins().WithQrcodes().WithNowPlayingSources().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().WithAdguards().WithFrigates().WithZigbee2mqtts().WithTransmissions().WithProxmoxs().WithWastes().WithAirqualities().WithParcels().Only(ctx)
 	if err != nil || gs == nil {
 		return nil, false
 	}

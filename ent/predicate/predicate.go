@@ -12,8 +12,14 @@ type AIDigest func(*sql.Selector)
 // AISettings is the predicate function for aisettings builders.
 type AISettings func(*sql.Selector)
 
+// AdGuard is the predicate function for adguard builders.
+type AdGuard func(*sql.Selector)
+
 // AdminSettings is the predicate function for adminsettings builders.
 type AdminSettings func(*sql.Selector)
+
+// AirQuality is the predicate function for airquality builders.
+type AirQuality func(*sql.Selector)
 
 // AlertSettings is the predicate function for alertsettings builders.
 type AlertSettings func(*sql.Selector)
@@ -62,6 +68,9 @@ type FirmwareRelease func(*sql.Selector)
 
 // FirmwareSettings is the predicate function for firmwaresettings builders.
 type FirmwareSettings func(*sql.Selector)
+
+// Frigate is the predicate function for frigate builders.
+type Frigate func(*sql.Selector)
 
 // GeneralSettings is the predicate function for generalsettings builders.
 type GeneralSettings func(*sql.Selector)
@@ -135,6 +144,9 @@ type OutboundWebhook func(*sql.Selector)
 // Overseerr is the predicate function for overseerr builders.
 type Overseerr func(*sql.Selector)
 
+// Parcel is the predicate function for parcel builders.
+type Parcel func(*sql.Selector)
+
 // PiHole is the predicate function for pihole builders.
 type PiHole func(*sql.Selector)
 
@@ -143,6 +155,9 @@ type PixelArt func(*sql.Selector)
 
 // Playlist is the predicate function for playlist builders.
 type Playlist func(*sql.Selector)
+
+// Proxmox is the predicate function for proxmox builders.
+type Proxmox func(*sql.Selector)
 
 // Qbittorrent is the predicate function for qbittorrent builders.
 type Qbittorrent func(*sql.Selector)
@@ -198,6 +213,9 @@ type TimelapseFrame func(*sql.Selector)
 // Transit is the predicate function for transit builders.
 type Transit func(*sql.Selector)
 
+// Transmission is the predicate function for transmission builders.
+type Transmission func(*sql.Selector)
+
 // UmamiSettings is the predicate function for umamisettings builders.
 type UmamiSettings func(*sql.Selector)
 
@@ -219,8 +237,14 @@ type Video func(*sql.Selector)
 // WakeAlarm is the predicate function for wakealarm builders.
 type WakeAlarm func(*sql.Selector)
 
+// Waste is the predicate function for waste builders.
+type Waste func(*sql.Selector)
+
 // Weather is the predicate function for weather builders.
 type Weather func(*sql.Selector)
 
 // WebhookSettings is the predicate function for webhooksettings builders.
 type WebhookSettings func(*sql.Selector)
+
+// Zigbee2MQTT is the predicate function for zigbee2mqtt builders.
+type Zigbee2MQTT func(*sql.Selector)

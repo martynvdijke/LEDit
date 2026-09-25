@@ -138,7 +138,7 @@ func resolveAlarmSource(client *ent.Client, a *WakeAlarm) (*sourceWithName, bool
 		WithUntappd().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().
 		WithGoogleCalendars().WithNewsFeeds().WithMatrixLayouts().WithCountdowns().WithAiDigests().
 		WithImages().WithVideos().WithTransits().WithUptimes().WithPiholes().WithGithubs().
-		WithSports().WithSunmoons().WithJellyfins().WithQrcodes().WithNowPlayingSources().Only(ctx)
+		WithSports().WithSunmoons().WithJellyfins().WithQrcodes().WithNowPlayingSources().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().WithAdguards().WithFrigates().WithZigbee2mqtts().WithTransmissions().WithProxmoxs().WithWastes().WithAirqualities().WithParcels().Only(ctx)
 	if err != nil || gs == nil {
 		slog.Warn("alarm wake source settings load failed", "alarm", a.Name, "error", err)
 		return nil, false
@@ -298,7 +298,7 @@ func resolveTarget(sourceType string, sourceID int, client *ent.Client) (datasou
 	if client != nil {
 		ctx := context.Background()
 		gs, err := client.GeneralSettings.Query().Where(generalsettings.ID(1)).
-			WithGenericApis().WithHomeAssistant().WithWeather().WithSonarr().WithRadarr().WithF1().WithUntappd().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithSports().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().
+			WithGenericApis().WithHomeAssistant().WithWeather().WithSonarr().WithRadarr().WithF1().WithUntappd().WithCrypto().WithStocks().WithRssFeeds().WithCalendars().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithMatrixLayouts().WithCountdowns().WithAiDigests().WithSports().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().WithAdguards().WithFrigates().WithZigbee2mqtts().WithTransmissions().WithProxmoxs().WithWastes().WithAirqualities().WithParcels().
 			Only(ctx)
 		if err == nil && gs != nil {
 			aiCfg := datasource.AIConfig{}

@@ -171,9 +171,25 @@ type GeneralSettingsEdges struct {
 	UptimeKumas []*UptimeKuma `json:"uptime_kumas,omitempty"`
 	// Speedtests holds the value of the speedtests edge.
 	Speedtests []*Speedtest `json:"speedtests,omitempty"`
+	// Adguards holds the value of the adguards edge.
+	Adguards []*AdGuard `json:"adguards,omitempty"`
+	// Frigates holds the value of the frigates edge.
+	Frigates []*Frigate `json:"frigates,omitempty"`
+	// Zigbee2mqtts holds the value of the zigbee2mqtts edge.
+	Zigbee2mqtts []*Zigbee2MQTT `json:"zigbee2mqtts,omitempty"`
+	// Transmissions holds the value of the transmissions edge.
+	Transmissions []*Transmission `json:"transmissions,omitempty"`
+	// Proxmoxs holds the value of the proxmoxs edge.
+	Proxmoxs []*Proxmox `json:"proxmoxs,omitempty"`
+	// Wastes holds the value of the wastes edge.
+	Wastes []*Waste `json:"wastes,omitempty"`
+	// Airqualities holds the value of the airqualities edge.
+	Airqualities []*AirQuality `json:"airqualities,omitempty"`
+	// Parcels holds the value of the parcels edge.
+	Parcels []*Parcel `json:"parcels,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [50]bool
+	loadedTypes [58]bool
 }
 
 // SonarrOrErr returns the Sonarr value or an error if the edge
@@ -626,6 +642,78 @@ func (e GeneralSettingsEdges) SpeedtestsOrErr() ([]*Speedtest, error) {
 	return nil, &NotLoadedError{edge: "speedtests"}
 }
 
+// AdguardsOrErr returns the Adguards value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) AdguardsOrErr() ([]*AdGuard, error) {
+	if e.loadedTypes[50] {
+		return e.Adguards, nil
+	}
+	return nil, &NotLoadedError{edge: "adguards"}
+}
+
+// FrigatesOrErr returns the Frigates value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) FrigatesOrErr() ([]*Frigate, error) {
+	if e.loadedTypes[51] {
+		return e.Frigates, nil
+	}
+	return nil, &NotLoadedError{edge: "frigates"}
+}
+
+// Zigbee2mqttsOrErr returns the Zigbee2mqtts value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) Zigbee2mqttsOrErr() ([]*Zigbee2MQTT, error) {
+	if e.loadedTypes[52] {
+		return e.Zigbee2mqtts, nil
+	}
+	return nil, &NotLoadedError{edge: "zigbee2mqtts"}
+}
+
+// TransmissionsOrErr returns the Transmissions value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) TransmissionsOrErr() ([]*Transmission, error) {
+	if e.loadedTypes[53] {
+		return e.Transmissions, nil
+	}
+	return nil, &NotLoadedError{edge: "transmissions"}
+}
+
+// ProxmoxsOrErr returns the Proxmoxs value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) ProxmoxsOrErr() ([]*Proxmox, error) {
+	if e.loadedTypes[54] {
+		return e.Proxmoxs, nil
+	}
+	return nil, &NotLoadedError{edge: "proxmoxs"}
+}
+
+// WastesOrErr returns the Wastes value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) WastesOrErr() ([]*Waste, error) {
+	if e.loadedTypes[55] {
+		return e.Wastes, nil
+	}
+	return nil, &NotLoadedError{edge: "wastes"}
+}
+
+// AirqualitiesOrErr returns the Airqualities value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) AirqualitiesOrErr() ([]*AirQuality, error) {
+	if e.loadedTypes[56] {
+		return e.Airqualities, nil
+	}
+	return nil, &NotLoadedError{edge: "airqualities"}
+}
+
+// ParcelsOrErr returns the Parcels value or an error if the edge
+// was not loaded in eager-loading.
+func (e GeneralSettingsEdges) ParcelsOrErr() ([]*Parcel, error) {
+	if e.loadedTypes[57] {
+		return e.Parcels, nil
+	}
+	return nil, &NotLoadedError{edge: "parcels"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*GeneralSettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -1064,6 +1152,46 @@ func (_m *GeneralSettings) QueryUptimeKumas() *UptimeKumaQuery {
 // QuerySpeedtests queries the "speedtests" edge of the GeneralSettings entity.
 func (_m *GeneralSettings) QuerySpeedtests() *SpeedtestQuery {
 	return NewGeneralSettingsClient(_m.config).QuerySpeedtests(_m)
+}
+
+// QueryAdguards queries the "adguards" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryAdguards() *AdGuardQuery {
+	return NewGeneralSettingsClient(_m.config).QueryAdguards(_m)
+}
+
+// QueryFrigates queries the "frigates" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryFrigates() *FrigateQuery {
+	return NewGeneralSettingsClient(_m.config).QueryFrigates(_m)
+}
+
+// QueryZigbee2mqtts queries the "zigbee2mqtts" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryZigbee2mqtts() *Zigbee2MQTTQuery {
+	return NewGeneralSettingsClient(_m.config).QueryZigbee2mqtts(_m)
+}
+
+// QueryTransmissions queries the "transmissions" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryTransmissions() *TransmissionQuery {
+	return NewGeneralSettingsClient(_m.config).QueryTransmissions(_m)
+}
+
+// QueryProxmoxs queries the "proxmoxs" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryProxmoxs() *ProxmoxQuery {
+	return NewGeneralSettingsClient(_m.config).QueryProxmoxs(_m)
+}
+
+// QueryWastes queries the "wastes" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryWastes() *WasteQuery {
+	return NewGeneralSettingsClient(_m.config).QueryWastes(_m)
+}
+
+// QueryAirqualities queries the "airqualities" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryAirqualities() *AirQualityQuery {
+	return NewGeneralSettingsClient(_m.config).QueryAirqualities(_m)
+}
+
+// QueryParcels queries the "parcels" edge of the GeneralSettings entity.
+func (_m *GeneralSettings) QueryParcels() *ParcelQuery {
+	return NewGeneralSettingsClient(_m.config).QueryParcels(_m)
 }
 
 // Update returns a builder for updating this GeneralSettings.

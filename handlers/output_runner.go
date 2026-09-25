@@ -243,7 +243,7 @@ func deviceKey(id int) string { return "device:" + strconv.Itoa(id) }
 func renderDevicePixels(s *Server, d *ent.DeviceSettings, width, height int) ([]byte, error) {
 	// Load GeneralSettings with edges like HandleDeviceWS (minimal set sufficient for composeDeviceSources to work via loadSources)
 	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
-		WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().
+		WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().WithAdguards().WithFrigates().WithZigbee2mqtts().WithTransmissions().WithProxmoxs().WithWastes().WithAirqualities().WithParcels().
 		Only(context.Background())
 	if err != nil {
 		return nil, err

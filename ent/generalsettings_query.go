@@ -6,7 +6,9 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"ledit/ent/adguard"
 	"ledit/ent/aidigest"
+	"ledit/ent/airquality"
 	"ledit/ent/aisettings"
 	"ledit/ent/alertsettings"
 	"ledit/ent/calendar"
@@ -17,6 +19,7 @@ import (
 	"ledit/ent/displayrule"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
+	"ledit/ent/frigate"
 	"ledit/ent/generalsettings"
 	"ledit/ent/genericapi"
 	"ledit/ent/github"
@@ -31,10 +34,12 @@ import (
 	"ledit/ent/newsfeed"
 	"ledit/ent/nowplayingsource"
 	"ledit/ent/overseerr"
+	"ledit/ent/parcel"
 	"ledit/ent/pihole"
 	"ledit/ent/pixelart"
 	"ledit/ent/playlist"
 	"ledit/ent/predicate"
+	"ledit/ent/proxmox"
 	"ledit/ent/qbittorrent"
 	"ledit/ent/qrcode"
 	"ledit/ent/radarr"
@@ -50,14 +55,17 @@ import (
 	"ledit/ent/telegramsettings"
 	"ledit/ent/textslide"
 	"ledit/ent/transit"
+	"ledit/ent/transmission"
 	"ledit/ent/umamisettings"
 	"ledit/ent/untappd"
 	"ledit/ent/uptime"
 	"ledit/ent/uptimekuma"
 	"ledit/ent/video"
 	"ledit/ent/wakealarm"
+	"ledit/ent/waste"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
+	"ledit/ent/zigbee2mqtt"
 	"math"
 
 	"entgo.io/ent"
@@ -123,6 +131,14 @@ type GeneralSettingsQuery struct {
 	withOverseerrs        *OverseerrQuery
 	withUptimeKumas       *UptimeKumaQuery
 	withSpeedtests        *SpeedtestQuery
+	withAdguards          *AdGuardQuery
+	withFrigates          *FrigateQuery
+	withZigbee2mqtts      *Zigbee2MQTTQuery
+	withTransmissions     *TransmissionQuery
+	withProxmoxs          *ProxmoxQuery
+	withWastes            *WasteQuery
+	withAirqualities      *AirQualityQuery
+	withParcels           *ParcelQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -1259,6 +1275,182 @@ func (_q *GeneralSettingsQuery) QuerySpeedtests() *SpeedtestQuery {
 	return query
 }
 
+// QueryAdguards chains the current query on the "adguards" edge.
+func (_q *GeneralSettingsQuery) QueryAdguards() *AdGuardQuery {
+	query := (&AdGuardClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(adguard.Table, adguard.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.AdguardsTable, generalsettings.AdguardsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryFrigates chains the current query on the "frigates" edge.
+func (_q *GeneralSettingsQuery) QueryFrigates() *FrigateQuery {
+	query := (&FrigateClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(frigate.Table, frigate.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.FrigatesTable, generalsettings.FrigatesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryZigbee2mqtts chains the current query on the "zigbee2mqtts" edge.
+func (_q *GeneralSettingsQuery) QueryZigbee2mqtts() *Zigbee2MQTTQuery {
+	query := (&Zigbee2MQTTClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(zigbee2mqtt.Table, zigbee2mqtt.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.Zigbee2mqttsTable, generalsettings.Zigbee2mqttsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTransmissions chains the current query on the "transmissions" edge.
+func (_q *GeneralSettingsQuery) QueryTransmissions() *TransmissionQuery {
+	query := (&TransmissionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(transmission.Table, transmission.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.TransmissionsTable, generalsettings.TransmissionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProxmoxs chains the current query on the "proxmoxs" edge.
+func (_q *GeneralSettingsQuery) QueryProxmoxs() *ProxmoxQuery {
+	query := (&ProxmoxClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(proxmox.Table, proxmox.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.ProxmoxsTable, generalsettings.ProxmoxsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryWastes chains the current query on the "wastes" edge.
+func (_q *GeneralSettingsQuery) QueryWastes() *WasteQuery {
+	query := (&WasteClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(waste.Table, waste.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.WastesTable, generalsettings.WastesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAirqualities chains the current query on the "airqualities" edge.
+func (_q *GeneralSettingsQuery) QueryAirqualities() *AirQualityQuery {
+	query := (&AirQualityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(airquality.Table, airquality.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.AirqualitiesTable, generalsettings.AirqualitiesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryParcels chains the current query on the "parcels" edge.
+func (_q *GeneralSettingsQuery) QueryParcels() *ParcelQuery {
+	query := (&ParcelClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(generalsettings.Table, generalsettings.FieldID, selector),
+			sqlgraph.To(parcel.Table, parcel.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, generalsettings.ParcelsTable, generalsettings.ParcelsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first GeneralSettings entity from the query.
 // Returns a *NotFoundError when no GeneralSettings was found.
 func (_q *GeneralSettingsQuery) First(ctx context.Context) (*GeneralSettings, error) {
@@ -1501,6 +1693,14 @@ func (_q *GeneralSettingsQuery) Clone() *GeneralSettingsQuery {
 		withOverseerrs:        _q.withOverseerrs.Clone(),
 		withUptimeKumas:       _q.withUptimeKumas.Clone(),
 		withSpeedtests:        _q.withSpeedtests.Clone(),
+		withAdguards:          _q.withAdguards.Clone(),
+		withFrigates:          _q.withFrigates.Clone(),
+		withZigbee2mqtts:      _q.withZigbee2mqtts.Clone(),
+		withTransmissions:     _q.withTransmissions.Clone(),
+		withProxmoxs:          _q.withProxmoxs.Clone(),
+		withWastes:            _q.withWastes.Clone(),
+		withAirqualities:      _q.withAirqualities.Clone(),
+		withParcels:           _q.withParcels.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -2057,6 +2257,94 @@ func (_q *GeneralSettingsQuery) WithSpeedtests(opts ...func(*SpeedtestQuery)) *G
 	return _q
 }
 
+// WithAdguards tells the query-builder to eager-load the nodes that are connected to
+// the "adguards" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithAdguards(opts ...func(*AdGuardQuery)) *GeneralSettingsQuery {
+	query := (&AdGuardClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAdguards = query
+	return _q
+}
+
+// WithFrigates tells the query-builder to eager-load the nodes that are connected to
+// the "frigates" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithFrigates(opts ...func(*FrigateQuery)) *GeneralSettingsQuery {
+	query := (&FrigateClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withFrigates = query
+	return _q
+}
+
+// WithZigbee2mqtts tells the query-builder to eager-load the nodes that are connected to
+// the "zigbee2mqtts" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithZigbee2mqtts(opts ...func(*Zigbee2MQTTQuery)) *GeneralSettingsQuery {
+	query := (&Zigbee2MQTTClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withZigbee2mqtts = query
+	return _q
+}
+
+// WithTransmissions tells the query-builder to eager-load the nodes that are connected to
+// the "transmissions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithTransmissions(opts ...func(*TransmissionQuery)) *GeneralSettingsQuery {
+	query := (&TransmissionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTransmissions = query
+	return _q
+}
+
+// WithProxmoxs tells the query-builder to eager-load the nodes that are connected to
+// the "proxmoxs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithProxmoxs(opts ...func(*ProxmoxQuery)) *GeneralSettingsQuery {
+	query := (&ProxmoxClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withProxmoxs = query
+	return _q
+}
+
+// WithWastes tells the query-builder to eager-load the nodes that are connected to
+// the "wastes" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithWastes(opts ...func(*WasteQuery)) *GeneralSettingsQuery {
+	query := (&WasteClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withWastes = query
+	return _q
+}
+
+// WithAirqualities tells the query-builder to eager-load the nodes that are connected to
+// the "airqualities" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithAirqualities(opts ...func(*AirQualityQuery)) *GeneralSettingsQuery {
+	query := (&AirQualityClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAirqualities = query
+	return _q
+}
+
+// WithParcels tells the query-builder to eager-load the nodes that are connected to
+// the "parcels" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GeneralSettingsQuery) WithParcels(opts ...func(*ParcelQuery)) *GeneralSettingsQuery {
+	query := (&ParcelClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withParcels = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -2135,7 +2423,7 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*GeneralSettings{}
 		_spec       = _q.querySpec()
-		loadedTypes = [50]bool{
+		loadedTypes = [58]bool{
 			_q.withSonarr != nil,
 			_q.withRadarr != nil,
 			_q.withF1 != nil,
@@ -2186,6 +2474,14 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withOverseerrs != nil,
 			_q.withUptimeKumas != nil,
 			_q.withSpeedtests != nil,
+			_q.withAdguards != nil,
+			_q.withFrigates != nil,
+			_q.withZigbee2mqtts != nil,
+			_q.withTransmissions != nil,
+			_q.withProxmoxs != nil,
+			_q.withWastes != nil,
+			_q.withAirqualities != nil,
+			_q.withParcels != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -2563,6 +2859,62 @@ func (_q *GeneralSettingsQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := _q.loadSpeedtests(ctx, query, nodes,
 			func(n *GeneralSettings) { n.Edges.Speedtests = []*Speedtest{} },
 			func(n *GeneralSettings, e *Speedtest) { n.Edges.Speedtests = append(n.Edges.Speedtests, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAdguards; query != nil {
+		if err := _q.loadAdguards(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Adguards = []*AdGuard{} },
+			func(n *GeneralSettings, e *AdGuard) { n.Edges.Adguards = append(n.Edges.Adguards, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withFrigates; query != nil {
+		if err := _q.loadFrigates(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Frigates = []*Frigate{} },
+			func(n *GeneralSettings, e *Frigate) { n.Edges.Frigates = append(n.Edges.Frigates, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withZigbee2mqtts; query != nil {
+		if err := _q.loadZigbee2mqtts(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Zigbee2mqtts = []*Zigbee2MQTT{} },
+			func(n *GeneralSettings, e *Zigbee2MQTT) { n.Edges.Zigbee2mqtts = append(n.Edges.Zigbee2mqtts, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTransmissions; query != nil {
+		if err := _q.loadTransmissions(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Transmissions = []*Transmission{} },
+			func(n *GeneralSettings, e *Transmission) { n.Edges.Transmissions = append(n.Edges.Transmissions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withProxmoxs; query != nil {
+		if err := _q.loadProxmoxs(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Proxmoxs = []*Proxmox{} },
+			func(n *GeneralSettings, e *Proxmox) { n.Edges.Proxmoxs = append(n.Edges.Proxmoxs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withWastes; query != nil {
+		if err := _q.loadWastes(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Wastes = []*Waste{} },
+			func(n *GeneralSettings, e *Waste) { n.Edges.Wastes = append(n.Edges.Wastes, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAirqualities; query != nil {
+		if err := _q.loadAirqualities(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Airqualities = []*AirQuality{} },
+			func(n *GeneralSettings, e *AirQuality) { n.Edges.Airqualities = append(n.Edges.Airqualities, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withParcels; query != nil {
+		if err := _q.loadParcels(ctx, query, nodes,
+			func(n *GeneralSettings) { n.Edges.Parcels = []*Parcel{} },
+			func(n *GeneralSettings, e *Parcel) { n.Edges.Parcels = append(n.Edges.Parcels, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -4114,6 +4466,254 @@ func (_q *GeneralSettingsQuery) loadSpeedtests(ctx context.Context, query *Speed
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_speedtests" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadAdguards(ctx context.Context, query *AdGuardQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *AdGuard)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.AdGuard(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.AdguardsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_adguards
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_adguards" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_adguards" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadFrigates(ctx context.Context, query *FrigateQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Frigate)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Frigate(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.FrigatesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_frigates
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_frigates" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_frigates" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadZigbee2mqtts(ctx context.Context, query *Zigbee2MQTTQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Zigbee2MQTT)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Zigbee2MQTT(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.Zigbee2mqttsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_zigbee2mqtts
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_zigbee2mqtts" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_zigbee2mqtts" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadTransmissions(ctx context.Context, query *TransmissionQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Transmission)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Transmission(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.TransmissionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_transmissions
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_transmissions" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_transmissions" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadProxmoxs(ctx context.Context, query *ProxmoxQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Proxmox)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Proxmox(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.ProxmoxsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_proxmoxs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_proxmoxs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_proxmoxs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadWastes(ctx context.Context, query *WasteQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Waste)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Waste(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.WastesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_wastes
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_wastes" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_wastes" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadAirqualities(ctx context.Context, query *AirQualityQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *AirQuality)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.AirQuality(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.AirqualitiesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_airqualities
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_airqualities" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_airqualities" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GeneralSettingsQuery) loadParcels(ctx context.Context, query *ParcelQuery, nodes []*GeneralSettings, init func(*GeneralSettings), assign func(*GeneralSettings, *Parcel)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*GeneralSettings)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Parcel(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(generalsettings.ParcelsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.general_settings_parcels
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "general_settings_parcels" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "general_settings_parcels" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
