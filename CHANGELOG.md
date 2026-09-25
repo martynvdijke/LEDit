@@ -1,3 +1,10 @@
+# [1.49.0](https://github.com/martynvdijke/LEDit/compare/v1.48.1...v1.49.0) (2026-09-25)
+
+
+### Features
+
+* device/group policy inheritance for brightness and overlay ([4d06914](https://github.com/martynvdijke/LEDit/commit/4d06914b1d04b1df27d29bd1085de885c81e8ee4))
+
 ## [1.48.1](https://github.com/martynvdijke/LEDit/compare/v1.48.0...v1.48.1) (2026-09-25)
 
 # [1.48.0](https://github.com/martynvdijke/LEDit/compare/v1.47.0...v1.48.0) (2026-09-25)
