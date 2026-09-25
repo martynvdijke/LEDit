@@ -1,3 +1,11 @@
+# [1.50.0](https://github.com/martynvdijke/LEDit/compare/v1.49.0...v1.50.0) (2026-09-25)
+
+
+### Features
+
+* home assistant mqtt auto-discovery ([9ad1b42](https://github.com/martynvdijke/LEDit/commit/9ad1b4262ea2edf31888d503acf3546b1731a874))
+* push transport parity with websocket feed ([d84b800](https://github.com/martynvdijke/LEDit/commit/d84b800a6f27eb216a432bcfd0f9bd002fb5a5f6))
+
 # [1.49.0](https://github.com/martynvdijke/LEDit/compare/v1.48.1...v1.49.0) (2026-09-25)
 
 
