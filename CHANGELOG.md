@@ -1,3 +1,10 @@
+# [1.46.0](https://github.com/martynvdijke/LEDit/compare/v1.45.4...v1.46.0) (2026-09-25)
+
+
+### Features
+
+* quick wins — slot re-eval, backup media, untappd real API, unified catalog ([c321fa1](https://github.com/martynvdijke/LEDit/commit/c321fa11da791ac1b2715e0aa3bc526b09a5a5a4))
+
 ## [1.45.4](https://github.com/martynvdijke/LEDit/compare/v1.45.3...v1.45.4) (2026-09-24)
 
 ## [1.45.3](https://github.com/martynvdijke/LEDit/compare/v1.45.2...v1.45.3) (2026-09-23)
