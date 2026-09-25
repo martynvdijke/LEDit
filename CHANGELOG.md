@@ -1,3 +1,10 @@
+# [1.51.0](https://github.com/martynvdijke/LEDit/compare/v1.50.0...v1.51.0) (2026-09-25)
+
+
+### Features
+
+* notification inbox with persisted read/dismiss state ([a2ba039](https://github.com/martynvdijke/LEDit/commit/a2ba03938284400195664879d2971373fc9dea52))
+
 # [1.50.0](https://github.com/martynvdijke/LEDit/compare/v1.49.0...v1.50.0) (2026-09-25)
 
 
