@@ -38,6 +38,16 @@ func unregisterDeviceFeed(deviceID int) {
 	defer deviceFeedMu.Unlock()
 	delete(deviceFeeds, deviceID)
 }
+
+// unregisterDeviceFeedIf removes deviceID only if it still maps to fc,
+// so a restarted runner cannot evict its replacement.
+func unregisterDeviceFeedIf(deviceID int, fc *FeedController) {
+	deviceFeedMu.Lock()
+	if cur, ok := deviceFeeds[deviceID]; ok && cur == fc {
+		delete(deviceFeeds, deviceID)
+	}
+	deviceFeedMu.Unlock()
+}
 func getDeviceFeed(deviceID int) (*FeedController, bool) {
 	deviceFeedMu.RLock()
 	defer deviceFeedMu.RUnlock()

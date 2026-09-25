@@ -9,14 +9,11 @@ import (
 
 	"ledit/ent"
 	"ledit/ent/devicesettings"
-	"ledit/ent/generalsettings"
 	"ledit/render"
 )
 
-// ponytail: simplified vs serveFeed: renders first/composed source only (no rotation/tiering/transitions).
-// Reuses overlaySpecForDevice, brightness (via brightnessProviderForTest or 100), defaultLKG+datasourceConfigSig,
-// PanelLogicalWidth handling via render width not needed for push (use device width directly).
-// WLED realtime mode times out on its own; on stop we send no "off" packet.
+// ponytail: push parity = rotation+tiering(incident>alarm>scene>pin)+theme+scene-overlay+effective brightness/ramp+sensor+panel slicing.
+// Deferred: transitions (hard cut), notifications-as-pixels, Animator sub-slot 50ms granularity (animation still advances because renderPushSourcePNG re-renders via LKG every OutputFps tick).
 
 var (
 	transportRunners   = map[int]*transportRunner{}
@@ -26,8 +23,16 @@ var (
 var newOutputSink = NewOutputSink
 
 type transportRunner struct {
-	cancel context.CancelFunc
-	done   chan struct{}
+	cancel            context.CancelFunc
+	done              chan struct{}
+	fc                *FeedController
+	pb                *pushBrightness
+	sources           []sourceWithName
+	settings          *ent.GeneralSettings
+	lastSourceRefresh time.Time
+	current           *sourceWithName
+	cursor            int
+	nextRotate        time.Time
 }
 
 func StartTransportDevices(s *Server) {
@@ -109,15 +114,28 @@ func startTransportRunner(s *Server, d *ent.DeviceSettings) {
 		return
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	r := &transportRunner{cancel: cancel, done: make(chan struct{})}
+	r := &transportRunner{
+		cancel:     cancel,
+		done:       make(chan struct{}),
+		fc:         &FeedController{},
+		pb:         newPushBrightness(d),
+		nextRotate: time.Now(),
+	}
+	registerDeviceFeed(d.ID, r.fc)
+	joinController(r.fc)
+	if src := AlarmSource(); src != nil {
+		r.fc.SetAlarmSource(src)
+	}
+	if src := ActiveSceneSource(); src != nil {
+		r.fc.SetSceneSource(src)
+	}
 	transportRunnersMu.Lock()
-	// if raced, cancel old
 	if old, ok := transportRunners[d.ID]; ok {
 		old.cancel()
 	}
 	transportRunners[d.ID] = r
 	transportRunnersMu.Unlock()
-	go runTransportLoop(ctx, r.done, s, d, sink, cfg)
+	go runTransportLoop(ctx, r.done, s, d, sink, cfg, r)
 }
 
 func sinkHost(d *ent.DeviceSettings) string {
@@ -154,9 +172,13 @@ func sinkPort(d *ent.DeviceSettings) int {
 	}
 }
 
-func runTransportLoop(ctx context.Context, done chan struct{}, s *Server, d *ent.DeviceSettings, sink OutputSink, cfg OutputSinkConfig) {
+func runTransportLoop(ctx context.Context, done chan struct{}, s *Server, d *ent.DeviceSettings, sink OutputSink, cfg OutputSinkConfig, r *transportRunner) {
 	defer close(done)
 	defer sink.Close()
+	defer func() {
+		leaveController(r.fc)
+		unregisterDeviceFeedIf(d.ID, r.fc)
+	}()
 	interval := cfg.Interval()
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -177,8 +199,6 @@ func runTransportLoop(ctx context.Context, done chan struct{}, s *Server, d *ent
 			return
 		case <-ticker.C:
 		}
-		// Refresh device row each tick for config changes without restart (lightweight)
-		// If device deleted/disabled/websocket, exit.
 		cur, err := s.DB.DeviceSettings.Query().Where(devicesettings.IDEQ(deviceID)).WithGroup().Only(s.Ctx)
 		if err != nil {
 			return
@@ -195,8 +215,19 @@ func runTransportLoop(ctx context.Context, done chan struct{}, s *Server, d *ent
 		if height <= 0 {
 			height = 64
 		}
+		now := time.Now()
+		if r.settings == nil || len(r.sources) == 0 || now.Sub(r.lastSourceRefresh) >= 60*time.Second {
+			if gs, gerr := loadAllSettings(s.Ctx, s.DB); gerr == nil {
+				r.settings = gs
+				r.sources = s.WSHub.composeDeviceSources(d, gs)
+				r.lastSourceRefresh = now
+			}
+		}
+		if len(r.sources) == 0 {
+			continue
+		}
 		start := time.Now()
-		pixels, err := renderDevicePixels(s, d, width, height)
+		pixels, err := renderPushFrame(s, r, d, width, height, now)
 		if err != nil {
 			dur := time.Since(start)
 			Health.RecordFailure(deviceKey(deviceID), err, dur)
@@ -211,6 +242,9 @@ func runTransportLoop(ctx context.Context, done chan struct{}, s *Server, d *ent
 				return
 			case <-time.After(dur2):
 			}
+			continue
+		}
+		if pixels == nil {
 			continue
 		}
 		frame := OutputFrame{Width: width, Height: height, Pixels: pixels, Seq: seq, At: time.Now()}
@@ -240,56 +274,71 @@ func runTransportLoop(ctx context.Context, done chan struct{}, s *Server, d *ent
 
 func deviceKey(id int) string { return "device:" + strconv.Itoa(id) }
 
-func renderDevicePixels(s *Server, d *ent.DeviceSettings, width, height int) ([]byte, error) {
-	// Load GeneralSettings with edges like HandleDeviceWS (minimal set sufficient for composeDeviceSources to work via loadSources)
-	settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).
-		WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().WithAdguards().WithFrigates().WithZigbee2mqtts().WithTransmissions().WithProxmoxs().WithWastes().WithAirqualities().WithParcels().
-		Only(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	sources := s.WSHub.composeDeviceSources(d, settings)
-	if len(sources) == 0 {
-		return nil, nil
-	}
-	sw := sources[0]
+func renderPushFrame(s *Server, r *transportRunner, d *ent.DeviceSettings, width, height int, now time.Time) ([]byte, error) {
 	renderWidth := render.PanelLogicalWidth(width, d.PanelCols, d.PanelGap)
-	cacheKey := lkgCacheKey("device:"+strconv.Itoa(d.ID)+":"+sw.cacheKey, renderWidth, height)
-	img, _, err := defaultLKG.GetPNG(cacheKey, datasourceConfigSig(sw.Source), func() (*render.RenderedImage, error) {
-		return sw.Source.GetPNG(renderWidth, height)
-	})
-	if err != nil {
-		return nil, err
-	}
-	data := img.Data
-	// overlay
-	spec := overlaySpecForDeviceWithGroup(d)
-	if spec.Enabled {
-		if out, oerr := render.CompositeOverlayPNG(data, spec, time.Now()); oerr == nil {
-			data = out
+	if scene, ok := CurrentIncidentScene(); ok {
+		if data, err := render.IncidentPNG(renderWidth, height, scene, now); err == nil {
+			return frameToPixels(slicePanelsForPush(data, d), width, height, d)
 		}
 	}
-	// brightness effective
-	lvl := 100
-	if brightnessProviderForTest != nil {
-		lvl = brightnessProviderForTest()
-	} else {
-		ebEnabled, ebSched, ebOverride, _ := effectiveBrightnessConfig(d)
-		if ebEnabled {
-			lvl = 100
-			if ebSched != "" && ebSched != "[]" {
-				if wins, perr := ParseBrightnessWindows(ebSched); perr == nil {
-					lvl = ResolveBrightness(time.Now(), wins, nil, ebOverride)
-				}
-			} else if ebOverride != nil {
-				lvl = *ebOverride
+	var sw *sourceWithName
+	if tier := selectPushTierSource(r.fc); tier != nil {
+		sw = tier
+	} else if pinnedKey, _, ok := r.fc.IsPinned(); ok {
+		for i := range r.sources {
+			if r.sources[i].cacheKey == pinnedKey {
+				sw = &r.sources[i]
+				break
 			}
 		}
 	}
+	if sw == nil {
+		slot := time.Duration(d.RefreshInterval) * time.Second
+		if slot <= 0 {
+			slot = 60 * time.Second
+		}
+		needRotate := r.current == nil || !containsSource(r.sources, *r.current) || now.After(r.nextRotate)
+		if needRotate {
+			idx := r.cursor % len(r.sources)
+			cur := r.sources[idx]
+			r.current = &cur
+			random := false
+			if r.settings != nil {
+				random = r.settings.Random && !(d.ContentMode == "playlist" || d.ContentMode == "scheduled")
+			}
+			r.cursor = nextPushIndex(idx, len(r.sources), random, r.sources)
+			r.nextRotate = now.Add(slot)
+		}
+		sw = r.current
+	}
+	if sw == nil {
+		return nil, nil
+	}
+	img, err := renderPushSourcePNG(*sw, "device:"+strconv.Itoa(d.ID)+":", renderWidth, height, d.ID)
+	if err != nil {
+		return nil, err
+	}
+	lvl := r.pb.level(now)
+	data := applyOverlayWithScene(img.Data, overlaySpecForDeviceWithGroup(d), now)
 	if lvl != 100 {
 		data = dimPNGBytes(data, lvl)
 	}
-	nrgba, err := render.DecodeNRGBA(data)
+	return frameToPixels(slicePanelsForPush(data, d), width, height, d)
+}
+
+func slicePanelsForPush(data []byte, d *ent.DeviceSettings) []byte {
+	if d.PanelCols < 2 || d.PanelGap <= 0 {
+		return data
+	}
+	out, err := render.SlicePanelGapsPNG(data, d.PanelCols, d.PanelGap)
+	if err != nil {
+		return data
+	}
+	return out
+}
+
+func frameToPixels(pngBytes []byte, width, height int, d *ent.DeviceSettings) ([]byte, error) {
+	nrgba, err := render.DecodeNRGBA(pngBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -303,4 +352,13 @@ func renderDevicePixels(s *Server, d *ent.DeviceSettings, width, height int) ([]
 	}
 	pixels := render.FrameToPixels(nrgba, pCfg)
 	return pixels, nil
+}
+
+func containsSource(sources []sourceWithName, sw sourceWithName) bool {
+	for _, s := range sources {
+		if s.cacheKey == sw.cacheKey {
+			return true
+		}
+	}
+	return false
 }
