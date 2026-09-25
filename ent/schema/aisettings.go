@@ -16,5 +16,6 @@ func (AISettings) Fields() []ent.Field {
 		field.String("api_key"),
 		field.String("model"),
 		field.String("endpoint").Optional(),
+		field.Bool("nl_create_enabled").Default(false),
 	}
 }

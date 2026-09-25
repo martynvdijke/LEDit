@@ -35,6 +35,11 @@
                     <input type="text" class="form-control" id="endpoint" name="endpoint" value="{{if .settings}}{{.settings.Endpoint}}{{end}}" placeholder="https://api.openai.com/v1">
                     <div class="form-text">Custom endpoint for self-hosted or compatible APIs.</div>
                 </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="nl_create_enabled" name="nl_create_enabled" {{if and .settings .settings.NlCreateEnabled}}checked{{end}}>
+                    <label class="form-check-label" for="nl_create_enabled">Allow voice creation of playlists / scenes / rules</label>
+                    <div class="form-text">When off, NL create intents are refused (default off).</div>
+                </div>
                 <button type="submit" class="btn btn-primary">Save Settings</button>
                 <button type="button" class="btn btn-outline-secondary ms-2" id="testConnectionBtn">Test Connection</button>
                 <div id="testResult" class="mt-2"></div>

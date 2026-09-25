@@ -19,6 +19,8 @@ const (
 	FieldModel = "model"
 	// FieldEndpoint holds the string denoting the endpoint field in the database.
 	FieldEndpoint = "endpoint"
+	// FieldNlCreateEnabled holds the string denoting the nl_create_enabled field in the database.
+	FieldNlCreateEnabled = "nl_create_enabled"
 	// Table holds the table name of the aisettings in the database.
 	Table = "ai_settings"
 )
@@ -30,6 +32,7 @@ var Columns = []string{
 	FieldAPIKey,
 	FieldModel,
 	FieldEndpoint,
+	FieldNlCreateEnabled,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "ai_settings"
@@ -52,6 +55,11 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultNlCreateEnabled holds the default value on creation for the "nl_create_enabled" field.
+	DefaultNlCreateEnabled bool
+)
 
 // OrderOption defines the ordering options for the AISettings queries.
 type OrderOption func(*sql.Selector)
@@ -79,4 +87,9 @@ func ByModel(opts ...sql.OrderTermOption) OrderOption {
 // ByEndpoint orders the results by the endpoint field.
 func ByEndpoint(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEndpoint, opts...).ToFunc()
+}
+
+// ByNlCreateEnabled orders the results by the nl_create_enabled field.
+func ByNlCreateEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNlCreateEnabled, opts...).ToFunc()
 }

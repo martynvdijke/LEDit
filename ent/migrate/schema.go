@@ -39,6 +39,7 @@ var (
 		{Name: "api_key", Type: field.TypeString},
 		{Name: "model", Type: field.TypeString},
 		{Name: "endpoint", Type: field.TypeString, Nullable: true},
+		{Name: "nl_create_enabled", Type: field.TypeBool, Default: false},
 		{Name: "general_settings_ai_settings", Type: field.TypeInt, Nullable: true},
 	}
 	// AiSettingsTable holds the schema information for the "ai_settings" table.
@@ -49,7 +50,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "ai_settings_general_settings_ai_settings",
-				Columns:    []*schema.Column{AiSettingsColumns[5]},
+				Columns:    []*schema.Column{AiSettingsColumns[6]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

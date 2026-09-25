@@ -23,7 +23,9 @@ type AISettings struct {
 	// Model holds the value of the "model" field.
 	Model string `json:"model,omitempty"`
 	// Endpoint holds the value of the "endpoint" field.
-	Endpoint                     string `json:"endpoint,omitempty"`
+	Endpoint string `json:"endpoint,omitempty"`
+	// NlCreateEnabled holds the value of the "nl_create_enabled" field.
+	NlCreateEnabled              bool `json:"nl_create_enabled,omitempty"`
 	general_settings_ai_settings *int
 	selectValues                 sql.SelectValues
 }
@@ -33,6 +35,8 @@ func (*AISettings) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case aisettings.FieldNlCreateEnabled:
+			values[i] = new(sql.NullBool)
 		case aisettings.FieldID:
 			values[i] = new(sql.NullInt64)
 		case aisettings.FieldProvider, aisettings.FieldAPIKey, aisettings.FieldModel, aisettings.FieldEndpoint:
@@ -83,6 +87,12 @@ func (_m *AISettings) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field endpoint", values[i])
 			} else if value.Valid {
 				_m.Endpoint = value.String
+			}
+		case aisettings.FieldNlCreateEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field nl_create_enabled", values[i])
+			} else if value.Valid {
+				_m.NlCreateEnabled = value.Bool
 			}
 		case aisettings.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -138,6 +148,9 @@ func (_m *AISettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("endpoint=")
 	builder.WriteString(_m.Endpoint)
+	builder.WriteString(", ")
+	builder.WriteString("nl_create_enabled=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NlCreateEnabled))
 	builder.WriteByte(')')
 	return builder.String()
 }

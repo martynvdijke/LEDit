@@ -271,17 +271,32 @@ func (c *MQTTController) handleNLPayload(payload string) {
 	if text == "" {
 		return
 	}
+	if err := checkRateLimit(0); err != nil {
+		slog.Debug("mqtt nl rate limited")
+		return
+	}
 	cfg, ok := LoadAIConfig(c.s)
 	if !ok {
 		slog.Debug("mqtt nl ignored: AI not configured")
 		return
 	}
+	if nlCreateEnabled(c.s) && peekCreateRateLimited(0) && looksLikeCreate(text) {
+		slog.Debug("mqtt nl create rate limited (pre-check)")
+		return
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	intent, err := ParseIntent(ctx, text, cfg)
+	sources := AvailableSourcesForPrompt(c.s)
+	intent, err := ParseIntentWithSources(ctx, text, cfg, sources)
 	if err != nil {
 		slog.Warn("mqtt nl parse failed", "payload", text, "error", err)
 		return
+	}
+	if isCreateAction(intent.Action) {
+		if err := checkCreateRateLimit(0); err != nil {
+			slog.Debug("mqtt nl create rate limited")
+			return
+		}
 	}
 	reply := ExecuteIntent(c.s, intent)
 	slog.Info("mqtt nl executed", "payload", text, "action", intent.Action, "reply", reply)
@@ -293,16 +308,28 @@ func HandleNLPayload(s *Server, payload string) {
 	if text == "" {
 		return
 	}
+	if err := checkRateLimit(0); err != nil {
+		return
+	}
 	cfg, ok := LoadAIConfig(s)
 	if !ok {
 		return
 	}
+	if nlCreateEnabled(s) && peekCreateRateLimited(0) && looksLikeCreate(text) {
+		return
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	intent, err := ParseIntent(ctx, text, cfg)
+	sources := AvailableSourcesForPrompt(s)
+	intent, err := ParseIntentWithSources(ctx, text, cfg, sources)
 	if err != nil {
 		slog.Debug("mqtt nl parse failed", "error", err)
 		return
+	}
+	if isCreateAction(intent.Action) {
+		if err := checkCreateRateLimit(0); err != nil {
+			return
+		}
 	}
 	ExecuteIntent(s, intent)
 }

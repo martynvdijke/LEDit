@@ -7,6 +7,7 @@ import (
 	"ledit/ent/adminsettings"
 	"ledit/ent/aidigest"
 	"ledit/ent/airquality"
+	"ledit/ent/aisettings"
 	"ledit/ent/alertsettings"
 	"ledit/ent/apitoken"
 	"ledit/ent/calendar"
@@ -107,6 +108,12 @@ func init() {
 	aidigestDescEnabled := aidigestFields[4].Descriptor()
 	// aidigest.DefaultEnabled holds the default value on creation for the enabled field.
 	aidigest.DefaultEnabled = aidigestDescEnabled.Default.(bool)
+	aisettingsFields := schema.AISettings{}.Fields()
+	_ = aisettingsFields
+	// aisettingsDescNlCreateEnabled is the schema descriptor for nl_create_enabled field.
+	aisettingsDescNlCreateEnabled := aisettingsFields[5].Descriptor()
+	// aisettings.DefaultNlCreateEnabled holds the default value on creation for the nl_create_enabled field.
+	aisettings.DefaultNlCreateEnabled = aisettingsDescNlCreateEnabled.Default.(bool)
 	adguardFields := schema.AdGuard{}.Fields()
 	_ = adguardFields
 	// adguardDescToken is the schema descriptor for token field.

@@ -792,17 +792,18 @@ func (m *AIDigestMutation) ResetEdge(name string) error {
 // AISettingsMutation represents an operation that mutates the AISettings nodes in the graph.
 type AISettingsMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	provider      *string
-	api_key       *string
-	model         *string
-	endpoint      *string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*AISettings, error)
-	predicates    []predicate.AISettings
+	op                Op
+	typ               string
+	id                *int
+	provider          *string
+	api_key           *string
+	model             *string
+	endpoint          *string
+	nl_create_enabled *bool
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*AISettings, error)
+	predicates        []predicate.AISettings
 }
 
 var _ ent.Mutation = (*AISettingsMutation)(nil)
@@ -1066,6 +1067,42 @@ func (m *AISettingsMutation) ResetEndpoint() {
 	delete(m.clearedFields, aisettings.FieldEndpoint)
 }
 
+// SetNlCreateEnabled sets the "nl_create_enabled" field.
+func (m *AISettingsMutation) SetNlCreateEnabled(b bool) {
+	m.nl_create_enabled = &b
+}
+
+// NlCreateEnabled returns the value of the "nl_create_enabled" field in the mutation.
+func (m *AISettingsMutation) NlCreateEnabled() (r bool, exists bool) {
+	v := m.nl_create_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNlCreateEnabled returns the old "nl_create_enabled" field's value of the AISettings entity.
+// If the AISettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AISettingsMutation) OldNlCreateEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNlCreateEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNlCreateEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNlCreateEnabled: %w", err)
+	}
+	return oldValue.NlCreateEnabled, nil
+}
+
+// ResetNlCreateEnabled resets all changes to the "nl_create_enabled" field.
+func (m *AISettingsMutation) ResetNlCreateEnabled() {
+	m.nl_create_enabled = nil
+}
+
 // Where appends a list predicates to the AISettingsMutation builder.
 func (m *AISettingsMutation) Where(ps ...predicate.AISettings) {
 	m.predicates = append(m.predicates, ps...)
@@ -1100,7 +1137,7 @@ func (m *AISettingsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AISettingsMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.provider != nil {
 		fields = append(fields, aisettings.FieldProvider)
 	}
@@ -1112,6 +1149,9 @@ func (m *AISettingsMutation) Fields() []string {
 	}
 	if m.endpoint != nil {
 		fields = append(fields, aisettings.FieldEndpoint)
+	}
+	if m.nl_create_enabled != nil {
+		fields = append(fields, aisettings.FieldNlCreateEnabled)
 	}
 	return fields
 }
@@ -1129,6 +1169,8 @@ func (m *AISettingsMutation) Field(name string) (ent.Value, bool) {
 		return m.Model()
 	case aisettings.FieldEndpoint:
 		return m.Endpoint()
+	case aisettings.FieldNlCreateEnabled:
+		return m.NlCreateEnabled()
 	}
 	return nil, false
 }
@@ -1146,6 +1188,8 @@ func (m *AISettingsMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldModel(ctx)
 	case aisettings.FieldEndpoint:
 		return m.OldEndpoint(ctx)
+	case aisettings.FieldNlCreateEnabled:
+		return m.OldNlCreateEnabled(ctx)
 	}
 	return nil, fmt.Errorf("unknown AISettings field %s", name)
 }
@@ -1182,6 +1226,13 @@ func (m *AISettingsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEndpoint(v)
+		return nil
+	case aisettings.FieldNlCreateEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNlCreateEnabled(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AISettings field %s", name)
@@ -1252,6 +1303,9 @@ func (m *AISettingsMutation) ResetField(name string) error {
 		return nil
 	case aisettings.FieldEndpoint:
 		m.ResetEndpoint()
+		return nil
+	case aisettings.FieldNlCreateEnabled:
+		m.ResetNlCreateEnabled()
 		return nil
 	}
 	return fmt.Errorf("unknown AISettings field %s", name)

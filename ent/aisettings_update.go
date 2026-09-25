@@ -89,6 +89,20 @@ func (_u *AISettingsUpdate) ClearEndpoint() *AISettingsUpdate {
 	return _u
 }
 
+// SetNlCreateEnabled sets the "nl_create_enabled" field.
+func (_u *AISettingsUpdate) SetNlCreateEnabled(v bool) *AISettingsUpdate {
+	_u.mutation.SetNlCreateEnabled(v)
+	return _u
+}
+
+// SetNillableNlCreateEnabled sets the "nl_create_enabled" field if the given value is not nil.
+func (_u *AISettingsUpdate) SetNillableNlCreateEnabled(v *bool) *AISettingsUpdate {
+	if v != nil {
+		_u.SetNlCreateEnabled(*v)
+	}
+	return _u
+}
+
 // Mutation returns the AISettingsMutation object of the builder.
 func (_u *AISettingsUpdate) Mutation() *AISettingsMutation {
 	return _u.mutation
@@ -144,6 +158,9 @@ func (_u *AISettingsUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if _u.mutation.EndpointCleared() {
 		_spec.ClearField(aisettings.FieldEndpoint, field.TypeString)
+	}
+	if value, ok := _u.mutation.NlCreateEnabled(); ok {
+		_spec.SetField(aisettings.FieldNlCreateEnabled, field.TypeBool, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -224,6 +241,20 @@ func (_u *AISettingsUpdateOne) SetNillableEndpoint(v *string) *AISettingsUpdateO
 // ClearEndpoint clears the value of the "endpoint" field.
 func (_u *AISettingsUpdateOne) ClearEndpoint() *AISettingsUpdateOne {
 	_u.mutation.ClearEndpoint()
+	return _u
+}
+
+// SetNlCreateEnabled sets the "nl_create_enabled" field.
+func (_u *AISettingsUpdateOne) SetNlCreateEnabled(v bool) *AISettingsUpdateOne {
+	_u.mutation.SetNlCreateEnabled(v)
+	return _u
+}
+
+// SetNillableNlCreateEnabled sets the "nl_create_enabled" field if the given value is not nil.
+func (_u *AISettingsUpdateOne) SetNillableNlCreateEnabled(v *bool) *AISettingsUpdateOne {
+	if v != nil {
+		_u.SetNlCreateEnabled(*v)
+	}
 	return _u
 }
 
@@ -312,6 +343,9 @@ func (_u *AISettingsUpdateOne) sqlSave(ctx context.Context) (_node *AISettings, 
 	}
 	if _u.mutation.EndpointCleared() {
 		_spec.ClearField(aisettings.FieldEndpoint, field.TypeString)
+	}
+	if value, ok := _u.mutation.NlCreateEnabled(); ok {
+		_spec.SetField(aisettings.FieldNlCreateEnabled, field.TypeBool, value)
 	}
 	_node = &AISettings{config: _u.config}
 	_spec.Assign = _node.assignValues

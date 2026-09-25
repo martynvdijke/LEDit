@@ -51,6 +51,20 @@ func (_c *AISettingsCreate) SetNillableEndpoint(v *string) *AISettingsCreate {
 	return _c
 }
 
+// SetNlCreateEnabled sets the "nl_create_enabled" field.
+func (_c *AISettingsCreate) SetNlCreateEnabled(v bool) *AISettingsCreate {
+	_c.mutation.SetNlCreateEnabled(v)
+	return _c
+}
+
+// SetNillableNlCreateEnabled sets the "nl_create_enabled" field if the given value is not nil.
+func (_c *AISettingsCreate) SetNillableNlCreateEnabled(v *bool) *AISettingsCreate {
+	if v != nil {
+		_c.SetNlCreateEnabled(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *AISettingsCreate) SetID(v int) *AISettingsCreate {
 	_c.mutation.SetID(v)
@@ -64,6 +78,7 @@ func (_c *AISettingsCreate) Mutation() *AISettingsMutation {
 
 // Save creates the AISettings in the database.
 func (_c *AISettingsCreate) Save(ctx context.Context) (*AISettings, error) {
+	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -89,6 +104,14 @@ func (_c *AISettingsCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (_c *AISettingsCreate) defaults() {
+	if _, ok := _c.mutation.NlCreateEnabled(); !ok {
+		v := aisettings.DefaultNlCreateEnabled
+		_c.mutation.SetNlCreateEnabled(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (_c *AISettingsCreate) check() error {
 	if _, ok := _c.mutation.Provider(); !ok {
@@ -99,6 +122,9 @@ func (_c *AISettingsCreate) check() error {
 	}
 	if _, ok := _c.mutation.Model(); !ok {
 		return &ValidationError{Name: "model", err: errors.New(`ent: missing required field "AISettings.model"`)}
+	}
+	if _, ok := _c.mutation.NlCreateEnabled(); !ok {
+		return &ValidationError{Name: "nl_create_enabled", err: errors.New(`ent: missing required field "AISettings.nl_create_enabled"`)}
 	}
 	return nil
 }
@@ -148,6 +174,10 @@ func (_c *AISettingsCreate) createSpec() (*AISettings, *sqlgraph.CreateSpec) {
 		_spec.SetField(aisettings.FieldEndpoint, field.TypeString, value)
 		_node.Endpoint = value
 	}
+	if value, ok := _c.mutation.NlCreateEnabled(); ok {
+		_spec.SetField(aisettings.FieldNlCreateEnabled, field.TypeBool, value)
+		_node.NlCreateEnabled = value
+	}
 	return _node, _spec
 }
 
@@ -169,6 +199,7 @@ func (_c *AISettingsCreateBulk) Save(ctx context.Context) ([]*AISettings, error)
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*AISettingsMutation)
 				if !ok {

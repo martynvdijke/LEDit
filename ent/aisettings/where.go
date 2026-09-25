@@ -73,6 +73,11 @@ func Endpoint(v string) predicate.AISettings {
 	return predicate.AISettings(sql.FieldEQ(FieldEndpoint, v))
 }
 
+// NlCreateEnabled applies equality check predicate on the "nl_create_enabled" field. It's identical to NlCreateEnabledEQ.
+func NlCreateEnabled(v bool) predicate.AISettings {
+	return predicate.AISettings(sql.FieldEQ(FieldNlCreateEnabled, v))
+}
+
 // ProviderEQ applies the EQ predicate on the "provider" field.
 func ProviderEQ(v string) predicate.AISettings {
 	return predicate.AISettings(sql.FieldEQ(FieldProvider, v))
@@ -341,6 +346,16 @@ func EndpointEqualFold(v string) predicate.AISettings {
 // EndpointContainsFold applies the ContainsFold predicate on the "endpoint" field.
 func EndpointContainsFold(v string) predicate.AISettings {
 	return predicate.AISettings(sql.FieldContainsFold(FieldEndpoint, v))
+}
+
+// NlCreateEnabledEQ applies the EQ predicate on the "nl_create_enabled" field.
+func NlCreateEnabledEQ(v bool) predicate.AISettings {
+	return predicate.AISettings(sql.FieldEQ(FieldNlCreateEnabled, v))
+}
+
+// NlCreateEnabledNEQ applies the NEQ predicate on the "nl_create_enabled" field.
+func NlCreateEnabledNEQ(v bool) predicate.AISettings {
+	return predicate.AISettings(sql.FieldNEQ(FieldNlCreateEnabled, v))
 }
 
 // And groups predicates with the AND operator between them.

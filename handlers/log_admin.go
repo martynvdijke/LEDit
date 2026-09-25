@@ -369,6 +369,7 @@ func (s *Server) AdminAISettingsSave(c *gin.Context) {
 	apiKey := c.PostForm("api_key")
 	model := c.PostForm("model")
 	endpoint := c.PostForm("endpoint")
+	nlCreateEnabled := c.PostForm("nl_create_enabled") == "on"
 
 	exists, _ := s.DB.AISettings.Query().Exist(s.Ctx)
 	if !exists {
@@ -377,6 +378,7 @@ func (s *Server) AdminAISettingsSave(c *gin.Context) {
 			SetAPIKey(apiKey).
 			SetModel(model).
 			SetEndpoint(endpoint).
+			SetNlCreateEnabled(nlCreateEnabled).
 			Save(s.Ctx)
 		if err != nil {
 			slog.Error("failed to create AI settings", "error", err)
@@ -387,6 +389,7 @@ func (s *Server) AdminAISettingsSave(c *gin.Context) {
 			SetAPIKey(apiKey).
 			SetModel(model).
 			SetEndpoint(endpoint).
+			SetNlCreateEnabled(nlCreateEnabled).
 			Save(s.Ctx)
 		if err != nil {
 			slog.Error("failed to update AI settings", "error", err)
