@@ -35,6 +35,24 @@ func (DeviceGroup) Fields() []ent.Field {
 		field.Int("playlist_id").Optional().Nillable(),
 		field.Text("scheduled_playlist_ids").Default("[]"),
 		field.Int("fallback_playlist_id").Optional().Nillable(),
+		field.Bool("brightness_enabled").Default(false),
+		field.Text("brightness_schedules").Default("[]"),
+		field.Int("brightness_override").Optional().Nillable(),
+		field.Text("brightness_sensor_config").Optional().Nillable(),
+		field.Bool("overlay_enabled").Default(false),
+		field.String("overlay_position").Default("bottom").Validate(func(s string) error {
+			switch s {
+			case "top", "bottom":
+				return nil
+			default:
+				return errors.New("overlay_position must be one of top, bottom")
+			}
+		}),
+		field.Int("overlay_height").Default(8),
+		field.String("overlay_text").Default(""),
+		field.Int("overlay_speed_px").Default(0),
+		field.String("overlay_bg").Default("#000000"),
+		field.String("overlay_fg").Default("#ffffff"),
 	}
 }
 

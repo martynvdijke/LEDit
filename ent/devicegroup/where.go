@@ -90,6 +90,61 @@ func FallbackPlaylistID(v int) predicate.DeviceGroup {
 	return predicate.DeviceGroup(sql.FieldEQ(FieldFallbackPlaylistID, v))
 }
 
+// BrightnessEnabled applies equality check predicate on the "brightness_enabled" field. It's identical to BrightnessEnabledEQ.
+func BrightnessEnabled(v bool) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldBrightnessEnabled, v))
+}
+
+// BrightnessSchedules applies equality check predicate on the "brightness_schedules" field. It's identical to BrightnessSchedulesEQ.
+func BrightnessSchedules(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldBrightnessSchedules, v))
+}
+
+// BrightnessOverride applies equality check predicate on the "brightness_override" field. It's identical to BrightnessOverrideEQ.
+func BrightnessOverride(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldBrightnessOverride, v))
+}
+
+// BrightnessSensorConfig applies equality check predicate on the "brightness_sensor_config" field. It's identical to BrightnessSensorConfigEQ.
+func BrightnessSensorConfig(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldBrightnessSensorConfig, v))
+}
+
+// OverlayEnabled applies equality check predicate on the "overlay_enabled" field. It's identical to OverlayEnabledEQ.
+func OverlayEnabled(v bool) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayEnabled, v))
+}
+
+// OverlayPosition applies equality check predicate on the "overlay_position" field. It's identical to OverlayPositionEQ.
+func OverlayPosition(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayPosition, v))
+}
+
+// OverlayHeight applies equality check predicate on the "overlay_height" field. It's identical to OverlayHeightEQ.
+func OverlayHeight(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayHeight, v))
+}
+
+// OverlayText applies equality check predicate on the "overlay_text" field. It's identical to OverlayTextEQ.
+func OverlayText(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayText, v))
+}
+
+// OverlaySpeedPx applies equality check predicate on the "overlay_speed_px" field. It's identical to OverlaySpeedPxEQ.
+func OverlaySpeedPx(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlaySpeedPx, v))
+}
+
+// OverlayBg applies equality check predicate on the "overlay_bg" field. It's identical to OverlayBgEQ.
+func OverlayBg(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayBg, v))
+}
+
+// OverlayFg applies equality check predicate on the "overlay_fg" field. It's identical to OverlayFgEQ.
+func OverlayFg(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayFg, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.DeviceGroup {
 	return predicate.DeviceGroup(sql.FieldEQ(FieldName, v))
@@ -488,6 +543,556 @@ func FallbackPlaylistIDIsNil() predicate.DeviceGroup {
 // FallbackPlaylistIDNotNil applies the NotNil predicate on the "fallback_playlist_id" field.
 func FallbackPlaylistIDNotNil() predicate.DeviceGroup {
 	return predicate.DeviceGroup(sql.FieldNotNull(FieldFallbackPlaylistID))
+}
+
+// BrightnessEnabledEQ applies the EQ predicate on the "brightness_enabled" field.
+func BrightnessEnabledEQ(v bool) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldBrightnessEnabled, v))
+}
+
+// BrightnessEnabledNEQ applies the NEQ predicate on the "brightness_enabled" field.
+func BrightnessEnabledNEQ(v bool) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldBrightnessEnabled, v))
+}
+
+// BrightnessSchedulesEQ applies the EQ predicate on the "brightness_schedules" field.
+func BrightnessSchedulesEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesNEQ applies the NEQ predicate on the "brightness_schedules" field.
+func BrightnessSchedulesNEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesIn applies the In predicate on the "brightness_schedules" field.
+func BrightnessSchedulesIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIn(FieldBrightnessSchedules, vs...))
+}
+
+// BrightnessSchedulesNotIn applies the NotIn predicate on the "brightness_schedules" field.
+func BrightnessSchedulesNotIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotIn(FieldBrightnessSchedules, vs...))
+}
+
+// BrightnessSchedulesGT applies the GT predicate on the "brightness_schedules" field.
+func BrightnessSchedulesGT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGT(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesGTE applies the GTE predicate on the "brightness_schedules" field.
+func BrightnessSchedulesGTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGTE(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesLT applies the LT predicate on the "brightness_schedules" field.
+func BrightnessSchedulesLT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLT(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesLTE applies the LTE predicate on the "brightness_schedules" field.
+func BrightnessSchedulesLTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLTE(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesContains applies the Contains predicate on the "brightness_schedules" field.
+func BrightnessSchedulesContains(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContains(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesHasPrefix applies the HasPrefix predicate on the "brightness_schedules" field.
+func BrightnessSchedulesHasPrefix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasPrefix(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesHasSuffix applies the HasSuffix predicate on the "brightness_schedules" field.
+func BrightnessSchedulesHasSuffix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasSuffix(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesEqualFold applies the EqualFold predicate on the "brightness_schedules" field.
+func BrightnessSchedulesEqualFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEqualFold(FieldBrightnessSchedules, v))
+}
+
+// BrightnessSchedulesContainsFold applies the ContainsFold predicate on the "brightness_schedules" field.
+func BrightnessSchedulesContainsFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContainsFold(FieldBrightnessSchedules, v))
+}
+
+// BrightnessOverrideEQ applies the EQ predicate on the "brightness_override" field.
+func BrightnessOverrideEQ(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideNEQ applies the NEQ predicate on the "brightness_override" field.
+func BrightnessOverrideNEQ(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideIn applies the In predicate on the "brightness_override" field.
+func BrightnessOverrideIn(vs ...int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIn(FieldBrightnessOverride, vs...))
+}
+
+// BrightnessOverrideNotIn applies the NotIn predicate on the "brightness_override" field.
+func BrightnessOverrideNotIn(vs ...int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotIn(FieldBrightnessOverride, vs...))
+}
+
+// BrightnessOverrideGT applies the GT predicate on the "brightness_override" field.
+func BrightnessOverrideGT(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGT(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideGTE applies the GTE predicate on the "brightness_override" field.
+func BrightnessOverrideGTE(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGTE(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideLT applies the LT predicate on the "brightness_override" field.
+func BrightnessOverrideLT(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLT(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideLTE applies the LTE predicate on the "brightness_override" field.
+func BrightnessOverrideLTE(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLTE(FieldBrightnessOverride, v))
+}
+
+// BrightnessOverrideIsNil applies the IsNil predicate on the "brightness_override" field.
+func BrightnessOverrideIsNil() predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIsNull(FieldBrightnessOverride))
+}
+
+// BrightnessOverrideNotNil applies the NotNil predicate on the "brightness_override" field.
+func BrightnessOverrideNotNil() predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotNull(FieldBrightnessOverride))
+}
+
+// BrightnessSensorConfigEQ applies the EQ predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigNEQ applies the NEQ predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigNEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigIn applies the In predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIn(FieldBrightnessSensorConfig, vs...))
+}
+
+// BrightnessSensorConfigNotIn applies the NotIn predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigNotIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotIn(FieldBrightnessSensorConfig, vs...))
+}
+
+// BrightnessSensorConfigGT applies the GT predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigGT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGT(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigGTE applies the GTE predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigGTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGTE(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigLT applies the LT predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigLT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLT(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigLTE applies the LTE predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigLTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLTE(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigContains applies the Contains predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigContains(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContains(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigHasPrefix applies the HasPrefix predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigHasPrefix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasPrefix(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigHasSuffix applies the HasSuffix predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigHasSuffix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasSuffix(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigIsNil applies the IsNil predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigIsNil() predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIsNull(FieldBrightnessSensorConfig))
+}
+
+// BrightnessSensorConfigNotNil applies the NotNil predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigNotNil() predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotNull(FieldBrightnessSensorConfig))
+}
+
+// BrightnessSensorConfigEqualFold applies the EqualFold predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigEqualFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEqualFold(FieldBrightnessSensorConfig, v))
+}
+
+// BrightnessSensorConfigContainsFold applies the ContainsFold predicate on the "brightness_sensor_config" field.
+func BrightnessSensorConfigContainsFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContainsFold(FieldBrightnessSensorConfig, v))
+}
+
+// OverlayEnabledEQ applies the EQ predicate on the "overlay_enabled" field.
+func OverlayEnabledEQ(v bool) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayEnabled, v))
+}
+
+// OverlayEnabledNEQ applies the NEQ predicate on the "overlay_enabled" field.
+func OverlayEnabledNEQ(v bool) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldOverlayEnabled, v))
+}
+
+// OverlayPositionEQ applies the EQ predicate on the "overlay_position" field.
+func OverlayPositionEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayPosition, v))
+}
+
+// OverlayPositionNEQ applies the NEQ predicate on the "overlay_position" field.
+func OverlayPositionNEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldOverlayPosition, v))
+}
+
+// OverlayPositionIn applies the In predicate on the "overlay_position" field.
+func OverlayPositionIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIn(FieldOverlayPosition, vs...))
+}
+
+// OverlayPositionNotIn applies the NotIn predicate on the "overlay_position" field.
+func OverlayPositionNotIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotIn(FieldOverlayPosition, vs...))
+}
+
+// OverlayPositionGT applies the GT predicate on the "overlay_position" field.
+func OverlayPositionGT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGT(FieldOverlayPosition, v))
+}
+
+// OverlayPositionGTE applies the GTE predicate on the "overlay_position" field.
+func OverlayPositionGTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGTE(FieldOverlayPosition, v))
+}
+
+// OverlayPositionLT applies the LT predicate on the "overlay_position" field.
+func OverlayPositionLT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLT(FieldOverlayPosition, v))
+}
+
+// OverlayPositionLTE applies the LTE predicate on the "overlay_position" field.
+func OverlayPositionLTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLTE(FieldOverlayPosition, v))
+}
+
+// OverlayPositionContains applies the Contains predicate on the "overlay_position" field.
+func OverlayPositionContains(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContains(FieldOverlayPosition, v))
+}
+
+// OverlayPositionHasPrefix applies the HasPrefix predicate on the "overlay_position" field.
+func OverlayPositionHasPrefix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasPrefix(FieldOverlayPosition, v))
+}
+
+// OverlayPositionHasSuffix applies the HasSuffix predicate on the "overlay_position" field.
+func OverlayPositionHasSuffix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasSuffix(FieldOverlayPosition, v))
+}
+
+// OverlayPositionEqualFold applies the EqualFold predicate on the "overlay_position" field.
+func OverlayPositionEqualFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEqualFold(FieldOverlayPosition, v))
+}
+
+// OverlayPositionContainsFold applies the ContainsFold predicate on the "overlay_position" field.
+func OverlayPositionContainsFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContainsFold(FieldOverlayPosition, v))
+}
+
+// OverlayHeightEQ applies the EQ predicate on the "overlay_height" field.
+func OverlayHeightEQ(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayHeight, v))
+}
+
+// OverlayHeightNEQ applies the NEQ predicate on the "overlay_height" field.
+func OverlayHeightNEQ(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldOverlayHeight, v))
+}
+
+// OverlayHeightIn applies the In predicate on the "overlay_height" field.
+func OverlayHeightIn(vs ...int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIn(FieldOverlayHeight, vs...))
+}
+
+// OverlayHeightNotIn applies the NotIn predicate on the "overlay_height" field.
+func OverlayHeightNotIn(vs ...int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotIn(FieldOverlayHeight, vs...))
+}
+
+// OverlayHeightGT applies the GT predicate on the "overlay_height" field.
+func OverlayHeightGT(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGT(FieldOverlayHeight, v))
+}
+
+// OverlayHeightGTE applies the GTE predicate on the "overlay_height" field.
+func OverlayHeightGTE(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGTE(FieldOverlayHeight, v))
+}
+
+// OverlayHeightLT applies the LT predicate on the "overlay_height" field.
+func OverlayHeightLT(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLT(FieldOverlayHeight, v))
+}
+
+// OverlayHeightLTE applies the LTE predicate on the "overlay_height" field.
+func OverlayHeightLTE(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLTE(FieldOverlayHeight, v))
+}
+
+// OverlayTextEQ applies the EQ predicate on the "overlay_text" field.
+func OverlayTextEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayText, v))
+}
+
+// OverlayTextNEQ applies the NEQ predicate on the "overlay_text" field.
+func OverlayTextNEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldOverlayText, v))
+}
+
+// OverlayTextIn applies the In predicate on the "overlay_text" field.
+func OverlayTextIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIn(FieldOverlayText, vs...))
+}
+
+// OverlayTextNotIn applies the NotIn predicate on the "overlay_text" field.
+func OverlayTextNotIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotIn(FieldOverlayText, vs...))
+}
+
+// OverlayTextGT applies the GT predicate on the "overlay_text" field.
+func OverlayTextGT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGT(FieldOverlayText, v))
+}
+
+// OverlayTextGTE applies the GTE predicate on the "overlay_text" field.
+func OverlayTextGTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGTE(FieldOverlayText, v))
+}
+
+// OverlayTextLT applies the LT predicate on the "overlay_text" field.
+func OverlayTextLT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLT(FieldOverlayText, v))
+}
+
+// OverlayTextLTE applies the LTE predicate on the "overlay_text" field.
+func OverlayTextLTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLTE(FieldOverlayText, v))
+}
+
+// OverlayTextContains applies the Contains predicate on the "overlay_text" field.
+func OverlayTextContains(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContains(FieldOverlayText, v))
+}
+
+// OverlayTextHasPrefix applies the HasPrefix predicate on the "overlay_text" field.
+func OverlayTextHasPrefix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasPrefix(FieldOverlayText, v))
+}
+
+// OverlayTextHasSuffix applies the HasSuffix predicate on the "overlay_text" field.
+func OverlayTextHasSuffix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasSuffix(FieldOverlayText, v))
+}
+
+// OverlayTextEqualFold applies the EqualFold predicate on the "overlay_text" field.
+func OverlayTextEqualFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEqualFold(FieldOverlayText, v))
+}
+
+// OverlayTextContainsFold applies the ContainsFold predicate on the "overlay_text" field.
+func OverlayTextContainsFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContainsFold(FieldOverlayText, v))
+}
+
+// OverlaySpeedPxEQ applies the EQ predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxEQ(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlaySpeedPx, v))
+}
+
+// OverlaySpeedPxNEQ applies the NEQ predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxNEQ(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldOverlaySpeedPx, v))
+}
+
+// OverlaySpeedPxIn applies the In predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxIn(vs ...int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIn(FieldOverlaySpeedPx, vs...))
+}
+
+// OverlaySpeedPxNotIn applies the NotIn predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxNotIn(vs ...int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotIn(FieldOverlaySpeedPx, vs...))
+}
+
+// OverlaySpeedPxGT applies the GT predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxGT(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGT(FieldOverlaySpeedPx, v))
+}
+
+// OverlaySpeedPxGTE applies the GTE predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxGTE(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGTE(FieldOverlaySpeedPx, v))
+}
+
+// OverlaySpeedPxLT applies the LT predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxLT(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLT(FieldOverlaySpeedPx, v))
+}
+
+// OverlaySpeedPxLTE applies the LTE predicate on the "overlay_speed_px" field.
+func OverlaySpeedPxLTE(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLTE(FieldOverlaySpeedPx, v))
+}
+
+// OverlayBgEQ applies the EQ predicate on the "overlay_bg" field.
+func OverlayBgEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayBg, v))
+}
+
+// OverlayBgNEQ applies the NEQ predicate on the "overlay_bg" field.
+func OverlayBgNEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldOverlayBg, v))
+}
+
+// OverlayBgIn applies the In predicate on the "overlay_bg" field.
+func OverlayBgIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIn(FieldOverlayBg, vs...))
+}
+
+// OverlayBgNotIn applies the NotIn predicate on the "overlay_bg" field.
+func OverlayBgNotIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotIn(FieldOverlayBg, vs...))
+}
+
+// OverlayBgGT applies the GT predicate on the "overlay_bg" field.
+func OverlayBgGT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGT(FieldOverlayBg, v))
+}
+
+// OverlayBgGTE applies the GTE predicate on the "overlay_bg" field.
+func OverlayBgGTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGTE(FieldOverlayBg, v))
+}
+
+// OverlayBgLT applies the LT predicate on the "overlay_bg" field.
+func OverlayBgLT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLT(FieldOverlayBg, v))
+}
+
+// OverlayBgLTE applies the LTE predicate on the "overlay_bg" field.
+func OverlayBgLTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLTE(FieldOverlayBg, v))
+}
+
+// OverlayBgContains applies the Contains predicate on the "overlay_bg" field.
+func OverlayBgContains(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContains(FieldOverlayBg, v))
+}
+
+// OverlayBgHasPrefix applies the HasPrefix predicate on the "overlay_bg" field.
+func OverlayBgHasPrefix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasPrefix(FieldOverlayBg, v))
+}
+
+// OverlayBgHasSuffix applies the HasSuffix predicate on the "overlay_bg" field.
+func OverlayBgHasSuffix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasSuffix(FieldOverlayBg, v))
+}
+
+// OverlayBgEqualFold applies the EqualFold predicate on the "overlay_bg" field.
+func OverlayBgEqualFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEqualFold(FieldOverlayBg, v))
+}
+
+// OverlayBgContainsFold applies the ContainsFold predicate on the "overlay_bg" field.
+func OverlayBgContainsFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContainsFold(FieldOverlayBg, v))
+}
+
+// OverlayFgEQ applies the EQ predicate on the "overlay_fg" field.
+func OverlayFgEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayFg, v))
+}
+
+// OverlayFgNEQ applies the NEQ predicate on the "overlay_fg" field.
+func OverlayFgNEQ(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldOverlayFg, v))
+}
+
+// OverlayFgIn applies the In predicate on the "overlay_fg" field.
+func OverlayFgIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIn(FieldOverlayFg, vs...))
+}
+
+// OverlayFgNotIn applies the NotIn predicate on the "overlay_fg" field.
+func OverlayFgNotIn(vs ...string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotIn(FieldOverlayFg, vs...))
+}
+
+// OverlayFgGT applies the GT predicate on the "overlay_fg" field.
+func OverlayFgGT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGT(FieldOverlayFg, v))
+}
+
+// OverlayFgGTE applies the GTE predicate on the "overlay_fg" field.
+func OverlayFgGTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGTE(FieldOverlayFg, v))
+}
+
+// OverlayFgLT applies the LT predicate on the "overlay_fg" field.
+func OverlayFgLT(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLT(FieldOverlayFg, v))
+}
+
+// OverlayFgLTE applies the LTE predicate on the "overlay_fg" field.
+func OverlayFgLTE(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLTE(FieldOverlayFg, v))
+}
+
+// OverlayFgContains applies the Contains predicate on the "overlay_fg" field.
+func OverlayFgContains(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContains(FieldOverlayFg, v))
+}
+
+// OverlayFgHasPrefix applies the HasPrefix predicate on the "overlay_fg" field.
+func OverlayFgHasPrefix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasPrefix(FieldOverlayFg, v))
+}
+
+// OverlayFgHasSuffix applies the HasSuffix predicate on the "overlay_fg" field.
+func OverlayFgHasSuffix(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldHasSuffix(FieldOverlayFg, v))
+}
+
+// OverlayFgEqualFold applies the EqualFold predicate on the "overlay_fg" field.
+func OverlayFgEqualFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEqualFold(FieldOverlayFg, v))
+}
+
+// OverlayFgContainsFold applies the ContainsFold predicate on the "overlay_fg" field.
+func OverlayFgContainsFold(v string) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldContainsFold(FieldOverlayFg, v))
 }
 
 // HasDevices applies the HasEdge predicate on the "devices" edge.

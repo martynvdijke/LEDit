@@ -34,7 +34,7 @@ func StartTransportDevices(s *Server) {
 	if s == nil || s.DB == nil {
 		return
 	}
-	devs, err := s.DB.DeviceSettings.Query().Where(devicesettings.EnabledEQ(true), devicesettings.TransportNEQ("websocket")).All(s.Ctx)
+	devs, err := s.DB.DeviceSettings.Query().Where(devicesettings.EnabledEQ(true), devicesettings.TransportNEQ("websocket")).WithGroup().All(s.Ctx)
 	if err != nil {
 		slog.Warn("StartTransportDevices query failed", "error", err)
 		return
@@ -49,7 +49,7 @@ func RestartTransportDevice(s *Server, deviceID int) {
 	if s == nil || s.DB == nil {
 		return
 	}
-	d, err := s.DB.DeviceSettings.Get(s.Ctx, deviceID)
+	d, err := s.DB.DeviceSettings.Query().Where(devicesettings.IDEQ(deviceID)).WithGroup().Only(s.Ctx)
 	if err != nil {
 		return
 	}
@@ -179,7 +179,7 @@ func runTransportLoop(ctx context.Context, done chan struct{}, s *Server, d *ent
 		}
 		// Refresh device row each tick for config changes without restart (lightweight)
 		// If device deleted/disabled/websocket, exit.
-		cur, err := s.DB.DeviceSettings.Get(s.Ctx, deviceID)
+		cur, err := s.DB.DeviceSettings.Query().Where(devicesettings.IDEQ(deviceID)).WithGroup().Only(s.Ctx)
 		if err != nil {
 			return
 		}
@@ -263,26 +263,27 @@ func renderDevicePixels(s *Server, d *ent.DeviceSettings, width, height int) ([]
 	}
 	data := img.Data
 	// overlay
-	spec := overlaySpecForDevice(d)
+	spec := overlaySpecForDeviceWithGroup(d)
 	if spec.Enabled {
 		if out, oerr := render.CompositeOverlayPNG(data, spec, time.Now()); oerr == nil {
 			data = out
 		}
 	}
-	// brightness
+	// brightness effective
 	lvl := 100
 	if brightnessProviderForTest != nil {
 		lvl = brightnessProviderForTest()
-	} else if d.BrightnessEnabled {
-		// reuse simple resolve without sensor
-		lvl = 100
-		// If device has brightness schedules, honor them (without sensor blending)
-		if d.BrightnessSchedules != "" && d.BrightnessSchedules != "[]" {
-			if wins, perr := ParseBrightnessWindows(d.BrightnessSchedules); perr == nil {
-				lvl = ResolveBrightness(time.Now(), wins, nil, d.BrightnessOverride)
+	} else {
+		ebEnabled, ebSched, ebOverride, _ := effectiveBrightnessConfig(d)
+		if ebEnabled {
+			lvl = 100
+			if ebSched != "" && ebSched != "[]" {
+				if wins, perr := ParseBrightnessWindows(ebSched); perr == nil {
+					lvl = ResolveBrightness(time.Now(), wins, nil, ebOverride)
+				}
+			} else if ebOverride != nil {
+				lvl = *ebOverride
 			}
-		} else if d.BrightnessOverride != nil {
-			lvl = *d.BrightnessOverride
 		}
 	}
 	if lvl != 100 {

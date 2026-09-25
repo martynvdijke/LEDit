@@ -12,6 +12,7 @@ import (
 	"ledit/ent"
 	"ledit/ent/devicegroup"
 	"ledit/ent/devicesettings"
+	"ledit/render"
 )
 
 const (
@@ -116,6 +117,73 @@ func (s *Server) AdminGroupNew(c *gin.Context) {
 	s.renderPage(c, http.StatusOK, "group_form.html", gin.H{"playlists": playlists})
 }
 
+func parseGroupBrightness(c *gin.Context) (bool, string, *int, *string, string) {
+	enabled := c.PostForm("brightness_enabled") == "on"
+	raw := strings.TrimSpace(c.PostForm("brightness_schedules"))
+	if raw == "" {
+		raw = "[]"
+	}
+	wins, err := ParseBrightnessWindows(raw)
+	if err != nil {
+		return false, "", nil, nil, "brightness_schedules: " + err.Error()
+	}
+	if err := ValidateBrightnessWindows(wins); err != nil {
+		return false, "", nil, nil, err.Error()
+	}
+	overrideRaw := strings.TrimSpace(c.PostForm("brightness_override"))
+	var override *int
+	if overrideRaw != "" && overrideRaw != "auto" {
+		v, err := strconv.Atoi(overrideRaw)
+		if err != nil || v < 0 || v > 100 {
+			return false, "", nil, nil, "brightness_override: must be 0-100 or auto"
+		}
+		override = &v
+	}
+	sensorRaw := strings.TrimSpace(c.PostForm("brightness_sensor_config"))
+	var sensorCfg *string
+	if sensorRaw != "" && sensorRaw != "{}" && sensorRaw != "null" {
+		var cfg SensorConfig
+		if err := json.Unmarshal([]byte(sensorRaw), &cfg); err != nil {
+			return false, "", nil, nil, "brightness_sensor_config: invalid JSON"
+		}
+		if err := ValidateSensorConfig(&cfg); err != nil {
+			return false, "", nil, nil, err.Error()
+		}
+		sensorCfg = &sensorRaw
+	}
+	return enabled, raw, override, sensorCfg, ""
+}
+
+func parseGroupOverlay(c *gin.Context) (render.OverlaySpec, string) {
+	h, _ := strconv.Atoi(c.PostForm("overlay_height"))
+	if h == 0 {
+		h = render.DefaultOverlaySpec().Height
+	}
+	speed, _ := strconv.Atoi(c.PostForm("overlay_speed_px"))
+	spec := render.OverlaySpec{
+		Enabled:    c.PostForm("overlay_enabled") == "on",
+		Position:   strings.TrimSpace(c.PostForm("overlay_position")),
+		Height:     h,
+		Text:       strings.TrimSpace(c.PostForm("overlay_text")),
+		SpeedPx:    speed,
+		Background: strings.TrimSpace(c.PostForm("overlay_bg")),
+		Foreground: strings.TrimSpace(c.PostForm("overlay_fg")),
+	}
+	if spec.Position == "" {
+		spec.Position = "bottom"
+	}
+	if spec.Background == "" {
+		spec.Background = "#000000"
+	}
+	if spec.Foreground == "" {
+		spec.Foreground = "#ffffff"
+	}
+	if err := render.ValidateOverlaySpec(spec, 64); err != nil {
+		return spec, err.Error()
+	}
+	return spec, ""
+}
+
 func (s *Server) AdminGroupCreate(c *gin.Context) {
 	name := strings.TrimSpace(c.PostForm("name"))
 	desc := strings.TrimSpace(c.PostForm("description"))
@@ -153,12 +221,30 @@ func (s *Server) AdminGroupCreate(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/admin/groups")
 		return
 	}
-	builder := s.DB.DeviceGroup.Create().SetName(name).SetDescription(desc).SetCreatedAt(time.Now()).SetContentMode(mode).SetScheduledPlaylistIds(sched)
+	brightnessEnabled, brightnessSched, brightnessOverride, brightnessSensorCfg, bErr := parseGroupBrightness(c)
+	if bErr != "" {
+		SetFlash(c, "danger", bErr)
+		c.Redirect(http.StatusFound, "/admin/groups")
+		return
+	}
+	overlay, oErr := parseGroupOverlay(c)
+	if oErr != "" {
+		SetFlash(c, "danger", oErr)
+		c.Redirect(http.StatusFound, "/admin/groups")
+		return
+	}
+	builder := s.DB.DeviceGroup.Create().SetName(name).SetDescription(desc).SetCreatedAt(time.Now()).SetContentMode(mode).SetScheduledPlaylistIds(sched).SetBrightnessEnabled(brightnessEnabled).SetBrightnessSchedules(brightnessSched).SetOverlayEnabled(overlay.Enabled).SetOverlayPosition(overlay.Position).SetOverlayHeight(overlay.Height).SetOverlayText(overlay.Text).SetOverlaySpeedPx(overlay.SpeedPx).SetOverlayBg(overlay.Background).SetOverlayFg(overlay.Foreground)
 	if pid != nil {
 		builder.SetPlaylistID(*pid)
 	}
 	if fallback != nil {
 		builder.SetFallbackPlaylistID(*fallback)
+	}
+	if brightnessOverride != nil {
+		builder.SetBrightnessOverride(*brightnessOverride)
+	}
+	if brightnessSensorCfg != nil {
+		builder.SetBrightnessSensorConfig(*brightnessSensorCfg)
 	}
 	builder.SaveX(s.Ctx)
 	SetFlash(c, "success", "Group created")
@@ -211,7 +297,19 @@ func (s *Server) AdminGroupUpdate(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/admin/groups/"+c.Param("id"))
 		return
 	}
-	upd := s.DB.DeviceGroup.UpdateOneID(id).SetName(name).SetDescription(desc).SetContentMode(mode).SetScheduledPlaylistIds(sched)
+	brightnessEnabled, brightnessSched, brightnessOverride, brightnessSensorCfg, bErr := parseGroupBrightness(c)
+	if bErr != "" {
+		SetFlash(c, "danger", bErr)
+		c.Redirect(http.StatusFound, "/admin/groups/"+c.Param("id"))
+		return
+	}
+	overlay, oErr := parseGroupOverlay(c)
+	if oErr != "" {
+		SetFlash(c, "danger", oErr)
+		c.Redirect(http.StatusFound, "/admin/groups/"+c.Param("id"))
+		return
+	}
+	upd := s.DB.DeviceGroup.UpdateOneID(id).SetName(name).SetDescription(desc).SetContentMode(mode).SetScheduledPlaylistIds(sched).SetBrightnessEnabled(brightnessEnabled).SetBrightnessSchedules(brightnessSched).SetOverlayEnabled(overlay.Enabled).SetOverlayPosition(overlay.Position).SetOverlayHeight(overlay.Height).SetOverlayText(overlay.Text).SetOverlaySpeedPx(overlay.SpeedPx).SetOverlayBg(overlay.Background).SetOverlayFg(overlay.Foreground)
 	if pid != nil {
 		upd.SetPlaylistID(*pid)
 	} else {
@@ -221,6 +319,16 @@ func (s *Server) AdminGroupUpdate(c *gin.Context) {
 		upd.SetFallbackPlaylistID(*fallback)
 	} else {
 		upd.ClearFallbackPlaylistID()
+	}
+	if brightnessOverride != nil {
+		upd.SetBrightnessOverride(*brightnessOverride)
+	} else {
+		upd.ClearBrightnessOverride()
+	}
+	if brightnessSensorCfg != nil {
+		upd.SetBrightnessSensorConfig(*brightnessSensorCfg)
+	} else {
+		upd.ClearBrightnessSensorConfig()
 	}
 	upd.Exec(s.Ctx)
 	SetFlash(c, "success", "Group updated")

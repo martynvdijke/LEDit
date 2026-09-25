@@ -814,23 +814,24 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		randomFlag = false
 	}
 
-	// Brightness: parse device config once, ramp and sensor state per connection.
-	bSchedules, _ := ParseBrightnessWindows(device.BrightnessSchedules)
+	// Brightness: effective config device < group < global
+	ebEnabled, ebSchedules, ebOverride, ebSensorRaw := effectiveBrightnessConfig(device)
+	bSchedules, _ := ParseBrightnessWindows(ebSchedules)
 	var sensorCfg *SensorConfig
-	if device.BrightnessSensorConfig != nil {
-		sensorCfg, _ = ParseSensorConfig(device.BrightnessSensorConfig)
+	if ebSensorRaw != nil {
+		sensorCfg, _ = ParseSensorConfig(ebSensorRaw)
 	}
 	ramp := NewBrightnessRamp(100)
 	// initial target
 	{
 		var sensorLevel *int
-		if device.BrightnessEnabled && sensorCfg != nil {
+		if ebEnabled && sensorCfg != nil {
 			if lux, err := FetchSensorLux(sensorCfg.EntityID); err == nil {
 				sensorLevel = SensorLevelForLux(lux, sensorCfg)
 			}
 		}
-		target := ResolveBrightness(time.Now(), bSchedules, sensorLevel, device.BrightnessOverride)
-		if !device.BrightnessEnabled {
+		target := ResolveBrightness(time.Now(), bSchedules, sensorLevel, ebOverride)
+		if !ebEnabled {
 			target = 100
 		}
 		ramp.Current = float64(target)
@@ -844,7 +845,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		if brightnessProviderForTest != nil {
 			return brightnessProviderForTest()
 		}
-		if !device.BrightnessEnabled {
+		if !ebEnabled {
 			return 100
 		}
 		now := time.Now()
@@ -873,7 +874,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		} else if sensorCfg != nil && sensorCache != nil && now.Sub(sensorCacheTime) > 60*time.Second {
 			sensorCache = nil
 		}
-		target := ResolveEffectiveBrightnessWithScene(now, bSchedules, sensorLevel, device.BrightnessOverride, ActiveAlarmBrightnessLevel(now), ActiveSceneBrightnessLevel(now))
+		target := ResolveEffectiveBrightnessWithScene(now, bSchedules, sensorLevel, ebOverride, ActiveAlarmBrightnessLevel(now), ActiveSceneBrightnessLevel(now))
 		ramp.SetTarget(target)
 		return ramp.Advance()
 	}
@@ -895,7 +896,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 	}() {
 		deviceID := device.ID
 		reschedule = func() []sourceWithName {
-			dev, err := h.Client.DeviceSettings.Query().Where(devicesettings.ID(deviceID)).Only(context.Background())
+			dev, err := h.Client.DeviceSettings.Query().Where(devicesettings.ID(deviceID)).WithGroup().Only(context.Background())
 			if err != nil {
 				return nil
 			}
@@ -911,7 +912,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 	}
 	serveFeed(conn, feedConn{
 		deviceID:   device.ID,
-		overlay:    overlaySpecForDevice(device),
+		overlay:    overlaySpecForDeviceWithGroup(device),
 		panelCols:  device.PanelCols,
 		panelGap:   device.PanelGap,
 		protocol:   protocol,
@@ -937,7 +938,7 @@ func (h *WSHub) HandleDevicePreviewWS(c *gin.Context) {
 		return
 	}
 
-	device, err := h.Client.DeviceSettings.Query().Where(devicesettings.ID(id)).Only(c.Request.Context())
+	device, err := h.Client.DeviceSettings.Query().Where(devicesettings.ID(id)).WithGroup().Only(c.Request.Context())
 	if err != nil {
 		if ent.IsNotFound(err) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "device not found"})
@@ -993,7 +994,7 @@ func (h *WSHub) HandleDevicePreviewWS(c *gin.Context) {
 
 	// Each preview gets its own feed controller: pause/skip/next in the
 	// preview tab only affects that tab, never the physical device.
-	serveFeed(conn, feedConn{cacheKeyPrefix: fmt.Sprintf("device:%d:", id), deviceID: id, overlay: overlaySpecForDevice(device), panelCols: device.PanelCols, panelGap: device.PanelGap}, sources, randomFlag, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs, nil)
+	serveFeed(conn, feedConn{cacheKeyPrefix: fmt.Sprintf("device:%d:", id), deviceID: id, overlay: overlaySpecForDeviceWithGroup(device), panelCols: device.PanelCols, panelGap: device.PanelGap}, sources, randomFlag, timeout, width, height, &FeedController{}, settings.TransitionStyle, settings.TransitionMs, nil)
 }
 
 // brightnessProvider seam for tests.

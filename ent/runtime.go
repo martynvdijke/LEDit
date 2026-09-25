@@ -386,6 +386,44 @@ func init() {
 	devicegroupDescScheduledPlaylistIds := devicegroupFields[5].Descriptor()
 	// devicegroup.DefaultScheduledPlaylistIds holds the default value on creation for the scheduled_playlist_ids field.
 	devicegroup.DefaultScheduledPlaylistIds = devicegroupDescScheduledPlaylistIds.Default.(string)
+	// devicegroupDescBrightnessEnabled is the schema descriptor for brightness_enabled field.
+	devicegroupDescBrightnessEnabled := devicegroupFields[7].Descriptor()
+	// devicegroup.DefaultBrightnessEnabled holds the default value on creation for the brightness_enabled field.
+	devicegroup.DefaultBrightnessEnabled = devicegroupDescBrightnessEnabled.Default.(bool)
+	// devicegroupDescBrightnessSchedules is the schema descriptor for brightness_schedules field.
+	devicegroupDescBrightnessSchedules := devicegroupFields[8].Descriptor()
+	// devicegroup.DefaultBrightnessSchedules holds the default value on creation for the brightness_schedules field.
+	devicegroup.DefaultBrightnessSchedules = devicegroupDescBrightnessSchedules.Default.(string)
+	// devicegroupDescOverlayEnabled is the schema descriptor for overlay_enabled field.
+	devicegroupDescOverlayEnabled := devicegroupFields[11].Descriptor()
+	// devicegroup.DefaultOverlayEnabled holds the default value on creation for the overlay_enabled field.
+	devicegroup.DefaultOverlayEnabled = devicegroupDescOverlayEnabled.Default.(bool)
+	// devicegroupDescOverlayPosition is the schema descriptor for overlay_position field.
+	devicegroupDescOverlayPosition := devicegroupFields[12].Descriptor()
+	// devicegroup.DefaultOverlayPosition holds the default value on creation for the overlay_position field.
+	devicegroup.DefaultOverlayPosition = devicegroupDescOverlayPosition.Default.(string)
+	// devicegroup.OverlayPositionValidator is a validator for the "overlay_position" field. It is called by the builders before save.
+	devicegroup.OverlayPositionValidator = devicegroupDescOverlayPosition.Validators[0].(func(string) error)
+	// devicegroupDescOverlayHeight is the schema descriptor for overlay_height field.
+	devicegroupDescOverlayHeight := devicegroupFields[13].Descriptor()
+	// devicegroup.DefaultOverlayHeight holds the default value on creation for the overlay_height field.
+	devicegroup.DefaultOverlayHeight = devicegroupDescOverlayHeight.Default.(int)
+	// devicegroupDescOverlayText is the schema descriptor for overlay_text field.
+	devicegroupDescOverlayText := devicegroupFields[14].Descriptor()
+	// devicegroup.DefaultOverlayText holds the default value on creation for the overlay_text field.
+	devicegroup.DefaultOverlayText = devicegroupDescOverlayText.Default.(string)
+	// devicegroupDescOverlaySpeedPx is the schema descriptor for overlay_speed_px field.
+	devicegroupDescOverlaySpeedPx := devicegroupFields[15].Descriptor()
+	// devicegroup.DefaultOverlaySpeedPx holds the default value on creation for the overlay_speed_px field.
+	devicegroup.DefaultOverlaySpeedPx = devicegroupDescOverlaySpeedPx.Default.(int)
+	// devicegroupDescOverlayBg is the schema descriptor for overlay_bg field.
+	devicegroupDescOverlayBg := devicegroupFields[16].Descriptor()
+	// devicegroup.DefaultOverlayBg holds the default value on creation for the overlay_bg field.
+	devicegroup.DefaultOverlayBg = devicegroupDescOverlayBg.Default.(string)
+	// devicegroupDescOverlayFg is the schema descriptor for overlay_fg field.
+	devicegroupDescOverlayFg := devicegroupFields[17].Descriptor()
+	// devicegroup.DefaultOverlayFg holds the default value on creation for the overlay_fg field.
+	devicegroup.DefaultOverlayFg = devicegroupDescOverlayFg.Default.(string)
 	devicesettingsFields := schema.DeviceSettings{}.Fields()
 	_ = devicesettingsFields
 	// devicesettingsDescName is the schema descriptor for name field.

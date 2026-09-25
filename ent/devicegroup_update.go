@@ -153,6 +153,193 @@ func (_u *DeviceGroupUpdate) ClearFallbackPlaylistID() *DeviceGroupUpdate {
 	return _u
 }
 
+// SetBrightnessEnabled sets the "brightness_enabled" field.
+func (_u *DeviceGroupUpdate) SetBrightnessEnabled(v bool) *DeviceGroupUpdate {
+	_u.mutation.SetBrightnessEnabled(v)
+	return _u
+}
+
+// SetNillableBrightnessEnabled sets the "brightness_enabled" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableBrightnessEnabled(v *bool) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetBrightnessEnabled(*v)
+	}
+	return _u
+}
+
+// SetBrightnessSchedules sets the "brightness_schedules" field.
+func (_u *DeviceGroupUpdate) SetBrightnessSchedules(v string) *DeviceGroupUpdate {
+	_u.mutation.SetBrightnessSchedules(v)
+	return _u
+}
+
+// SetNillableBrightnessSchedules sets the "brightness_schedules" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableBrightnessSchedules(v *string) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetBrightnessSchedules(*v)
+	}
+	return _u
+}
+
+// SetBrightnessOverride sets the "brightness_override" field.
+func (_u *DeviceGroupUpdate) SetBrightnessOverride(v int) *DeviceGroupUpdate {
+	_u.mutation.ResetBrightnessOverride()
+	_u.mutation.SetBrightnessOverride(v)
+	return _u
+}
+
+// SetNillableBrightnessOverride sets the "brightness_override" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableBrightnessOverride(v *int) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetBrightnessOverride(*v)
+	}
+	return _u
+}
+
+// AddBrightnessOverride adds value to the "brightness_override" field.
+func (_u *DeviceGroupUpdate) AddBrightnessOverride(v int) *DeviceGroupUpdate {
+	_u.mutation.AddBrightnessOverride(v)
+	return _u
+}
+
+// ClearBrightnessOverride clears the value of the "brightness_override" field.
+func (_u *DeviceGroupUpdate) ClearBrightnessOverride() *DeviceGroupUpdate {
+	_u.mutation.ClearBrightnessOverride()
+	return _u
+}
+
+// SetBrightnessSensorConfig sets the "brightness_sensor_config" field.
+func (_u *DeviceGroupUpdate) SetBrightnessSensorConfig(v string) *DeviceGroupUpdate {
+	_u.mutation.SetBrightnessSensorConfig(v)
+	return _u
+}
+
+// SetNillableBrightnessSensorConfig sets the "brightness_sensor_config" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableBrightnessSensorConfig(v *string) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetBrightnessSensorConfig(*v)
+	}
+	return _u
+}
+
+// ClearBrightnessSensorConfig clears the value of the "brightness_sensor_config" field.
+func (_u *DeviceGroupUpdate) ClearBrightnessSensorConfig() *DeviceGroupUpdate {
+	_u.mutation.ClearBrightnessSensorConfig()
+	return _u
+}
+
+// SetOverlayEnabled sets the "overlay_enabled" field.
+func (_u *DeviceGroupUpdate) SetOverlayEnabled(v bool) *DeviceGroupUpdate {
+	_u.mutation.SetOverlayEnabled(v)
+	return _u
+}
+
+// SetNillableOverlayEnabled sets the "overlay_enabled" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableOverlayEnabled(v *bool) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetOverlayEnabled(*v)
+	}
+	return _u
+}
+
+// SetOverlayPosition sets the "overlay_position" field.
+func (_u *DeviceGroupUpdate) SetOverlayPosition(v string) *DeviceGroupUpdate {
+	_u.mutation.SetOverlayPosition(v)
+	return _u
+}
+
+// SetNillableOverlayPosition sets the "overlay_position" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableOverlayPosition(v *string) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetOverlayPosition(*v)
+	}
+	return _u
+}
+
+// SetOverlayHeight sets the "overlay_height" field.
+func (_u *DeviceGroupUpdate) SetOverlayHeight(v int) *DeviceGroupUpdate {
+	_u.mutation.ResetOverlayHeight()
+	_u.mutation.SetOverlayHeight(v)
+	return _u
+}
+
+// SetNillableOverlayHeight sets the "overlay_height" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableOverlayHeight(v *int) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetOverlayHeight(*v)
+	}
+	return _u
+}
+
+// AddOverlayHeight adds value to the "overlay_height" field.
+func (_u *DeviceGroupUpdate) AddOverlayHeight(v int) *DeviceGroupUpdate {
+	_u.mutation.AddOverlayHeight(v)
+	return _u
+}
+
+// SetOverlayText sets the "overlay_text" field.
+func (_u *DeviceGroupUpdate) SetOverlayText(v string) *DeviceGroupUpdate {
+	_u.mutation.SetOverlayText(v)
+	return _u
+}
+
+// SetNillableOverlayText sets the "overlay_text" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableOverlayText(v *string) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetOverlayText(*v)
+	}
+	return _u
+}
+
+// SetOverlaySpeedPx sets the "overlay_speed_px" field.
+func (_u *DeviceGroupUpdate) SetOverlaySpeedPx(v int) *DeviceGroupUpdate {
+	_u.mutation.ResetOverlaySpeedPx()
+	_u.mutation.SetOverlaySpeedPx(v)
+	return _u
+}
+
+// SetNillableOverlaySpeedPx sets the "overlay_speed_px" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableOverlaySpeedPx(v *int) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetOverlaySpeedPx(*v)
+	}
+	return _u
+}
+
+// AddOverlaySpeedPx adds value to the "overlay_speed_px" field.
+func (_u *DeviceGroupUpdate) AddOverlaySpeedPx(v int) *DeviceGroupUpdate {
+	_u.mutation.AddOverlaySpeedPx(v)
+	return _u
+}
+
+// SetOverlayBg sets the "overlay_bg" field.
+func (_u *DeviceGroupUpdate) SetOverlayBg(v string) *DeviceGroupUpdate {
+	_u.mutation.SetOverlayBg(v)
+	return _u
+}
+
+// SetNillableOverlayBg sets the "overlay_bg" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableOverlayBg(v *string) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetOverlayBg(*v)
+	}
+	return _u
+}
+
+// SetOverlayFg sets the "overlay_fg" field.
+func (_u *DeviceGroupUpdate) SetOverlayFg(v string) *DeviceGroupUpdate {
+	_u.mutation.SetOverlayFg(v)
+	return _u
+}
+
+// SetNillableOverlayFg sets the "overlay_fg" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableOverlayFg(v *string) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetOverlayFg(*v)
+	}
+	return _u
+}
+
 // AddDeviceIDs adds the "devices" edge to the DeviceSettings entity by IDs.
 func (_u *DeviceGroupUpdate) AddDeviceIDs(ids ...int) *DeviceGroupUpdate {
 	_u.mutation.AddDeviceIDs(ids...)
@@ -238,6 +425,11 @@ func (_u *DeviceGroupUpdate) check() error {
 			return &ValidationError{Name: "content_mode", err: fmt.Errorf(`ent: validator failed for field "DeviceGroup.content_mode": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.OverlayPosition(); ok {
+		if err := devicegroup.OverlayPositionValidator(v); err != nil {
+			return &ValidationError{Name: "overlay_position", err: fmt.Errorf(`ent: validator failed for field "DeviceGroup.overlay_position": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -285,6 +477,54 @@ func (_u *DeviceGroupUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if _u.mutation.FallbackPlaylistIDCleared() {
 		_spec.ClearField(devicegroup.FieldFallbackPlaylistID, field.TypeInt)
+	}
+	if value, ok := _u.mutation.BrightnessEnabled(); ok {
+		_spec.SetField(devicegroup.FieldBrightnessEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.BrightnessSchedules(); ok {
+		_spec.SetField(devicegroup.FieldBrightnessSchedules, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.BrightnessOverride(); ok {
+		_spec.SetField(devicegroup.FieldBrightnessOverride, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedBrightnessOverride(); ok {
+		_spec.AddField(devicegroup.FieldBrightnessOverride, field.TypeInt, value)
+	}
+	if _u.mutation.BrightnessOverrideCleared() {
+		_spec.ClearField(devicegroup.FieldBrightnessOverride, field.TypeInt)
+	}
+	if value, ok := _u.mutation.BrightnessSensorConfig(); ok {
+		_spec.SetField(devicegroup.FieldBrightnessSensorConfig, field.TypeString, value)
+	}
+	if _u.mutation.BrightnessSensorConfigCleared() {
+		_spec.ClearField(devicegroup.FieldBrightnessSensorConfig, field.TypeString)
+	}
+	if value, ok := _u.mutation.OverlayEnabled(); ok {
+		_spec.SetField(devicegroup.FieldOverlayEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.OverlayPosition(); ok {
+		_spec.SetField(devicegroup.FieldOverlayPosition, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OverlayHeight(); ok {
+		_spec.SetField(devicegroup.FieldOverlayHeight, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOverlayHeight(); ok {
+		_spec.AddField(devicegroup.FieldOverlayHeight, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OverlayText(); ok {
+		_spec.SetField(devicegroup.FieldOverlayText, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OverlaySpeedPx(); ok {
+		_spec.SetField(devicegroup.FieldOverlaySpeedPx, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOverlaySpeedPx(); ok {
+		_spec.AddField(devicegroup.FieldOverlaySpeedPx, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OverlayBg(); ok {
+		_spec.SetField(devicegroup.FieldOverlayBg, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OverlayFg(); ok {
+		_spec.SetField(devicegroup.FieldOverlayFg, field.TypeString, value)
 	}
 	if _u.mutation.DevicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -475,6 +715,193 @@ func (_u *DeviceGroupUpdateOne) ClearFallbackPlaylistID() *DeviceGroupUpdateOne 
 	return _u
 }
 
+// SetBrightnessEnabled sets the "brightness_enabled" field.
+func (_u *DeviceGroupUpdateOne) SetBrightnessEnabled(v bool) *DeviceGroupUpdateOne {
+	_u.mutation.SetBrightnessEnabled(v)
+	return _u
+}
+
+// SetNillableBrightnessEnabled sets the "brightness_enabled" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableBrightnessEnabled(v *bool) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetBrightnessEnabled(*v)
+	}
+	return _u
+}
+
+// SetBrightnessSchedules sets the "brightness_schedules" field.
+func (_u *DeviceGroupUpdateOne) SetBrightnessSchedules(v string) *DeviceGroupUpdateOne {
+	_u.mutation.SetBrightnessSchedules(v)
+	return _u
+}
+
+// SetNillableBrightnessSchedules sets the "brightness_schedules" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableBrightnessSchedules(v *string) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetBrightnessSchedules(*v)
+	}
+	return _u
+}
+
+// SetBrightnessOverride sets the "brightness_override" field.
+func (_u *DeviceGroupUpdateOne) SetBrightnessOverride(v int) *DeviceGroupUpdateOne {
+	_u.mutation.ResetBrightnessOverride()
+	_u.mutation.SetBrightnessOverride(v)
+	return _u
+}
+
+// SetNillableBrightnessOverride sets the "brightness_override" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableBrightnessOverride(v *int) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetBrightnessOverride(*v)
+	}
+	return _u
+}
+
+// AddBrightnessOverride adds value to the "brightness_override" field.
+func (_u *DeviceGroupUpdateOne) AddBrightnessOverride(v int) *DeviceGroupUpdateOne {
+	_u.mutation.AddBrightnessOverride(v)
+	return _u
+}
+
+// ClearBrightnessOverride clears the value of the "brightness_override" field.
+func (_u *DeviceGroupUpdateOne) ClearBrightnessOverride() *DeviceGroupUpdateOne {
+	_u.mutation.ClearBrightnessOverride()
+	return _u
+}
+
+// SetBrightnessSensorConfig sets the "brightness_sensor_config" field.
+func (_u *DeviceGroupUpdateOne) SetBrightnessSensorConfig(v string) *DeviceGroupUpdateOne {
+	_u.mutation.SetBrightnessSensorConfig(v)
+	return _u
+}
+
+// SetNillableBrightnessSensorConfig sets the "brightness_sensor_config" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableBrightnessSensorConfig(v *string) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetBrightnessSensorConfig(*v)
+	}
+	return _u
+}
+
+// ClearBrightnessSensorConfig clears the value of the "brightness_sensor_config" field.
+func (_u *DeviceGroupUpdateOne) ClearBrightnessSensorConfig() *DeviceGroupUpdateOne {
+	_u.mutation.ClearBrightnessSensorConfig()
+	return _u
+}
+
+// SetOverlayEnabled sets the "overlay_enabled" field.
+func (_u *DeviceGroupUpdateOne) SetOverlayEnabled(v bool) *DeviceGroupUpdateOne {
+	_u.mutation.SetOverlayEnabled(v)
+	return _u
+}
+
+// SetNillableOverlayEnabled sets the "overlay_enabled" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableOverlayEnabled(v *bool) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetOverlayEnabled(*v)
+	}
+	return _u
+}
+
+// SetOverlayPosition sets the "overlay_position" field.
+func (_u *DeviceGroupUpdateOne) SetOverlayPosition(v string) *DeviceGroupUpdateOne {
+	_u.mutation.SetOverlayPosition(v)
+	return _u
+}
+
+// SetNillableOverlayPosition sets the "overlay_position" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableOverlayPosition(v *string) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetOverlayPosition(*v)
+	}
+	return _u
+}
+
+// SetOverlayHeight sets the "overlay_height" field.
+func (_u *DeviceGroupUpdateOne) SetOverlayHeight(v int) *DeviceGroupUpdateOne {
+	_u.mutation.ResetOverlayHeight()
+	_u.mutation.SetOverlayHeight(v)
+	return _u
+}
+
+// SetNillableOverlayHeight sets the "overlay_height" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableOverlayHeight(v *int) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetOverlayHeight(*v)
+	}
+	return _u
+}
+
+// AddOverlayHeight adds value to the "overlay_height" field.
+func (_u *DeviceGroupUpdateOne) AddOverlayHeight(v int) *DeviceGroupUpdateOne {
+	_u.mutation.AddOverlayHeight(v)
+	return _u
+}
+
+// SetOverlayText sets the "overlay_text" field.
+func (_u *DeviceGroupUpdateOne) SetOverlayText(v string) *DeviceGroupUpdateOne {
+	_u.mutation.SetOverlayText(v)
+	return _u
+}
+
+// SetNillableOverlayText sets the "overlay_text" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableOverlayText(v *string) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetOverlayText(*v)
+	}
+	return _u
+}
+
+// SetOverlaySpeedPx sets the "overlay_speed_px" field.
+func (_u *DeviceGroupUpdateOne) SetOverlaySpeedPx(v int) *DeviceGroupUpdateOne {
+	_u.mutation.ResetOverlaySpeedPx()
+	_u.mutation.SetOverlaySpeedPx(v)
+	return _u
+}
+
+// SetNillableOverlaySpeedPx sets the "overlay_speed_px" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableOverlaySpeedPx(v *int) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetOverlaySpeedPx(*v)
+	}
+	return _u
+}
+
+// AddOverlaySpeedPx adds value to the "overlay_speed_px" field.
+func (_u *DeviceGroupUpdateOne) AddOverlaySpeedPx(v int) *DeviceGroupUpdateOne {
+	_u.mutation.AddOverlaySpeedPx(v)
+	return _u
+}
+
+// SetOverlayBg sets the "overlay_bg" field.
+func (_u *DeviceGroupUpdateOne) SetOverlayBg(v string) *DeviceGroupUpdateOne {
+	_u.mutation.SetOverlayBg(v)
+	return _u
+}
+
+// SetNillableOverlayBg sets the "overlay_bg" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableOverlayBg(v *string) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetOverlayBg(*v)
+	}
+	return _u
+}
+
+// SetOverlayFg sets the "overlay_fg" field.
+func (_u *DeviceGroupUpdateOne) SetOverlayFg(v string) *DeviceGroupUpdateOne {
+	_u.mutation.SetOverlayFg(v)
+	return _u
+}
+
+// SetNillableOverlayFg sets the "overlay_fg" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableOverlayFg(v *string) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetOverlayFg(*v)
+	}
+	return _u
+}
+
 // AddDeviceIDs adds the "devices" edge to the DeviceSettings entity by IDs.
 func (_u *DeviceGroupUpdateOne) AddDeviceIDs(ids ...int) *DeviceGroupUpdateOne {
 	_u.mutation.AddDeviceIDs(ids...)
@@ -573,6 +1000,11 @@ func (_u *DeviceGroupUpdateOne) check() error {
 			return &ValidationError{Name: "content_mode", err: fmt.Errorf(`ent: validator failed for field "DeviceGroup.content_mode": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.OverlayPosition(); ok {
+		if err := devicegroup.OverlayPositionValidator(v); err != nil {
+			return &ValidationError{Name: "overlay_position", err: fmt.Errorf(`ent: validator failed for field "DeviceGroup.overlay_position": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -637,6 +1069,54 @@ func (_u *DeviceGroupUpdateOne) sqlSave(ctx context.Context) (_node *DeviceGroup
 	}
 	if _u.mutation.FallbackPlaylistIDCleared() {
 		_spec.ClearField(devicegroup.FieldFallbackPlaylistID, field.TypeInt)
+	}
+	if value, ok := _u.mutation.BrightnessEnabled(); ok {
+		_spec.SetField(devicegroup.FieldBrightnessEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.BrightnessSchedules(); ok {
+		_spec.SetField(devicegroup.FieldBrightnessSchedules, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.BrightnessOverride(); ok {
+		_spec.SetField(devicegroup.FieldBrightnessOverride, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedBrightnessOverride(); ok {
+		_spec.AddField(devicegroup.FieldBrightnessOverride, field.TypeInt, value)
+	}
+	if _u.mutation.BrightnessOverrideCleared() {
+		_spec.ClearField(devicegroup.FieldBrightnessOverride, field.TypeInt)
+	}
+	if value, ok := _u.mutation.BrightnessSensorConfig(); ok {
+		_spec.SetField(devicegroup.FieldBrightnessSensorConfig, field.TypeString, value)
+	}
+	if _u.mutation.BrightnessSensorConfigCleared() {
+		_spec.ClearField(devicegroup.FieldBrightnessSensorConfig, field.TypeString)
+	}
+	if value, ok := _u.mutation.OverlayEnabled(); ok {
+		_spec.SetField(devicegroup.FieldOverlayEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.OverlayPosition(); ok {
+		_spec.SetField(devicegroup.FieldOverlayPosition, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OverlayHeight(); ok {
+		_spec.SetField(devicegroup.FieldOverlayHeight, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOverlayHeight(); ok {
+		_spec.AddField(devicegroup.FieldOverlayHeight, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OverlayText(); ok {
+		_spec.SetField(devicegroup.FieldOverlayText, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OverlaySpeedPx(); ok {
+		_spec.SetField(devicegroup.FieldOverlaySpeedPx, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOverlaySpeedPx(); ok {
+		_spec.AddField(devicegroup.FieldOverlaySpeedPx, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OverlayBg(); ok {
+		_spec.SetField(devicegroup.FieldOverlayBg, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OverlayFg(); ok {
+		_spec.SetField(devicegroup.FieldOverlayFg, field.TypeString, value)
 	}
 	if _u.mutation.DevicesCleared() {
 		edge := &sqlgraph.EdgeSpec{

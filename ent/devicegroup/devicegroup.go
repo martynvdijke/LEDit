@@ -28,6 +28,28 @@ const (
 	FieldScheduledPlaylistIds = "scheduled_playlist_ids"
 	// FieldFallbackPlaylistID holds the string denoting the fallback_playlist_id field in the database.
 	FieldFallbackPlaylistID = "fallback_playlist_id"
+	// FieldBrightnessEnabled holds the string denoting the brightness_enabled field in the database.
+	FieldBrightnessEnabled = "brightness_enabled"
+	// FieldBrightnessSchedules holds the string denoting the brightness_schedules field in the database.
+	FieldBrightnessSchedules = "brightness_schedules"
+	// FieldBrightnessOverride holds the string denoting the brightness_override field in the database.
+	FieldBrightnessOverride = "brightness_override"
+	// FieldBrightnessSensorConfig holds the string denoting the brightness_sensor_config field in the database.
+	FieldBrightnessSensorConfig = "brightness_sensor_config"
+	// FieldOverlayEnabled holds the string denoting the overlay_enabled field in the database.
+	FieldOverlayEnabled = "overlay_enabled"
+	// FieldOverlayPosition holds the string denoting the overlay_position field in the database.
+	FieldOverlayPosition = "overlay_position"
+	// FieldOverlayHeight holds the string denoting the overlay_height field in the database.
+	FieldOverlayHeight = "overlay_height"
+	// FieldOverlayText holds the string denoting the overlay_text field in the database.
+	FieldOverlayText = "overlay_text"
+	// FieldOverlaySpeedPx holds the string denoting the overlay_speed_px field in the database.
+	FieldOverlaySpeedPx = "overlay_speed_px"
+	// FieldOverlayBg holds the string denoting the overlay_bg field in the database.
+	FieldOverlayBg = "overlay_bg"
+	// FieldOverlayFg holds the string denoting the overlay_fg field in the database.
+	FieldOverlayFg = "overlay_fg"
 	// EdgeDevices holds the string denoting the devices edge name in mutations.
 	EdgeDevices = "devices"
 	// Table holds the table name of the devicegroup in the database.
@@ -51,6 +73,17 @@ var Columns = []string{
 	FieldPlaylistID,
 	FieldScheduledPlaylistIds,
 	FieldFallbackPlaylistID,
+	FieldBrightnessEnabled,
+	FieldBrightnessSchedules,
+	FieldBrightnessOverride,
+	FieldBrightnessSensorConfig,
+	FieldOverlayEnabled,
+	FieldOverlayPosition,
+	FieldOverlayHeight,
+	FieldOverlayText,
+	FieldOverlaySpeedPx,
+	FieldOverlayBg,
+	FieldOverlayFg,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -78,6 +111,26 @@ var (
 	ContentModeValidator func(string) error
 	// DefaultScheduledPlaylistIds holds the default value on creation for the "scheduled_playlist_ids" field.
 	DefaultScheduledPlaylistIds string
+	// DefaultBrightnessEnabled holds the default value on creation for the "brightness_enabled" field.
+	DefaultBrightnessEnabled bool
+	// DefaultBrightnessSchedules holds the default value on creation for the "brightness_schedules" field.
+	DefaultBrightnessSchedules string
+	// DefaultOverlayEnabled holds the default value on creation for the "overlay_enabled" field.
+	DefaultOverlayEnabled bool
+	// DefaultOverlayPosition holds the default value on creation for the "overlay_position" field.
+	DefaultOverlayPosition string
+	// OverlayPositionValidator is a validator for the "overlay_position" field. It is called by the builders before save.
+	OverlayPositionValidator func(string) error
+	// DefaultOverlayHeight holds the default value on creation for the "overlay_height" field.
+	DefaultOverlayHeight int
+	// DefaultOverlayText holds the default value on creation for the "overlay_text" field.
+	DefaultOverlayText string
+	// DefaultOverlaySpeedPx holds the default value on creation for the "overlay_speed_px" field.
+	DefaultOverlaySpeedPx int
+	// DefaultOverlayBg holds the default value on creation for the "overlay_bg" field.
+	DefaultOverlayBg string
+	// DefaultOverlayFg holds the default value on creation for the "overlay_fg" field.
+	DefaultOverlayFg string
 )
 
 // OrderOption defines the ordering options for the DeviceGroup queries.
@@ -121,6 +174,61 @@ func ByScheduledPlaylistIds(opts ...sql.OrderTermOption) OrderOption {
 // ByFallbackPlaylistID orders the results by the fallback_playlist_id field.
 func ByFallbackPlaylistID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFallbackPlaylistID, opts...).ToFunc()
+}
+
+// ByBrightnessEnabled orders the results by the brightness_enabled field.
+func ByBrightnessEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBrightnessEnabled, opts...).ToFunc()
+}
+
+// ByBrightnessSchedules orders the results by the brightness_schedules field.
+func ByBrightnessSchedules(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBrightnessSchedules, opts...).ToFunc()
+}
+
+// ByBrightnessOverride orders the results by the brightness_override field.
+func ByBrightnessOverride(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBrightnessOverride, opts...).ToFunc()
+}
+
+// ByBrightnessSensorConfig orders the results by the brightness_sensor_config field.
+func ByBrightnessSensorConfig(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBrightnessSensorConfig, opts...).ToFunc()
+}
+
+// ByOverlayEnabled orders the results by the overlay_enabled field.
+func ByOverlayEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayEnabled, opts...).ToFunc()
+}
+
+// ByOverlayPosition orders the results by the overlay_position field.
+func ByOverlayPosition(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayPosition, opts...).ToFunc()
+}
+
+// ByOverlayHeight orders the results by the overlay_height field.
+func ByOverlayHeight(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayHeight, opts...).ToFunc()
+}
+
+// ByOverlayText orders the results by the overlay_text field.
+func ByOverlayText(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayText, opts...).ToFunc()
+}
+
+// ByOverlaySpeedPx orders the results by the overlay_speed_px field.
+func ByOverlaySpeedPx(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlaySpeedPx, opts...).ToFunc()
+}
+
+// ByOverlayBg orders the results by the overlay_bg field.
+func ByOverlayBg(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayBg, opts...).ToFunc()
+}
+
+// ByOverlayFg orders the results by the overlay_fg field.
+func ByOverlayFg(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayFg, opts...).ToFunc()
 }
 
 // ByDevicesCount orders the results by devices count.

@@ -335,6 +335,17 @@ var (
 		{Name: "playlist_id", Type: field.TypeInt, Nullable: true},
 		{Name: "scheduled_playlist_ids", Type: field.TypeString, Size: 2147483647, Default: "[]"},
 		{Name: "fallback_playlist_id", Type: field.TypeInt, Nullable: true},
+		{Name: "brightness_enabled", Type: field.TypeBool, Default: false},
+		{Name: "brightness_schedules", Type: field.TypeString, Size: 2147483647, Default: "[]"},
+		{Name: "brightness_override", Type: field.TypeInt, Nullable: true},
+		{Name: "brightness_sensor_config", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "overlay_enabled", Type: field.TypeBool, Default: false},
+		{Name: "overlay_position", Type: field.TypeString, Default: "bottom"},
+		{Name: "overlay_height", Type: field.TypeInt, Default: 8},
+		{Name: "overlay_text", Type: field.TypeString, Default: ""},
+		{Name: "overlay_speed_px", Type: field.TypeInt, Default: 0},
+		{Name: "overlay_bg", Type: field.TypeString, Default: "#000000"},
+		{Name: "overlay_fg", Type: field.TypeString, Default: "#ffffff"},
 	}
 	// DeviceGroupsTable holds the schema information for the "device_groups" table.
 	DeviceGroupsTable = &schema.Table{

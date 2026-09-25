@@ -31,6 +31,28 @@ type DeviceGroup struct {
 	ScheduledPlaylistIds string `json:"scheduled_playlist_ids,omitempty"`
 	// FallbackPlaylistID holds the value of the "fallback_playlist_id" field.
 	FallbackPlaylistID *int `json:"fallback_playlist_id,omitempty"`
+	// BrightnessEnabled holds the value of the "brightness_enabled" field.
+	BrightnessEnabled bool `json:"brightness_enabled,omitempty"`
+	// BrightnessSchedules holds the value of the "brightness_schedules" field.
+	BrightnessSchedules string `json:"brightness_schedules,omitempty"`
+	// BrightnessOverride holds the value of the "brightness_override" field.
+	BrightnessOverride *int `json:"brightness_override,omitempty"`
+	// BrightnessSensorConfig holds the value of the "brightness_sensor_config" field.
+	BrightnessSensorConfig *string `json:"brightness_sensor_config,omitempty"`
+	// OverlayEnabled holds the value of the "overlay_enabled" field.
+	OverlayEnabled bool `json:"overlay_enabled,omitempty"`
+	// OverlayPosition holds the value of the "overlay_position" field.
+	OverlayPosition string `json:"overlay_position,omitempty"`
+	// OverlayHeight holds the value of the "overlay_height" field.
+	OverlayHeight int `json:"overlay_height,omitempty"`
+	// OverlayText holds the value of the "overlay_text" field.
+	OverlayText string `json:"overlay_text,omitempty"`
+	// OverlaySpeedPx holds the value of the "overlay_speed_px" field.
+	OverlaySpeedPx int `json:"overlay_speed_px,omitempty"`
+	// OverlayBg holds the value of the "overlay_bg" field.
+	OverlayBg string `json:"overlay_bg,omitempty"`
+	// OverlayFg holds the value of the "overlay_fg" field.
+	OverlayFg string `json:"overlay_fg,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DeviceGroupQuery when eager-loading is set.
 	Edges        DeviceGroupEdges `json:"edges"`
@@ -60,9 +82,11 @@ func (*DeviceGroup) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case devicegroup.FieldID, devicegroup.FieldPlaylistID, devicegroup.FieldFallbackPlaylistID:
+		case devicegroup.FieldBrightnessEnabled, devicegroup.FieldOverlayEnabled:
+			values[i] = new(sql.NullBool)
+		case devicegroup.FieldID, devicegroup.FieldPlaylistID, devicegroup.FieldFallbackPlaylistID, devicegroup.FieldBrightnessOverride, devicegroup.FieldOverlayHeight, devicegroup.FieldOverlaySpeedPx:
 			values[i] = new(sql.NullInt64)
-		case devicegroup.FieldName, devicegroup.FieldDescription, devicegroup.FieldContentMode, devicegroup.FieldScheduledPlaylistIds:
+		case devicegroup.FieldName, devicegroup.FieldDescription, devicegroup.FieldContentMode, devicegroup.FieldScheduledPlaylistIds, devicegroup.FieldBrightnessSchedules, devicegroup.FieldBrightnessSensorConfig, devicegroup.FieldOverlayPosition, devicegroup.FieldOverlayText, devicegroup.FieldOverlayBg, devicegroup.FieldOverlayFg:
 			values[i] = new(sql.NullString)
 		case devicegroup.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -131,6 +155,74 @@ func (_m *DeviceGroup) assignValues(columns []string, values []any) error {
 				_m.FallbackPlaylistID = new(int)
 				*_m.FallbackPlaylistID = int(value.Int64)
 			}
+		case devicegroup.FieldBrightnessEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field brightness_enabled", values[i])
+			} else if value.Valid {
+				_m.BrightnessEnabled = value.Bool
+			}
+		case devicegroup.FieldBrightnessSchedules:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field brightness_schedules", values[i])
+			} else if value.Valid {
+				_m.BrightnessSchedules = value.String
+			}
+		case devicegroup.FieldBrightnessOverride:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field brightness_override", values[i])
+			} else if value.Valid {
+				_m.BrightnessOverride = new(int)
+				*_m.BrightnessOverride = int(value.Int64)
+			}
+		case devicegroup.FieldBrightnessSensorConfig:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field brightness_sensor_config", values[i])
+			} else if value.Valid {
+				_m.BrightnessSensorConfig = new(string)
+				*_m.BrightnessSensorConfig = value.String
+			}
+		case devicegroup.FieldOverlayEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field overlay_enabled", values[i])
+			} else if value.Valid {
+				_m.OverlayEnabled = value.Bool
+			}
+		case devicegroup.FieldOverlayPosition:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field overlay_position", values[i])
+			} else if value.Valid {
+				_m.OverlayPosition = value.String
+			}
+		case devicegroup.FieldOverlayHeight:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field overlay_height", values[i])
+			} else if value.Valid {
+				_m.OverlayHeight = int(value.Int64)
+			}
+		case devicegroup.FieldOverlayText:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field overlay_text", values[i])
+			} else if value.Valid {
+				_m.OverlayText = value.String
+			}
+		case devicegroup.FieldOverlaySpeedPx:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field overlay_speed_px", values[i])
+			} else if value.Valid {
+				_m.OverlaySpeedPx = int(value.Int64)
+			}
+		case devicegroup.FieldOverlayBg:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field overlay_bg", values[i])
+			} else if value.Valid {
+				_m.OverlayBg = value.String
+			}
+		case devicegroup.FieldOverlayFg:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field overlay_fg", values[i])
+			} else if value.Valid {
+				_m.OverlayFg = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -196,6 +288,43 @@ func (_m *DeviceGroup) String() string {
 		builder.WriteString("fallback_playlist_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("brightness_enabled=")
+	builder.WriteString(fmt.Sprintf("%v", _m.BrightnessEnabled))
+	builder.WriteString(", ")
+	builder.WriteString("brightness_schedules=")
+	builder.WriteString(_m.BrightnessSchedules)
+	builder.WriteString(", ")
+	if v := _m.BrightnessOverride; v != nil {
+		builder.WriteString("brightness_override=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.BrightnessSensorConfig; v != nil {
+		builder.WriteString("brightness_sensor_config=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("overlay_enabled=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OverlayEnabled))
+	builder.WriteString(", ")
+	builder.WriteString("overlay_position=")
+	builder.WriteString(_m.OverlayPosition)
+	builder.WriteString(", ")
+	builder.WriteString("overlay_height=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OverlayHeight))
+	builder.WriteString(", ")
+	builder.WriteString("overlay_text=")
+	builder.WriteString(_m.OverlayText)
+	builder.WriteString(", ")
+	builder.WriteString("overlay_speed_px=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OverlaySpeedPx))
+	builder.WriteString(", ")
+	builder.WriteString("overlay_bg=")
+	builder.WriteString(_m.OverlayBg)
+	builder.WriteString(", ")
+	builder.WriteString("overlay_fg=")
+	builder.WriteString(_m.OverlayFg)
 	builder.WriteByte(')')
 	return builder.String()
 }

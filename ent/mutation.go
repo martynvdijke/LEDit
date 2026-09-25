@@ -9297,25 +9297,39 @@ func (m *DeliveryLogMutation) ResetEdge(name string) error {
 // DeviceGroupMutation represents an operation that mutates the DeviceGroup nodes in the graph.
 type DeviceGroupMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *int
-	name                    *string
-	description             *string
-	created_at              *time.Time
-	content_mode            *string
-	playlist_id             *int
-	addplaylist_id          *int
-	scheduled_playlist_ids  *string
-	fallback_playlist_id    *int
-	addfallback_playlist_id *int
-	clearedFields           map[string]struct{}
-	devices                 map[int]struct{}
-	removeddevices          map[int]struct{}
-	cleareddevices          bool
-	done                    bool
-	oldValue                func(context.Context) (*DeviceGroup, error)
-	predicates              []predicate.DeviceGroup
+	op                       Op
+	typ                      string
+	id                       *int
+	name                     *string
+	description              *string
+	created_at               *time.Time
+	content_mode             *string
+	playlist_id              *int
+	addplaylist_id           *int
+	scheduled_playlist_ids   *string
+	fallback_playlist_id     *int
+	addfallback_playlist_id  *int
+	brightness_enabled       *bool
+	brightness_schedules     *string
+	brightness_override      *int
+	addbrightness_override   *int
+	brightness_sensor_config *string
+	overlay_enabled          *bool
+	overlay_position         *string
+	overlay_height           *int
+	addoverlay_height        *int
+	overlay_text             *string
+	overlay_speed_px         *int
+	addoverlay_speed_px      *int
+	overlay_bg               *string
+	overlay_fg               *string
+	clearedFields            map[string]struct{}
+	devices                  map[int]struct{}
+	removeddevices           map[int]struct{}
+	cleareddevices           bool
+	done                     bool
+	oldValue                 func(context.Context) (*DeviceGroup, error)
+	predicates               []predicate.DeviceGroup
 }
 
 var _ ent.Mutation = (*DeviceGroupMutation)(nil)
@@ -9736,6 +9750,489 @@ func (m *DeviceGroupMutation) ResetFallbackPlaylistID() {
 	delete(m.clearedFields, devicegroup.FieldFallbackPlaylistID)
 }
 
+// SetBrightnessEnabled sets the "brightness_enabled" field.
+func (m *DeviceGroupMutation) SetBrightnessEnabled(b bool) {
+	m.brightness_enabled = &b
+}
+
+// BrightnessEnabled returns the value of the "brightness_enabled" field in the mutation.
+func (m *DeviceGroupMutation) BrightnessEnabled() (r bool, exists bool) {
+	v := m.brightness_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBrightnessEnabled returns the old "brightness_enabled" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldBrightnessEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBrightnessEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBrightnessEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBrightnessEnabled: %w", err)
+	}
+	return oldValue.BrightnessEnabled, nil
+}
+
+// ResetBrightnessEnabled resets all changes to the "brightness_enabled" field.
+func (m *DeviceGroupMutation) ResetBrightnessEnabled() {
+	m.brightness_enabled = nil
+}
+
+// SetBrightnessSchedules sets the "brightness_schedules" field.
+func (m *DeviceGroupMutation) SetBrightnessSchedules(s string) {
+	m.brightness_schedules = &s
+}
+
+// BrightnessSchedules returns the value of the "brightness_schedules" field in the mutation.
+func (m *DeviceGroupMutation) BrightnessSchedules() (r string, exists bool) {
+	v := m.brightness_schedules
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBrightnessSchedules returns the old "brightness_schedules" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldBrightnessSchedules(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBrightnessSchedules is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBrightnessSchedules requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBrightnessSchedules: %w", err)
+	}
+	return oldValue.BrightnessSchedules, nil
+}
+
+// ResetBrightnessSchedules resets all changes to the "brightness_schedules" field.
+func (m *DeviceGroupMutation) ResetBrightnessSchedules() {
+	m.brightness_schedules = nil
+}
+
+// SetBrightnessOverride sets the "brightness_override" field.
+func (m *DeviceGroupMutation) SetBrightnessOverride(i int) {
+	m.brightness_override = &i
+	m.addbrightness_override = nil
+}
+
+// BrightnessOverride returns the value of the "brightness_override" field in the mutation.
+func (m *DeviceGroupMutation) BrightnessOverride() (r int, exists bool) {
+	v := m.brightness_override
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBrightnessOverride returns the old "brightness_override" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldBrightnessOverride(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBrightnessOverride is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBrightnessOverride requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBrightnessOverride: %w", err)
+	}
+	return oldValue.BrightnessOverride, nil
+}
+
+// AddBrightnessOverride adds i to the "brightness_override" field.
+func (m *DeviceGroupMutation) AddBrightnessOverride(i int) {
+	if m.addbrightness_override != nil {
+		*m.addbrightness_override += i
+	} else {
+		m.addbrightness_override = &i
+	}
+}
+
+// AddedBrightnessOverride returns the value that was added to the "brightness_override" field in this mutation.
+func (m *DeviceGroupMutation) AddedBrightnessOverride() (r int, exists bool) {
+	v := m.addbrightness_override
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearBrightnessOverride clears the value of the "brightness_override" field.
+func (m *DeviceGroupMutation) ClearBrightnessOverride() {
+	m.brightness_override = nil
+	m.addbrightness_override = nil
+	m.clearedFields[devicegroup.FieldBrightnessOverride] = struct{}{}
+}
+
+// BrightnessOverrideCleared returns if the "brightness_override" field was cleared in this mutation.
+func (m *DeviceGroupMutation) BrightnessOverrideCleared() bool {
+	_, ok := m.clearedFields[devicegroup.FieldBrightnessOverride]
+	return ok
+}
+
+// ResetBrightnessOverride resets all changes to the "brightness_override" field.
+func (m *DeviceGroupMutation) ResetBrightnessOverride() {
+	m.brightness_override = nil
+	m.addbrightness_override = nil
+	delete(m.clearedFields, devicegroup.FieldBrightnessOverride)
+}
+
+// SetBrightnessSensorConfig sets the "brightness_sensor_config" field.
+func (m *DeviceGroupMutation) SetBrightnessSensorConfig(s string) {
+	m.brightness_sensor_config = &s
+}
+
+// BrightnessSensorConfig returns the value of the "brightness_sensor_config" field in the mutation.
+func (m *DeviceGroupMutation) BrightnessSensorConfig() (r string, exists bool) {
+	v := m.brightness_sensor_config
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBrightnessSensorConfig returns the old "brightness_sensor_config" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldBrightnessSensorConfig(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBrightnessSensorConfig is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBrightnessSensorConfig requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBrightnessSensorConfig: %w", err)
+	}
+	return oldValue.BrightnessSensorConfig, nil
+}
+
+// ClearBrightnessSensorConfig clears the value of the "brightness_sensor_config" field.
+func (m *DeviceGroupMutation) ClearBrightnessSensorConfig() {
+	m.brightness_sensor_config = nil
+	m.clearedFields[devicegroup.FieldBrightnessSensorConfig] = struct{}{}
+}
+
+// BrightnessSensorConfigCleared returns if the "brightness_sensor_config" field was cleared in this mutation.
+func (m *DeviceGroupMutation) BrightnessSensorConfigCleared() bool {
+	_, ok := m.clearedFields[devicegroup.FieldBrightnessSensorConfig]
+	return ok
+}
+
+// ResetBrightnessSensorConfig resets all changes to the "brightness_sensor_config" field.
+func (m *DeviceGroupMutation) ResetBrightnessSensorConfig() {
+	m.brightness_sensor_config = nil
+	delete(m.clearedFields, devicegroup.FieldBrightnessSensorConfig)
+}
+
+// SetOverlayEnabled sets the "overlay_enabled" field.
+func (m *DeviceGroupMutation) SetOverlayEnabled(b bool) {
+	m.overlay_enabled = &b
+}
+
+// OverlayEnabled returns the value of the "overlay_enabled" field in the mutation.
+func (m *DeviceGroupMutation) OverlayEnabled() (r bool, exists bool) {
+	v := m.overlay_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOverlayEnabled returns the old "overlay_enabled" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldOverlayEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOverlayEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOverlayEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOverlayEnabled: %w", err)
+	}
+	return oldValue.OverlayEnabled, nil
+}
+
+// ResetOverlayEnabled resets all changes to the "overlay_enabled" field.
+func (m *DeviceGroupMutation) ResetOverlayEnabled() {
+	m.overlay_enabled = nil
+}
+
+// SetOverlayPosition sets the "overlay_position" field.
+func (m *DeviceGroupMutation) SetOverlayPosition(s string) {
+	m.overlay_position = &s
+}
+
+// OverlayPosition returns the value of the "overlay_position" field in the mutation.
+func (m *DeviceGroupMutation) OverlayPosition() (r string, exists bool) {
+	v := m.overlay_position
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOverlayPosition returns the old "overlay_position" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldOverlayPosition(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOverlayPosition is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOverlayPosition requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOverlayPosition: %w", err)
+	}
+	return oldValue.OverlayPosition, nil
+}
+
+// ResetOverlayPosition resets all changes to the "overlay_position" field.
+func (m *DeviceGroupMutation) ResetOverlayPosition() {
+	m.overlay_position = nil
+}
+
+// SetOverlayHeight sets the "overlay_height" field.
+func (m *DeviceGroupMutation) SetOverlayHeight(i int) {
+	m.overlay_height = &i
+	m.addoverlay_height = nil
+}
+
+// OverlayHeight returns the value of the "overlay_height" field in the mutation.
+func (m *DeviceGroupMutation) OverlayHeight() (r int, exists bool) {
+	v := m.overlay_height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOverlayHeight returns the old "overlay_height" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldOverlayHeight(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOverlayHeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOverlayHeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOverlayHeight: %w", err)
+	}
+	return oldValue.OverlayHeight, nil
+}
+
+// AddOverlayHeight adds i to the "overlay_height" field.
+func (m *DeviceGroupMutation) AddOverlayHeight(i int) {
+	if m.addoverlay_height != nil {
+		*m.addoverlay_height += i
+	} else {
+		m.addoverlay_height = &i
+	}
+}
+
+// AddedOverlayHeight returns the value that was added to the "overlay_height" field in this mutation.
+func (m *DeviceGroupMutation) AddedOverlayHeight() (r int, exists bool) {
+	v := m.addoverlay_height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetOverlayHeight resets all changes to the "overlay_height" field.
+func (m *DeviceGroupMutation) ResetOverlayHeight() {
+	m.overlay_height = nil
+	m.addoverlay_height = nil
+}
+
+// SetOverlayText sets the "overlay_text" field.
+func (m *DeviceGroupMutation) SetOverlayText(s string) {
+	m.overlay_text = &s
+}
+
+// OverlayText returns the value of the "overlay_text" field in the mutation.
+func (m *DeviceGroupMutation) OverlayText() (r string, exists bool) {
+	v := m.overlay_text
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOverlayText returns the old "overlay_text" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldOverlayText(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOverlayText is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOverlayText requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOverlayText: %w", err)
+	}
+	return oldValue.OverlayText, nil
+}
+
+// ResetOverlayText resets all changes to the "overlay_text" field.
+func (m *DeviceGroupMutation) ResetOverlayText() {
+	m.overlay_text = nil
+}
+
+// SetOverlaySpeedPx sets the "overlay_speed_px" field.
+func (m *DeviceGroupMutation) SetOverlaySpeedPx(i int) {
+	m.overlay_speed_px = &i
+	m.addoverlay_speed_px = nil
+}
+
+// OverlaySpeedPx returns the value of the "overlay_speed_px" field in the mutation.
+func (m *DeviceGroupMutation) OverlaySpeedPx() (r int, exists bool) {
+	v := m.overlay_speed_px
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOverlaySpeedPx returns the old "overlay_speed_px" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldOverlaySpeedPx(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOverlaySpeedPx is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOverlaySpeedPx requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOverlaySpeedPx: %w", err)
+	}
+	return oldValue.OverlaySpeedPx, nil
+}
+
+// AddOverlaySpeedPx adds i to the "overlay_speed_px" field.
+func (m *DeviceGroupMutation) AddOverlaySpeedPx(i int) {
+	if m.addoverlay_speed_px != nil {
+		*m.addoverlay_speed_px += i
+	} else {
+		m.addoverlay_speed_px = &i
+	}
+}
+
+// AddedOverlaySpeedPx returns the value that was added to the "overlay_speed_px" field in this mutation.
+func (m *DeviceGroupMutation) AddedOverlaySpeedPx() (r int, exists bool) {
+	v := m.addoverlay_speed_px
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetOverlaySpeedPx resets all changes to the "overlay_speed_px" field.
+func (m *DeviceGroupMutation) ResetOverlaySpeedPx() {
+	m.overlay_speed_px = nil
+	m.addoverlay_speed_px = nil
+}
+
+// SetOverlayBg sets the "overlay_bg" field.
+func (m *DeviceGroupMutation) SetOverlayBg(s string) {
+	m.overlay_bg = &s
+}
+
+// OverlayBg returns the value of the "overlay_bg" field in the mutation.
+func (m *DeviceGroupMutation) OverlayBg() (r string, exists bool) {
+	v := m.overlay_bg
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOverlayBg returns the old "overlay_bg" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldOverlayBg(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOverlayBg is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOverlayBg requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOverlayBg: %w", err)
+	}
+	return oldValue.OverlayBg, nil
+}
+
+// ResetOverlayBg resets all changes to the "overlay_bg" field.
+func (m *DeviceGroupMutation) ResetOverlayBg() {
+	m.overlay_bg = nil
+}
+
+// SetOverlayFg sets the "overlay_fg" field.
+func (m *DeviceGroupMutation) SetOverlayFg(s string) {
+	m.overlay_fg = &s
+}
+
+// OverlayFg returns the value of the "overlay_fg" field in the mutation.
+func (m *DeviceGroupMutation) OverlayFg() (r string, exists bool) {
+	v := m.overlay_fg
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOverlayFg returns the old "overlay_fg" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldOverlayFg(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOverlayFg is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOverlayFg requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOverlayFg: %w", err)
+	}
+	return oldValue.OverlayFg, nil
+}
+
+// ResetOverlayFg resets all changes to the "overlay_fg" field.
+func (m *DeviceGroupMutation) ResetOverlayFg() {
+	m.overlay_fg = nil
+}
+
 // AddDeviceIDs adds the "devices" edge to the DeviceSettings entity by ids.
 func (m *DeviceGroupMutation) AddDeviceIDs(ids ...int) {
 	if m.devices == nil {
@@ -9824,7 +10321,7 @@ func (m *DeviceGroupMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DeviceGroupMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 18)
 	if m.name != nil {
 		fields = append(fields, devicegroup.FieldName)
 	}
@@ -9845,6 +10342,39 @@ func (m *DeviceGroupMutation) Fields() []string {
 	}
 	if m.fallback_playlist_id != nil {
 		fields = append(fields, devicegroup.FieldFallbackPlaylistID)
+	}
+	if m.brightness_enabled != nil {
+		fields = append(fields, devicegroup.FieldBrightnessEnabled)
+	}
+	if m.brightness_schedules != nil {
+		fields = append(fields, devicegroup.FieldBrightnessSchedules)
+	}
+	if m.brightness_override != nil {
+		fields = append(fields, devicegroup.FieldBrightnessOverride)
+	}
+	if m.brightness_sensor_config != nil {
+		fields = append(fields, devicegroup.FieldBrightnessSensorConfig)
+	}
+	if m.overlay_enabled != nil {
+		fields = append(fields, devicegroup.FieldOverlayEnabled)
+	}
+	if m.overlay_position != nil {
+		fields = append(fields, devicegroup.FieldOverlayPosition)
+	}
+	if m.overlay_height != nil {
+		fields = append(fields, devicegroup.FieldOverlayHeight)
+	}
+	if m.overlay_text != nil {
+		fields = append(fields, devicegroup.FieldOverlayText)
+	}
+	if m.overlay_speed_px != nil {
+		fields = append(fields, devicegroup.FieldOverlaySpeedPx)
+	}
+	if m.overlay_bg != nil {
+		fields = append(fields, devicegroup.FieldOverlayBg)
+	}
+	if m.overlay_fg != nil {
+		fields = append(fields, devicegroup.FieldOverlayFg)
 	}
 	return fields
 }
@@ -9868,6 +10398,28 @@ func (m *DeviceGroupMutation) Field(name string) (ent.Value, bool) {
 		return m.ScheduledPlaylistIds()
 	case devicegroup.FieldFallbackPlaylistID:
 		return m.FallbackPlaylistID()
+	case devicegroup.FieldBrightnessEnabled:
+		return m.BrightnessEnabled()
+	case devicegroup.FieldBrightnessSchedules:
+		return m.BrightnessSchedules()
+	case devicegroup.FieldBrightnessOverride:
+		return m.BrightnessOverride()
+	case devicegroup.FieldBrightnessSensorConfig:
+		return m.BrightnessSensorConfig()
+	case devicegroup.FieldOverlayEnabled:
+		return m.OverlayEnabled()
+	case devicegroup.FieldOverlayPosition:
+		return m.OverlayPosition()
+	case devicegroup.FieldOverlayHeight:
+		return m.OverlayHeight()
+	case devicegroup.FieldOverlayText:
+		return m.OverlayText()
+	case devicegroup.FieldOverlaySpeedPx:
+		return m.OverlaySpeedPx()
+	case devicegroup.FieldOverlayBg:
+		return m.OverlayBg()
+	case devicegroup.FieldOverlayFg:
+		return m.OverlayFg()
 	}
 	return nil, false
 }
@@ -9891,6 +10443,28 @@ func (m *DeviceGroupMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldScheduledPlaylistIds(ctx)
 	case devicegroup.FieldFallbackPlaylistID:
 		return m.OldFallbackPlaylistID(ctx)
+	case devicegroup.FieldBrightnessEnabled:
+		return m.OldBrightnessEnabled(ctx)
+	case devicegroup.FieldBrightnessSchedules:
+		return m.OldBrightnessSchedules(ctx)
+	case devicegroup.FieldBrightnessOverride:
+		return m.OldBrightnessOverride(ctx)
+	case devicegroup.FieldBrightnessSensorConfig:
+		return m.OldBrightnessSensorConfig(ctx)
+	case devicegroup.FieldOverlayEnabled:
+		return m.OldOverlayEnabled(ctx)
+	case devicegroup.FieldOverlayPosition:
+		return m.OldOverlayPosition(ctx)
+	case devicegroup.FieldOverlayHeight:
+		return m.OldOverlayHeight(ctx)
+	case devicegroup.FieldOverlayText:
+		return m.OldOverlayText(ctx)
+	case devicegroup.FieldOverlaySpeedPx:
+		return m.OldOverlaySpeedPx(ctx)
+	case devicegroup.FieldOverlayBg:
+		return m.OldOverlayBg(ctx)
+	case devicegroup.FieldOverlayFg:
+		return m.OldOverlayFg(ctx)
 	}
 	return nil, fmt.Errorf("unknown DeviceGroup field %s", name)
 }
@@ -9949,6 +10523,83 @@ func (m *DeviceGroupMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetFallbackPlaylistID(v)
 		return nil
+	case devicegroup.FieldBrightnessEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBrightnessEnabled(v)
+		return nil
+	case devicegroup.FieldBrightnessSchedules:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBrightnessSchedules(v)
+		return nil
+	case devicegroup.FieldBrightnessOverride:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBrightnessOverride(v)
+		return nil
+	case devicegroup.FieldBrightnessSensorConfig:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBrightnessSensorConfig(v)
+		return nil
+	case devicegroup.FieldOverlayEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOverlayEnabled(v)
+		return nil
+	case devicegroup.FieldOverlayPosition:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOverlayPosition(v)
+		return nil
+	case devicegroup.FieldOverlayHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOverlayHeight(v)
+		return nil
+	case devicegroup.FieldOverlayText:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOverlayText(v)
+		return nil
+	case devicegroup.FieldOverlaySpeedPx:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOverlaySpeedPx(v)
+		return nil
+	case devicegroup.FieldOverlayBg:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOverlayBg(v)
+		return nil
+	case devicegroup.FieldOverlayFg:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOverlayFg(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DeviceGroup field %s", name)
 }
@@ -9963,6 +10614,15 @@ func (m *DeviceGroupMutation) AddedFields() []string {
 	if m.addfallback_playlist_id != nil {
 		fields = append(fields, devicegroup.FieldFallbackPlaylistID)
 	}
+	if m.addbrightness_override != nil {
+		fields = append(fields, devicegroup.FieldBrightnessOverride)
+	}
+	if m.addoverlay_height != nil {
+		fields = append(fields, devicegroup.FieldOverlayHeight)
+	}
+	if m.addoverlay_speed_px != nil {
+		fields = append(fields, devicegroup.FieldOverlaySpeedPx)
+	}
 	return fields
 }
 
@@ -9975,6 +10635,12 @@ func (m *DeviceGroupMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedPlaylistID()
 	case devicegroup.FieldFallbackPlaylistID:
 		return m.AddedFallbackPlaylistID()
+	case devicegroup.FieldBrightnessOverride:
+		return m.AddedBrightnessOverride()
+	case devicegroup.FieldOverlayHeight:
+		return m.AddedOverlayHeight()
+	case devicegroup.FieldOverlaySpeedPx:
+		return m.AddedOverlaySpeedPx()
 	}
 	return nil, false
 }
@@ -9998,6 +10664,27 @@ func (m *DeviceGroupMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddFallbackPlaylistID(v)
 		return nil
+	case devicegroup.FieldBrightnessOverride:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBrightnessOverride(v)
+		return nil
+	case devicegroup.FieldOverlayHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOverlayHeight(v)
+		return nil
+	case devicegroup.FieldOverlaySpeedPx:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOverlaySpeedPx(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DeviceGroup numeric field %s", name)
 }
@@ -10011,6 +10698,12 @@ func (m *DeviceGroupMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(devicegroup.FieldFallbackPlaylistID) {
 		fields = append(fields, devicegroup.FieldFallbackPlaylistID)
+	}
+	if m.FieldCleared(devicegroup.FieldBrightnessOverride) {
+		fields = append(fields, devicegroup.FieldBrightnessOverride)
+	}
+	if m.FieldCleared(devicegroup.FieldBrightnessSensorConfig) {
+		fields = append(fields, devicegroup.FieldBrightnessSensorConfig)
 	}
 	return fields
 }
@@ -10031,6 +10724,12 @@ func (m *DeviceGroupMutation) ClearField(name string) error {
 		return nil
 	case devicegroup.FieldFallbackPlaylistID:
 		m.ClearFallbackPlaylistID()
+		return nil
+	case devicegroup.FieldBrightnessOverride:
+		m.ClearBrightnessOverride()
+		return nil
+	case devicegroup.FieldBrightnessSensorConfig:
+		m.ClearBrightnessSensorConfig()
 		return nil
 	}
 	return fmt.Errorf("unknown DeviceGroup nullable field %s", name)
@@ -10060,6 +10759,39 @@ func (m *DeviceGroupMutation) ResetField(name string) error {
 		return nil
 	case devicegroup.FieldFallbackPlaylistID:
 		m.ResetFallbackPlaylistID()
+		return nil
+	case devicegroup.FieldBrightnessEnabled:
+		m.ResetBrightnessEnabled()
+		return nil
+	case devicegroup.FieldBrightnessSchedules:
+		m.ResetBrightnessSchedules()
+		return nil
+	case devicegroup.FieldBrightnessOverride:
+		m.ResetBrightnessOverride()
+		return nil
+	case devicegroup.FieldBrightnessSensorConfig:
+		m.ResetBrightnessSensorConfig()
+		return nil
+	case devicegroup.FieldOverlayEnabled:
+		m.ResetOverlayEnabled()
+		return nil
+	case devicegroup.FieldOverlayPosition:
+		m.ResetOverlayPosition()
+		return nil
+	case devicegroup.FieldOverlayHeight:
+		m.ResetOverlayHeight()
+		return nil
+	case devicegroup.FieldOverlayText:
+		m.ResetOverlayText()
+		return nil
+	case devicegroup.FieldOverlaySpeedPx:
+		m.ResetOverlaySpeedPx()
+		return nil
+	case devicegroup.FieldOverlayBg:
+		m.ResetOverlayBg()
+		return nil
+	case devicegroup.FieldOverlayFg:
+		m.ResetOverlayFg()
 		return nil
 	}
 	return fmt.Errorf("unknown DeviceGroup field %s", name)
