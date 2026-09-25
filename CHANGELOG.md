@@ -1,3 +1,10 @@
+# [1.52.0](https://github.com/martynvdijke/LEDit/compare/v1.51.0...v1.52.0) (2026-09-25)
+
+
+### Features
+
+* natural-language entity creation and real source catalog ([60f60e6](https://github.com/martynvdijke/LEDit/commit/60f60e6938a2489bafbf8bdc74ab49e854b389f5))
+
 # [1.51.0](https://github.com/martynvdijke/LEDit/compare/v1.50.0...v1.51.0) (2026-09-25)
 
 
