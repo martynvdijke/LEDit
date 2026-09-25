@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -102,6 +103,7 @@ func StartMQTT(s *Server) *MQTTController {
 	if err := ctrl.subscribeAll(); err != nil {
 		slog.Warn("mqtt subscribe failed", "error", err)
 	}
+	PublishHADiscoveryForAll(s)
 
 	return ctrl
 }
@@ -139,7 +141,90 @@ func (c *MQTTController) subscribeAll() error {
 			}
 		}
 	}
+	if c.s != nil {
+		for _, topic := range []string{
+			"ledit/device/+/brightness/set",
+			"ledit/device/+/paused/set",
+			"ledit/device/+/next/set",
+		} {
+			t := topic
+			tok := c.client.Subscribe(t, 0, func(_ mqtt.Client, msg mqtt.Message) {
+				c.handlePerDeviceCommand(msg.Topic(), string(msg.Payload()))
+			})
+			if tok.WaitTimeout(5*time.Second) && tok.Error() != nil {
+				return tok.Error()
+			}
+		}
+	}
 	return nil
+}
+
+func (c *MQTTController) handlePerDeviceCommand(topic, payload string) {
+	parts := strings.Split(topic, "/")
+	if len(parts) < 4 {
+		slog.Debug("mqtt per-device unknown topic", "topic", topic)
+		return
+	}
+	id, err := strconv.Atoi(parts[2])
+	if err != nil {
+		slog.Debug("mqtt per-device invalid id", "topic", topic)
+		return
+	}
+	suffix := strings.Join(parts[3:], "/")
+	switch suffix {
+	case "brightness/set":
+		v, err := strconv.Atoi(strings.TrimSpace(payload))
+		if err != nil {
+			slog.Debug("mqtt brightness invalid value", "device", id)
+			return
+		}
+		if v < 0 {
+			v = 0
+		}
+		if v > 100 {
+			v = 100
+		}
+		if c.s == nil || c.s.DB == nil {
+			slog.Warn("mqtt brightness no DB", "device", id)
+			return
+		}
+		_, err = c.s.DB.DeviceSettings.UpdateOneID(id).SetBrightnessOverride(v).Save(c.s.Ctx)
+		if err != nil {
+			// try background ctx
+			_, err = c.s.DB.DeviceSettings.UpdateOneID(id).SetBrightnessOverride(v).Save(context.Background())
+		}
+		if err != nil {
+			slog.Warn("mqtt brightness update failed", "device", id, "error", err)
+			return
+		}
+		RestartTransportDevice(c.s, id)
+		PublishOutbound(fmt.Sprintf("ledit/device/%d/brightness/state", id), strconv.Itoa(v), true)
+	case "paused/set":
+		trimmed := strings.TrimSpace(strings.ToLower(payload))
+		isPause := trimmed == "true" || trimmed == "pause" || trimmed == "on" || trimmed == "1"
+		if fc, ok := getDeviceFeed(id); ok {
+			if isPause {
+				fc.Pause()
+			} else {
+				fc.Resume() // unknown/off-ish payloads default to resume
+			}
+		} else {
+			slog.Debug("mqtt paused no feed", "device", id)
+		}
+		val := "false"
+		if isPause {
+			val = "true"
+		}
+		PublishOutbound(fmt.Sprintf("ledit/device/%d/paused", id), val, true)
+	case "next/set":
+		if fc, ok := getDeviceFeed(id); ok {
+			fc.Next()
+		} else {
+			slog.Debug("mqtt next no feed", "device", id)
+		}
+	default:
+		slog.Debug("mqtt per-device unknown suffix", "topic", topic)
+	}
 }
 
 func (c *MQTTController) reconnect(opts *mqtt.ClientOptions) {
@@ -159,6 +244,7 @@ func (c *MQTTController) reconnect(opts *mqtt.ClientOptions) {
 		// If already connected, ensure subscriptions then exit.
 		if c.client != nil && c.client.IsConnected() {
 			_ = c.subscribeAll()
+			PublishHADiscoveryForAll(c.s)
 			return
 		}
 		// For real paho client we need to create a new client if previous Connect failed?
@@ -168,6 +254,7 @@ func (c *MQTTController) reconnect(opts *mqtt.ClientOptions) {
 		if tok.Error() == nil && c.client.IsConnected() {
 			slog.Info("mqtt reconnected", "broker", c.cfg.Broker)
 			_ = c.subscribeAll()
+			PublishHADiscoveryForAll(c.s)
 			return
 		}
 		slog.Warn("mqtt reconnect failed", "attempt", attempt, "error", tok.Error())
@@ -281,12 +368,6 @@ func PublishOutbound(topic, payload string, retained bool) {
 		return
 	}
 	mqttCtrlGlobal.client.Publish(topic, 0, retained, payload)
-}
-
-func PublishHASSDiscovery(deviceID int) {
-	topic := fmt.Sprintf("homeassistant/sensor/ledit_%d_online/config", deviceID)
-	payload := fmt.Sprintf(`{"name":"LEDit %d online","state_topic":"ledit/device/%d/online","device":{"identifiers":["ledit_%d"]}}`, deviceID, deviceID, deviceID)
-	PublishOutbound(topic, payload, true)
 }
 
 func ClearDeviceMqtt(deviceID int) {

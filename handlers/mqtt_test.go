@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -19,12 +20,19 @@ func (f fakeToken) WaitTimeout(time.Duration) bool { return true }
 func (f fakeToken) Done() <-chan struct{}          { ch := make(chan struct{}); close(ch); return ch }
 func (f fakeToken) Error() error                   { return f.err }
 
+type publishedMsg struct {
+	topic    string
+	payload  string
+	retained bool
+}
+
 // fake MQTT client for tests
 type fakeClient struct {
 	connected        bool
 	connectErr       error
 	subscribed       map[string]bool
 	disconnectCalled bool
+	published        []publishedMsg
 }
 
 func (f *fakeClient) IsConnected() bool      { return f.connected }
@@ -38,6 +46,11 @@ func (f *fakeClient) Connect() mqtt.Token {
 }
 func (f *fakeClient) Disconnect(quiesce uint) { f.disconnectCalled = true; f.connected = false }
 func (f *fakeClient) Publish(topic string, qos byte, retained bool, payload interface{}) mqtt.Token {
+	s := ""
+	if payload != nil {
+		s = fmt.Sprint(payload)
+	}
+	f.published = append(f.published, publishedMsg{topic: topic, payload: s, retained: retained})
 	return fakeToken{}
 }
 func (f *fakeClient) Subscribe(topic string, qos byte, callback mqtt.MessageHandler) mqtt.Token {

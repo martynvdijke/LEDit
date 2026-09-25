@@ -1286,6 +1286,9 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		s.DB.GeneralSettings.UpdateOne(settings).AddDeviceSettings(obj).Exec(s.Ctx)
 	}
 	RestartTransportDevice(s, obj.ID)
+	if haDiscoveryEnabled(s) {
+		publishHADiscoveryForDevice(obj)
+	}
 	SetFlash(c, "success", "Device created")
 	c.Redirect(http.StatusFound, "/admin/devices")
 }
@@ -1648,6 +1651,11 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		SuppressActiveScene()
 	}
 	RestartTransportDevice(s, id)
+	if haDiscoveryEnabled(s) {
+		if d, err := s.DB.DeviceSettings.Get(s.Ctx, id); err == nil {
+			publishHADiscoveryForDevice(d)
+		}
+	}
 	SetFlash(c, "success", "Device updated")
 	c.Redirect(http.StatusFound, "/admin/devices")
 }
@@ -1656,6 +1664,7 @@ func (s *Server) AdminDeviceSettingsDelete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	s.DB.DeviceSettings.DeleteOneID(id).Exec(s.Ctx)
 	ClearDeviceMqtt(id)
+	clearHADiscoveryForDevice(id)
 	StopTransportDevice(id)
 	SetFlash(c, "success", "Device deleted")
 	c.Redirect(http.StatusFound, "/admin/devices")
