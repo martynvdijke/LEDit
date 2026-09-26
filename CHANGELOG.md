@@ -1,3 +1,10 @@
+## [1.53.1](https://github.com/martynvdijke/LEDit/compare/v1.53.0...v1.53.1) (2026-09-26)
+
+
+### Bug Fixes
+
+* test isolation for NL create playlist flag test ([a58477f](https://github.com/martynvdijke/LEDit/commit/a58477fa492c1ed0a313ce0114b05e14e24befd1))
+
 # [1.53.0](https://github.com/martynvdijke/LEDit/compare/v1.52.0...v1.53.0) (2026-09-25)
 
 
