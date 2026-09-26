@@ -81,7 +81,12 @@ func TestExecuteIntent_CreatePlaylist_FlagDisabled(t *testing.T) {
 func TestExecuteIntent_CreatePlaylist_FlagEnabled(t *testing.T) {
 	ResetRateLimiterForTest()
 	srv := newTelegramTestServer(t)
-	srv.DB.AISettings.Create().SetProvider("openai").SetAPIKey("k").SetModel("m").SetEndpoint("http://e").SetNlCreateEnabled(true).SaveX(srv.Ctx)
+	// Shared in-memory DB across tests: upsert the singleton AISettings row.
+	if existing, err := srv.DB.AISettings.Query().Only(srv.Ctx); err == nil {
+		srv.DB.AISettings.UpdateOne(existing).SetNlCreateEnabled(true).SaveX(srv.Ctx)
+	} else {
+		srv.DB.AISettings.Create().SetProvider("openai").SetAPIKey("k").SetModel("m").SetEndpoint("http://e").SetNlCreateEnabled(true).SaveX(srv.Ctx)
+	}
 	// Ensure GeneralSettings exists (New already creates? ensure)
 	if _, err := srv.DB.GeneralSettings.Query().Only(srv.Ctx); err != nil {
 		srv.DB.GeneralSettings.Create().SetTimeout(5).SetRandom(false).SetWidth(64).SetHeight(64).SaveX(srv.Ctx)
