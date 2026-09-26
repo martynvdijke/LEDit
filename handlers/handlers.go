@@ -316,6 +316,46 @@ func (s *Server) AdminDashboard(c *gin.Context) {
 		for _, x := range speedtestItems {
 			sources = append(sources, sourceEntry{ID: x.ID, Type: "Speedtest", Endpoint: "speedtest", Token: x.Token, URL: x.URL, Name: fmt.Sprintf("Speedtest #%d", x.ID)})
 		}
+		if items, err := settings.Edges.AdguardsOrErr(); err == nil {
+			for _, x := range items {
+				sources = append(sources, sourceEntry{ID: x.ID, Type: "AdGuard", Endpoint: "adguard", Token: x.Token, URL: x.URL})
+			}
+		}
+		if items, err := settings.Edges.FrigatesOrErr(); err == nil {
+			for _, x := range items {
+				sources = append(sources, sourceEntry{ID: x.ID, Type: "Frigate", Endpoint: "frigate", Token: x.Token, URL: x.URL})
+			}
+		}
+		if items, err := settings.Edges.Zigbee2mqttsOrErr(); err == nil {
+			for _, x := range items {
+				sources = append(sources, sourceEntry{ID: x.ID, Type: "Zigbee2MQTT", Endpoint: "zigbee2mqtt", Token: x.Token, URL: x.URL})
+			}
+		}
+		if items, err := settings.Edges.TransmissionsOrErr(); err == nil {
+			for _, x := range items {
+				sources = append(sources, sourceEntry{ID: x.ID, Type: "Transmission", Endpoint: "transmission", Token: x.Token, URL: x.URL})
+			}
+		}
+		if items, err := settings.Edges.ProxmoxsOrErr(); err == nil {
+			for _, x := range items {
+				sources = append(sources, sourceEntry{ID: x.ID, Type: "Proxmox", Endpoint: "proxmox", Token: x.Token, URL: x.URL})
+			}
+		}
+		if items, err := settings.Edges.WastesOrErr(); err == nil {
+			for _, x := range items {
+				sources = append(sources, sourceEntry{ID: x.ID, Type: "Waste", Endpoint: "waste", Token: x.Token, URL: x.URL})
+			}
+		}
+		if items, err := settings.Edges.AirqualitiesOrErr(); err == nil {
+			for _, x := range items {
+				sources = append(sources, sourceEntry{ID: x.ID, Type: "Air Quality", Endpoint: "airquality", Token: x.Token, URL: x.URL})
+			}
+		}
+		if items, err := settings.Edges.ParcelsOrErr(); err == nil {
+			for _, x := range items {
+				sources = append(sources, sourceEntry{ID: x.ID, Type: "Parcel", Endpoint: "parcel", Token: x.Token, URL: x.URL})
+			}
+		}
 
 		// Attach live health status (from the in-memory registry) to each
 		// source and compute fleet-wide summary stats.

@@ -708,6 +708,25 @@ func (s *Server) setupRoutes() {
 
 		admin.POST("/datasources/genericapi/test", s.AdminGenericAPITest)
 
+		// Phase 2 homelab/content datasources (token/url)
+		for _, ds := range []struct{ endpoint, typeName string }{
+			{"adguard", "AdGuard Home"},
+			{"frigate", "Frigate"},
+			{"zigbee2mqtt", "Zigbee2MQTT"},
+			{"transmission", "Transmission"},
+			{"proxmox", "Proxmox"},
+			{"waste", "Waste Collection"},
+			{"airquality", "Air Quality"},
+			{"parcel", "Parcel Tracking"},
+		} {
+			endpoint, typeName := ds.endpoint, ds.typeName
+			admin.GET("/datasources/"+endpoint+"/new", func(c *gin.Context) { s.renderForm(c, typeName, endpoint, false, nil) })
+			admin.POST("/datasources/"+endpoint+"/new", func(c *gin.Context) { s.createTokenURLDS(c, endpoint) })
+			admin.GET("/datasources/"+endpoint+"/:id/edit", func(c *gin.Context) { s.editTokenURLDS(c, endpoint) })
+			admin.POST("/datasources/"+endpoint+"/:id/edit", func(c *gin.Context) { s.updateTokenURLDS(c, endpoint) })
+			admin.POST("/datasources/"+endpoint+"/:id/delete", func(c *gin.Context) { s.deleteTokenURLDS(c, endpoint) })
+		}
+
 		// QR Code
 		admin.GET("/qrcodes", s.AdminQrcodeList)
 		admin.GET("/qrcodes/new", s.AdminQrcodeNew)
