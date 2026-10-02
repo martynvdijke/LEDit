@@ -1,3 +1,10 @@
+## [1.53.2](https://github.com/martynvdijke/LEDit/compare/v1.53.1...v1.53.2) (2026-10-02)
+
+
+### Bug Fixes
+
+* **deps:** update opentelemetry-go monorepo to v1 ([#78](https://github.com/martynvdijke/LEDit/issues/78)) ([b0609a1](https://github.com/martynvdijke/LEDit/commit/b0609a1180ea8fa7e9c8e71a36d504425307cc51))
+
 ## [1.53.1](https://github.com/martynvdijke/LEDit/compare/v1.53.0...v1.53.1) (2026-09-26)
 
 
