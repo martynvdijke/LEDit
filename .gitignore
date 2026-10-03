@@ -29,3 +29,6 @@ __pycache__/
 device/dist/
 .coverage
 .slim/deepwork/
+
+# Zensical build output
+site/
