@@ -1,0 +1,29 @@
+## Why
+
+The wall's live frames are effectively locked to two surfaces: the session-aware feed page at `GET /` (`handlers/handlers.go:120`, rendered by `web/frontend/feed.ts`) and the raw public `GET /ws/feed` WebSocket (`handlers/server.go:325`) that most users never touch. There is no supported way to put the wall into OBS, a website, or a second screen: `/admin/preview` is admin-authenticated and renders a single source rather than the live rotation (`handlers/preview.go:50`), `/api/trmnl/*` is JSON-only (`handlers/trmnl.go:16`), and the PWA manifests expose no widget entry points. The frames themselves are already public on `/ws/feed` (kept public by `gate-feed-details-behind-auth`), so the cheapest high-value work is exposing them as first-class embed surfaces — not building new renderers.
+
+## What Changes
+
+- **Embed page + feed endpoints**: new `GET /embed` (and `GET /embed/device/:id`) serving a self-contained canvas widget for OBS browser sources and `<iframe>` embeds: transparent background by default (`?bg=`), configurable frame size (`?w=`/`?h=`, clamped like `clampPreviewSize`, `handlers/preview.go:19`), no admin chrome, no login prompts. It streams over new `GET /ws/embed` / `GET /ws/embed/device/:id` endpoints that reuse `serveFeed` (`handlers/websocket.go:1050`), `loadSources`, and `composeDeviceSources` — the same bytes the wall gets, never a second renderer and never a client-side re-render.
+- **Access control**: the shared embed is public exactly like `/ws/feed` — same frames, no session. Per-device embeds require an admin session or a guest token carrying a new read-only `embed` scope; the secret travels in the URL fragment and is exchanged at `POST /embed/session` for a short-lived HttpOnly cookie (the `/frame` + `/frame/session` pattern, `handlers/frame.go:12`), with `X-Guest-Token`/Bearer accepted for non-browser clients. Invalid tokens render a static error — never a login redirect.
+- **Rate limiting + cache hygiene**: per-IP fixed-window limits on public embed page loads, WebSocket upgrades, and snapshot requests, reusing `checkWindowRateLimit`/`abortGuestRateLimited` (`handlers/guest_remote.go:134`); every embed, session, and snapshot HTTP response sets `Cache-Control: no-store` and (for pages/snapshots) `Vary: Cookie, Authorization`, following the `public-feed-surface` pattern.
+- **Frame snapshot endpoint**: new `GET /api/frame` returning `image/png` (or `format=webp` via the existing `writeImageResponse`, `handlers/preview.go:339`) of the current wall content, with `w`/`h`/`device` parameters and staleness headers. It returns the exact PNG most recently emitted by the live feed when one is buffered at the requested target and size, and otherwise renders the current slot through the same feed path and cache keys. Shared-feed snapshots are public (like `/ws/feed`); device snapshots require an `embed` token or admin session. This does not duplicate `/admin/preview` (admin, per-source) or `/api/trmnl/*` (JSON stats only) — neither serves the current wall frame.
+- **PWA/widget readiness**: `manifest.json` and `remote-manifest.json` gain `shortcuts` for the embed view; `sw.js` stops caching live paths (`/embed`, `/api/frame`); OBS/iframe usage is documented.
+- **Explicit non-goals**: native desktop tray/Electron wrappers, Chromecast/Roku/Apple TV casting apps, and embed-side playback controls (pause/skip) are out of scope; the browser embed, OBS, and installed PWAs cover the value at zero distribution cost.
+
+## Capabilities
+
+### New Capabilities
+- `embed-surfaces`: Embed page and feed endpoints for the shared and per-device wall content, frame sizing/background options, public vs token access, the `embed` guest scope and fragment→cookie session exchange, embed rate limiting and cache headers, the `GET /api/frame` PNG snapshot, and PWA shortcut/operator-documentation readiness.
+
+### Modified Capabilities
+- `api-authentication`: the `Public display reads` requirement's public allowlist currently permits only `/api/trmnl/stats` and `/api/health` (`openspec/specs/api-authentication/spec.md:7`); `GET /api/frame` for the shared feed joins that allowlist, while device-scoped snapshots stay authenticated.
+
+## Impact
+
+- **New server code**: `handlers/embed.go` (embed pages, session exchange, embed feed handlers, embed auth middleware, rate limits), `handlers/frame_snapshot.go` (last-frame buffer + `GET /api/frame`).
+- **Modified server code**: `handlers/server.go` (routes), `handlers/websocket.go` (frame capture hook in `serveFeed`; current-source tracking in `FeedController`), `handlers/guest_remote.go` (`embed` in `guestValidScopes`, error text), `web/templates/admin/guest_remotes.html` (scope checkbox), plus the embedded-asset build config.
+- **Frontend**: `web/templates/embed.html`, `web/frontend/embed.ts` (new `embed` entry in `vite.config.ts`, built to `web/static/assets/embed.js`), `web/static/pwa/manifest.json`, `web/static/pwa/remote-manifest.json`, `web/static/pwa/sw.js`; docs in `docs/embedding.md` linked from `docs/index.md` and `README.md`.
+- **API surface**: `GET /embed`, `GET /embed/device/:id`, `POST /embed/session`, `GET /ws/embed`, `GET /ws/embed/device/:id`, `GET /api/frame`; admin guest-remote create accepts the `embed` scope.
+- **Data model**: none — `GuestToken.Scopes` is already a JSON column, so the new scope needs no migration. No new dependencies; the widget is vanilla TypeScript like `web/frontend/feed.ts` and `web/frontend/remote.ts`.
+- **Risk**: public embed exposure must never exceed the already-public shared feed (same `serveFeed` sources, no telemetry UI, rate-limited); every embed connection runs its own feed loop, so limits and the shared LKG cache bound CPU; device tokens must never appear in query strings, referrers, or logs (fragment + HttpOnly cookie only).
