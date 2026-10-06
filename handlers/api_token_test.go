@@ -17,7 +17,11 @@ import (
 // newAPITokenTestServer builds a full Server against an in-memory SQLite DB.
 func newAPITokenTestServer(t *testing.T) *Server {
 	t.Helper()
-	drv, err := sql.Open(dialect.SQLite, "file:apitoken_test.db?cache=shared&_fk=1&_busy_timeout=5000&mode=memory")
+	// Unique DSN per test: a shared memory DB name lets rows from earlier
+	// tests survive while a connection is still pooled, which made
+	// FirstX-based tests intermittently target another test's token.
+	dsn := "file:apitoken_test_" + strings.ReplaceAll(t.Name(), "/", "_") + ".db?cache=shared&_fk=1&_busy_timeout=5000&mode=memory"
+	drv, err := sql.Open(dialect.SQLite, dsn)
 	if err != nil {
 		t.Fatalf("failed to open test db: %v", err)
 	}
