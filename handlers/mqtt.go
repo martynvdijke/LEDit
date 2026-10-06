@@ -146,6 +146,8 @@ func (c *MQTTController) subscribeAll() error {
 			"ledit/device/+/brightness/set",
 			"ledit/device/+/paused/set",
 			"ledit/device/+/next/set",
+			"ledit/device/+/select/set",
+			"ledit/device/+/message/set",
 		} {
 			t := topic
 			tok := c.client.Subscribe(t, 0, func(_ mqtt.Client, msg mqtt.Message) {
@@ -178,27 +180,13 @@ func (c *MQTTController) handlePerDeviceCommand(topic, payload string) {
 			slog.Debug("mqtt brightness invalid value", "device", id)
 			return
 		}
-		if v < 0 {
-			v = 0
-		}
-		if v > 100 {
-			v = 100
-		}
 		if c.s == nil || c.s.DB == nil {
-			slog.Warn("mqtt brightness no DB", "device", id)
+			slog.Debug("mqtt brightness no server", "device", id)
 			return
 		}
-		_, err = c.s.DB.DeviceSettings.UpdateOneID(id).SetBrightnessOverride(v).Save(c.s.Ctx)
-		if err != nil {
-			// try background ctx
-			_, err = c.s.DB.DeviceSettings.UpdateOneID(id).SetBrightnessOverride(v).Save(context.Background())
-		}
-		if err != nil {
-			slog.Warn("mqtt brightness update failed", "device", id, "error", err)
-			return
-		}
-		RestartTransportDevice(c.s, id)
-		PublishOutbound(fmt.Sprintf("ledit/device/%d/brightness/state", id), strconv.Itoa(v), true)
+		// Shared actuation path: clamps, persists, hints the live feed, and
+		// publishes retained state (same semantics as HA and rule actions).
+		c.s.ApplyDeviceBrightness(id, v, "mqtt")
 	case "paused/set":
 		trimmed := strings.TrimSpace(strings.ToLower(payload))
 		isPause := trimmed == "true" || trimmed == "pause" || trimmed == "on" || trimmed == "1"
@@ -208,19 +196,36 @@ func (c *MQTTController) handlePerDeviceCommand(topic, payload string) {
 			} else {
 				fc.Resume() // unknown/off-ish payloads default to resume
 			}
+			val := "false"
+			if isPause {
+				val = "true"
+			}
+			PublishOutbound(fmt.Sprintf("ledit/device/%d/paused", id), val, true)
 		} else {
+			// Offline-safe no-op: no controller, no state.
 			slog.Debug("mqtt paused no feed", "device", id)
 		}
-		val := "false"
-		if isPause {
-			val = "true"
-		}
-		PublishOutbound(fmt.Sprintf("ledit/device/%d/paused", id), val, true)
 	case "next/set":
 		if fc, ok := getDeviceFeed(id); ok {
 			fc.Next()
 		} else {
 			slog.Debug("mqtt next no feed", "device", id)
+		}
+	case "select/set":
+		if c.s == nil || c.s.DB == nil {
+			slog.Debug("mqtt select no server", "device", id)
+			return
+		}
+		if err := c.s.ApplyDeviceSelect(id, payload); err != nil {
+			slog.Debug("mqtt select ignored", "device", id, "error", err)
+		}
+	case "message/set":
+		if c.s == nil || c.s.DB == nil {
+			slog.Debug("mqtt message no server", "device", id)
+			return
+		}
+		if err := c.s.ApplyDeviceMessage(id, payload); err != nil {
+			slog.Debug("mqtt message ignored", "device", id, "error", err)
 		}
 	default:
 		slog.Debug("mqtt per-device unknown suffix", "topic", topic)

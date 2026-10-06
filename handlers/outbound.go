@@ -538,9 +538,11 @@ func InitOutbound(s *Server) {
 		GlobalMqttSink.SetEnabled(st.MqttPublishEnabled)
 		GlobalMetricsSink.SetEnabled(st.MetricsEnabled)
 		GlobalWebhookSink.SetEnabled(st.WebhooksEnabled)
+		GlobalHAStateSink.SetEnabled(st.HaDiscoveryEnabled)
 	}
 	GlobalDispatcher.Reset()
 	GlobalDispatcher.Register(GlobalMqttSink)
+	GlobalDispatcher.Register(GlobalHAStateSink)
 	GlobalDispatcher.Register(GlobalMetricsSink)
 	GlobalDispatcher.Register(GlobalWebhookSink)
 	GlobalBus.Reset()

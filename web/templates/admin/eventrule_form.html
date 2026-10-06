@@ -88,29 +88,82 @@
                                 <option value="scene" {{if eq .fThenKind "scene"}}selected{{end}}>scene</option>
                                 <option value="notification" {{if eq .fThenKind "notification"}}selected{{end}}>notification</option>
                                 <option value="webhook" {{if eq .fThenKind "webhook"}}selected{{end}}>webhook</option>
+                                <option value="brightness" {{if eq .fThenKind "brightness"}}selected{{end}}>brightness</option>
+                                <option value="source" {{if eq .fThenKind "source"}}selected{{end}}>source</option>
+                                <option value="playlist" {{if eq .fThenKind "playlist"}}selected{{end}}>playlist</option>
+                                <option value="mqtt" {{if eq .fThenKind "mqtt"}}selected{{end}}>mqtt</option>
+                                <option value="http" {{if eq .fThenKind "http"}}selected{{end}}>http</option>
                             </select>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-3 then-field" data-kinds="scene">
                             <label for="then_scene_id" class="form-label">Scene ID</label>
                             <input type="number" class="form-control" id="then_scene_id" name="then_scene_id" value="{{.fThenScene}}">
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-3 then-field" data-kinds="scene notification">
                             <label for="then_ttl_seconds" class="form-label">TTL seconds</label>
                             <input type="number" class="form-control" id="then_ttl_seconds" name="then_ttl_seconds" min="0" value="{{.fThenTTL}}">
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <label for="then_event" class="form-label">Event</label>
-                            <input type="text" class="form-control" id="then_event" name="then_event" placeholder="webhook event name" value="{{.fThenEvent}}">
+                        <div class="col-md-3 mb-3 then-field" data-kinds="brightness playlist">
+                            <label for="then_device_id" class="form-label">Device ID (0 = all)</label>
+                            <input type="number" class="form-control" id="then_device_id" name="then_device_id" min="0" value="{{.fThenDevice}}">
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-3 mb-3 then-field" data-kinds="brightness">
+                            <label for="then_level" class="form-label">Level (0-100)</label>
+                            <input type="number" class="form-control" id="then_level" name="then_level" min="0" max="100" value="{{.fThenLevel}}">
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="source">
+                            <label for="then_source_type" class="form-label">Source type</label>
+                            <input type="text" class="form-control" id="then_source_type" name="then_source_type" placeholder="weather" value="{{.fThenSrcType}}">
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="source">
+                            <label for="then_source_id" class="form-label">Source ID</label>
+                            <input type="number" class="form-control" id="then_source_id" name="then_source_id" min="0" value="{{.fThenSrcID}}">
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="playlist">
+                            <label for="then_playlist_id" class="form-label">Playlist ID</label>
+                            <input type="number" class="form-control" id="then_playlist_id" name="then_playlist_id" min="0" value="{{.fThenPlaylist}}">
+                        </div>
+                        <div class="col-md-4 mb-3 then-field" data-kinds="mqtt">
+                            <label for="then_topic" class="form-label">MQTT topic</label>
+                            <input type="text" class="form-control" id="then_topic" name="then_topic" placeholder="ledit/custom/event" value="{{.fThenTopic}}">
+                        </div>
+                        <div class="col-md-2 mb-3 then-field form-check" data-kinds="mqtt" style="padding-top:28px">
+                            <input type="checkbox" class="form-check-input" id="then_retain" name="then_retain" {{if .fThenRetain}}checked{{end}}>
+                            <label for="then_retain" class="form-check-label">Retain</label>
+                        </div>
+                        <div class="col-md-6 mb-3 then-field" data-kinds="http">
+                            <label for="then_url" class="form-label">URL</label>
+                            <input type="text" class="form-control" id="then_url" name="then_url" placeholder="https://example.com/hook" value="{{.fThenURL}}">
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="http">
+                            <label for="then_method" class="form-label">Method</label>
+                            <select class="form-select" id="then_method" name="then_method">
+                                <option value="POST" {{if or (eq .fThenMethod "") (eq .fThenMethod "POST")}}selected{{end}}>POST</option>
+                                <option value="GET" {{if eq .fThenMethod "GET"}}selected{{end}}>GET</option>
+                                <option value="PUT" {{if eq .fThenMethod "PUT"}}selected{{end}}>PUT</option>
+                                <option value="PATCH" {{if eq .fThenMethod "PATCH"}}selected{{end}}>PATCH</option>
+                                <option value="DELETE" {{if eq .fThenMethod "DELETE"}}selected{{end}}>DELETE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="http">
+                            <label for="then_secret" class="form-label">HMAC secret</label>
+                            <input type="password" class="form-control" id="then_secret" name="then_secret" value="{{.fThenSecret}}">
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="webhook http">
+                            <label for="then_event" class="form-label">Event</label>
+                            <input type="text" class="form-control" id="then_event" name="then_event" placeholder="rule_triggered" value="{{.fThenEvent}}">
+                        </div>
+                        <div class="col-md-6 mb-3 then-field" data-kinds="notification webhook">
                             <label for="then_title" class="form-label">Title</label>
                             <input type="text" class="form-control" id="then_title" name="then_title" value="{{.fThenTitle}}">
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-3 then-field" data-kinds="notification webhook">
                             <label for="then_message" class="form-label">Message</label>
                             <input type="text" class="form-control" id="then_message" name="then_message" value="{{.fThenMsg}}">
+                        </div>
+                        <div class="col-md-6 mb-3 then-field" data-kinds="webhook mqtt">
+                            <label for="then_payload" class="form-label">Payload (JSON object, optional)</label>
+                            <input type="text" class="form-control" id="then_payload" name="then_payload" value="{{.fThenPayload}}">
                         </div>
                     </div>
                 </fieldset>
@@ -193,6 +246,18 @@
         }
         return s;
     }
+
+    // Show/hide then-action fields by kind
+    var thenKind = document.getElementById('then_kind');
+    function showThenFields(){
+        var k = thenKind.value;
+        document.querySelectorAll('.then-field').forEach(function(el){
+            var kinds = (el.getAttribute('data-kinds')||'').split(/\s+/);
+            el.style.display = (kinds.indexOf(k)!==-1) ? '' : 'none';
+        });
+    }
+    thenKind.addEventListener('change', showThenFields);
+    showThenFields();
 
     form.addEventListener('submit', function(){
         syncTargetHidden();

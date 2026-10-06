@@ -841,9 +841,19 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 	var lastSensorFetch time.Time
 	var sensorCache *int
 	var sensorCacheTime time.Time
+
+	// Registered before bFn so brightness commands can reach a live connection
+	// through the ephemeral controller hint.
+	fc := &FeedController{DeviceID: device.ID}
+	registerDeviceFeed(device.ID, fc)
+	defer unregisterDeviceFeed(device.ID)
+
 	bFn := func() int {
 		if brightnessProviderForTest != nil {
 			return brightnessProviderForTest()
+		}
+		if lvl, ok := fc.BrightnessHint(); ok {
+			return lvl
 		}
 		if !ebEnabled {
 			return 100
@@ -879,36 +889,26 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		return ramp.Advance()
 	}
 
-	// Each device gets its own feed controller so pause/skip/next are
-	// independent of the shared preview feed.
-	fc := &FeedController{}
-	registerDeviceFeed(device.ID, fc)
-	defer unregisterDeviceFeed(device.ID)
-	// ponytail: poll every 60s at rotation boundary; cheap vs per-frame DB, catches window changes without scheduler refactor.
-	var reschedule func() []sourceWithName
-	if device.ContentMode == "scheduled" || func() bool {
-		if !isDeviceContentExplicit(device) {
-			if grp, err := device.Edges.GroupOrErr(); err == nil && grp != nil && isGroupContentSet(grp) {
-				return grp.ContentMode == "scheduled"
-			}
-		}
-		return false
-	}() {
-		deviceID := device.ID
-		reschedule = func() []sourceWithName {
-			dev, err := h.Client.DeviceSettings.Query().Where(devicesettings.ID(deviceID)).WithGroup().Only(context.Background())
-			if err != nil {
-				return nil
-			}
-			gs, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().WithAdguards().WithFrigates().WithZigbee2mqtts().WithTransmissions().WithProxmoxs().WithWastes().WithAirqualities().WithParcels().Only(context.Background())
-			if err != nil {
-				return h.composeDeviceSources(dev, settings)
-			}
-			if fresh := h.composeDeviceSources(dev, gs); len(fresh) > 0 {
-				return fresh
-			}
+	// Each device gets its own feed controller (created above) so pause/skip/
+	// next are independent of the shared preview feed.
+	//
+	// ponytail: poll every 60s at rotation boundary; cheap vs per-frame DB,
+	// catches window/content changes without a scheduler refactor. Runs for
+	// every device connection so content selections land without a reconnect.
+	deviceID := device.ID
+	reschedule := func() []sourceWithName {
+		dev, err := h.Client.DeviceSettings.Query().Where(devicesettings.ID(deviceID)).WithGroup().Only(context.Background())
+		if err != nil {
 			return nil
 		}
+		gs, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().WithAdguards().WithFrigates().WithZigbee2mqtts().WithTransmissions().WithProxmoxs().WithWastes().WithAirqualities().WithParcels().Only(context.Background())
+		if err != nil {
+			return h.composeDeviceSources(dev, settings)
+		}
+		if fresh := h.composeDeviceSources(dev, gs); len(fresh) > 0 {
+			return fresh
+		}
+		return nil
 	}
 	serveFeed(conn, feedConn{
 		deviceID:   device.ID,
@@ -1060,6 +1060,17 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 		feed.SetSceneSource(src)
 	}
 	cursor := CurrentNotifSeq()
+
+	// Rotation keys let content-selection commands reject sources this
+	// connection cannot render.
+	setRotation := func(srcs []sourceWithName) {
+		keys := make([]string, 0, len(srcs))
+		for _, s := range srcs {
+			keys = append(keys, s.cacheKey)
+		}
+		feed.SetRotationKeys(keys)
+	}
+	setRotation(sources)
 
 	// Transition config is fixed per connection (loaded ONCE at handshake).
 	// Normalize defaults.
@@ -1216,13 +1227,21 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			lastReschedule = time.Now()
 			if fresh := fc.reschedule(); fresh != nil && !sameSources(sources, fresh) {
 				sources = fresh
-				slog.Info("scheduled sources re-resolved", "device", fc.deviceID, "sources", len(sources))
+				setRotation(sources)
+				slog.Info("sources re-resolved", "device", fc.deviceID, "sources", len(sources))
 			}
 		}
 		for i, sw := range sources {
-			// Broadcast any new notifications to this connection.
+			// Broadcast any new notifications to this connection. The cursor
+			// advances over every entry so targeted entries are not replayed,
+			// but only broadcast (target 0) or matching entries render.
 			if notifs := NotificationsAfter(cursor); len(notifs) > 0 {
+				rendered := false
 				for _, n := range notifs {
+					cursor = n.ID
+					if !notificationMatchesDevice(n, fc.deviceID) {
+						continue
+					}
 					msg := map[string]string{
 						"format":  "PNG",
 						"source":  "NOTIFICATION",
@@ -1233,10 +1252,12 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 					if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
 						return
 					}
-					cursor = n.ID
+					rendered = true
 				}
-				time.Sleep(timeout)
-				continue
+				if rendered {
+					time.Sleep(timeout)
+					continue
+				}
 			}
 
 			// Incident tier: a persistent monitoring takeover. Outranks alarms

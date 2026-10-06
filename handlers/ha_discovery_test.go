@@ -15,7 +15,7 @@ func TestPublishHADiscoveryForDevice(t *testing.T) {
 	SetGlobalMqttCtrl(mqttCtrlGlobal)
 	t.Cleanup(func() { mqttCtrlGlobal = nil })
 
-	publishHADiscoveryForDevice(d)
+	publishHADiscoveryForDevice(srv, d)
 
 	// find brightness config
 	found := false
@@ -164,12 +164,115 @@ func TestClearHADiscoveryForDevice(t *testing.T) {
 
 	clearHADiscoveryForDevice(99)
 	emptyConfigs := 0
+	cleared := map[string]bool{}
 	for _, p := range fc.published {
 		if strings.HasPrefix(p.topic, "homeassistant/") && p.payload == "" && p.retained {
 			emptyConfigs++
 		}
+		if p.payload == "" && p.retained {
+			cleared[p.topic] = true
+		}
 	}
-	if emptyConfigs != 6 {
-		t.Fatalf("expected 6 empty configs, got %d: %+v", emptyConfigs, fc.published)
+	if emptyConfigs != 9 {
+		t.Fatalf("expected 9 empty configs, got %d: %+v", emptyConfigs, fc.published)
+	}
+	for _, topic := range []string{
+		"homeassistant/light/ledit_99_light/config",
+		"homeassistant/select/ledit_99_content/config",
+		"homeassistant/text/ledit_99_message/config",
+		"ledit/device/99/select/state",
+		"ledit/device/99/message/state",
+	} {
+		if !cleared[topic] {
+			t.Fatalf("expected %s cleared, got %+v", topic, fc.published)
+		}
+	}
+}
+
+func TestPublishHADiscoveryForDevice_NewEntities(t *testing.T) {
+	srv := newTestServerWithDB(t)
+	d := srv.DB.DeviceSettings.Create().SetName("NewEnt").SetWidth(64).SetHeight(32).SetTransport("websocket").SaveX(srv.Ctx)
+	pl := srv.DB.Playlist.Create().SetName("pl").SetItems("[]").SetEnabled(true).SaveX(srv.Ctx)
+	sc := srv.DB.Scene.Create().SetName("sc").SetEnabled(true).SaveX(srv.Ctx)
+
+	fc := &FeedController{}
+	fc.SetRotationKeys([]string{"clock:1", "textslide:2"})
+	registerDeviceFeed(d.ID, fc)
+	t.Cleanup(func() { unregisterDeviceFeed(d.ID) })
+
+	fake := &fakeClient{connected: true}
+	mqttCtrlGlobal = &MQTTController{client: fake}
+	SetGlobalMqttCtrl(mqttCtrlGlobal)
+	t.Cleanup(func() { mqttCtrlGlobal = nil })
+
+	publishHADiscoveryForDevice(srv, d)
+
+	find := func(topic string) map[string]any {
+		t.Helper()
+		for _, p := range fake.published {
+			if p.topic == topic && p.retained {
+				var m map[string]any
+				if err := json.Unmarshal([]byte(p.payload), &m); err != nil {
+					t.Fatalf("unmarshal %s: %v", topic, err)
+				}
+				return m
+			}
+		}
+		t.Fatalf("topic not published: %s (%+v)", topic, fake.published)
+		return nil
+	}
+
+	// light: additive template entity sharing the brightness topics
+	light := find(fmt.Sprintf("homeassistant/light/ledit_%d_light/config", d.ID))
+	if light["unique_id"] != fmt.Sprintf("ledit_%d_light", d.ID) {
+		t.Fatalf("bad light unique_id: %v", light["unique_id"])
+	}
+	if light["command_topic"] != fmt.Sprintf("ledit/device/%d/brightness/set", d.ID) {
+		t.Fatalf("bad light command_topic: %v", light["command_topic"])
+	}
+	if light["state_topic"] != fmt.Sprintf("ledit/device/%d/brightness/state", d.ID) {
+		t.Fatalf("bad light state_topic: %v", light["state_topic"])
+	}
+	if light["brightness_scale"] != float64(100) {
+		t.Fatalf("bad light brightness_scale: %v", light["brightness_scale"])
+	}
+
+	// select: rotation sources + enabled playlists + enabled scenes
+	sel := find(fmt.Sprintf("homeassistant/select/ledit_%d_content/config", d.ID))
+	if sel["command_topic"] != fmt.Sprintf("ledit/device/%d/select/set", d.ID) {
+		t.Fatalf("bad select command_topic: %v", sel["command_topic"])
+	}
+	if sel["state_topic"] != fmt.Sprintf("ledit/device/%d/select/state", d.ID) {
+		t.Fatalf("bad select state_topic: %v", sel["state_topic"])
+	}
+	opts, _ := sel["options"].([]any)
+	wantOpts := map[string]bool{
+		"source:clock:1":                  false,
+		"source:textslide:2":              false,
+		fmt.Sprintf("playlist:%d", pl.ID): false,
+		fmt.Sprintf("scene:%d", sc.ID):    false,
+	}
+	for _, o := range opts {
+		s, _ := o.(string)
+		if _, ok := wantOpts[s]; ok {
+			wantOpts[s] = true
+		}
+	}
+	for opt, seen := range wantOpts {
+		if !seen {
+			t.Fatalf("select option missing %s in %v", opt, opts)
+		}
+	}
+
+	// text: device-scoped message entity
+	txt := find(fmt.Sprintf("homeassistant/text/ledit_%d_message/config", d.ID))
+	if txt["command_topic"] != fmt.Sprintf("ledit/device/%d/message/set", d.ID) {
+		t.Fatalf("bad text command_topic: %v", txt["command_topic"])
+	}
+	if txt["state_topic"] != fmt.Sprintf("ledit/device/%d/message/state", d.ID) {
+		t.Fatalf("bad text state_topic: %v", txt["state_topic"])
+	}
+	if txt["max"] != float64(255) {
+		t.Fatalf("bad text max: %v", txt["max"])
 	}
 }

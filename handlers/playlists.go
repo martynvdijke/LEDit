@@ -100,6 +100,7 @@ func (s *Server) AdminPlaylistCreate(c *gin.Context) {
 	if gs, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil && gs != nil {
 		s.DB.GeneralSettings.UpdateOne(gs).AddPlaylists(obj).Exec(s.Ctx)
 	}
+	republishHASelectsForAll(s)
 	SetFlash(c, "success", "Playlist created")
 	c.Redirect(http.StatusFound, "/admin/playlists")
 }
@@ -200,6 +201,7 @@ func (s *Server) AdminPlaylistUpdate(c *gin.Context) {
 		})
 		return
 	}
+	republishHASelectsForAll(s)
 	SetFlash(c, "success", "Playlist updated")
 	c.Redirect(http.StatusFound, "/admin/playlists")
 }
@@ -211,6 +213,7 @@ func (s *Server) AdminPlaylistDelete(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/admin/playlists")
 		return
 	}
+	republishHASelectsForAll(s)
 	SetFlash(c, "success", "Playlist deleted")
 	c.Redirect(http.StatusFound, "/admin/playlists")
 }

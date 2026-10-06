@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -20,6 +21,15 @@ type FeedController struct {
 	PinnedBy    string
 	AlarmSource *sourceWithName
 	SceneSource *sourceWithName
+	// DeviceID is the device this controller drives (0 for the global feed);
+	// pause/resume events carry it so HA per-device state can be republished.
+	DeviceID int
+	// brightnessHint is an ephemeral manual level (0-100) set by actuation
+	// commands; nil means no hint. Guarded by mu.
+	brightnessHint *int
+	// rotationKeys is the set of cache keys this controller can currently
+	// render; used to reject off-rotation content selections.
+	rotationKeys map[string]bool
 }
 
 var GlobalFeed = &FeedController{}
@@ -78,14 +88,14 @@ func (fc *FeedController) Pause() {
 	fc.mu.Unlock()
 	// D6: a manual pause reclaims the wall from ambient automation.
 	SuppressActiveScene()
-	GlobalBus.Emit(Event{Type: EventFeedPaused, Timestamp: time.Now()})
+	GlobalBus.Emit(Event{Type: EventFeedPaused, Timestamp: time.Now(), Data: map[string]any{"device_id": fc.DeviceID}})
 }
 
 func (fc *FeedController) Resume() {
 	fc.mu.Lock()
-	defer fc.mu.Unlock()
 	fc.Paused = false
-	GlobalBus.Emit(Event{Type: EventFeedResumed, Timestamp: time.Now()})
+	fc.mu.Unlock()
+	GlobalBus.Emit(Event{Type: EventFeedResumed, Timestamp: time.Now(), Data: map[string]any{"device_id": fc.DeviceID}})
 }
 
 func (fc *FeedController) Next() {
@@ -169,6 +179,65 @@ func (fc *FeedController) IsPinned() (string, string, bool) {
 		return "", "", false
 	}
 	return fc.PinnedKey, fc.PinnedBy, true
+}
+
+// SetBrightnessHint stores an ephemeral manual brightness level for this
+// controller. The level wins over schedule/sensor resolved values until the
+// process restarts or the hint is cleared.
+func (fc *FeedController) SetBrightnessHint(level int) {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	fc.brightnessHint = &level
+}
+
+// BrightnessHint returns the ephemeral brightness hint when set.
+func (fc *FeedController) BrightnessHint() (int, bool) {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	if fc.brightnessHint == nil {
+		return 0, false
+	}
+	return *fc.brightnessHint, true
+}
+
+// ClearBrightnessHint removes any ephemeral brightness hint.
+func (fc *FeedController) ClearBrightnessHint() {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	fc.brightnessHint = nil
+}
+
+// SetRotationKeys records the cache keys this connection can render.
+func (fc *FeedController) SetRotationKeys(keys []string) {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	m := make(map[string]bool, len(keys))
+	for _, k := range keys {
+		if k != "" {
+			m[k] = true
+		}
+	}
+	fc.rotationKeys = m
+}
+
+// HasRotationKey reports whether key is part of this controller's rotation.
+func (fc *FeedController) HasRotationKey(key string) bool {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	return fc.rotationKeys[key]
+}
+
+// RotationKeys returns a sorted snapshot of the cache keys this controller can
+// currently render; used to build the HA select option list.
+func (fc *FeedController) RotationKeys() []string {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	keys := make([]string, 0, len(fc.rotationKeys))
+	for k := range fc.rotationKeys {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 func (fc *FeedController) SetCurrent(name, next string) {
@@ -353,15 +422,19 @@ type notifEntry struct {
 	Priority int `json:"-"`
 	// Media optionally attaches an image; json:"-" likewise.
 	Media *MessageMedia `json:"-"`
+	// Target optionally scopes a notification to one device id (0 = all
+	// devices); json:"-" keeps the existing notification API shape unchanged.
+	Target int `json:"-"`
 }
 
 // NotifOption configures AddNotification.
 type notifConfig struct {
-	ttl       time.Duration
-	color     string
-	expiresAt time.Time
-	priority  int
-	media     *MessageMedia
+	ttl          time.Duration
+	color        string
+	expiresAt    time.Time
+	priority     int
+	media        *MessageMedia
+	targetDevice int
 }
 
 // NotifOption is an exported functional option for AddNotification.
@@ -391,6 +464,12 @@ func WithPriority(p int) NotifOption {
 // WithMedia attaches an image to the notification for display surfaces.
 func WithMedia(m *MessageMedia) NotifOption {
 	return func(c *notifConfig) { c.media = m }
+}
+
+// withTargetDevice scopes a notification to a single device feed (0 = all
+// devices). Internal: targeted messages are created by the actuation helpers.
+func withTargetDevice(id int) NotifOption {
+	return func(c *notifConfig) { c.targetDevice = id }
 }
 
 // addToMemoryQueue stores a notification in the in-memory queue (for live feed display).
@@ -424,6 +503,7 @@ func addToMemoryQueueWithOptions(title, message string, opts ...NotifOption) not
 		CreatedAt: now,
 		Priority:  cfg.priority,
 		Media:     cfg.media,
+		Target:    cfg.targetDevice,
 	}
 	notifHistory = append(notifHistory, entry)
 	// Keep last 50

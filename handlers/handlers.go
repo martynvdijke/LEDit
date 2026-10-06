@@ -1372,7 +1372,7 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 	}
 	RestartTransportDevice(s, obj.ID)
 	if haDiscoveryEnabled(s) {
-		publishHADiscoveryForDevice(obj)
+		publishHADiscoveryForDevice(s, obj)
 	}
 	SetFlash(c, "success", "Device created")
 	c.Redirect(http.StatusFound, "/admin/devices")
@@ -1783,7 +1783,7 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 	RestartTransportDevice(s, id)
 	if haDiscoveryEnabled(s) {
 		if d, err := s.DB.DeviceSettings.Get(s.Ctx, id); err == nil {
-			publishHADiscoveryForDevice(d)
+			publishHADiscoveryForDevice(s, d)
 		}
 	}
 	SetFlash(c, "success", "Device updated")

@@ -39,6 +39,16 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Save Settings</button>
             </form>
+            <div class="alert alert-info mt-3">
+                <strong>Per-device topics</strong>:
+                <code>ledit/device/&lt;id&gt;/brightness/set</code> (0–100),
+                <code>ledit/device/&lt;id&gt;/select/set</code>
+                (<code>source:&lt;type&gt;:&lt;id&gt;</code>, <code>playlist:&lt;id&gt;</code>, <code>scene:&lt;id&gt;</code>),
+                <code>ledit/device/&lt;id&gt;/message/set</code> (≤255 chars), plus the existing
+                <code>paused/set</code> and <code>next/set</code>.
+                Accepted commands publish retained state on the matching <code>/state</code> topic;
+                rejected or malformed commands are ignored. Broker ACLs are the only authority for these commands.
+            </div>
         </div>
     </div>
 </body><script type="module" src="/static/assets/app.js"></script>

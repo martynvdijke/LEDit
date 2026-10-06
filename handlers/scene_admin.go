@@ -315,6 +315,7 @@ func (s *Server) AdminSceneCreate(c *gin.Context) {
 	if gs, gerr := s.DB.GeneralSettings.Query().Only(s.Ctx); gerr == nil && gs != nil {
 		s.DB.GeneralSettings.UpdateOne(gs).AddScenes(obj).Exec(s.Ctx)
 	}
+	republishHASelectsForAll(s)
 	SetFlash(c, "success", "Scene created")
 	c.Redirect(http.StatusFound, "/admin/scenes")
 }
@@ -402,6 +403,7 @@ func (s *Server) AdminSceneUpdate(c *gin.Context) {
 		s.renderSceneFormError(c, http.StatusOK, err.Error(), name, enabled, priority, ttlRaw, triggersRaw, srcType, srcID, playlistRaw, brightnessRaw, overlay, controlsRaw, true, id)
 		return
 	}
+	republishHASelectsForAll(s)
 	SetFlash(c, "success", "Scene updated")
 	c.Redirect(http.StatusFound, "/admin/scenes")
 }
@@ -413,6 +415,7 @@ func (s *Server) AdminSceneDelete(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/admin/scenes")
 		return
 	}
+	republishHASelectsForAll(s)
 	SetFlash(c, "success", "Scene deleted")
 	c.Redirect(http.StatusFound, "/admin/scenes")
 }

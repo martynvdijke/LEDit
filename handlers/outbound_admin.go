@@ -103,6 +103,7 @@ func (s *Server) OutboundSettingsPut(c *gin.Context) {
 	}
 	if req.HaDiscoveryEnabled != nil {
 		upd = upd.SetHaDiscoveryEnabled(*req.HaDiscoveryEnabled)
+		GlobalHAStateSink.SetEnabled(*req.HaDiscoveryEnabled)
 	}
 	updated, err := upd.Save(s.Ctx)
 	if err != nil {

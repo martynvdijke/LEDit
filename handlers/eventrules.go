@@ -211,12 +211,16 @@ func clearStateFetchLogged(cacheKey string) {
 	stateFetchMu.Unlock()
 }
 
-func StartEventRuleEngine(client *ent.Client) {
+func StartEventRuleEngine(srv *Server) {
 	engineMu.Lock()
 	defer engineMu.Unlock()
 	if engineCancel != nil {
 		return
 	}
+	if srv == nil || srv.DB == nil {
+		return
+	}
+	client := srv.DB
 	engineClient = client
 	ctx, cancel := context.WithCancel(context.Background())
 	engineCancel = cancel
@@ -245,7 +249,7 @@ func StartEventRuleEngine(client *ent.Client) {
 			return resolveSceneSource(client, s)
 		}
 	}
-	go runEvaluator(ctx, client)
+	go runEvaluator(ctx, srv, client)
 	slog.Info("event rule engine started")
 }
 
@@ -323,7 +327,7 @@ func resolveTarget(sourceType string, sourceID int, client *ent.Client) (datasou
 	return nil, false
 }
 
-func runEvaluator(ctx context.Context, client *ent.Client) {
+func runEvaluator(ctx context.Context, srv *Server, client *ent.Client) {
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Error("event rule evaluator panic recovered", "panic", r)
@@ -332,7 +336,7 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 			case <-ctx.Done():
 				return
 			case <-time.After(5 * time.Second):
-				go runEvaluator(ctx, client)
+				go runEvaluator(ctx, srv, client)
 			}
 		}
 	}()
@@ -462,7 +466,7 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 							rs.cooldownUntil = now.Add(time.Duration(rs.rule.CooldownSeconds) * time.Second)
 						}
 						actCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-						executeThenAction(actCtx, client, rs.rule)
+						executeThenAction(actCtx, srv, rs.rule)
 						cancel()
 					} else {
 						// already pinned, extend cooldown? Keep min-hold: don't unpin until cooldown after fire. Already pinned, keep pinned.
@@ -494,6 +498,10 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 func EvaluateRulesOnce(client *ent.Client, states map[int]*ruleState) {
 	if states == nil {
 		return
+	}
+	var srv *Server
+	if client != nil {
+		srv = &Server{DB: client, Ctx: context.Background()}
 	}
 	now := time.Now()
 	for _, rs := range states {
@@ -546,7 +554,7 @@ func EvaluateRulesOnce(client *ent.Client, states map[int]*ruleState) {
 					rs.cooldownUntil = now.Add(time.Duration(rs.rule.CooldownSeconds) * time.Second)
 				}
 				actCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				executeThenAction(actCtx, client, rs.rule)
+				executeThenAction(actCtx, srv, rs.rule)
 				cancel()
 			}
 		} else {
@@ -585,20 +593,31 @@ func eventRuleFormVars(name, srcType, srcID, condition, statePath, interval, coo
 		e = "on"
 	}
 	return gin.H{
-		"fName":      name,
-		"fEnabled":   e,
-		"fSrcType":   srcType,
-		"fSrcID":     srcID,
-		"fCondition": condition,
-		"fStatePath": statePath,
-		"fInterval":  interval,
-		"fCooldown":  cooldown,
-		"fThenKind":  "none",
-		"fThenScene": "",
-		"fThenTitle": "",
-		"fThenMsg":   "",
-		"fThenTTL":   "",
-		"fThenEvent": "",
+		"fName":         name,
+		"fEnabled":      e,
+		"fSrcType":      srcType,
+		"fSrcID":        srcID,
+		"fCondition":    condition,
+		"fStatePath":    statePath,
+		"fInterval":     interval,
+		"fCooldown":     cooldown,
+		"fThenKind":     "none",
+		"fThenScene":    "",
+		"fThenTitle":    "",
+		"fThenMsg":      "",
+		"fThenTTL":      "",
+		"fThenEvent":    "",
+		"fThenPayload":  "",
+		"fThenDevice":   "",
+		"fThenLevel":    "",
+		"fThenSrcType":  "",
+		"fThenSrcID":    "",
+		"fThenPlaylist": "",
+		"fThenTopic":    "",
+		"fThenRetain":   "",
+		"fThenURL":      "",
+		"fThenMethod":   "",
+		"fThenSecret":   "",
 	}
 }
 
@@ -620,38 +639,120 @@ func eventRuleFormVarsWithThen(base gin.H, thenRaw string) gin.H {
 		base["fThenTTL"] = strconv.Itoa(ta.TTLSeconds)
 	}
 	base["fThenEvent"] = ta.Event
-	// payload is stored as JSON string in ta.Payload but not exposed separately; event field suffices per spec
 	if ta.Payload != "" {
 		base["fThenPayload"] = ta.Payload
 	}
+	if ta.DeviceID != 0 {
+		base["fThenDevice"] = strconv.Itoa(ta.DeviceID)
+	}
+	if ta.Level != nil {
+		base["fThenLevel"] = strconv.Itoa(*ta.Level)
+	}
+	base["fThenSrcType"] = ta.SourceType
+	if ta.SourceID != 0 {
+		base["fThenSrcID"] = strconv.Itoa(ta.SourceID)
+	}
+	if ta.PlaylistID != 0 {
+		base["fThenPlaylist"] = strconv.Itoa(ta.PlaylistID)
+	}
+	base["fThenTopic"] = ta.Topic
+	if ta.Retain {
+		base["fThenRetain"] = "on"
+	}
+	base["fThenURL"] = ta.URL
+	base["fThenMethod"] = ta.Method
+	base["fThenSecret"] = ta.Secret
 	return base
 }
 
-func buildThenJSON(kind, sceneIDStr, title, message, ttlStr, event string) string {
-	// default kind none
-	if strings.TrimSpace(kind) == "" {
-		kind = "none"
-	}
-	ta := ThenAction{Kind: kind}
-	if sceneIDStr != "" {
-		if v, _ := strconv.Atoi(sceneIDStr); v != 0 {
-			ta.SceneID = v
-		}
-	}
-	ta.Title = title
-	ta.Message = message
-	if ttlStr != "" {
-		if v, _ := strconv.Atoi(ttlStr); v != 0 {
-			ta.TTLSeconds = v
-		}
-	}
-	ta.Event = event
-	// payload not collected from form per spec (event/message fields cover it); keep empty
-	if ta.Kind == "none" {
+func marshalThenAction(ta ThenAction) string {
+	if strings.TrimSpace(ta.Kind) == "" || ta.Kind == "none" {
 		return "{}"
 	}
-	b, _ := json.Marshal(ta)
+	b, err := json.Marshal(ta)
+	if err != nil {
+		return "{}"
+	}
 	return string(b)
+}
+
+// thenActionFromForm reads every then-action field from the submitted form.
+// Unknown/blank fields stay zero so validation can reject only what the chosen
+// kind actually requires.
+func thenActionFromForm(c *gin.Context) ThenAction {
+	kind := strings.TrimSpace(c.PostForm("then_kind"))
+	if kind == "" {
+		kind = "none"
+	}
+	ta := ThenAction{
+		Kind:       kind,
+		Title:      c.PostForm("then_title"),
+		Message:    c.PostForm("then_message"),
+		Event:      c.PostForm("then_event"),
+		Payload:    c.PostForm("then_payload"),
+		SourceType: strings.TrimSpace(c.PostForm("then_source_type")),
+		Topic:      strings.TrimSpace(c.PostForm("then_topic")),
+		URL:        strings.TrimSpace(c.PostForm("then_url")),
+		Method:     strings.ToUpper(strings.TrimSpace(c.PostForm("then_method"))),
+		Secret:     c.PostForm("then_secret"),
+		Retain:     c.PostForm("then_retain") == "on",
+	}
+	if v, _ := strconv.Atoi(c.PostForm("then_scene_id")); v != 0 {
+		ta.SceneID = v
+	}
+	if v, _ := strconv.Atoi(c.PostForm("then_ttl_seconds")); v != 0 {
+		ta.TTLSeconds = v
+	}
+	if v, _ := strconv.Atoi(c.PostForm("then_device_id")); v != 0 {
+		ta.DeviceID = v
+	}
+	if v, _ := strconv.Atoi(c.PostForm("then_source_id")); v != 0 {
+		ta.SourceID = v
+	}
+	if v, _ := strconv.Atoi(c.PostForm("then_playlist_id")); v != 0 {
+		ta.PlaylistID = v
+	}
+	if raw := strings.TrimSpace(c.PostForm("then_level")); raw != "" {
+		if v, err := strconv.Atoi(raw); err == nil {
+			ta.Level = &v
+		}
+	}
+	if ta.Kind == "http" && ta.Method == "" {
+		ta.Method = http.MethodPost
+	}
+	return ta
+}
+
+// thenReplayVars returns the raw posted then-action fields for redisplaying the
+// form after a validation failure.
+func thenReplayVars(c *gin.Context) gin.H {
+	kind := strings.TrimSpace(c.PostForm("then_kind"))
+	if kind == "" {
+		kind = "none"
+	}
+	retain := ""
+	if c.PostForm("then_retain") == "on" {
+		retain = "on"
+	}
+	return gin.H{
+		"fThenKind":     kind,
+		"fThenScene":    c.PostForm("then_scene_id"),
+		"fThenTitle":    c.PostForm("then_title"),
+		"fThenMsg":      c.PostForm("then_message"),
+		"fThenTTL":      c.PostForm("then_ttl_seconds"),
+		"fThenEvent":    c.PostForm("then_event"),
+		"fThenPayload":  c.PostForm("then_payload"),
+		"fThenDevice":   c.PostForm("then_device_id"),
+		"fThenLevel":    c.PostForm("then_level"),
+		"fThenSrcType":  c.PostForm("then_source_type"),
+		"fThenSrcID":    c.PostForm("then_source_id"),
+		"fThenPlaylist": c.PostForm("then_playlist_id"),
+		"fThenTopic":    c.PostForm("then_topic"),
+		"fThenRetain":   retain,
+		"fThenURL":      c.PostForm("then_url"),
+		"fThenMethod":   c.PostForm("then_method"),
+		"fThenSecret":   c.PostForm("then_secret"),
+	}
 }
 
 func (s *Server) AdminEventRuleNew(c *gin.Context) {
@@ -798,82 +899,33 @@ func (s *Server) AdminEventRuleCreate(c *gin.Context) {
 	}
 	cooldown, _ := strconv.Atoi(c.PostForm("cooldown_seconds"))
 	enabled := c.PostForm("enabled") == "on"
-	thenKind := c.PostForm("then_kind")
-	if thenKind == "" {
-		thenKind = "none"
+	ta := thenActionFromForm(c)
+	thenJSON := marshalThenAction(ta)
+	replay := func(msg string) {
+		SetFlash(c, "danger", msg)
+		opts := s.bindingOptions(c)
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
+		for k, v := range thenReplayVars(c) {
+			vars[k] = v
+		}
+		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
+		vars["error"] = msg
+		vars["options"] = opts
+		vars["options_json"] = bindingOptionsJSON(opts)
+		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
 	}
-	thenSceneID := c.PostForm("then_scene_id")
-	thenTitle := c.PostForm("then_title")
-	thenMessage := c.PostForm("then_message")
-	thenTTL := c.PostForm("then_ttl_seconds")
-	thenEvent := c.PostForm("then_event")
-	thenJSON := buildThenJSON(thenKind, thenSceneID, thenTitle, thenMessage, thenTTL, thenEvent)
-	if ta, err := ParseThenAction(thenJSON); err != nil {
-		msg := "invalid then action: " + err.Error()
-		SetFlash(c, "danger", msg)
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
-		vars["error"] = msg
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
-		return
-	} else if msg := validateThenAction(ta); msg != "" {
-		SetFlash(c, "danger", msg)
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
-		vars["error"] = msg
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+	if msg := validateThenAction(ta); msg != "" {
+		replay(msg)
 		return
 	}
 
 	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, statePath, checkInterval, cooldown); msg != "" {
-		SetFlash(c, "danger", msg)
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
-		vars["error"] = msg
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+		replay(msg)
 		return
 	}
 	obj, err := s.DB.DisplayRule.Create().SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetStatePath(statePath).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).SetThenActions(thenJSON).Save(s.Ctx)
 	if err != nil {
-		SetFlash(c, "danger", "Failed to create: "+err.Error())
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+		replay("Failed to create: " + err.Error())
 		return
 	}
 	if gs, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil && gs != nil {
@@ -918,89 +970,34 @@ func (s *Server) AdminEventRuleUpdate(c *gin.Context) {
 	}
 	cooldown, _ := strconv.Atoi(c.PostForm("cooldown_seconds"))
 	enabled := c.PostForm("enabled") == "on"
-	thenKind := c.PostForm("then_kind")
-	if thenKind == "" {
-		thenKind = "none"
+	ta := thenActionFromForm(c)
+	thenJSON := marshalThenAction(ta)
+	replay := func(msg string) {
+		SetFlash(c, "danger", msg)
+		opts := s.bindingOptions(c)
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
+		for k, v := range thenReplayVars(c) {
+			vars[k] = v
+		}
+		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
+		vars["edit"] = true
+		vars["id"] = id
+		vars["error"] = msg
+		vars["options"] = opts
+		vars["options_json"] = bindingOptionsJSON(opts)
+		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
 	}
-	thenSceneID := c.PostForm("then_scene_id")
-	thenTitle := c.PostForm("then_title")
-	thenMessage := c.PostForm("then_message")
-	thenTTL := c.PostForm("then_ttl_seconds")
-	thenEvent := c.PostForm("then_event")
-	thenJSON := buildThenJSON(thenKind, thenSceneID, thenTitle, thenMessage, thenTTL, thenEvent)
-	if ta, err := ParseThenAction(thenJSON); err != nil {
-		msg := "invalid then action: " + err.Error()
-		SetFlash(c, "danger", msg)
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
-		vars["edit"] = true
-		vars["id"] = id
-		vars["error"] = msg
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
-		return
-	} else if msg := validateThenAction(ta); msg != "" {
-		SetFlash(c, "danger", msg)
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
-		vars["edit"] = true
-		vars["id"] = id
-		vars["error"] = msg
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+	if msg := validateThenAction(ta); msg != "" {
+		replay(msg)
 		return
 	}
 
 	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, statePath, checkInterval, cooldown); msg != "" {
-		SetFlash(c, "danger", msg)
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
-		vars["edit"] = true
-		vars["id"] = id
-		vars["error"] = msg
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+		replay(msg)
 		return
 	}
 	if err := s.DB.DisplayRule.UpdateOneID(id).SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetStatePath(statePath).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).SetThenActions(thenJSON).Exec(s.Ctx); err != nil {
-		SetFlash(c, "danger", "Failed to update: "+err.Error())
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["edit"] = true
-		vars["id"] = id
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+		replay("Failed to update: " + err.Error())
 		return
 	}
 	SetFlash(c, "success", "Event rule updated")

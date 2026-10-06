@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"strings"
 	"time"
 
@@ -12,14 +13,35 @@ import (
 )
 
 // ThenAction describes the optional "then" effect fired on a rising edge.
+// Kinds: none | scene | notification | webhook | brightness | source | playlist | mqtt | http.
 type ThenAction struct {
-	Kind       string `json:"kind"` // none|scene|notification|webhook
+	Kind       string `json:"kind"`
 	SceneID    int    `json:"scene_id,omitempty"`
 	Title      string `json:"title,omitempty"`
 	Message    string `json:"message,omitempty"`
 	TTLSeconds int    `json:"ttl_seconds,omitempty"`
-	Event      string `json:"event,omitempty"`   // webhook event name
-	Payload    string `json:"payload,omitempty"` // optional JSON object string
+	Event      string `json:"event,omitempty"`   // webhook/http event name
+	Payload    string `json:"payload,omitempty"` // optional JSON object string (webhook/mqtt)
+
+	// brightness
+	DeviceID int  `json:"device_id,omitempty"` // 0 = all enabled devices (brightness only)
+	Level    *int `json:"level,omitempty"`     // brightness 0..100; pointer so an explicit 0 is meaningful
+
+	// source
+	SourceType string `json:"source_type,omitempty"`
+	SourceID   int    `json:"source_id,omitempty"`
+
+	// playlist
+	PlaylistID int `json:"playlist_id,omitempty"`
+
+	// mqtt
+	Topic  string `json:"topic,omitempty"`
+	Retain bool   `json:"retain,omitempty"`
+
+	// http
+	URL    string `json:"url,omitempty"`
+	Method string `json:"method,omitempty"`
+	Secret string `json:"secret,omitempty"`
 }
 
 // ParseThenAction decodes raw JSON. Empty string or "{}" maps to Kind "none".
@@ -36,11 +58,30 @@ func ParseThenAction(raw string) (ThenAction, error) {
 		ta.Kind = "none"
 	}
 	switch ta.Kind {
-	case "none", "scene", "notification", "webhook":
+	case "none", "scene", "notification", "webhook", "brightness", "source", "playlist", "mqtt", "http":
 	default:
 		return ThenAction{}, fmt.Errorf("unknown kind %q", ta.Kind)
 	}
 	return ta, nil
+}
+
+// validateMQTTTopic enforces the outbound topic shape: non-empty, bounded,
+// no wildcards, and no leading '$' (reserved for broker internals).
+func validateMQTTTopic(topic string) string {
+	t := strings.TrimSpace(topic)
+	if t == "" {
+		return "topic is required for mqtt actions"
+	}
+	if len(t) > 256 {
+		return "topic must be at most 256 bytes"
+	}
+	if strings.HasPrefix(t, "$") {
+		return "topic must not start with $"
+	}
+	if strings.ContainsAny(t, "+#") {
+		return "topic must not contain wildcards"
+	}
+	return ""
 }
 
 // validateThenAction returns "" if ok else a human-readable message.
@@ -69,12 +110,67 @@ func validateThenAction(ta ThenAction) string {
 			}
 		}
 		return ""
+	case "brightness":
+		if ta.DeviceID < 0 {
+			return "device_id must be >= 0 for brightness action"
+		}
+		if ta.Level == nil {
+			return "level is required for brightness action"
+		}
+		if *ta.Level < 0 || *ta.Level > 100 {
+			return "level must be between 0 and 100"
+		}
+		return ""
+	case "source":
+		if strings.TrimSpace(ta.SourceType) == "" {
+			return "source_type is required for source action"
+		}
+		if ta.SourceID <= 0 {
+			return "source_id must be positive for source action"
+		}
+		return ""
+	case "playlist":
+		if ta.DeviceID <= 0 {
+			return "device_id is required for playlist action"
+		}
+		if ta.PlaylistID <= 0 {
+			return "playlist_id is required for playlist action"
+		}
+		return ""
+	case "mqtt":
+		if msg := validateMQTTTopic(ta.Topic); msg != "" {
+			return msg
+		}
+		if len(ta.Payload) > 4096 {
+			return "payload must be at most 4096 bytes"
+		}
+		if strings.TrimSpace(ta.Payload) != "" {
+			var js any
+			if err := json.Unmarshal([]byte(ta.Payload), &js); err != nil {
+				return "payload must be valid JSON"
+			}
+			if _, ok := js.(map[string]any); !ok {
+				return "payload must be a JSON object"
+			}
+		}
+		return ""
+	case "http":
+		u, err := url.Parse(strings.TrimSpace(ta.URL))
+		if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
+			return "url must be a valid http(s) URL"
+		}
+		switch strings.ToUpper(strings.TrimSpace(ta.Method)) {
+		case "", "GET", "POST", "PUT", "PATCH", "DELETE":
+		default:
+			return "method must be one of GET, POST, PUT, PATCH, DELETE"
+		}
+		return ""
 	default:
 		return "unknown kind: " + ta.Kind
 	}
 }
 
-func executeThenAction(ctx context.Context, client *ent.Client, rule *ent.DisplayRule) {
+func executeThenAction(ctx context.Context, s *Server, rule *ent.DisplayRule) {
 	if rule == nil {
 		return
 	}
@@ -93,6 +189,10 @@ func executeThenAction(ctx context.Context, client *ent.Client, rule *ent.Displa
 	if msg := validateThenAction(ta); msg != "" {
 		slog.Warn("event rule then_actions invalid, skipping", "rule", rule.Name, "error", msg)
 		return
+	}
+	var client *ent.Client
+	if s != nil {
+		client = s.DB
 	}
 	switch ta.Kind {
 	case "scene":
@@ -149,5 +249,64 @@ func executeThenAction(ctx context.Context, client *ent.Client, rule *ent.Displa
 			}
 		}
 		GlobalBus.Emit(Event{Type: evName, Timestamp: time.Now(), Data: map[string]any{"rule": rule.Name, "title": ta.Title, "message": ta.Message, "payload": payload}})
+	case "brightness":
+		if s == nil || s.DB == nil {
+			slog.Warn("event rule brightness action: no server", "rule", rule.Name)
+			return
+		}
+		src := "rule:" + rule.Name
+		if ta.DeviceID > 0 {
+			s.ApplyDeviceBrightness(ta.DeviceID, *ta.Level, src)
+			return
+		}
+		devs, err := s.DB.DeviceSettings.Query().All(ctx)
+		if err != nil {
+			slog.Warn("event rule brightness action: device query failed", "rule", rule.Name, "error", err)
+			return
+		}
+		for _, d := range devs {
+			if d.Enabled {
+				s.ApplyDeviceBrightness(d.ID, *ta.Level, src)
+			}
+		}
+	case "source":
+		key := fmt.Sprintf("%s:%d", ta.SourceType, ta.SourceID)
+		pinAll(key, "rule:"+rule.Name)
+	case "playlist":
+		if s == nil || s.DB == nil {
+			slog.Warn("event rule playlist action: no server", "rule", rule.Name)
+			return
+		}
+		if _, err := s.DB.DeviceSettings.Get(ctx, ta.DeviceID); err != nil {
+			slog.Warn("event rule playlist action: device not found", "rule", rule.Name, "device_id", ta.DeviceID, "error", err)
+			return
+		}
+		pl, err := s.DB.Playlist.Get(ctx, ta.PlaylistID)
+		if err != nil || !pl.Enabled {
+			slog.Warn("event rule playlist action: playlist unavailable", "rule", rule.Name, "playlist_id", ta.PlaylistID)
+			return
+		}
+		if err := s.persistPlaylistContent(ta.DeviceID, ta.PlaylistID); err != nil {
+			slog.Warn("event rule playlist action: content update failed", "rule", rule.Name, "error", err)
+			return
+		}
+		RestartTransportDevice(s, ta.DeviceID)
+	case "mqtt":
+		if !mqttConnected() {
+			slog.Debug("event rule mqtt action skipped: mqtt disconnected", "rule", rule.Name, "topic", ta.Topic)
+			return
+		}
+		body := strings.TrimSpace(ta.Payload)
+		if body == "" {
+			env, _ := json.Marshal(map[string]any{
+				"event":     EventRuleTriggered,
+				"rule":      rule.Name,
+				"fire_time": time.Now().Format(time.RFC3339),
+			})
+			body = string(env)
+		}
+		PublishOutbound(ta.Topic, body, ta.Retain)
+	case "http":
+		enqueueRuleHTTP(rule, ta)
 	}
 }

@@ -105,7 +105,7 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 			}(gs.HolidayIcsURL)
 		}
 	}
-	StartEventRuleEngine(client)
+	StartEventRuleEngine(srv)
 	StartIncidentManager(client)
 	StartPluginManager(client)
 	StartGreetingWatcher(ctx, client, defaultHAFetcher(srv), srv)
