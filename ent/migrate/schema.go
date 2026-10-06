@@ -869,6 +869,25 @@ var (
 		Columns:    IncidentsColumns,
 		PrimaryKey: []*schema.Column{IncidentsColumns[0]},
 	}
+	// InputBindingsColumns holds the columns for the "input_bindings" table.
+	InputBindingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "device_id", Type: field.TypeInt, Nullable: true},
+		{Name: "source", Type: field.TypeString, Default: ""},
+		{Name: "event", Type: field.TypeString, Default: ""},
+		{Name: "match", Type: field.TypeString, Size: 2147483647, Default: ""},
+		{Name: "action", Type: field.TypeString, Size: 2147483647, Default: "{}"},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "order", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// InputBindingsTable holds the schema information for the "input_bindings" table.
+	InputBindingsTable = &schema.Table{
+		Name:       "input_bindings",
+		Columns:    InputBindingsColumns,
+		PrimaryKey: []*schema.Column{InputBindingsColumns[0]},
+	}
 	// JellyfinsColumns holds the columns for the "jellyfins" table.
 	JellyfinsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -1957,6 +1976,7 @@ var (
 		ImmichesTable,
 		InboundAdaptersTable,
 		IncidentsTable,
+		InputBindingsTable,
 		JellyfinsTable,
 		LogEntriesTable,
 		LogSettingsTable,

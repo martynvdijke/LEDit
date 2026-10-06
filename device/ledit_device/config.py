@@ -17,7 +17,19 @@ if not _logger.handlers:
     _logger.addHandler(_handler)
 
 
-def log(level, msg):
+def log(level, *args):
+    """Log a message.
+
+    Accepts either the leveled form ``log("warning", "text")`` or the
+    shorthand ``log("text %s", value)`` used by newer device modules.
+    """
+    if level in ("debug", "info", "warning", "error", "critical") and args:
+        msg, fmt_args = args[0], args[1:]
+    else:
+        msg, fmt_args = level, args
+        level = "info"
+    if fmt_args:
+        msg = msg % fmt_args
     getattr(_logger, level, _logger.info)(msg)
 
 
@@ -105,3 +117,56 @@ def update_interval():
 
 def update_channel():
     return os.getenv("LEDIT_UPDATE_CHANNEL", "").strip()
+
+
+def inputs_enabled():
+    return env_bool("LEDIT_INPUTS", True)
+
+
+def encoder_clk_pin():
+    return env_int("LEDIT_ENCODER_CLK_PIN", 0)
+
+
+def encoder_dt_pin():
+    return env_int("LEDIT_ENCODER_DT_PIN", 0)
+
+
+def encoder_sw_pin():
+    return env_int("LEDIT_ENCODER_SW_PIN", 0)
+
+
+def encoder_debounce_ms():
+    return env_int("LEDIT_ENCODER_DEBOUNCE_MS", 30)
+
+
+def nfc_enabled():
+    """NFC is opt-in: LEDIT_NFC=1 or an explicit LEDIT_NFC_DEDUPE_MS."""
+    if os.getenv("LEDIT_NFC", "").strip():
+        return env_bool("LEDIT_NFC", False)
+    return os.getenv("LEDIT_NFC_DEDUPE_MS", "").strip() != ""
+
+
+def nfc_dedupe_ms():
+    return env_int("LEDIT_NFC_DEDUPE_MS", 30000)
+
+
+def presence_pin():
+    return env_int("LEDIT_PRESENCE_PIN", 0)
+
+
+def presence_kind():
+    kind = os.getenv("LEDIT_PRESENCE_KIND", "pir").strip().lower()
+    return "mmwave" if kind == "mmwave" else "pir"
+
+
+def lux_enabled():
+    """Lux sampling is opt-in via an explicit LEDIT_LUX_INTERVAL_MS."""
+    return os.getenv("LEDIT_LUX_INTERVAL_MS", "").strip() != ""
+
+
+def lux_interval_ms():
+    return env_int("LEDIT_LUX_INTERVAL_MS", 30000)
+
+
+def lux_change_threshold():
+    return env_int("LEDIT_LUX_CHANGE_THRESHOLD", 25)

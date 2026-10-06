@@ -173,15 +173,17 @@ func TestClearHADiscoveryForDevice(t *testing.T) {
 			cleared[p.topic] = true
 		}
 	}
-	if emptyConfigs != 9 {
-		t.Fatalf("expected 9 empty configs, got %d: %+v", emptyConfigs, fc.published)
+	if emptyConfigs != 10 {
+		t.Fatalf("expected 10 empty configs, got %d: %+v", emptyConfigs, fc.published)
 	}
 	for _, topic := range []string{
 		"homeassistant/light/ledit_99_light/config",
 		"homeassistant/select/ledit_99_content/config",
 		"homeassistant/text/ledit_99_message/config",
+		"homeassistant/event/ledit_99_input/config",
 		"ledit/device/99/select/state",
 		"ledit/device/99/message/state",
+		"ledit/device/99/input/event",
 	} {
 		if !cleared[topic] {
 			t.Fatalf("expected %s cleared, got %+v", topic, fc.published)

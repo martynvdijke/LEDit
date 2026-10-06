@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"math/rand"
+	"strings"
 	"time"
 
 	"ledit/datasource"
@@ -89,6 +90,7 @@ func nextPushIndex(cur, n int, random bool, sources []sourceWithName) int {
 
 // pushBrightness holds per-device brightness state for push transports.
 type pushBrightness struct {
+	deviceID        int
 	enabled         bool
 	schedules       []BrightnessWindow
 	sensorCfg       *SensorConfig
@@ -111,7 +113,11 @@ func newPushBrightness(d *ent.DeviceSettings) *pushBrightness {
 	ramp := NewBrightnessRamp(100)
 	var sensorLevel *int
 	if ebEnabled && sensorCfg != nil {
-		if lux, err := FetchSensorLux(sensorCfg.EntityID); err == nil {
+		if strings.TrimSpace(strings.ToLower(sensorCfg.Source)) == "device" {
+			if lux, ok := freshDeviceLux(d.ID, time.Now()); ok {
+				sensorLevel = SensorLevelForLux(lux, sensorCfg)
+			}
+		} else if lux, err := FetchSensorLux(sensorCfg.EntityID); err == nil {
 			sensorLevel = SensorLevelForLux(lux, sensorCfg)
 		}
 	}
@@ -122,6 +128,7 @@ func newPushBrightness(d *ent.DeviceSettings) *pushBrightness {
 	ramp.Current = float64(target)
 	ramp.Target = target
 	return &pushBrightness{
+		deviceID:    d.ID,
 		enabled:     ebEnabled,
 		schedules:   schedules,
 		sensorCfg:   sensorCfg,
@@ -135,10 +142,22 @@ func (pb *pushBrightness) level(now time.Time) int {
 	if brightnessProviderForTest != nil {
 		return brightnessProviderForTest()
 	}
+	// Live manual override (MQTT/HA/input/rule) wins over stored policy so push
+	// transports dim in lockstep with WebSocket feeds.
+	if fc, ok := getDeviceFeed(pb.deviceID); ok {
+		if hint, has := fc.BrightnessHint(); has {
+			return hint
+		}
+	}
 	if !pb.enabled {
 		return 100
 	}
-	if pb.sensorCfg != nil && now.Sub(pb.lastSensorFetch) >= 5*time.Second {
+	var deviceLux float64
+	hasDeviceLux := false
+	if pb.sensorCfg != nil && strings.TrimSpace(strings.ToLower(pb.sensorCfg.Source)) == "device" {
+		deviceLux, hasDeviceLux = freshDeviceLux(pb.deviceID, now)
+	}
+	if !hasDeviceLux && pb.sensorCfg != nil && now.Sub(pb.lastSensorFetch) >= 5*time.Second {
 		if pb.sensorState.ShouldFetch(now, pb.lastSensorFetch) {
 			pb.lastSensorFetch = now
 			if lux, err := FetchSensorLux(pb.sensorCfg.EntityID); err == nil {
@@ -156,7 +175,9 @@ func (pb *pushBrightness) level(now time.Time) int {
 		}
 	}
 	var sensorLevel *int
-	if pb.sensorCfg != nil && !pb.sensorState.IsStale(now) && pb.sensorCache != nil && now.Sub(pb.sensorCacheTime) <= 60*time.Second {
+	if hasDeviceLux {
+		sensorLevel = SensorLevelForLux(deviceLux, pb.sensorCfg)
+	} else if pb.sensorCfg != nil && !pb.sensorState.IsStale(now) && pb.sensorCache != nil && now.Sub(pb.sensorCacheTime) <= 60*time.Second {
 		sensorLevel = pb.sensorCache
 	} else if pb.sensorCfg != nil && pb.sensorCache != nil && now.Sub(pb.sensorCacheTime) > 60*time.Second {
 		pb.sensorCache = nil

@@ -111,6 +111,9 @@ type InboundAdapter func(*sql.Selector)
 // Incident is the predicate function for incident builders.
 type Incident func(*sql.Selector)
 
+// InputBinding is the predicate function for inputbinding builders.
+type InputBinding func(*sql.Selector)
+
 // Jellyfin is the predicate function for jellyfin builders.
 type Jellyfin func(*sql.Selector)
 

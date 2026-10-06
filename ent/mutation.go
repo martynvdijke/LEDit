@@ -41,6 +41,7 @@ import (
 	"ledit/ent/immich"
 	"ledit/ent/inboundadapter"
 	"ledit/ent/incident"
+	"ledit/ent/inputbinding"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
@@ -140,6 +141,7 @@ const (
 	TypeImmich             = "Immich"
 	TypeInboundAdapter     = "InboundAdapter"
 	TypeIncident           = "Incident"
+	TypeInputBinding       = "InputBinding"
 	TypeJellyfin           = "Jellyfin"
 	TypeLogEntry           = "LogEntry"
 	TypeLogSettings        = "LogSettings"
@@ -32389,6 +32391,856 @@ func (m *IncidentMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *IncidentMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Incident edge %s", name)
+}
+
+// InputBindingMutation represents an operation that mutates the InputBinding nodes in the graph.
+type InputBindingMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	device_id     *int
+	adddevice_id  *int
+	source        *string
+	event         *string
+	match         *string
+	action        *string
+	enabled       *bool
+	_order        *int
+	add_order     *int
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*InputBinding, error)
+	predicates    []predicate.InputBinding
+}
+
+var _ ent.Mutation = (*InputBindingMutation)(nil)
+
+// inputbindingOption allows management of the mutation configuration using functional options.
+type inputbindingOption func(*InputBindingMutation)
+
+// newInputBindingMutation creates new mutation for the InputBinding entity.
+func newInputBindingMutation(c config, op Op, opts ...inputbindingOption) *InputBindingMutation {
+	m := &InputBindingMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInputBinding,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInputBindingID sets the ID field of the mutation.
+func withInputBindingID(id int) inputbindingOption {
+	return func(m *InputBindingMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InputBinding
+		)
+		m.oldValue = func(ctx context.Context) (*InputBinding, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InputBinding.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInputBinding sets the old InputBinding of the mutation.
+func withInputBinding(node *InputBinding) inputbindingOption {
+	return func(m *InputBindingMutation) {
+		m.oldValue = func(context.Context) (*InputBinding, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InputBindingMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InputBindingMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InputBindingMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InputBindingMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InputBinding.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDeviceID sets the "device_id" field.
+func (m *InputBindingMutation) SetDeviceID(i int) {
+	m.device_id = &i
+	m.adddevice_id = nil
+}
+
+// DeviceID returns the value of the "device_id" field in the mutation.
+func (m *InputBindingMutation) DeviceID() (r int, exists bool) {
+	v := m.device_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeviceID returns the old "device_id" field's value of the InputBinding entity.
+// If the InputBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InputBindingMutation) OldDeviceID(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeviceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeviceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeviceID: %w", err)
+	}
+	return oldValue.DeviceID, nil
+}
+
+// AddDeviceID adds i to the "device_id" field.
+func (m *InputBindingMutation) AddDeviceID(i int) {
+	if m.adddevice_id != nil {
+		*m.adddevice_id += i
+	} else {
+		m.adddevice_id = &i
+	}
+}
+
+// AddedDeviceID returns the value that was added to the "device_id" field in this mutation.
+func (m *InputBindingMutation) AddedDeviceID() (r int, exists bool) {
+	v := m.adddevice_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeviceID clears the value of the "device_id" field.
+func (m *InputBindingMutation) ClearDeviceID() {
+	m.device_id = nil
+	m.adddevice_id = nil
+	m.clearedFields[inputbinding.FieldDeviceID] = struct{}{}
+}
+
+// DeviceIDCleared returns if the "device_id" field was cleared in this mutation.
+func (m *InputBindingMutation) DeviceIDCleared() bool {
+	_, ok := m.clearedFields[inputbinding.FieldDeviceID]
+	return ok
+}
+
+// ResetDeviceID resets all changes to the "device_id" field.
+func (m *InputBindingMutation) ResetDeviceID() {
+	m.device_id = nil
+	m.adddevice_id = nil
+	delete(m.clearedFields, inputbinding.FieldDeviceID)
+}
+
+// SetSource sets the "source" field.
+func (m *InputBindingMutation) SetSource(s string) {
+	m.source = &s
+}
+
+// Source returns the value of the "source" field in the mutation.
+func (m *InputBindingMutation) Source() (r string, exists bool) {
+	v := m.source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSource returns the old "source" field's value of the InputBinding entity.
+// If the InputBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InputBindingMutation) OldSource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+	}
+	return oldValue.Source, nil
+}
+
+// ResetSource resets all changes to the "source" field.
+func (m *InputBindingMutation) ResetSource() {
+	m.source = nil
+}
+
+// SetEvent sets the "event" field.
+func (m *InputBindingMutation) SetEvent(s string) {
+	m.event = &s
+}
+
+// Event returns the value of the "event" field in the mutation.
+func (m *InputBindingMutation) Event() (r string, exists bool) {
+	v := m.event
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEvent returns the old "event" field's value of the InputBinding entity.
+// If the InputBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InputBindingMutation) OldEvent(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEvent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEvent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEvent: %w", err)
+	}
+	return oldValue.Event, nil
+}
+
+// ResetEvent resets all changes to the "event" field.
+func (m *InputBindingMutation) ResetEvent() {
+	m.event = nil
+}
+
+// SetMatch sets the "match" field.
+func (m *InputBindingMutation) SetMatch(s string) {
+	m.match = &s
+}
+
+// Match returns the value of the "match" field in the mutation.
+func (m *InputBindingMutation) Match() (r string, exists bool) {
+	v := m.match
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMatch returns the old "match" field's value of the InputBinding entity.
+// If the InputBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InputBindingMutation) OldMatch(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMatch is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMatch requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMatch: %w", err)
+	}
+	return oldValue.Match, nil
+}
+
+// ResetMatch resets all changes to the "match" field.
+func (m *InputBindingMutation) ResetMatch() {
+	m.match = nil
+}
+
+// SetAction sets the "action" field.
+func (m *InputBindingMutation) SetAction(s string) {
+	m.action = &s
+}
+
+// Action returns the value of the "action" field in the mutation.
+func (m *InputBindingMutation) Action() (r string, exists bool) {
+	v := m.action
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAction returns the old "action" field's value of the InputBinding entity.
+// If the InputBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InputBindingMutation) OldAction(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAction is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAction requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAction: %w", err)
+	}
+	return oldValue.Action, nil
+}
+
+// ResetAction resets all changes to the "action" field.
+func (m *InputBindingMutation) ResetAction() {
+	m.action = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *InputBindingMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *InputBindingMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the InputBinding entity.
+// If the InputBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InputBindingMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *InputBindingMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetOrder sets the "order" field.
+func (m *InputBindingMutation) SetOrder(i int) {
+	m._order = &i
+	m.add_order = nil
+}
+
+// Order returns the value of the "order" field in the mutation.
+func (m *InputBindingMutation) Order() (r int, exists bool) {
+	v := m._order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrder returns the old "order" field's value of the InputBinding entity.
+// If the InputBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InputBindingMutation) OldOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrder: %w", err)
+	}
+	return oldValue.Order, nil
+}
+
+// AddOrder adds i to the "order" field.
+func (m *InputBindingMutation) AddOrder(i int) {
+	if m.add_order != nil {
+		*m.add_order += i
+	} else {
+		m.add_order = &i
+	}
+}
+
+// AddedOrder returns the value that was added to the "order" field in this mutation.
+func (m *InputBindingMutation) AddedOrder() (r int, exists bool) {
+	v := m.add_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetOrder resets all changes to the "order" field.
+func (m *InputBindingMutation) ResetOrder() {
+	m._order = nil
+	m.add_order = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InputBindingMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InputBindingMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InputBinding entity.
+// If the InputBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InputBindingMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InputBindingMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InputBindingMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InputBindingMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InputBinding entity.
+// If the InputBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InputBindingMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InputBindingMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the InputBindingMutation builder.
+func (m *InputBindingMutation) Where(ps ...predicate.InputBinding) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InputBindingMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InputBindingMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InputBinding, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InputBindingMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InputBindingMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InputBinding).
+func (m *InputBindingMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InputBindingMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.device_id != nil {
+		fields = append(fields, inputbinding.FieldDeviceID)
+	}
+	if m.source != nil {
+		fields = append(fields, inputbinding.FieldSource)
+	}
+	if m.event != nil {
+		fields = append(fields, inputbinding.FieldEvent)
+	}
+	if m.match != nil {
+		fields = append(fields, inputbinding.FieldMatch)
+	}
+	if m.action != nil {
+		fields = append(fields, inputbinding.FieldAction)
+	}
+	if m.enabled != nil {
+		fields = append(fields, inputbinding.FieldEnabled)
+	}
+	if m._order != nil {
+		fields = append(fields, inputbinding.FieldOrder)
+	}
+	if m.created_at != nil {
+		fields = append(fields, inputbinding.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, inputbinding.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InputBindingMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case inputbinding.FieldDeviceID:
+		return m.DeviceID()
+	case inputbinding.FieldSource:
+		return m.Source()
+	case inputbinding.FieldEvent:
+		return m.Event()
+	case inputbinding.FieldMatch:
+		return m.Match()
+	case inputbinding.FieldAction:
+		return m.Action()
+	case inputbinding.FieldEnabled:
+		return m.Enabled()
+	case inputbinding.FieldOrder:
+		return m.Order()
+	case inputbinding.FieldCreatedAt:
+		return m.CreatedAt()
+	case inputbinding.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InputBindingMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case inputbinding.FieldDeviceID:
+		return m.OldDeviceID(ctx)
+	case inputbinding.FieldSource:
+		return m.OldSource(ctx)
+	case inputbinding.FieldEvent:
+		return m.OldEvent(ctx)
+	case inputbinding.FieldMatch:
+		return m.OldMatch(ctx)
+	case inputbinding.FieldAction:
+		return m.OldAction(ctx)
+	case inputbinding.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case inputbinding.FieldOrder:
+		return m.OldOrder(ctx)
+	case inputbinding.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case inputbinding.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown InputBinding field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InputBindingMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case inputbinding.FieldDeviceID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeviceID(v)
+		return nil
+	case inputbinding.FieldSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSource(v)
+		return nil
+	case inputbinding.FieldEvent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEvent(v)
+		return nil
+	case inputbinding.FieldMatch:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMatch(v)
+		return nil
+	case inputbinding.FieldAction:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAction(v)
+		return nil
+	case inputbinding.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case inputbinding.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrder(v)
+		return nil
+	case inputbinding.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case inputbinding.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InputBinding field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InputBindingMutation) AddedFields() []string {
+	var fields []string
+	if m.adddevice_id != nil {
+		fields = append(fields, inputbinding.FieldDeviceID)
+	}
+	if m.add_order != nil {
+		fields = append(fields, inputbinding.FieldOrder)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InputBindingMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case inputbinding.FieldDeviceID:
+		return m.AddedDeviceID()
+	case inputbinding.FieldOrder:
+		return m.AddedOrder()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InputBindingMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case inputbinding.FieldDeviceID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeviceID(v)
+		return nil
+	case inputbinding.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOrder(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InputBinding numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InputBindingMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(inputbinding.FieldDeviceID) {
+		fields = append(fields, inputbinding.FieldDeviceID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InputBindingMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InputBindingMutation) ClearField(name string) error {
+	switch name {
+	case inputbinding.FieldDeviceID:
+		m.ClearDeviceID()
+		return nil
+	}
+	return fmt.Errorf("unknown InputBinding nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InputBindingMutation) ResetField(name string) error {
+	switch name {
+	case inputbinding.FieldDeviceID:
+		m.ResetDeviceID()
+		return nil
+	case inputbinding.FieldSource:
+		m.ResetSource()
+		return nil
+	case inputbinding.FieldEvent:
+		m.ResetEvent()
+		return nil
+	case inputbinding.FieldMatch:
+		m.ResetMatch()
+		return nil
+	case inputbinding.FieldAction:
+		m.ResetAction()
+		return nil
+	case inputbinding.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case inputbinding.FieldOrder:
+		m.ResetOrder()
+		return nil
+	case inputbinding.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case inputbinding.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InputBinding field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InputBindingMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InputBindingMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InputBindingMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InputBindingMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InputBindingMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InputBindingMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InputBindingMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown InputBinding unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InputBindingMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown InputBinding edge %s", name)
 }
 
 // JellyfinMutation represents an operation that mutates the Jellyfin nodes in the graph.

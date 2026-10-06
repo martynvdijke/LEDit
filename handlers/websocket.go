@@ -117,6 +117,9 @@ func splitCacheKey(k string) []string { return strings.SplitN(k, ":", 2) }
 
 type WSHub struct {
 	Client *ent.Client
+	// Srv is the owning server, set in Server.New. It is nil in bare test
+	// hubs, which register their own input sinks instead.
+	Srv *Server
 }
 
 func NewWSHub(client *ent.Client) *WSHub {
@@ -762,7 +765,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		welcome, _ := json.Marshal(map[string]any{
 			"type":         "welcome",
 			"protocol":     2,
-			"capabilities": []string{"brightness", "spectrum", "hold"},
+			"capabilities": []string{"brightness", "spectrum", "hold", "inputs"},
 		})
 		if err := conn.WriteMessage(websocket.TextMessage, welcome); err != nil {
 			slog.Warn("failed to send device welcome", "device", device.Name, "error", err)
@@ -848,6 +851,15 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 	registerDeviceFeed(device.ID, fc)
 	defer unregisterDeviceFeed(device.ID)
 
+	// Input events are dispatched through a per-device sink so serveFeed's
+	// read loop never needs a *Server. Bare test hubs (h.Srv == nil) register
+	// their own sinks.
+	if h.Srv != nil {
+		srv := h.Srv
+		registerInputSink(device.ID, func(ev InputEvent) { srv.handleDeviceInput(device.ID, ev) })
+		defer unregisterInputSink(device.ID)
+	}
+
 	bFn := func() int {
 		if brightnessProviderForTest != nil {
 			return brightnessProviderForTest()
@@ -859,8 +871,14 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 			return 100
 		}
 		now := time.Now()
-		// Sensor polling with jitter ≥5s
-		if sensorCfg != nil && now.Sub(lastSensorFetch) >= 5*time.Second {
+		var deviceLux float64
+		hasDeviceLux := false
+		if sensorCfg != nil && strings.TrimSpace(strings.ToLower(sensorCfg.Source)) == "device" {
+			deviceLux, hasDeviceLux = freshDeviceLux(device.ID, now)
+		}
+		// Sensor polling with jitter ≥5s. Skipped while a fresh device-reported
+		// lux reading exists; stale readings fall back to HA/schedule.
+		if !hasDeviceLux && sensorCfg != nil && now.Sub(lastSensorFetch) >= 5*time.Second {
 			// jitter check via ShouldFetch
 			if sensorState.ShouldFetch(now, lastSensorFetch) {
 				lastSensorFetch = now
@@ -879,7 +897,9 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 			}
 		}
 		var sensorLevel *int
-		if sensorCfg != nil && !sensorState.IsStale(now) && sensorCache != nil && now.Sub(sensorCacheTime) <= 60*time.Second {
+		if hasDeviceLux {
+			sensorLevel = SensorLevelForLux(deviceLux, sensorCfg)
+		} else if sensorCfg != nil && !sensorState.IsStale(now) && sensorCache != nil && now.Sub(sensorCacheTime) <= 60*time.Second {
 			sensorLevel = sensorCache
 		} else if sensorCfg != nil && sensorCache != nil && now.Sub(sensorCacheTime) > 60*time.Second {
 			sensorCache = nil
@@ -1105,6 +1125,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 	// to carry the level; v1 never sends one.
 	lastSentBrightness := -1
 
+	// Per-connection token bucket for device input events (add-physical-inputs
+	// D3): excess is dropped, never fatal to the feed.
+	inputLimiter := newInputRateLimiter(20, 40)
+
 	// Read control messages in a goroutine
 	done := make(chan struct{})
 	defer close(done)
@@ -1135,6 +1159,26 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			}
 			if d, _ := cmd["dismiss"].(string); d != "" {
 				recordDismiss(fc.deviceID, d)
+				continue
+			}
+			// v2 local input events: {"type":"input","source":...,"event":...}.
+			// Closed vocabulary (ParseInputEvent); malformed/oversized frames
+			// are dropped without touching the feed loop. v1 connections and
+			// the preview feed (protocol 0 / deviceID 0) never ingest.
+			if typ, _ := cmd["type"].(string); typ == "input" {
+				if fc.protocol >= 2 && fc.deviceID > 0 {
+					if !inputLimiter.allow(time.Now()) {
+						slog.Debug("input event dropped: rate limited", "device", fc.deviceID)
+						continue
+					}
+					if ev, err := ParseInputEvent(msg); err != nil {
+						slog.Debug("input event dropped", "device", fc.deviceID, "error", err)
+					} else if sink, ok := getInputSink(fc.deviceID); ok {
+						sink(ev)
+					} else {
+						slog.Debug("input event ignored: no sink", "device", fc.deviceID)
+					}
+				}
 				continue
 			}
 			// v2 client spectrum tap: {"type":"spectrum","bins":[...]} at ~20Hz.
@@ -1221,6 +1265,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 	tlInterval := TimelapseInterval()
 	// ponytail: 60s throttle avoids per-frame DB load; per-rotation would still hit DB every ~refreshInterval.
 	lastReschedule := time.Now()
+	pendingPrev := false
 	for {
 		// Re-resolve scheduled sources at rotation boundary (throttled).
 		if fc.reschedule != nil && time.Since(lastReschedule) >= 60*time.Second {
@@ -1231,7 +1276,18 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				slog.Info("sources re-resolved", "device", fc.deviceID, "sources", len(sources))
 			}
 		}
-		for i, sw := range sources {
+		// Source-reload request (e.g. playlist switch): re-resolve now,
+		// bypassing the 60s throttle.
+		if feed.ConsumeReload() && fc.reschedule != nil {
+			lastReschedule = time.Now()
+			if fresh := fc.reschedule(); len(fresh) > 0 {
+				sources = fresh
+				setRotation(sources)
+				slog.Info("sources reloaded", "device", fc.deviceID, "sources", len(sources))
+			}
+		}
+		for i := 0; i < len(sources); i++ {
+			sw := sources[i]
 			// Broadcast any new notifications to this connection. The cursor
 			// advances over every entry so targeted entries are not replayed,
 			// but only broadcast (target 0) or matching entries render.
@@ -1430,6 +1486,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 						if feed.ShouldSkip() {
 							break
 						}
+						if feed.ShouldPrev() {
+							pendingPrev = true
+							break
+						}
 						if feed.IsPaused() {
 							for feed.IsPaused() {
 								time.Sleep(100 * time.Millisecond)
@@ -1438,6 +1498,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 						if i < steps-1 {
 							time.Sleep(pacing)
 							if feed.ShouldSkip() {
+								break
+							}
+							if feed.ShouldPrev() {
+								pendingPrev = true
 								break
 							}
 						}
@@ -1522,6 +1586,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 					if feed.ShouldSkip() {
 						break
 					}
+					if feed.ShouldPrev() {
+						pendingPrev = true
+						break
+					}
 					// While paused, do not advance/send; resume continues.
 					if feed.IsPaused() {
 						time.Sleep(100 * time.Millisecond)
@@ -1586,7 +1654,19 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 					if feed.ShouldSkip() {
 						break
 					}
+					if feed.ShouldPrev() {
+						pendingPrev = true
+						break
+					}
 					time.Sleep(50 * time.Millisecond)
+				}
+			}
+			if pendingPrev {
+				pendingPrev = false
+				if i == 0 {
+					i = len(sources) - 2
+				} else {
+					i -= 2
 				}
 			}
 		}

@@ -78,6 +78,10 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 		Telemetry:    telemetry,
 	}
 
+	// The hub registers per-device input sinks through the server so the
+	// device read loop never needs a *Server.
+	srv.WSHub.Srv = srv
+
 	globalServerDB = func() *ent.Client { return client }
 	srv.setupRoutes()
 	// Init sun/holiday context from DB
@@ -805,6 +809,13 @@ func (s *Server) setupRoutes() {
 		admin.PUT("/api/greetings/:id", s.APIGreetingUpdate)
 		admin.DELETE("/api/greetings/:id", s.APIGreetingDelete)
 		admin.POST("/api/greetings/:id/test", s.APIGreetingTest)
+
+		admin.GET("/input-bindings", s.AdminInputBindings)
+		admin.GET("/api/input-bindings", s.APIInputBindingList)
+		admin.POST("/api/input-bindings", s.APIInputBindingCreate)
+		admin.PUT("/api/input-bindings/:id", s.APIInputBindingUpdate)
+		admin.DELETE("/api/input-bindings/:id", s.APIInputBindingDelete)
+		admin.POST("/api/input-bindings/:id/toggle", s.APIInputBindingToggle)
 
 		// Matrix layouts
 		admin.GET("/matrixlayouts", s.AdminMatrixLayoutList)

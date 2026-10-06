@@ -16,6 +16,7 @@ def main():
     buttons = None
     client = None
     adv = None
+    hub = None
     try:
         from .config import token_optional
 
@@ -53,14 +54,13 @@ def main():
         )
         try:  # pragma: no cover - hardware wiring, tested via mock
             from .buttons import ButtonHandler  # pragma: no cover
+            from .inputs import InputHub  # pragma: no cover
 
-            def _sender(msg):  # pragma: no cover
-                try:  # pragma: no cover
-                    ws.send(msg)  # pragma: no cover
-                except Exception:  # pragma: no cover
-                    pass  # pragma: no cover
+            hub = InputHub(sender=client.send_input_json)  # pragma: no cover
+            client.set_input_hub(hub)  # pragma: no cover
+            hub.start()  # pragma: no cover
 
-            buttons = ButtonHandler(sender=_sender)  # pragma: no cover
+            buttons = ButtonHandler(hub=hub)  # pragma: no cover
             buttons.start()  # pragma: no cover
         except Exception:  # pragma: no cover
             pass  # pragma: no cover
@@ -81,6 +81,11 @@ def main():
         if buttons is not None:  # pragma: no cover
             try:  # pragma: no cover
                 buttons.close()  # pragma: no cover
+            except Exception:  # pragma: no cover
+                pass  # pragma: no cover
+        if hub is not None:  # pragma: no cover
+            try:  # pragma: no cover
+                hub.close()  # pragma: no cover
             except Exception:  # pragma: no cover
                 pass  # pragma: no cover
         telemetry.shutdown()

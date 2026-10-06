@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LEDit - Input Bindings</title>
+  <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+  <div class="d-flex">
+    {{template "sidebar" .}}
+    <div class="container-fluid p-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h3">Input Bindings</h1>
+        <button class="btn btn-primary" id="btn-add">Add binding</button>
+      </div>
+      <p class="text-muted">
+        Map local device inputs (buttons, encoder, NFC tags, presence, lux) to actions.
+        Device-scoped bindings sort ahead of global ones at equal order; the first match executes once.
+      </p>
+      <table class="table table-striped mt-3" id="input-bindings-table">
+        <thead>
+          <tr>
+            <th>Device</th>
+            <th>Source</th>
+            <th>Event</th>
+            <th>Match</th>
+            <th>Action</th>
+            <th>Order</th>
+            <th>Enabled</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="input-bindings-body">
+          {{range .bindings}}
+          <tr data-id="{{.ID}}">
+            <td>{{if .DeviceID}}#{{.DeviceID}}{{else}}any{{end}}</td>
+            <td>{{if .Source}}<code>{{.Source}}</code>{{else}}*{{end}}</td>
+            <td>{{if .Event}}<code>{{.Event}}</code>{{else}}*{{end}}</td>
+            <td>{{if .Match}}<code>{{.Match}}</code>{{else}}&mdash;{{end}}</td>
+            <td><code>{{.Action}}</code></td>
+            <td>{{.Order}}</td>
+            <td>{{if .Enabled}}<span class="badge bg-success">on</span>{{else}}<span class="badge bg-secondary">off</span>{{end}}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary btn-edit">Edit</button>
+              <button class="btn btn-sm btn-outline-secondary btn-toggle">{{if .Enabled}}Disable{{else}}Enable{{end}}</button>
+              <button class="btn btn-sm btn-danger btn-delete">Delete</button>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div id="binding-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:20px; border-radius:8px; min-width:440px; max-height:90vh; overflow:auto;">
+      <h3 id="modal-title">New Input Binding</h3>
+      <form id="binding-form">
+        <input type="hidden" id="f-id">
+        <div class="mb-2">
+          <label class="form-label" for="f-device">Device ID (blank = any device)</label>
+          <input class="form-control" id="f-device" type="number" min="1">
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="f-source">Source</label>
+          <select class="form-select" id="f-source">
+            <option value="">any</option>
+            <option value="button:next">button:next</option>
+            <option value="button:pause">button:pause</option>
+            <option value="encoder">encoder</option>
+            <option value="nfc">nfc</option>
+            <option value="pir">pir</option>
+            <option value="mmwave">mmwave</option>
+            <option value="lux">lux</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="f-event">Event</label>
+          <select class="form-select" id="f-event">
+            <option value="">any</option>
+            <option value="press">press</option>
+            <option value="rotate">rotate</option>
+            <option value="tap">tap</option>
+            <option value="presence">presence</option>
+            <option value="lux">lux</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="f-match">Match value (e.g. NFC tag id)</label>
+          <input class="form-control" id="f-match" placeholder="blank = any">
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="f-action">Action (JSON)</label>
+          <textarea class="form-control" id="f-action" rows="3" placeholder='{"kind":"scene","scene_id":1}'></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="f-order">Order</label>
+          <input class="form-control" id="f-order" type="number" value="0">
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="f-enabled" checked>
+          <label class="form-check-label" for="f-enabled">Enabled</label>
+        </div>
+        <div style="margin-top:12px;">
+          <button class="btn btn-primary" type="submit">Save</button>
+          <button class="btn btn-secondary" type="button" id="modal-close">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script type="module" src="/static/assets/input_bindings.js"></script>
+</body>
+</html>

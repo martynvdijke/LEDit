@@ -56,7 +56,7 @@ func TestDeviceProtocolNegotiation(t *testing.T) {
 				for _, c := range caps {
 					got[fmt.Sprint(c)] = true
 				}
-				for _, want := range []string{"brightness", "spectrum", "hold"} {
+				for _, want := range []string{"brightness", "spectrum", "hold", "inputs"} {
 					if !got[want] {
 						t.Fatalf("welcome missing capability %q in %v", want, caps)
 					}

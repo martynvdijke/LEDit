@@ -12,9 +12,11 @@ import (
 )
 
 type FeedController struct {
-	mu          sync.Mutex
-	Paused      bool
-	Skip        bool
+	mu     sync.Mutex
+	Paused bool
+	Skip   bool
+	// Prev requests a step backwards; consumed symmetrically to Skip.
+	Prev        bool
 	CurrentName string
 	NextName    string
 	PinnedKey   string
@@ -30,6 +32,9 @@ type FeedController struct {
 	// rotationKeys is the set of cache keys this controller can currently
 	// render; used to reject off-rotation content selections.
 	rotationKeys map[string]bool
+	// reloadRequested asks the live feed to re-resolve its sources at the
+	// next rotation boundary (e.g. after a playlist switch); guarded by mu.
+	reloadRequested bool
 }
 
 var GlobalFeed = &FeedController{}
@@ -82,6 +87,35 @@ func (fc *FeedController) ShouldSkip() bool {
 	return false
 }
 
+// ShouldPrev consumes a pending previous request, mirroring ShouldSkip.
+func (fc *FeedController) ShouldPrev() bool {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	if fc.Prev {
+		fc.Prev = false
+		return true
+	}
+	return false
+}
+
+// RequestReload asks the live feed to re-resolve its sources at the next
+// rotation boundary; ConsumeReload clears the flag.
+func (fc *FeedController) RequestReload() {
+	fc.mu.Lock()
+	fc.reloadRequested = true
+	fc.mu.Unlock()
+}
+
+func (fc *FeedController) ConsumeReload() bool {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	if fc.reloadRequested {
+		fc.reloadRequested = false
+		return true
+	}
+	return false
+}
+
 func (fc *FeedController) Pause() {
 	fc.mu.Lock()
 	fc.Paused = true
@@ -118,6 +152,21 @@ func (fc *FeedController) Next() {
 		RecordSkip("", 0, "")
 	}
 	triggerSkipRecompute()
+}
+
+// Previous requests a step backwards; symmetric to Next but without skip
+// attribution.
+func (fc *FeedController) Previous() {
+	fc.mu.Lock()
+	fc.Prev = true
+	fc.PinnedKey = ""
+	fc.PinnedBy = ""
+	fc.AlarmSource = nil
+	fc.SceneSource = nil
+	fc.mu.Unlock()
+	DismissActiveAlarm()
+	// A manual step reclaims the wall from ambient automation.
+	SuppressActiveScene()
 }
 
 // SetAlarmSource publishes the active wake source to this controller; nil

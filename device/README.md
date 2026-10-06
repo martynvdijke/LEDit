@@ -106,6 +106,58 @@ and old `wscat` clients keep working unchanged.
   format.
 
 
+## Physical inputs (NFC, encoder, presence, lux)
+
+The client reports local hardware inputs to the server over the protocol v2 `inputs`
+capability. V1 servers keep the legacy `{"action": "next"|"pause"|"hold"}` behavior.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `LEDIT_INPUTS` | `1` | Master switch for input reporting |
+| `LEDIT_BTN_NEXT_PIN` / `LEDIT_BTN_PAUSE_PIN` | `0` (disabled) | GPIO buttons (BCM), legacy gestures still apply |
+| `LEDIT_ENCODER_CLK_PIN` / `LEDIT_ENCODER_DT_PIN` / `LEDIT_ENCODER_SW_PIN` | `0` (disabled) | Rotary encoder rotation and push switch |
+| `LEDIT_ENCODER_DEBOUNCE_MS` | `30` | Encoder debounce window |
+| `LEDIT_NFC` | unset | Enable the NFC reader |
+| `LEDIT_NFC_DEDUPE_MS` | `30000` | Suppress repeat reads of the same tag UID |
+| `LEDIT_PRESENCE_PIN` | `0` (disabled) | PIR / mmWave presence input pin |
+| `LEDIT_PRESENCE_KIND` | `pir` | `pir` or `mmwave` (selects the event source) |
+| `LEDIT_LUX_INTERVAL_MS` | `30000` | Lux sampling interval |
+| `LEDIT_LUX_CHANGE_THRESHOLD` | `25` | Minimum lux delta before reporting |
+
+Reported events:
+
+| Source | Event | Value |
+|---|---|---|
+| `button:next`, `button:pause` | `press` (also `hold` for legacy fallback) | — |
+| `encoder` | `rotate` | `+1` / `-1` |
+| `encoder` | `press` | — |
+| `nfc` | `tap` | lowercase hex tag UID |
+| `pir`, `mmwave` | `presence` | `present` / `absent` |
+| `lux` | `lux` | lux (float) |
+
+Map inputs to actions in **Admin → Input Bindings**. Examples:
+
+- NFC tag → scene: `{"kind": "scene", "scene_id": 1}` with match `04a1b2c3`
+- NFC tag → playlist: `{"kind": "playlist", "playlist_id": 2}` with match `04a1b2c3`
+- presence → greeting: `{"kind": "greeting", "greeting_id": 3}` (respects quiet hours and cooldown)
+- encoder rotate → previous: `{"kind": "feed", "verb": "previous"}`
+
+With no matching binding, built-ins apply: button next → next, button pause → pause,
+encoder rotate ±1 → next/previous, encoder press → brightness cycle (25/50/75/100).
+
+### Hardware wiring
+
+- **NFC (PN532-class)**: I2C or UART; `pip install "ledit[nfc]"` (nfcpy). UIDs are
+  normalized to lowercase hex and deduplicated for `LEDIT_NFC_DEDUPE_MS`.
+- **Rotary encoder**: CLK/DT/SW to free GPIOs (e.g. BCM 5/6/13) with pull-ups on
+  CLK/DT; requires gpiod, same as the buttons.
+- **Presence**: PIR or mmWave digital output to a GPIO pin; set `LEDIT_PRESENCE_KIND`
+  to `mmwave` for mmWave modules (default `pir`).
+- **Lux**: BH1750-class sensor on I2C 0x23; `pip install "ledit[sensors]"` (smbus2).
+
+Missing pins or libraries log once and stay inert, and one broken source never
+affects the others.
+
 ## OpenTelemetry
 
 The device exports **traces, metrics, and logs** to an OTLP-compatible backend

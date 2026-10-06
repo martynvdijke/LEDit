@@ -1398,7 +1398,8 @@ func (s *Server) AdminDeviceSettingsEdit(c *gin.Context) {
 	if obj.FallbackPlaylistID != nil {
 		selectedFallbackID = *obj.FallbackPlaylistID
 	}
-	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"obj": obj, "edit": true, "playlists": playlists, "selectedPlaylistID": selectedID, "selectedScheduledIDs": selectedScheduledIDs, "selectedFallbackID": selectedFallbackID})
+	inputSources, inputLastEvent, inputLastSeen, hasInputStatus := DeviceInputStatus(id)
+	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"obj": obj, "edit": true, "playlists": playlists, "selectedPlaylistID": selectedID, "selectedScheduledIDs": selectedScheduledIDs, "selectedFallbackID": selectedFallbackID, "inputSources": inputSources, "inputLastEvent": inputLastEvent, "inputLastSeen": inputLastSeen, "hasInputStatus": hasInputStatus})
 }
 
 func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {

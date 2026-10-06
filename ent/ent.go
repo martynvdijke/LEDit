@@ -41,6 +41,7 @@ import (
 	"ledit/ent/immich"
 	"ledit/ent/inboundadapter"
 	"ledit/ent/incident"
+	"ledit/ent/inputbinding"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
@@ -189,6 +190,7 @@ func checkColumn(t, c string) error {
 			immich.Table:             immich.ValidColumn,
 			inboundadapter.Table:     inboundadapter.ValidColumn,
 			incident.Table:           incident.ValidColumn,
+			inputbinding.Table:       inputbinding.ValidColumn,
 			jellyfin.Table:           jellyfin.ValidColumn,
 			logentry.Table:           logentry.ValidColumn,
 			logsettings.Table:        logsettings.ValidColumn,

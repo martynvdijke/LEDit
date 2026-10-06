@@ -46,6 +46,7 @@ import (
 	"ledit/ent/immich"
 	"ledit/ent/inboundadapter"
 	"ledit/ent/incident"
+	"ledit/ent/inputbinding"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
@@ -175,6 +176,8 @@ type Client struct {
 	InboundAdapter *InboundAdapterClient
 	// Incident is the client for interacting with the Incident builders.
 	Incident *IncidentClient
+	// InputBinding is the client for interacting with the InputBinding builders.
+	InputBinding *InputBindingClient
 	// Jellyfin is the client for interacting with the Jellyfin builders.
 	Jellyfin *JellyfinClient
 	// LogEntry is the client for interacting with the LogEntry builders.
@@ -315,6 +318,7 @@ func (c *Client) init() {
 	c.Immich = NewImmichClient(c.config)
 	c.InboundAdapter = NewInboundAdapterClient(c.config)
 	c.Incident = NewIncidentClient(c.config)
+	c.InputBinding = NewInputBindingClient(c.config)
 	c.Jellyfin = NewJellyfinClient(c.config)
 	c.LogEntry = NewLogEntryClient(c.config)
 	c.LogSettings = NewLogSettingsClient(c.config)
@@ -489,6 +493,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Immich:             NewImmichClient(cfg),
 		InboundAdapter:     NewInboundAdapterClient(cfg),
 		Incident:           NewIncidentClient(cfg),
+		InputBinding:       NewInputBindingClient(cfg),
 		Jellyfin:           NewJellyfinClient(cfg),
 		LogEntry:           NewLogEntryClient(cfg),
 		LogSettings:        NewLogSettingsClient(cfg),
@@ -590,6 +595,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Immich:             NewImmichClient(cfg),
 		InboundAdapter:     NewInboundAdapterClient(cfg),
 		Incident:           NewIncidentClient(cfg),
+		InputBinding:       NewInputBindingClient(cfg),
 		Jellyfin:           NewJellyfinClient(cfg),
 		LogEntry:           NewLogEntryClient(cfg),
 		LogSettings:        NewLogSettingsClient(cfg),
@@ -673,15 +679,15 @@ func (c *Client) Use(hooks ...Hook) {
 		c.FirmwareRelease, c.FirmwareSettings, c.Frigate, c.GeneralSettings,
 		c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule, c.GuestPhoto,
 		c.GuestToken, c.HomeAssistant, c.Image, c.Immich, c.InboundAdapter, c.Incident,
-		c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout,
-		c.NewsFeed, c.Notification, c.NowPlayingSource, c.OutboundSettings,
-		c.OutboundWebhook, c.Overseerr, c.Parcel, c.PiHole, c.PixelArt, c.Playlist,
-		c.Proxmox, c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene,
-		c.Schedule, c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon,
-		c.TelegramSettings, c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame,
-		c.Transit, c.Transmission, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma,
-		c.User, c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings,
-		c.Zigbee2MQTT,
+		c.InputBinding, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings,
+		c.MatrixLayout, c.NewsFeed, c.Notification, c.NowPlayingSource,
+		c.OutboundSettings, c.OutboundWebhook, c.Overseerr, c.Parcel, c.PiHole,
+		c.PixelArt, c.Playlist, c.Proxmox, c.Qbittorrent, c.Qrcode, c.Radarr,
+		c.RssFeed, c.Sabnzbd, c.Scene, c.Schedule, c.Sonarr, c.Speedtest, c.Sports,
+		c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide, c.Theme,
+		c.ThemeAssignment, c.TimelapseFrame, c.Transit, c.Transmission,
+		c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma, c.User, c.Video,
+		c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings, c.Zigbee2MQTT,
 	} {
 		n.Use(hooks...)
 	}
@@ -698,15 +704,15 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.FirmwareRelease, c.FirmwareSettings, c.Frigate, c.GeneralSettings,
 		c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule, c.GuestPhoto,
 		c.GuestToken, c.HomeAssistant, c.Image, c.Immich, c.InboundAdapter, c.Incident,
-		c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout,
-		c.NewsFeed, c.Notification, c.NowPlayingSource, c.OutboundSettings,
-		c.OutboundWebhook, c.Overseerr, c.Parcel, c.PiHole, c.PixelArt, c.Playlist,
-		c.Proxmox, c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene,
-		c.Schedule, c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon,
-		c.TelegramSettings, c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame,
-		c.Transit, c.Transmission, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma,
-		c.User, c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings,
-		c.Zigbee2MQTT,
+		c.InputBinding, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings,
+		c.MatrixLayout, c.NewsFeed, c.Notification, c.NowPlayingSource,
+		c.OutboundSettings, c.OutboundWebhook, c.Overseerr, c.Parcel, c.PiHole,
+		c.PixelArt, c.Playlist, c.Proxmox, c.Qbittorrent, c.Qrcode, c.Radarr,
+		c.RssFeed, c.Sabnzbd, c.Scene, c.Schedule, c.Sonarr, c.Speedtest, c.Sports,
+		c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide, c.Theme,
+		c.ThemeAssignment, c.TimelapseFrame, c.Transit, c.Transmission,
+		c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma, c.User, c.Video,
+		c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings, c.Zigbee2MQTT,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -785,6 +791,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.InboundAdapter.mutate(ctx, m)
 	case *IncidentMutation:
 		return c.Incident.mutate(ctx, m)
+	case *InputBindingMutation:
+		return c.InputBinding.mutate(ctx, m)
 	case *JellyfinMutation:
 		return c.Jellyfin.mutate(ctx, m)
 	case *LogEntryMutation:
@@ -6496,6 +6504,139 @@ func (c *IncidentClient) mutate(ctx context.Context, m *IncidentMutation) (Value
 		return (&IncidentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Incident mutation op: %q", m.Op())
+	}
+}
+
+// InputBindingClient is a client for the InputBinding schema.
+type InputBindingClient struct {
+	config
+}
+
+// NewInputBindingClient returns a client for the InputBinding from the given config.
+func NewInputBindingClient(c config) *InputBindingClient {
+	return &InputBindingClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `inputbinding.Hooks(f(g(h())))`.
+func (c *InputBindingClient) Use(hooks ...Hook) {
+	c.hooks.InputBinding = append(c.hooks.InputBinding, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `inputbinding.Intercept(f(g(h())))`.
+func (c *InputBindingClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InputBinding = append(c.inters.InputBinding, interceptors...)
+}
+
+// Create returns a builder for creating a InputBinding entity.
+func (c *InputBindingClient) Create() *InputBindingCreate {
+	mutation := newInputBindingMutation(c.config, OpCreate)
+	return &InputBindingCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InputBinding entities.
+func (c *InputBindingClient) CreateBulk(builders ...*InputBindingCreate) *InputBindingCreateBulk {
+	return &InputBindingCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InputBindingClient) MapCreateBulk(slice any, setFunc func(*InputBindingCreate, int)) *InputBindingCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InputBindingCreateBulk{err: fmt.Errorf("calling to InputBindingClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InputBindingCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InputBindingCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InputBinding.
+func (c *InputBindingClient) Update() *InputBindingUpdate {
+	mutation := newInputBindingMutation(c.config, OpUpdate)
+	return &InputBindingUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InputBindingClient) UpdateOne(_m *InputBinding) *InputBindingUpdateOne {
+	mutation := newInputBindingMutation(c.config, OpUpdateOne, withInputBinding(_m))
+	return &InputBindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InputBindingClient) UpdateOneID(id int) *InputBindingUpdateOne {
+	mutation := newInputBindingMutation(c.config, OpUpdateOne, withInputBindingID(id))
+	return &InputBindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InputBinding.
+func (c *InputBindingClient) Delete() *InputBindingDelete {
+	mutation := newInputBindingMutation(c.config, OpDelete)
+	return &InputBindingDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InputBindingClient) DeleteOne(_m *InputBinding) *InputBindingDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InputBindingClient) DeleteOneID(id int) *InputBindingDeleteOne {
+	builder := c.Delete().Where(inputbinding.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InputBindingDeleteOne{builder}
+}
+
+// Query returns a query builder for InputBinding.
+func (c *InputBindingClient) Query() *InputBindingQuery {
+	return &InputBindingQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInputBinding},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InputBinding entity by its id.
+func (c *InputBindingClient) Get(ctx context.Context, id int) (*InputBinding, error) {
+	return c.Query().Where(inputbinding.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InputBindingClient) GetX(ctx context.Context, id int) *InputBinding {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *InputBindingClient) Hooks() []Hook {
+	return c.hooks.InputBinding
+}
+
+// Interceptors returns the client interceptors.
+func (c *InputBindingClient) Interceptors() []Interceptor {
+	return c.inters.InputBinding
+}
+
+func (c *InputBindingClient) mutate(ctx context.Context, m *InputBindingMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InputBindingCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InputBindingUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InputBindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InputBindingDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InputBinding mutation op: %q", m.Op())
 	}
 }
 
@@ -12806,14 +12947,14 @@ type (
 		DatasourcePlugin, DeliveryLog, DeviceGroup, DeviceMessageState, DeviceSettings,
 		DisplayRule, EmailSettings, F1, FirmwareRelease, FirmwareSettings, Frigate,
 		GeneralSettings, GenericAPI, GitHub, GoogleCalendar, GreetingRule, GuestPhoto,
-		GuestToken, HomeAssistant, Image, Immich, InboundAdapter, Incident, Jellyfin,
-		LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
-		NowPlayingSource, OutboundSettings, OutboundWebhook, Overseerr, Parcel, PiHole,
-		PixelArt, Playlist, Proxmox, Qbittorrent, Qrcode, Radarr, RssFeed, Sabnzbd,
-		Scene, Schedule, Sonarr, Speedtest, Sports, Stock, SunMoon, TelegramSettings,
-		TextSlide, Theme, ThemeAssignment, TimelapseFrame, Transit, Transmission,
-		UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm, Waste,
-		Weather, WebhookSettings, Zigbee2MQTT []ent.Hook
+		GuestToken, HomeAssistant, Image, Immich, InboundAdapter, Incident,
+		InputBinding, Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout,
+		NewsFeed, Notification, NowPlayingSource, OutboundSettings, OutboundWebhook,
+		Overseerr, Parcel, PiHole, PixelArt, Playlist, Proxmox, Qbittorrent, Qrcode,
+		Radarr, RssFeed, Sabnzbd, Scene, Schedule, Sonarr, Speedtest, Sports, Stock,
+		SunMoon, TelegramSettings, TextSlide, Theme, ThemeAssignment, TimelapseFrame,
+		Transit, Transmission, UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video,
+		WakeAlarm, Waste, Weather, WebhookSettings, Zigbee2MQTT []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdGuard, AdminSettings, AirQuality, AlertSettings,
@@ -12821,13 +12962,13 @@ type (
 		DatasourcePlugin, DeliveryLog, DeviceGroup, DeviceMessageState, DeviceSettings,
 		DisplayRule, EmailSettings, F1, FirmwareRelease, FirmwareSettings, Frigate,
 		GeneralSettings, GenericAPI, GitHub, GoogleCalendar, GreetingRule, GuestPhoto,
-		GuestToken, HomeAssistant, Image, Immich, InboundAdapter, Incident, Jellyfin,
-		LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout, NewsFeed, Notification,
-		NowPlayingSource, OutboundSettings, OutboundWebhook, Overseerr, Parcel, PiHole,
-		PixelArt, Playlist, Proxmox, Qbittorrent, Qrcode, Radarr, RssFeed, Sabnzbd,
-		Scene, Schedule, Sonarr, Speedtest, Sports, Stock, SunMoon, TelegramSettings,
-		TextSlide, Theme, ThemeAssignment, TimelapseFrame, Transit, Transmission,
-		UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm, Waste,
-		Weather, WebhookSettings, Zigbee2MQTT []ent.Interceptor
+		GuestToken, HomeAssistant, Image, Immich, InboundAdapter, Incident,
+		InputBinding, Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout,
+		NewsFeed, Notification, NowPlayingSource, OutboundSettings, OutboundWebhook,
+		Overseerr, Parcel, PiHole, PixelArt, Playlist, Proxmox, Qbittorrent, Qrcode,
+		Radarr, RssFeed, Sabnzbd, Scene, Schedule, Sonarr, Speedtest, Sports, Stock,
+		SunMoon, TelegramSettings, TextSlide, Theme, ThemeAssignment, TimelapseFrame,
+		Transit, Transmission, UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video,
+		WakeAlarm, Waste, Weather, WebhookSettings, Zigbee2MQTT []ent.Interceptor
 	}
 )

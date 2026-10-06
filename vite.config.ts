@@ -15,6 +15,7 @@ export default defineConfig({
         timelapse: resolve(__dirname, 'web/frontend/timelapse.ts'),
         events: resolve(__dirname, 'web/frontend/events.ts'),
         greetings: resolve(__dirname, 'web/frontend/greetings.ts'),
+        input_bindings: resolve(__dirname, 'web/frontend/input_bindings.ts'),
         backup: resolve(__dirname, 'web/frontend/backup.ts'),
         analytics: resolve(__dirname, 'web/frontend/analytics.ts'),
         nowplaying_form: resolve(__dirname, 'web/frontend/nowplaying_form.ts'),

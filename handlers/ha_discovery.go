@@ -194,6 +194,17 @@ func publishHADiscoveryForDevice(s *Server, d *ent.DeviceSettings) {
 		"payload_available":     "true",
 		"payload_not_available": "false",
 	})
+	// event input: last accepted local input event on this device
+	publishDiscovery(prefix, "event", id, "input", map[string]any{
+		"name":                  fmt.Sprintf("LEDit %d input", id),
+		"unique_id":             fmt.Sprintf("ledit_%d_input", id),
+		"state_topic":           fmt.Sprintf("ledit/device/%d/input/event", id),
+		"event_types":           inputEventTypeList(),
+		"device":                deviceBlock,
+		"availability_topic":    availTopic,
+		"payload_available":     "true",
+		"payload_not_available": "false",
+	})
 
 	publishHAStateForDevice(d)
 }
@@ -308,6 +319,7 @@ func clearHADiscoveryForDevice(deviceID int) {
 		fmt.Sprintf("homeassistant/light/ledit_%d_light/config", deviceID),
 		fmt.Sprintf("homeassistant/select/ledit_%d_content/config", deviceID),
 		fmt.Sprintf("homeassistant/text/ledit_%d_message/config", deviceID),
+		fmt.Sprintf("homeassistant/event/ledit_%d_input/config", deviceID),
 	}
 	for _, t := range topics {
 		forcePublishHAState(t, "")
@@ -318,6 +330,7 @@ func clearHADiscoveryForDevice(deviceID int) {
 	forcePublishHAState(fmt.Sprintf("ledit/device/%d/transport", deviceID), "")
 	forcePublishHAState(fmt.Sprintf("ledit/device/%d/select/state", deviceID), "")
 	forcePublishHAState(fmt.Sprintf("ledit/device/%d/message/state", deviceID), "")
+	forcePublishHAState(fmt.Sprintf("ledit/device/%d/input/event", deviceID), "")
 	// Drop cached values so a recreated device with the same id publishes fresh.
 	forgetHAStateForDevice(deviceID)
 }

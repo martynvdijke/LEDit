@@ -37,6 +37,7 @@ import (
 	"ledit/ent/immich"
 	"ledit/ent/inboundadapter"
 	"ledit/ent/incident"
+	"ledit/ent/inputbinding"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logsettings"
 	"ledit/ent/matrixlayout"
@@ -1094,6 +1095,42 @@ func init() {
 	incident.DefaultUpdatedAt = incidentDescUpdatedAt.Default.(func() time.Time)
 	// incident.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	incident.UpdateDefaultUpdatedAt = incidentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	inputbindingFields := schema.InputBinding{}.Fields()
+	_ = inputbindingFields
+	// inputbindingDescSource is the schema descriptor for source field.
+	inputbindingDescSource := inputbindingFields[1].Descriptor()
+	// inputbinding.DefaultSource holds the default value on creation for the source field.
+	inputbinding.DefaultSource = inputbindingDescSource.Default.(string)
+	// inputbindingDescEvent is the schema descriptor for event field.
+	inputbindingDescEvent := inputbindingFields[2].Descriptor()
+	// inputbinding.DefaultEvent holds the default value on creation for the event field.
+	inputbinding.DefaultEvent = inputbindingDescEvent.Default.(string)
+	// inputbindingDescMatch is the schema descriptor for match field.
+	inputbindingDescMatch := inputbindingFields[3].Descriptor()
+	// inputbinding.DefaultMatch holds the default value on creation for the match field.
+	inputbinding.DefaultMatch = inputbindingDescMatch.Default.(string)
+	// inputbindingDescAction is the schema descriptor for action field.
+	inputbindingDescAction := inputbindingFields[4].Descriptor()
+	// inputbinding.DefaultAction holds the default value on creation for the action field.
+	inputbinding.DefaultAction = inputbindingDescAction.Default.(string)
+	// inputbindingDescEnabled is the schema descriptor for enabled field.
+	inputbindingDescEnabled := inputbindingFields[5].Descriptor()
+	// inputbinding.DefaultEnabled holds the default value on creation for the enabled field.
+	inputbinding.DefaultEnabled = inputbindingDescEnabled.Default.(bool)
+	// inputbindingDescOrder is the schema descriptor for order field.
+	inputbindingDescOrder := inputbindingFields[6].Descriptor()
+	// inputbinding.DefaultOrder holds the default value on creation for the order field.
+	inputbinding.DefaultOrder = inputbindingDescOrder.Default.(int)
+	// inputbindingDescCreatedAt is the schema descriptor for created_at field.
+	inputbindingDescCreatedAt := inputbindingFields[7].Descriptor()
+	// inputbinding.DefaultCreatedAt holds the default value on creation for the created_at field.
+	inputbinding.DefaultCreatedAt = inputbindingDescCreatedAt.Default.(func() time.Time)
+	// inputbindingDescUpdatedAt is the schema descriptor for updated_at field.
+	inputbindingDescUpdatedAt := inputbindingFields[8].Descriptor()
+	// inputbinding.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	inputbinding.DefaultUpdatedAt = inputbindingDescUpdatedAt.Default.(func() time.Time)
+	// inputbinding.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	inputbinding.UpdateDefaultUpdatedAt = inputbindingDescUpdatedAt.UpdateDefault.(func() time.Time)
 	jellyfinFields := schema.Jellyfin{}.Fields()
 	_ = jellyfinFields
 	// jellyfinDescToken is the schema descriptor for token field.
