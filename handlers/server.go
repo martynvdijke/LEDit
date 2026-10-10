@@ -928,6 +928,7 @@ func (s *Server) setupRoutes() {
 		admin.POST("/mqtt", s.AdminMQTTSettingsPOST)
 		admin.GET("/telegram", s.AdminTelegramSettingsGET)
 		admin.POST("/telegram", s.AdminTelegramSettingsPOST)
+		admin.POST("/telegram/test", s.AdminTelegramTestPOST)
 
 		// Password Change
 		admin.GET("/password", s.AdminPasswordChange)
