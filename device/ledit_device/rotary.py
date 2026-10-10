@@ -23,7 +23,9 @@ class RotaryEncoder:
         self._debounce_s = max(0.0, float(debounce_ms or 0) / 1000.0)
         self._gpio = gpio
         self._lock = threading.Lock()
-        self._last_emit = 0.0
+        # Sentinel: no event emitted yet, so the first rotation is never
+        # debounced (0.0 would suppress it when the host uptime < debounce).
+        self._last_emit = float("-inf")
         self._chip = None
         self._lines = []
         self._started = False
