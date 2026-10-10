@@ -1,3 +1,10 @@
+## [1.53.6](https://github.com/martynvdijke/LEDit/compare/v1.53.5...v1.53.6) (2026-10-10)
+
+
+### Bug Fixes
+
+* **trmnl:** replace invalid value--medium framework class ([#88](https://github.com/martynvdijke/LEDit/issues/88)) ([eb3b00e](https://github.com/martynvdijke/LEDit/commit/eb3b00eaa687bc8d6ca10d9f9674a2c09023bbe1))
+
 ## [1.53.5](https://github.com/martynvdijke/LEDit/compare/v1.53.4...v1.53.5) (2026-10-08)
 
 ## [1.53.4](https://github.com/martynvdijke/LEDit/compare/v1.53.3...v1.53.4) (2026-10-06)
