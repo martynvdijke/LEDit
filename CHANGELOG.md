@@ -1,3 +1,5 @@
+## [1.53.7](https://github.com/martynvdijke/LEDit/compare/v1.53.6...v1.53.7) (2026-10-12)
+
 ## [1.53.6](https://github.com/martynvdijke/LEDit/compare/v1.53.5...v1.53.6) (2026-10-10)
 
 
