@@ -122,16 +122,23 @@ func (s *Server) LoginAction(c *gin.Context) {
 		}
 	}
 
-	token := hashSessionToken(time.Now().String() + username)
-	authMu.Lock()
-	sessions[token] = sessionData{UserID: uid, Username: username, Role: role, Expiry: time.Now().Add(24 * time.Hour)}
-	authMu.Unlock()
-	c.SetCookie("session", token, 86400, "/", "", false, true)
+	s.startSession(c, uid, username, role)
 	// Update last_login_at if real user.
 	if uid != 0 {
 		_, _ = s.DB.User.UpdateOneID(uid).SetLastLoginAt(time.Now()).Save(s.Ctx)
 	}
 	c.Redirect(http.StatusFound, "/admin/")
+}
+
+// startSession records an authenticated session and issues the `session`
+// cookie. Password and OIDC logins share this so both methods produce an
+// identical cookie shape and feed the same in-memory session store.
+func (s *Server) startSession(c *gin.Context, uid int, username, role string) {
+	token := hashSessionToken(time.Now().String() + username)
+	authMu.Lock()
+	sessions[token] = sessionData{UserID: uid, Username: username, Role: role, Expiry: time.Now().Add(24 * time.Hour)}
+	authMu.Unlock()
+	c.SetCookie("session", token, 86400, "/", "", false, true)
 }
 
 func (s *Server) LogoutAction(c *gin.Context) {

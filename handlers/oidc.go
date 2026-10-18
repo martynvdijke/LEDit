@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -15,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
+	"ledit/ent"
 	"ledit/ent/user"
 )
 
@@ -215,42 +217,54 @@ func (s *Server) OIDCCallback(c *gin.Context) {
 		}
 	}
 
-	// Link by oidc_sub, then by verified email, else auto-provision.
-	u, err := s.DB.User.Query().Where(user.OidcSubEQ(cl.Sub)).Only(s.Ctx)
-	if err != nil {
-		u, err = s.DB.User.Query().Where(user.EmailEQ(email)).Only(s.Ctx)
-		if err == nil {
-			u, err = s.DB.User.UpdateOne(u).SetOidcSub(cl.Sub).SetAuthMethod(user.AuthMethodOidc).SetRole(user.Role(role)).SetLastLoginAt(time.Now()).Save(s.Ctx)
-		}
-	} else {
-		u, err = s.DB.User.UpdateOne(u).SetAuthMethod(user.AuthMethodOidc).SetRole(user.Role(role)).SetEmail(email).SetLastLoginAt(time.Now()).Save(s.Ctx)
-	}
+	u, err := s.linkOIDCUser(cl.Sub, email, role, cl.PreferredName, cl.Name)
 	if err != nil || u == nil {
-		username := oidcUsername(email, cl.PreferredName, cl.Name)
-		// Unusable random password so OIDC users can't password-login.
-		hash, _ := bcrypt.GenerateFromPassword([]byte(oidcRand(32)), bcrypt.DefaultCost)
-		create := s.DB.User.Create().
-			SetUsername(username).
-			SetPasswordHash(string(hash)).
-			SetRole(user.Role(role)).
-			SetEmail(email).
-			SetOidcSub(cl.Sub).
-			SetAuthMethod(user.AuthMethodOidc).
-			SetCreatedAt(time.Now()).
-			SetLastLoginAt(time.Now())
-		u, err = create.Save(s.Ctx)
-		if err != nil {
-			c.HTML(http.StatusOK, "login.html", gin.H{"error": "Failed to provision user", "OIDCEnabled": true})
-			return
-		}
+		c.HTML(http.StatusOK, "login.html", gin.H{"error": "Failed to provision user", "OIDCEnabled": true})
+		return
 	}
 
-	token := hashSessionToken(time.Now().String() + email)
-	authMu.Lock()
-	sessions[token] = sessionData{UserID: u.ID, Username: u.Username, Role: string(u.Role), Expiry: time.Now().Add(24 * time.Hour)}
-	authMu.Unlock()
-	c.SetCookie("session", token, 86400, "/", "", false, true)
+	s.startSession(c, u.ID, u.Username, string(u.Role))
 	c.Redirect(http.StatusFound, "/admin/")
+}
+
+// linkOIDCUser resolves a verified OIDC identity to a local user, syncing the
+// role from the `groups` claim on every login. Linking order: the stored
+// oidc_sub, then a user with the same verified email, otherwise a newly
+// provisioned account. Password login for linked users keeps working because
+// only oidc_sub/auth_method/role are touched.
+func (s *Server) linkOIDCUser(sub, email, role, preferred, name string) (*ent.User, error) {
+	// Returning OIDC user: refresh email, role and auth method.
+	if u, err := s.DB.User.Query().Where(user.OidcSubEQ(sub)).Only(s.Ctx); err == nil {
+		return s.DB.User.UpdateOne(u).
+			SetAuthMethod(user.AuthMethodOidc).
+			SetEmail(email).
+			SetRole(user.Role(role)).
+			SetLastLoginAt(time.Now()).
+			Save(s.Ctx)
+	}
+	// Existing (password) user with the same verified email: link the subject.
+	if u, err := s.DB.User.Query().Where(user.EmailEQ(email)).Only(s.Ctx); err == nil {
+		return s.DB.User.UpdateOne(u).
+			SetOidcSub(sub).
+			SetAuthMethod(user.AuthMethodOidc).
+			SetRole(user.Role(role)).
+			SetLastLoginAt(time.Now()).
+			Save(s.Ctx)
+	}
+	// First OIDC login for this email: auto-provision.
+	username := s.uniqueOIDCUsername(email, preferred, name)
+	// Unusable random password so OIDC users cannot password-login.
+	hash, _ := bcrypt.GenerateFromPassword([]byte(oidcRand(32)), bcrypt.DefaultCost)
+	return s.DB.User.Create().
+		SetUsername(username).
+		SetPasswordHash(string(hash)).
+		SetRole(user.Role(role)).
+		SetEmail(email).
+		SetOidcSub(sub).
+		SetAuthMethod(user.AuthMethodOidc).
+		SetCreatedAt(time.Now()).
+		SetLastLoginAt(time.Now()).
+		Save(s.Ctx)
 }
 
 // oidcUsername derives a valid unique username from email/name claims.
@@ -276,6 +290,25 @@ func oidcUsername(email, preferred, name string) string {
 		base = "oidc-user"
 	}
 	return base
+}
+
+// uniqueOIDCUsername returns a username derived from the OIDC claims that is
+// still free in the user table. The schema enforces a unique username, so a
+// first OIDC login whose derived name collides with an existing account (for
+// example the seeded `admin` user) would otherwise fail provisioning entirely.
+func (s *Server) uniqueOIDCUsername(email, preferred, name string) string {
+	base := oidcUsername(email, preferred, name)
+	if len(base) > 56 {
+		base = base[:56]
+	}
+	candidate := base
+	for i := 2; i <= 50; i++ {
+		if _, err := s.DB.User.Query().Where(user.UsernameEQ(candidate)).Only(s.Ctx); err != nil {
+			return candidate
+		}
+		candidate = fmt.Sprintf("%s-%d", base, i)
+	}
+	return fmt.Sprintf("%s-%s", base, oidcRand(4))
 }
 
 // OIDCLogout clears local session then redirects to Authelia logout.
