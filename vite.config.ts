@@ -24,6 +24,7 @@ export default defineConfig({
         frame: resolve(__dirname, 'web/frontend/frame.ts'),
         artifacts: resolve(__dirname, 'web/frontend/artifacts.ts'),
         embed: resolve(__dirname, 'web/frontend/embed.ts'),
+        effect_editor: resolve(__dirname, 'web/frontend/effect_editor.ts'),
         theme_editor: resolve(__dirname, 'web/frontend/theme_editor.ts'),
       },
       output: {

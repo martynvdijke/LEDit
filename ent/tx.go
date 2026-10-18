@@ -48,6 +48,8 @@ type Tx struct {
 	DeviceSettings *DeviceSettingsClient
 	// DisplayRule is the client for interacting with the DisplayRule builders.
 	DisplayRule *DisplayRuleClient
+	// EffectPreset is the client for interacting with the EffectPreset builders.
+	EffectPreset *EffectPresetClient
 	// EmailSettings is the client for interacting with the EmailSettings builders.
 	EmailSettings *EmailSettingsClient
 	// F1 is the client for interacting with the F1 builders.
@@ -327,6 +329,7 @@ func (tx *Tx) init() {
 	tx.DeviceMessageState = NewDeviceMessageStateClient(tx.config)
 	tx.DeviceSettings = NewDeviceSettingsClient(tx.config)
 	tx.DisplayRule = NewDisplayRuleClient(tx.config)
+	tx.EffectPreset = NewEffectPresetClient(tx.config)
 	tx.EmailSettings = NewEmailSettingsClient(tx.config)
 	tx.F1 = NewF1Client(tx.config)
 	tx.FirmwareRelease = NewFirmwareReleaseClient(tx.config)

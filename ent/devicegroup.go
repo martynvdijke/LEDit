@@ -53,6 +53,8 @@ type DeviceGroup struct {
 	OverlayBg string `json:"overlay_bg,omitempty"`
 	// OverlayFg holds the value of the "overlay_fg" field.
 	OverlayFg string `json:"overlay_fg,omitempty"`
+	// OverlayEffectPresetID holds the value of the "overlay_effect_preset_id" field.
+	OverlayEffectPresetID *int `json:"overlay_effect_preset_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DeviceGroupQuery when eager-loading is set.
 	Edges        DeviceGroupEdges `json:"edges"`
@@ -84,7 +86,7 @@ func (*DeviceGroup) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case devicegroup.FieldBrightnessEnabled, devicegroup.FieldOverlayEnabled:
 			values[i] = new(sql.NullBool)
-		case devicegroup.FieldID, devicegroup.FieldPlaylistID, devicegroup.FieldFallbackPlaylistID, devicegroup.FieldBrightnessOverride, devicegroup.FieldOverlayHeight, devicegroup.FieldOverlaySpeedPx:
+		case devicegroup.FieldID, devicegroup.FieldPlaylistID, devicegroup.FieldFallbackPlaylistID, devicegroup.FieldBrightnessOverride, devicegroup.FieldOverlayHeight, devicegroup.FieldOverlaySpeedPx, devicegroup.FieldOverlayEffectPresetID:
 			values[i] = new(sql.NullInt64)
 		case devicegroup.FieldName, devicegroup.FieldDescription, devicegroup.FieldContentMode, devicegroup.FieldScheduledPlaylistIds, devicegroup.FieldBrightnessSchedules, devicegroup.FieldBrightnessSensorConfig, devicegroup.FieldOverlayPosition, devicegroup.FieldOverlayText, devicegroup.FieldOverlayBg, devicegroup.FieldOverlayFg:
 			values[i] = new(sql.NullString)
@@ -223,6 +225,13 @@ func (_m *DeviceGroup) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.OverlayFg = value.String
 			}
+		case devicegroup.FieldOverlayEffectPresetID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field overlay_effect_preset_id", values[i])
+			} else if value.Valid {
+				_m.OverlayEffectPresetID = new(int)
+				*_m.OverlayEffectPresetID = int(value.Int64)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -325,6 +334,11 @@ func (_m *DeviceGroup) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("overlay_fg=")
 	builder.WriteString(_m.OverlayFg)
+	builder.WriteString(", ")
+	if v := _m.OverlayEffectPresetID; v != nil {
+		builder.WriteString("overlay_effect_preset_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -455,6 +455,20 @@ func (_c *DeviceSettingsCreate) SetNillableOverlayFg(v *string) *DeviceSettingsC
 	return _c
 }
 
+// SetOverlayEffectPresetID sets the "overlay_effect_preset_id" field.
+func (_c *DeviceSettingsCreate) SetOverlayEffectPresetID(v int) *DeviceSettingsCreate {
+	_c.mutation.SetOverlayEffectPresetID(v)
+	return _c
+}
+
+// SetNillableOverlayEffectPresetID sets the "overlay_effect_preset_id" field if the given value is not nil.
+func (_c *DeviceSettingsCreate) SetNillableOverlayEffectPresetID(v *int) *DeviceSettingsCreate {
+	if v != nil {
+		_c.SetOverlayEffectPresetID(*v)
+	}
+	return _c
+}
+
 // SetTransport sets the "transport" field.
 func (_c *DeviceSettingsCreate) SetTransport(v string) *DeviceSettingsCreate {
 	_c.mutation.SetTransport(v)
@@ -1267,6 +1281,10 @@ func (_c *DeviceSettingsCreate) createSpec() (*DeviceSettings, *sqlgraph.CreateS
 	if value, ok := _c.mutation.OverlayFg(); ok {
 		_spec.SetField(devicesettings.FieldOverlayFg, field.TypeString, value)
 		_node.OverlayFg = value
+	}
+	if value, ok := _c.mutation.OverlayEffectPresetID(); ok {
+		_spec.SetField(devicesettings.FieldOverlayEffectPresetID, field.TypeInt, value)
+		_node.OverlayEffectPresetID = &value
 	}
 	if value, ok := _c.mutation.Transport(); ok {
 		_spec.SetField(devicesettings.FieldTransport, field.TypeString, value)

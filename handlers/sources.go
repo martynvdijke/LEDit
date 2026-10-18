@@ -91,6 +91,11 @@ func (s *Server) bindingOptions(c *gin.Context) map[string][]bindingOption {
 	add("screensaver", 2, "Matrix")
 	add("screensaver", 3, "Plasma")
 
+	// Effect presets.
+	for _, p := range cachedEffectPresets() {
+		add("effect", p.ID, datasource.EffectSourceName(p.Name, p.Effect))
+	}
+
 	sonarr, _ := settings.Edges.SonarrOrErr()
 	for _, s := range sonarr {
 		add("sonarr", s.ID, "Sonarr #"+strconv.Itoa(s.ID))
@@ -315,6 +320,11 @@ func buildSourceIndex(settings *ent.GeneralSettings, aiCfg datasource.AIConfig) 
 	for i, v := range []string{"starfield", "dvd", "matrix", "plasma"} {
 		idx.byKey[key("screensaver", i)] = &datasource.ScreensaverDS{Variant: v}
 		idx.names[key("screensaver", i)] = "Screensaver: " + v
+	}
+	// Effect presets (procedural, theme-driven, no config).
+	for _, p := range cachedEffectPresets() {
+		idx.byKey[key("effect", p.ID)] = effectSourceFor(p)
+		idx.names[key("effect", p.ID)] = datasource.EffectSourceName(p.Name, p.Effect)
 	}
 
 	sonarr, _ := settings.Edges.SonarrOrErr()

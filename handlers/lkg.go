@@ -181,6 +181,8 @@ func datasourceConfigSig(d datasource.Datasource) string {
 		return cfgSig(v.Name, v.Mode, v.Background, strconv.Itoa(v.Rows), strconv.Itoa(v.Cols), strconv.Itoa(v.Gap), strconv.Itoa(v.Padding), datasource.RegionsJSON(v.Regions))
 	case *datasource.AnalogClockDS, *datasource.MatrixRainDS:
 		return cfgSig()
+	case *datasource.EffectDS:
+		return cfgSig(strconv.Itoa(v.PresetID), v.Effect, v.Params.String())
 	case *datasource.CountdownDS:
 		return cfgSig(v.Name, v.Label, v.Target.Format(time.RFC3339))
 	case *datasource.AIDigestDS:

@@ -224,6 +224,18 @@ func (f DisplayRuleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DisplayRuleMutation", m)
 }
 
+// The EffectPresetFunc type is an adapter to allow the use of ordinary
+// function as EffectPreset mutator.
+type EffectPresetFunc func(context.Context, *ent.EffectPresetMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EffectPresetFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EffectPresetMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EffectPresetMutation", m)
+}
+
 // The EmailSettingsFunc type is an adapter to allow the use of ordinary
 // function as EmailSettings mutator.
 type EmailSettingsFunc func(context.Context, *ent.EmailSettingsMutation) (ent.Value, error)

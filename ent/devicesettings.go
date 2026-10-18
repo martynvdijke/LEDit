@@ -80,6 +80,8 @@ type DeviceSettings struct {
 	OverlayBg string `json:"overlay_bg,omitempty"`
 	// OverlayFg holds the value of the "overlay_fg" field.
 	OverlayFg string `json:"overlay_fg,omitempty"`
+	// OverlayEffectPresetID holds the value of the "overlay_effect_preset_id" field.
+	OverlayEffectPresetID *int `json:"overlay_effect_preset_id,omitempty"`
 	// Transport holds the value of the "transport" field.
 	Transport string `json:"transport,omitempty"`
 	// WledHost holds the value of the "wled_host" field.
@@ -158,7 +160,7 @@ func (*DeviceSettings) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case devicesettings.FieldOutputGamma:
 			values[i] = new(sql.NullFloat64)
-		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldPanelCols, devicesettings.FieldPanelGap, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed, devicesettings.FieldPlaylistID, devicesettings.FieldFallbackPlaylistID, devicesettings.FieldBrightnessOverride, devicesettings.FieldGroupID, devicesettings.FieldOverlayHeight, devicesettings.FieldOverlaySpeedPx, devicesettings.FieldWledPort, devicesettings.FieldWledChannel, devicesettings.FieldArtnetPort, devicesettings.FieldArtnetUniverse, devicesettings.FieldOutputFps:
+		case devicesettings.FieldID, devicesettings.FieldPort, devicesettings.FieldWidth, devicesettings.FieldHeight, devicesettings.FieldPanelCols, devicesettings.FieldPanelGap, devicesettings.FieldRefreshInterval, devicesettings.FieldFramesServed, devicesettings.FieldPlaylistID, devicesettings.FieldFallbackPlaylistID, devicesettings.FieldBrightnessOverride, devicesettings.FieldGroupID, devicesettings.FieldOverlayHeight, devicesettings.FieldOverlaySpeedPx, devicesettings.FieldOverlayEffectPresetID, devicesettings.FieldWledPort, devicesettings.FieldWledChannel, devicesettings.FieldArtnetPort, devicesettings.FieldArtnetUniverse, devicesettings.FieldOutputFps:
 			values[i] = new(sql.NullInt64)
 		case devicesettings.FieldName, devicesettings.FieldIP, devicesettings.FieldUsername, devicesettings.FieldPassword, devicesettings.FieldToken, devicesettings.FieldContentMode, devicesettings.FieldScheduledPlaylistIds, devicesettings.FieldBrightnessSchedules, devicesettings.FieldBrightnessSensorConfig, devicesettings.FieldIdleScreensaver, devicesettings.FieldOverlayPosition, devicesettings.FieldOverlayText, devicesettings.FieldOverlayBg, devicesettings.FieldOverlayFg, devicesettings.FieldTransport, devicesettings.FieldWledHost, devicesettings.FieldWledRealtimeMode, devicesettings.FieldArtnetHost, devicesettings.FieldOutputColorOrder, devicesettings.FieldOutputMatrixLayout, devicesettings.FieldOutputPanelGammas, devicesettings.FieldOutputPanelColorOrders, devicesettings.FieldFingerprint, devicesettings.FieldFirmwareVersion, devicesettings.FieldFirmwareVersionPin, devicesettings.FieldLastUpdateStatus:
 			values[i] = new(sql.NullString)
@@ -379,6 +381,13 @@ func (_m *DeviceSettings) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field overlay_fg", values[i])
 			} else if value.Valid {
 				_m.OverlayFg = value.String
+			}
+		case devicesettings.FieldOverlayEffectPresetID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field overlay_effect_preset_id", values[i])
+			} else if value.Valid {
+				_m.OverlayEffectPresetID = new(int)
+				*_m.OverlayEffectPresetID = int(value.Int64)
 			}
 		case devicesettings.FieldTransport:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -663,6 +672,11 @@ func (_m *DeviceSettings) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("overlay_fg=")
 	builder.WriteString(_m.OverlayFg)
+	builder.WriteString(", ")
+	if v := _m.OverlayEffectPresetID; v != nil {
+		builder.WriteString("overlay_effect_preset_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("transport=")
 	builder.WriteString(_m.Transport)

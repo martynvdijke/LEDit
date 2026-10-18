@@ -29,6 +29,7 @@ import (
 	"ledit/ent/devicemessagestate"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
+	"ledit/ent/effectpreset"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/firmwarerelease"
@@ -142,6 +143,8 @@ type Client struct {
 	DeviceSettings *DeviceSettingsClient
 	// DisplayRule is the client for interacting with the DisplayRule builders.
 	DisplayRule *DisplayRuleClient
+	// EffectPreset is the client for interacting with the EffectPreset builders.
+	EffectPreset *EffectPresetClient
 	// EmailSettings is the client for interacting with the EmailSettings builders.
 	EmailSettings *EmailSettingsClient
 	// F1 is the client for interacting with the F1 builders.
@@ -301,6 +304,7 @@ func (c *Client) init() {
 	c.DeviceMessageState = NewDeviceMessageStateClient(c.config)
 	c.DeviceSettings = NewDeviceSettingsClient(c.config)
 	c.DisplayRule = NewDisplayRuleClient(c.config)
+	c.EffectPreset = NewEffectPresetClient(c.config)
 	c.EmailSettings = NewEmailSettingsClient(c.config)
 	c.F1 = NewF1Client(c.config)
 	c.FirmwareRelease = NewFirmwareReleaseClient(c.config)
@@ -476,6 +480,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		DeviceMessageState: NewDeviceMessageStateClient(cfg),
 		DeviceSettings:     NewDeviceSettingsClient(cfg),
 		DisplayRule:        NewDisplayRuleClient(cfg),
+		EffectPreset:       NewEffectPresetClient(cfg),
 		EmailSettings:      NewEmailSettingsClient(cfg),
 		F1:                 NewF1Client(cfg),
 		FirmwareRelease:    NewFirmwareReleaseClient(cfg),
@@ -578,6 +583,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		DeviceMessageState: NewDeviceMessageStateClient(cfg),
 		DeviceSettings:     NewDeviceSettingsClient(cfg),
 		DisplayRule:        NewDisplayRuleClient(cfg),
+		EffectPreset:       NewEffectPresetClient(cfg),
 		EmailSettings:      NewEmailSettingsClient(cfg),
 		F1:                 NewF1Client(cfg),
 		FirmwareRelease:    NewFirmwareReleaseClient(cfg),
@@ -675,19 +681,19 @@ func (c *Client) Use(hooks ...Hook) {
 		c.AIDigest, c.AISettings, c.AdGuard, c.AdminSettings, c.AirQuality,
 		c.AlertSettings, c.ApiToken, c.Calendar, c.ChartSample, c.Composition,
 		c.Countdown, c.Crypto, c.DatasourcePlugin, c.DeliveryLog, c.DeviceGroup,
-		c.DeviceMessageState, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
-		c.FirmwareRelease, c.FirmwareSettings, c.Frigate, c.GeneralSettings,
-		c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule, c.GuestPhoto,
-		c.GuestToken, c.HomeAssistant, c.Image, c.Immich, c.InboundAdapter, c.Incident,
-		c.InputBinding, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings,
-		c.MatrixLayout, c.NewsFeed, c.Notification, c.NowPlayingSource,
-		c.OutboundSettings, c.OutboundWebhook, c.Overseerr, c.Parcel, c.PiHole,
-		c.PixelArt, c.Playlist, c.Proxmox, c.Qbittorrent, c.Qrcode, c.Radarr,
-		c.RssFeed, c.Sabnzbd, c.Scene, c.Schedule, c.Sonarr, c.Speedtest, c.Sports,
-		c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide, c.Theme,
-		c.ThemeAssignment, c.TimelapseFrame, c.Transit, c.Transmission,
-		c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma, c.User, c.Video,
-		c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings, c.Zigbee2MQTT,
+		c.DeviceMessageState, c.DeviceSettings, c.DisplayRule, c.EffectPreset,
+		c.EmailSettings, c.F1, c.FirmwareRelease, c.FirmwareSettings, c.Frigate,
+		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
+		c.GuestPhoto, c.GuestToken, c.HomeAssistant, c.Image, c.Immich,
+		c.InboundAdapter, c.Incident, c.InputBinding, c.Jellyfin, c.LogEntry,
+		c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
+		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
+		c.Overseerr, c.Parcel, c.PiHole, c.PixelArt, c.Playlist, c.Proxmox,
+		c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene, c.Schedule,
+		c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings,
+		c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame, c.Transit,
+		c.Transmission, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma, c.User,
+		c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings, c.Zigbee2MQTT,
 	} {
 		n.Use(hooks...)
 	}
@@ -700,19 +706,19 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.AIDigest, c.AISettings, c.AdGuard, c.AdminSettings, c.AirQuality,
 		c.AlertSettings, c.ApiToken, c.Calendar, c.ChartSample, c.Composition,
 		c.Countdown, c.Crypto, c.DatasourcePlugin, c.DeliveryLog, c.DeviceGroup,
-		c.DeviceMessageState, c.DeviceSettings, c.DisplayRule, c.EmailSettings, c.F1,
-		c.FirmwareRelease, c.FirmwareSettings, c.Frigate, c.GeneralSettings,
-		c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule, c.GuestPhoto,
-		c.GuestToken, c.HomeAssistant, c.Image, c.Immich, c.InboundAdapter, c.Incident,
-		c.InputBinding, c.Jellyfin, c.LogEntry, c.LogSettings, c.MPD, c.MQTTSettings,
-		c.MatrixLayout, c.NewsFeed, c.Notification, c.NowPlayingSource,
-		c.OutboundSettings, c.OutboundWebhook, c.Overseerr, c.Parcel, c.PiHole,
-		c.PixelArt, c.Playlist, c.Proxmox, c.Qbittorrent, c.Qrcode, c.Radarr,
-		c.RssFeed, c.Sabnzbd, c.Scene, c.Schedule, c.Sonarr, c.Speedtest, c.Sports,
-		c.Stock, c.SunMoon, c.TelegramSettings, c.TextSlide, c.Theme,
-		c.ThemeAssignment, c.TimelapseFrame, c.Transit, c.Transmission,
-		c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma, c.User, c.Video,
-		c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings, c.Zigbee2MQTT,
+		c.DeviceMessageState, c.DeviceSettings, c.DisplayRule, c.EffectPreset,
+		c.EmailSettings, c.F1, c.FirmwareRelease, c.FirmwareSettings, c.Frigate,
+		c.GeneralSettings, c.GenericAPI, c.GitHub, c.GoogleCalendar, c.GreetingRule,
+		c.GuestPhoto, c.GuestToken, c.HomeAssistant, c.Image, c.Immich,
+		c.InboundAdapter, c.Incident, c.InputBinding, c.Jellyfin, c.LogEntry,
+		c.LogSettings, c.MPD, c.MQTTSettings, c.MatrixLayout, c.NewsFeed,
+		c.Notification, c.NowPlayingSource, c.OutboundSettings, c.OutboundWebhook,
+		c.Overseerr, c.Parcel, c.PiHole, c.PixelArt, c.Playlist, c.Proxmox,
+		c.Qbittorrent, c.Qrcode, c.Radarr, c.RssFeed, c.Sabnzbd, c.Scene, c.Schedule,
+		c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon, c.TelegramSettings,
+		c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame, c.Transit,
+		c.Transmission, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma, c.User,
+		c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings, c.Zigbee2MQTT,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -757,6 +763,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.DeviceSettings.mutate(ctx, m)
 	case *DisplayRuleMutation:
 		return c.DisplayRule.mutate(ctx, m)
+	case *EffectPresetMutation:
+		return c.EffectPreset.mutate(ctx, m)
 	case *EmailSettingsMutation:
 		return c.EmailSettings.mutate(ctx, m)
 	case *F1Mutation:
@@ -3315,6 +3323,139 @@ func (c *DisplayRuleClient) mutate(ctx context.Context, m *DisplayRuleMutation) 
 		return (&DisplayRuleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown DisplayRule mutation op: %q", m.Op())
+	}
+}
+
+// EffectPresetClient is a client for the EffectPreset schema.
+type EffectPresetClient struct {
+	config
+}
+
+// NewEffectPresetClient returns a client for the EffectPreset from the given config.
+func NewEffectPresetClient(c config) *EffectPresetClient {
+	return &EffectPresetClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `effectpreset.Hooks(f(g(h())))`.
+func (c *EffectPresetClient) Use(hooks ...Hook) {
+	c.hooks.EffectPreset = append(c.hooks.EffectPreset, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `effectpreset.Intercept(f(g(h())))`.
+func (c *EffectPresetClient) Intercept(interceptors ...Interceptor) {
+	c.inters.EffectPreset = append(c.inters.EffectPreset, interceptors...)
+}
+
+// Create returns a builder for creating a EffectPreset entity.
+func (c *EffectPresetClient) Create() *EffectPresetCreate {
+	mutation := newEffectPresetMutation(c.config, OpCreate)
+	return &EffectPresetCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of EffectPreset entities.
+func (c *EffectPresetClient) CreateBulk(builders ...*EffectPresetCreate) *EffectPresetCreateBulk {
+	return &EffectPresetCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EffectPresetClient) MapCreateBulk(slice any, setFunc func(*EffectPresetCreate, int)) *EffectPresetCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EffectPresetCreateBulk{err: fmt.Errorf("calling to EffectPresetClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EffectPresetCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EffectPresetCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for EffectPreset.
+func (c *EffectPresetClient) Update() *EffectPresetUpdate {
+	mutation := newEffectPresetMutation(c.config, OpUpdate)
+	return &EffectPresetUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EffectPresetClient) UpdateOne(_m *EffectPreset) *EffectPresetUpdateOne {
+	mutation := newEffectPresetMutation(c.config, OpUpdateOne, withEffectPreset(_m))
+	return &EffectPresetUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EffectPresetClient) UpdateOneID(id int) *EffectPresetUpdateOne {
+	mutation := newEffectPresetMutation(c.config, OpUpdateOne, withEffectPresetID(id))
+	return &EffectPresetUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for EffectPreset.
+func (c *EffectPresetClient) Delete() *EffectPresetDelete {
+	mutation := newEffectPresetMutation(c.config, OpDelete)
+	return &EffectPresetDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EffectPresetClient) DeleteOne(_m *EffectPreset) *EffectPresetDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EffectPresetClient) DeleteOneID(id int) *EffectPresetDeleteOne {
+	builder := c.Delete().Where(effectpreset.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EffectPresetDeleteOne{builder}
+}
+
+// Query returns a query builder for EffectPreset.
+func (c *EffectPresetClient) Query() *EffectPresetQuery {
+	return &EffectPresetQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEffectPreset},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a EffectPreset entity by its id.
+func (c *EffectPresetClient) Get(ctx context.Context, id int) (*EffectPreset, error) {
+	return c.Query().Where(effectpreset.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EffectPresetClient) GetX(ctx context.Context, id int) *EffectPreset {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *EffectPresetClient) Hooks() []Hook {
+	return c.hooks.EffectPreset
+}
+
+// Interceptors returns the client interceptors.
+func (c *EffectPresetClient) Interceptors() []Interceptor {
+	return c.inters.EffectPreset
+}
+
+func (c *EffectPresetClient) mutate(ctx context.Context, m *EffectPresetMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EffectPresetCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EffectPresetUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EffectPresetUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EffectPresetDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown EffectPreset mutation op: %q", m.Op())
 	}
 }
 
@@ -12945,30 +13086,32 @@ type (
 		AIDigest, AISettings, AdGuard, AdminSettings, AirQuality, AlertSettings,
 		ApiToken, Calendar, ChartSample, Composition, Countdown, Crypto,
 		DatasourcePlugin, DeliveryLog, DeviceGroup, DeviceMessageState, DeviceSettings,
-		DisplayRule, EmailSettings, F1, FirmwareRelease, FirmwareSettings, Frigate,
-		GeneralSettings, GenericAPI, GitHub, GoogleCalendar, GreetingRule, GuestPhoto,
-		GuestToken, HomeAssistant, Image, Immich, InboundAdapter, Incident,
-		InputBinding, Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout,
-		NewsFeed, Notification, NowPlayingSource, OutboundSettings, OutboundWebhook,
-		Overseerr, Parcel, PiHole, PixelArt, Playlist, Proxmox, Qbittorrent, Qrcode,
-		Radarr, RssFeed, Sabnzbd, Scene, Schedule, Sonarr, Speedtest, Sports, Stock,
-		SunMoon, TelegramSettings, TextSlide, Theme, ThemeAssignment, TimelapseFrame,
-		Transit, Transmission, UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video,
-		WakeAlarm, Waste, Weather, WebhookSettings, Zigbee2MQTT []ent.Hook
+		DisplayRule, EffectPreset, EmailSettings, F1, FirmwareRelease,
+		FirmwareSettings, Frigate, GeneralSettings, GenericAPI, GitHub, GoogleCalendar,
+		GreetingRule, GuestPhoto, GuestToken, HomeAssistant, Image, Immich,
+		InboundAdapter, Incident, InputBinding, Jellyfin, LogEntry, LogSettings, MPD,
+		MQTTSettings, MatrixLayout, NewsFeed, Notification, NowPlayingSource,
+		OutboundSettings, OutboundWebhook, Overseerr, Parcel, PiHole, PixelArt,
+		Playlist, Proxmox, Qbittorrent, Qrcode, Radarr, RssFeed, Sabnzbd, Scene,
+		Schedule, Sonarr, Speedtest, Sports, Stock, SunMoon, TelegramSettings,
+		TextSlide, Theme, ThemeAssignment, TimelapseFrame, Transit, Transmission,
+		UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm, Waste,
+		Weather, WebhookSettings, Zigbee2MQTT []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdGuard, AdminSettings, AirQuality, AlertSettings,
 		ApiToken, Calendar, ChartSample, Composition, Countdown, Crypto,
 		DatasourcePlugin, DeliveryLog, DeviceGroup, DeviceMessageState, DeviceSettings,
-		DisplayRule, EmailSettings, F1, FirmwareRelease, FirmwareSettings, Frigate,
-		GeneralSettings, GenericAPI, GitHub, GoogleCalendar, GreetingRule, GuestPhoto,
-		GuestToken, HomeAssistant, Image, Immich, InboundAdapter, Incident,
-		InputBinding, Jellyfin, LogEntry, LogSettings, MPD, MQTTSettings, MatrixLayout,
-		NewsFeed, Notification, NowPlayingSource, OutboundSettings, OutboundWebhook,
-		Overseerr, Parcel, PiHole, PixelArt, Playlist, Proxmox, Qbittorrent, Qrcode,
-		Radarr, RssFeed, Sabnzbd, Scene, Schedule, Sonarr, Speedtest, Sports, Stock,
-		SunMoon, TelegramSettings, TextSlide, Theme, ThemeAssignment, TimelapseFrame,
-		Transit, Transmission, UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video,
-		WakeAlarm, Waste, Weather, WebhookSettings, Zigbee2MQTT []ent.Interceptor
+		DisplayRule, EffectPreset, EmailSettings, F1, FirmwareRelease,
+		FirmwareSettings, Frigate, GeneralSettings, GenericAPI, GitHub, GoogleCalendar,
+		GreetingRule, GuestPhoto, GuestToken, HomeAssistant, Image, Immich,
+		InboundAdapter, Incident, InputBinding, Jellyfin, LogEntry, LogSettings, MPD,
+		MQTTSettings, MatrixLayout, NewsFeed, Notification, NowPlayingSource,
+		OutboundSettings, OutboundWebhook, Overseerr, Parcel, PiHole, PixelArt,
+		Playlist, Proxmox, Qbittorrent, Qrcode, Radarr, RssFeed, Sabnzbd, Scene,
+		Schedule, Sonarr, Speedtest, Sports, Stock, SunMoon, TelegramSettings,
+		TextSlide, Theme, ThemeAssignment, TimelapseFrame, Transit, Transmission,
+		UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm, Waste,
+		Weather, WebhookSettings, Zigbee2MQTT []ent.Interceptor
 	}
 )

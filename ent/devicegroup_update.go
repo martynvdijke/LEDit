@@ -340,6 +340,33 @@ func (_u *DeviceGroupUpdate) SetNillableOverlayFg(v *string) *DeviceGroupUpdate 
 	return _u
 }
 
+// SetOverlayEffectPresetID sets the "overlay_effect_preset_id" field.
+func (_u *DeviceGroupUpdate) SetOverlayEffectPresetID(v int) *DeviceGroupUpdate {
+	_u.mutation.ResetOverlayEffectPresetID()
+	_u.mutation.SetOverlayEffectPresetID(v)
+	return _u
+}
+
+// SetNillableOverlayEffectPresetID sets the "overlay_effect_preset_id" field if the given value is not nil.
+func (_u *DeviceGroupUpdate) SetNillableOverlayEffectPresetID(v *int) *DeviceGroupUpdate {
+	if v != nil {
+		_u.SetOverlayEffectPresetID(*v)
+	}
+	return _u
+}
+
+// AddOverlayEffectPresetID adds value to the "overlay_effect_preset_id" field.
+func (_u *DeviceGroupUpdate) AddOverlayEffectPresetID(v int) *DeviceGroupUpdate {
+	_u.mutation.AddOverlayEffectPresetID(v)
+	return _u
+}
+
+// ClearOverlayEffectPresetID clears the value of the "overlay_effect_preset_id" field.
+func (_u *DeviceGroupUpdate) ClearOverlayEffectPresetID() *DeviceGroupUpdate {
+	_u.mutation.ClearOverlayEffectPresetID()
+	return _u
+}
+
 // AddDeviceIDs adds the "devices" edge to the DeviceSettings entity by IDs.
 func (_u *DeviceGroupUpdate) AddDeviceIDs(ids ...int) *DeviceGroupUpdate {
 	_u.mutation.AddDeviceIDs(ids...)
@@ -525,6 +552,15 @@ func (_u *DeviceGroupUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if value, ok := _u.mutation.OverlayFg(); ok {
 		_spec.SetField(devicegroup.FieldOverlayFg, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OverlayEffectPresetID(); ok {
+		_spec.SetField(devicegroup.FieldOverlayEffectPresetID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOverlayEffectPresetID(); ok {
+		_spec.AddField(devicegroup.FieldOverlayEffectPresetID, field.TypeInt, value)
+	}
+	if _u.mutation.OverlayEffectPresetIDCleared() {
+		_spec.ClearField(devicegroup.FieldOverlayEffectPresetID, field.TypeInt)
 	}
 	if _u.mutation.DevicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -902,6 +938,33 @@ func (_u *DeviceGroupUpdateOne) SetNillableOverlayFg(v *string) *DeviceGroupUpda
 	return _u
 }
 
+// SetOverlayEffectPresetID sets the "overlay_effect_preset_id" field.
+func (_u *DeviceGroupUpdateOne) SetOverlayEffectPresetID(v int) *DeviceGroupUpdateOne {
+	_u.mutation.ResetOverlayEffectPresetID()
+	_u.mutation.SetOverlayEffectPresetID(v)
+	return _u
+}
+
+// SetNillableOverlayEffectPresetID sets the "overlay_effect_preset_id" field if the given value is not nil.
+func (_u *DeviceGroupUpdateOne) SetNillableOverlayEffectPresetID(v *int) *DeviceGroupUpdateOne {
+	if v != nil {
+		_u.SetOverlayEffectPresetID(*v)
+	}
+	return _u
+}
+
+// AddOverlayEffectPresetID adds value to the "overlay_effect_preset_id" field.
+func (_u *DeviceGroupUpdateOne) AddOverlayEffectPresetID(v int) *DeviceGroupUpdateOne {
+	_u.mutation.AddOverlayEffectPresetID(v)
+	return _u
+}
+
+// ClearOverlayEffectPresetID clears the value of the "overlay_effect_preset_id" field.
+func (_u *DeviceGroupUpdateOne) ClearOverlayEffectPresetID() *DeviceGroupUpdateOne {
+	_u.mutation.ClearOverlayEffectPresetID()
+	return _u
+}
+
 // AddDeviceIDs adds the "devices" edge to the DeviceSettings entity by IDs.
 func (_u *DeviceGroupUpdateOne) AddDeviceIDs(ids ...int) *DeviceGroupUpdateOne {
 	_u.mutation.AddDeviceIDs(ids...)
@@ -1117,6 +1180,15 @@ func (_u *DeviceGroupUpdateOne) sqlSave(ctx context.Context) (_node *DeviceGroup
 	}
 	if value, ok := _u.mutation.OverlayFg(); ok {
 		_spec.SetField(devicegroup.FieldOverlayFg, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OverlayEffectPresetID(); ok {
+		_spec.SetField(devicegroup.FieldOverlayEffectPresetID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOverlayEffectPresetID(); ok {
+		_spec.AddField(devicegroup.FieldOverlayEffectPresetID, field.TypeInt, value)
+	}
+	if _u.mutation.OverlayEffectPresetIDCleared() {
+		_spec.ClearField(devicegroup.FieldOverlayEffectPresetID, field.TypeInt)
 	}
 	if _u.mutation.DevicesCleared() {
 		edge := &sqlgraph.EdgeSpec{

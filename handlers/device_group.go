@@ -233,7 +233,7 @@ func (s *Server) AdminGroupCreate(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/admin/groups")
 		return
 	}
-	builder := s.DB.DeviceGroup.Create().SetName(name).SetDescription(desc).SetCreatedAt(time.Now()).SetContentMode(mode).SetScheduledPlaylistIds(sched).SetBrightnessEnabled(brightnessEnabled).SetBrightnessSchedules(brightnessSched).SetOverlayEnabled(overlay.Enabled).SetOverlayPosition(overlay.Position).SetOverlayHeight(overlay.Height).SetOverlayText(overlay.Text).SetOverlaySpeedPx(overlay.SpeedPx).SetOverlayBg(overlay.Background).SetOverlayFg(overlay.Foreground)
+	builder := s.DB.DeviceGroup.Create().SetName(name).SetDescription(desc).SetCreatedAt(time.Now()).SetContentMode(mode).SetScheduledPlaylistIds(sched).SetBrightnessEnabled(brightnessEnabled).SetBrightnessSchedules(brightnessSched).SetOverlayEnabled(overlay.Enabled).SetOverlayPosition(overlay.Position).SetOverlayHeight(overlay.Height).SetOverlayText(overlay.Text).SetOverlaySpeedPx(overlay.SpeedPx).SetOverlayBg(overlay.Background).SetOverlayFg(overlay.Foreground).SetNillableOverlayEffectPresetID(parseOverlayEffectPresetID(c))
 	if pid != nil {
 		builder.SetPlaylistID(*pid)
 	}
@@ -310,6 +310,11 @@ func (s *Server) AdminGroupUpdate(c *gin.Context) {
 		return
 	}
 	upd := s.DB.DeviceGroup.UpdateOneID(id).SetName(name).SetDescription(desc).SetContentMode(mode).SetScheduledPlaylistIds(sched).SetBrightnessEnabled(brightnessEnabled).SetBrightnessSchedules(brightnessSched).SetOverlayEnabled(overlay.Enabled).SetOverlayPosition(overlay.Position).SetOverlayHeight(overlay.Height).SetOverlayText(overlay.Text).SetOverlaySpeedPx(overlay.SpeedPx).SetOverlayBg(overlay.Background).SetOverlayFg(overlay.Foreground)
+	if effectID := parseOverlayEffectPresetID(c); effectID != nil {
+		upd.SetOverlayEffectPresetID(*effectID)
+	} else {
+		upd.ClearOverlayEffectPresetID()
+	}
 	if pid != nil {
 		upd.SetPlaylistID(*pid)
 	} else {

@@ -54,6 +54,9 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	seedThemes(client, ctx)
 	InitThemeResolver(client, ctx)
 
+	// Seed built-in effect presets.
+	seedEffectPresets(client, ctx)
+
 	// Initialize central logging system (DB-backed, OTEL-ready).
 	// This sets slog.SetDefault, so all subsequent slog calls use it.
 	logStore, otelExp, logCleanup := logging.InitLogging(client, "warn")
@@ -112,6 +115,7 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	StartEventRuleEngine(srv)
 	StartIncidentManager(client)
 	StartPluginManager(client)
+	StartEffectPresetCache(client)
 	StartGreetingWatcher(ctx, client, defaultHAFetcher(srv), srv)
 	InitOutbound(srv)
 
@@ -230,6 +234,12 @@ func (s *Server) setupRoutes() {
 				}
 			}
 			return false
+		},
+		"effectPresets": func() []cachedEffectPreset {
+			return cachedEffectPresets()
+		},
+		"eqIntPtr": func(p *int, v int) bool {
+			return p != nil && *p == v
 		},
 		"index": func(item any, key any) any {
 			if item == nil || key == nil {
@@ -578,6 +588,15 @@ func (s *Server) setupRoutes() {
 		admin.POST("/themes/:id/delete", s.AdminThemeDelete)
 		admin.POST("/themes/:id/default", s.AdminThemeSetDefault)
 		admin.POST("/theme/assign", s.AdminThemeAssign)
+
+		// Effect presets (procedural, theme-driven sources).
+		admin.GET("/effects", s.AdminEffectList)
+		admin.GET("/effects/new", s.AdminEffectNew)
+		admin.GET("/effects/:id/edit", s.AdminEffectEditor)
+		admin.POST("/effects/:id/edit", s.AdminEffectSave)
+		admin.POST("/effects/:id/duplicate", s.AdminEffectDuplicate)
+		admin.POST("/effects/:id/delete", s.AdminEffectDelete)
+		admin.POST("/preview/effect", s.AdminPreviewEffect)
 		// Legacy URL kept working.
 		admin.GET("/theme", s.AdminThemeLegacyRedirect)
 		admin.POST("/theme", s.AdminThemeLegacyRedirect)

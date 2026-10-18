@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - {{if .preset}}Edit{{else}}New{{end}} Effect Preset</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <h1>{{if .preset}}Edit Effect Preset{{else}}New Effect Preset{{end}}</h1>
+            {{if .builtIn}}<div class="alert alert-info mt-3" role="alert">Built-in presets are read-only. Duplicate one to edit it.</div>{{end}}
+            {{if .error}}<div class="alert alert-danger mt-3" role="alert">{{.error}}</div>{{end}}
+            <div class="row">
+                <div class="col-md-6">
+                    <form method="POST" action="/admin/effects/{{if .preset}}{{.preset.ID}}{{else}}new{{end}}/edit" class="mt-4" data-effect-editor>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" maxlength="64" placeholder="My preset" value="{{.fName}}" {{if .builtIn}}disabled{{end}}>
+                        </div>
+                        <div class="mb-3">
+                            <label for="effect" class="form-label">Effect</label>
+                            <select class="form-select" id="effect" name="effect" {{if .builtIn}}disabled{{end}}>
+                                {{$sel := .fEffect}}
+                                {{range .effectNames}}<option value="{{.}}" {{if eq . $sel}}selected{{end}}>{{.}}</option>{{end}}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="speed" class="form-label">Speed</label>
+                            <input type="number" class="form-control" id="speed" name="speed" min="0" max="100" step="1" value="{{.fSpeed}}" {{if .builtIn}}disabled{{end}}>
+                        </div>
+                        <div class="mb-3">
+                            <label for="intensity" class="form-label">Intensity</label>
+                            <input type="number" class="form-control" id="intensity" name="intensity" min="0" max="100" step="1" value="{{.fIntensity}}" {{if .builtIn}}disabled{{end}}>
+                        </div>
+                        <div class="mb-3">
+                            <label for="density" class="form-label">Density</label>
+                            <input type="number" class="form-control" id="density" name="density" min="0" max="100" step="1" value="{{.fDensity}}" {{if .builtIn}}disabled{{end}}>
+                        </div>
+                        <div class="mb-3">
+                            <label for="direction" class="form-label">Direction</label>
+                            <select class="form-select" id="direction" name="direction" {{if .builtIn}}disabled{{end}}>
+                                {{$dir := .fDirection}}
+                                <option value="none" {{if eq $dir "none"}}selected{{end}}>None</option>
+                                <option value="up" {{if eq $dir "up"}}selected{{end}}>Up</option>
+                                <option value="down" {{if eq $dir "down"}}selected{{end}}>Down</option>
+                                <option value="left" {{if eq $dir "left"}}selected{{end}}>Left</option>
+                                <option value="right" {{if eq $dir "right"}}selected{{end}}>Right</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="seed" class="form-label">Seed</label>
+                            <input type="number" class="form-control" id="seed" name="seed" step="1" value="{{.fSeed}}" {{if .builtIn}}disabled{{end}}>
+                            <div class="form-text">0 derives a stable pattern from the preset name.</div>
+                        </div>
+                        {{if .builtIn}}{{else}}<button type="submit" class="btn btn-primary" data-effect-save>Save</button>{{end}}
+                        <a href="/admin/effects" class="btn btn-secondary">Cancel</a>
+                    </form>
+                    {{if .preset}}
+                    <form method="POST" action="/admin/effects/{{.preset.ID}}/duplicate" class="mt-3" style="display:inline">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Duplicate</button>
+                    </form>
+                    {{end}}
+                </div>
+                <div class="col-md-6">
+                    <h2 class="h5">Preview</h2>
+                    <p class="text-muted">Rendered with the effective theme's palette. Sliders update after a short pause.</p>
+                    <img data-live-preview-img alt="Effect preview" style="image-rendering: pixelated; background:#111; border:1px solid var(--line); max-width:100%" src="">
+                    <div class="form-text mt-2">Palette roles: background / accent / text come from the theme (per-source override, then global default).</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>window.EFFECT_DESCRIPTORS = {{.editorJSON}};</script>
+    <script type="module" src="/static/assets/effect_editor.js"></script>
+</body>
+</html>

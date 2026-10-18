@@ -24,6 +24,7 @@ import (
 	"ledit/ent/devicemessagestate"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
+	"ledit/ent/effectpreset"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/firmwarerelease"
@@ -124,6 +125,7 @@ const (
 	TypeDeviceMessageState = "DeviceMessageState"
 	TypeDeviceSettings     = "DeviceSettings"
 	TypeDisplayRule        = "DisplayRule"
+	TypeEffectPreset       = "EffectPreset"
 	TypeEmailSettings      = "EmailSettings"
 	TypeF1                 = "F1"
 	TypeFirmwareRelease    = "FirmwareRelease"
@@ -9355,39 +9357,41 @@ func (m *DeliveryLogMutation) ResetEdge(name string) error {
 // DeviceGroupMutation represents an operation that mutates the DeviceGroup nodes in the graph.
 type DeviceGroupMutation struct {
 	config
-	op                       Op
-	typ                      string
-	id                       *int
-	name                     *string
-	description              *string
-	created_at               *time.Time
-	content_mode             *string
-	playlist_id              *int
-	addplaylist_id           *int
-	scheduled_playlist_ids   *string
-	fallback_playlist_id     *int
-	addfallback_playlist_id  *int
-	brightness_enabled       *bool
-	brightness_schedules     *string
-	brightness_override      *int
-	addbrightness_override   *int
-	brightness_sensor_config *string
-	overlay_enabled          *bool
-	overlay_position         *string
-	overlay_height           *int
-	addoverlay_height        *int
-	overlay_text             *string
-	overlay_speed_px         *int
-	addoverlay_speed_px      *int
-	overlay_bg               *string
-	overlay_fg               *string
-	clearedFields            map[string]struct{}
-	devices                  map[int]struct{}
-	removeddevices           map[int]struct{}
-	cleareddevices           bool
-	done                     bool
-	oldValue                 func(context.Context) (*DeviceGroup, error)
-	predicates               []predicate.DeviceGroup
+	op                          Op
+	typ                         string
+	id                          *int
+	name                        *string
+	description                 *string
+	created_at                  *time.Time
+	content_mode                *string
+	playlist_id                 *int
+	addplaylist_id              *int
+	scheduled_playlist_ids      *string
+	fallback_playlist_id        *int
+	addfallback_playlist_id     *int
+	brightness_enabled          *bool
+	brightness_schedules        *string
+	brightness_override         *int
+	addbrightness_override      *int
+	brightness_sensor_config    *string
+	overlay_enabled             *bool
+	overlay_position            *string
+	overlay_height              *int
+	addoverlay_height           *int
+	overlay_text                *string
+	overlay_speed_px            *int
+	addoverlay_speed_px         *int
+	overlay_bg                  *string
+	overlay_fg                  *string
+	overlay_effect_preset_id    *int
+	addoverlay_effect_preset_id *int
+	clearedFields               map[string]struct{}
+	devices                     map[int]struct{}
+	removeddevices              map[int]struct{}
+	cleareddevices              bool
+	done                        bool
+	oldValue                    func(context.Context) (*DeviceGroup, error)
+	predicates                  []predicate.DeviceGroup
 }
 
 var _ ent.Mutation = (*DeviceGroupMutation)(nil)
@@ -10291,6 +10295,76 @@ func (m *DeviceGroupMutation) ResetOverlayFg() {
 	m.overlay_fg = nil
 }
 
+// SetOverlayEffectPresetID sets the "overlay_effect_preset_id" field.
+func (m *DeviceGroupMutation) SetOverlayEffectPresetID(i int) {
+	m.overlay_effect_preset_id = &i
+	m.addoverlay_effect_preset_id = nil
+}
+
+// OverlayEffectPresetID returns the value of the "overlay_effect_preset_id" field in the mutation.
+func (m *DeviceGroupMutation) OverlayEffectPresetID() (r int, exists bool) {
+	v := m.overlay_effect_preset_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOverlayEffectPresetID returns the old "overlay_effect_preset_id" field's value of the DeviceGroup entity.
+// If the DeviceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceGroupMutation) OldOverlayEffectPresetID(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOverlayEffectPresetID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOverlayEffectPresetID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOverlayEffectPresetID: %w", err)
+	}
+	return oldValue.OverlayEffectPresetID, nil
+}
+
+// AddOverlayEffectPresetID adds i to the "overlay_effect_preset_id" field.
+func (m *DeviceGroupMutation) AddOverlayEffectPresetID(i int) {
+	if m.addoverlay_effect_preset_id != nil {
+		*m.addoverlay_effect_preset_id += i
+	} else {
+		m.addoverlay_effect_preset_id = &i
+	}
+}
+
+// AddedOverlayEffectPresetID returns the value that was added to the "overlay_effect_preset_id" field in this mutation.
+func (m *DeviceGroupMutation) AddedOverlayEffectPresetID() (r int, exists bool) {
+	v := m.addoverlay_effect_preset_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOverlayEffectPresetID clears the value of the "overlay_effect_preset_id" field.
+func (m *DeviceGroupMutation) ClearOverlayEffectPresetID() {
+	m.overlay_effect_preset_id = nil
+	m.addoverlay_effect_preset_id = nil
+	m.clearedFields[devicegroup.FieldOverlayEffectPresetID] = struct{}{}
+}
+
+// OverlayEffectPresetIDCleared returns if the "overlay_effect_preset_id" field was cleared in this mutation.
+func (m *DeviceGroupMutation) OverlayEffectPresetIDCleared() bool {
+	_, ok := m.clearedFields[devicegroup.FieldOverlayEffectPresetID]
+	return ok
+}
+
+// ResetOverlayEffectPresetID resets all changes to the "overlay_effect_preset_id" field.
+func (m *DeviceGroupMutation) ResetOverlayEffectPresetID() {
+	m.overlay_effect_preset_id = nil
+	m.addoverlay_effect_preset_id = nil
+	delete(m.clearedFields, devicegroup.FieldOverlayEffectPresetID)
+}
+
 // AddDeviceIDs adds the "devices" edge to the DeviceSettings entity by ids.
 func (m *DeviceGroupMutation) AddDeviceIDs(ids ...int) {
 	if m.devices == nil {
@@ -10379,7 +10453,7 @@ func (m *DeviceGroupMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DeviceGroupMutation) Fields() []string {
-	fields := make([]string, 0, 18)
+	fields := make([]string, 0, 19)
 	if m.name != nil {
 		fields = append(fields, devicegroup.FieldName)
 	}
@@ -10434,6 +10508,9 @@ func (m *DeviceGroupMutation) Fields() []string {
 	if m.overlay_fg != nil {
 		fields = append(fields, devicegroup.FieldOverlayFg)
 	}
+	if m.overlay_effect_preset_id != nil {
+		fields = append(fields, devicegroup.FieldOverlayEffectPresetID)
+	}
 	return fields
 }
 
@@ -10478,6 +10555,8 @@ func (m *DeviceGroupMutation) Field(name string) (ent.Value, bool) {
 		return m.OverlayBg()
 	case devicegroup.FieldOverlayFg:
 		return m.OverlayFg()
+	case devicegroup.FieldOverlayEffectPresetID:
+		return m.OverlayEffectPresetID()
 	}
 	return nil, false
 }
@@ -10523,6 +10602,8 @@ func (m *DeviceGroupMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldOverlayBg(ctx)
 	case devicegroup.FieldOverlayFg:
 		return m.OldOverlayFg(ctx)
+	case devicegroup.FieldOverlayEffectPresetID:
+		return m.OldOverlayEffectPresetID(ctx)
 	}
 	return nil, fmt.Errorf("unknown DeviceGroup field %s", name)
 }
@@ -10658,6 +10739,13 @@ func (m *DeviceGroupMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetOverlayFg(v)
 		return nil
+	case devicegroup.FieldOverlayEffectPresetID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOverlayEffectPresetID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DeviceGroup field %s", name)
 }
@@ -10681,6 +10769,9 @@ func (m *DeviceGroupMutation) AddedFields() []string {
 	if m.addoverlay_speed_px != nil {
 		fields = append(fields, devicegroup.FieldOverlaySpeedPx)
 	}
+	if m.addoverlay_effect_preset_id != nil {
+		fields = append(fields, devicegroup.FieldOverlayEffectPresetID)
+	}
 	return fields
 }
 
@@ -10699,6 +10790,8 @@ func (m *DeviceGroupMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedOverlayHeight()
 	case devicegroup.FieldOverlaySpeedPx:
 		return m.AddedOverlaySpeedPx()
+	case devicegroup.FieldOverlayEffectPresetID:
+		return m.AddedOverlayEffectPresetID()
 	}
 	return nil, false
 }
@@ -10743,6 +10836,13 @@ func (m *DeviceGroupMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddOverlaySpeedPx(v)
 		return nil
+	case devicegroup.FieldOverlayEffectPresetID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOverlayEffectPresetID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DeviceGroup numeric field %s", name)
 }
@@ -10762,6 +10862,9 @@ func (m *DeviceGroupMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(devicegroup.FieldBrightnessSensorConfig) {
 		fields = append(fields, devicegroup.FieldBrightnessSensorConfig)
+	}
+	if m.FieldCleared(devicegroup.FieldOverlayEffectPresetID) {
+		fields = append(fields, devicegroup.FieldOverlayEffectPresetID)
 	}
 	return fields
 }
@@ -10788,6 +10891,9 @@ func (m *DeviceGroupMutation) ClearField(name string) error {
 		return nil
 	case devicegroup.FieldBrightnessSensorConfig:
 		m.ClearBrightnessSensorConfig()
+		return nil
+	case devicegroup.FieldOverlayEffectPresetID:
+		m.ClearOverlayEffectPresetID()
 		return nil
 	}
 	return fmt.Errorf("unknown DeviceGroup nullable field %s", name)
@@ -10850,6 +10956,9 @@ func (m *DeviceGroupMutation) ResetField(name string) error {
 		return nil
 	case devicegroup.FieldOverlayFg:
 		m.ResetOverlayFg()
+		return nil
+	case devicegroup.FieldOverlayEffectPresetID:
+		m.ResetOverlayEffectPresetID()
 		return nil
 	}
 	return fmt.Errorf("unknown DeviceGroup field %s", name)
@@ -11466,84 +11575,86 @@ func (m *DeviceMessageStateMutation) ResetEdge(name string) error {
 // DeviceSettingsMutation represents an operation that mutates the DeviceSettings nodes in the graph.
 type DeviceSettingsMutation struct {
 	config
-	op                        Op
-	typ                       string
-	id                        *int
-	name                      *string
-	ip                        *string
-	port                      *int
-	addport                   *int
-	username                  *string
-	password                  *string
-	width                     *int
-	addwidth                  *int
-	height                    *int
-	addheight                 *int
-	panel_cols                *int
-	addpanel_cols             *int
-	panel_gap                 *int
-	addpanel_gap              *int
-	enabled                   *bool
-	token                     *string
-	refresh_interval          *int
-	addrefresh_interval       *int
-	last_seen_at              *time.Time
-	frames_served             *int
-	addframes_served          *int
-	content_mode              *string
-	playlist_id               *int
-	addplaylist_id            *int
-	scheduled_playlist_ids    *string
-	fallback_playlist_id      *int
-	addfallback_playlist_id   *int
-	brightness_enabled        *bool
-	brightness_schedules      *string
-	brightness_override       *int
-	addbrightness_override    *int
-	brightness_sensor_config  *string
-	idle_screensaver          *string
-	overlay_enabled           *bool
-	overlay_position          *string
-	overlay_height            *int
-	addoverlay_height         *int
-	overlay_text              *string
-	overlay_speed_px          *int
-	addoverlay_speed_px       *int
-	overlay_bg                *string
-	overlay_fg                *string
-	transport                 *string
-	wled_host                 *string
-	wled_port                 *int
-	addwled_port              *int
-	wled_realtime_mode        *string
-	wled_channel              *int
-	addwled_channel           *int
-	artnet_host               *string
-	artnet_port               *int
-	addartnet_port            *int
-	artnet_universe           *int
-	addartnet_universe        *int
-	output_fps                *int
-	addoutput_fps             *int
-	output_color_order        *string
-	output_gamma              *float64
-	addoutput_gamma           *float64
-	output_matrix_layout      *string
-	output_bilinear           *bool
-	output_panel_gammas       *string
-	output_panel_color_orders *string
-	fingerprint               *string
-	approved_at               *time.Time
-	firmware_version          *string
-	firmware_version_pin      *string
-	last_update_status        *string
-	last_update_at            *time.Time
-	clearedFields             map[string]struct{}
-	group                     *int
-	clearedgroup              bool
-	done                      bool
-	oldValue                  func(context.Context) (*DeviceSettings, error)
-	predicates                []predicate.DeviceSettings
+	op                          Op
+	typ                         string
+	id                          *int
+	name                        *string
+	ip                          *string
+	port                        *int
+	addport                     *int
+	username                    *string
+	password                    *string
+	width                       *int
+	addwidth                    *int
+	height                      *int
+	addheight                   *int
+	panel_cols                  *int
+	addpanel_cols               *int
+	panel_gap                   *int
+	addpanel_gap                *int
+	enabled                     *bool
+	token                       *string
+	refresh_interval            *int
+	addrefresh_interval         *int
+	last_seen_at                *time.Time
+	frames_served               *int
+	addframes_served            *int
+	content_mode                *string
+	playlist_id                 *int
+	addplaylist_id              *int
+	scheduled_playlist_ids      *string
+	fallback_playlist_id        *int
+	addfallback_playlist_id     *int
+	brightness_enabled          *bool
+	brightness_schedules        *string
+	brightness_override         *int
+	addbrightness_override      *int
+	brightness_sensor_config    *string
+	idle_screensaver            *string
+	overlay_enabled             *bool
+	overlay_position            *string
+	overlay_height              *int
+	addoverlay_height           *int
+	overlay_text                *string
+	overlay_speed_px            *int
+	addoverlay_speed_px         *int
+	overlay_bg                  *string
+	overlay_fg                  *string
+	overlay_effect_preset_id    *int
+	addoverlay_effect_preset_id *int
+	transport                   *string
+	wled_host                   *string
+	wled_port                   *int
+	addwled_port                *int
+	wled_realtime_mode          *string
+	wled_channel                *int
+	addwled_channel             *int
+	artnet_host                 *string
+	artnet_port                 *int
+	addartnet_port              *int
+	artnet_universe             *int
+	addartnet_universe          *int
+	output_fps                  *int
+	addoutput_fps               *int
+	output_color_order          *string
+	output_gamma                *float64
+	addoutput_gamma             *float64
+	output_matrix_layout        *string
+	output_bilinear             *bool
+	output_panel_gammas         *string
+	output_panel_color_orders   *string
+	fingerprint                 *string
+	approved_at                 *time.Time
+	firmware_version            *string
+	firmware_version_pin        *string
+	last_update_status          *string
+	last_update_at              *time.Time
+	clearedFields               map[string]struct{}
+	group                       *int
+	clearedgroup                bool
+	done                        bool
+	oldValue                    func(context.Context) (*DeviceSettings, error)
+	predicates                  []predicate.DeviceSettings
 }
 
 var _ ent.Mutation = (*DeviceSettingsMutation)(nil)
@@ -13094,6 +13205,76 @@ func (m *DeviceSettingsMutation) ResetOverlayFg() {
 	m.overlay_fg = nil
 }
 
+// SetOverlayEffectPresetID sets the "overlay_effect_preset_id" field.
+func (m *DeviceSettingsMutation) SetOverlayEffectPresetID(i int) {
+	m.overlay_effect_preset_id = &i
+	m.addoverlay_effect_preset_id = nil
+}
+
+// OverlayEffectPresetID returns the value of the "overlay_effect_preset_id" field in the mutation.
+func (m *DeviceSettingsMutation) OverlayEffectPresetID() (r int, exists bool) {
+	v := m.overlay_effect_preset_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOverlayEffectPresetID returns the old "overlay_effect_preset_id" field's value of the DeviceSettings entity.
+// If the DeviceSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceSettingsMutation) OldOverlayEffectPresetID(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOverlayEffectPresetID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOverlayEffectPresetID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOverlayEffectPresetID: %w", err)
+	}
+	return oldValue.OverlayEffectPresetID, nil
+}
+
+// AddOverlayEffectPresetID adds i to the "overlay_effect_preset_id" field.
+func (m *DeviceSettingsMutation) AddOverlayEffectPresetID(i int) {
+	if m.addoverlay_effect_preset_id != nil {
+		*m.addoverlay_effect_preset_id += i
+	} else {
+		m.addoverlay_effect_preset_id = &i
+	}
+}
+
+// AddedOverlayEffectPresetID returns the value that was added to the "overlay_effect_preset_id" field in this mutation.
+func (m *DeviceSettingsMutation) AddedOverlayEffectPresetID() (r int, exists bool) {
+	v := m.addoverlay_effect_preset_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOverlayEffectPresetID clears the value of the "overlay_effect_preset_id" field.
+func (m *DeviceSettingsMutation) ClearOverlayEffectPresetID() {
+	m.overlay_effect_preset_id = nil
+	m.addoverlay_effect_preset_id = nil
+	m.clearedFields[devicesettings.FieldOverlayEffectPresetID] = struct{}{}
+}
+
+// OverlayEffectPresetIDCleared returns if the "overlay_effect_preset_id" field was cleared in this mutation.
+func (m *DeviceSettingsMutation) OverlayEffectPresetIDCleared() bool {
+	_, ok := m.clearedFields[devicesettings.FieldOverlayEffectPresetID]
+	return ok
+}
+
+// ResetOverlayEffectPresetID resets all changes to the "overlay_effect_preset_id" field.
+func (m *DeviceSettingsMutation) ResetOverlayEffectPresetID() {
+	m.overlay_effect_preset_id = nil
+	m.addoverlay_effect_preset_id = nil
+	delete(m.clearedFields, devicesettings.FieldOverlayEffectPresetID)
+}
+
 // SetTransport sets the "transport" field.
 func (m *DeviceSettingsMutation) SetTransport(s string) {
 	m.transport = &s
@@ -14070,7 +14251,7 @@ func (m *DeviceSettingsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DeviceSettingsMutation) Fields() []string {
-	fields := make([]string, 0, 52)
+	fields := make([]string, 0, 53)
 	if m.name != nil {
 		fields = append(fields, devicesettings.FieldName)
 	}
@@ -14163,6 +14344,9 @@ func (m *DeviceSettingsMutation) Fields() []string {
 	}
 	if m.overlay_fg != nil {
 		fields = append(fields, devicesettings.FieldOverlayFg)
+	}
+	if m.overlay_effect_preset_id != nil {
+		fields = append(fields, devicesettings.FieldOverlayEffectPresetID)
 	}
 	if m.transport != nil {
 		fields = append(fields, devicesettings.FieldTransport)
@@ -14297,6 +14481,8 @@ func (m *DeviceSettingsMutation) Field(name string) (ent.Value, bool) {
 		return m.OverlayBg()
 	case devicesettings.FieldOverlayFg:
 		return m.OverlayFg()
+	case devicesettings.FieldOverlayEffectPresetID:
+		return m.OverlayEffectPresetID()
 	case devicesettings.FieldTransport:
 		return m.Transport()
 	case devicesettings.FieldWledHost:
@@ -14410,6 +14596,8 @@ func (m *DeviceSettingsMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldOverlayBg(ctx)
 	case devicesettings.FieldOverlayFg:
 		return m.OldOverlayFg(ctx)
+	case devicesettings.FieldOverlayEffectPresetID:
+		return m.OldOverlayEffectPresetID(ctx)
 	case devicesettings.FieldTransport:
 		return m.OldTransport(ctx)
 	case devicesettings.FieldWledHost:
@@ -14678,6 +14866,13 @@ func (m *DeviceSettingsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetOverlayFg(v)
 		return nil
+	case devicesettings.FieldOverlayEffectPresetID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOverlayEffectPresetID(v)
+		return nil
 	case devicesettings.FieldTransport:
 		v, ok := value.(string)
 		if !ok {
@@ -14869,6 +15064,9 @@ func (m *DeviceSettingsMutation) AddedFields() []string {
 	if m.addoverlay_speed_px != nil {
 		fields = append(fields, devicesettings.FieldOverlaySpeedPx)
 	}
+	if m.addoverlay_effect_preset_id != nil {
+		fields = append(fields, devicesettings.FieldOverlayEffectPresetID)
+	}
 	if m.addwled_port != nil {
 		fields = append(fields, devicesettings.FieldWledPort)
 	}
@@ -14919,6 +15117,8 @@ func (m *DeviceSettingsMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedOverlayHeight()
 	case devicesettings.FieldOverlaySpeedPx:
 		return m.AddedOverlaySpeedPx()
+	case devicesettings.FieldOverlayEffectPresetID:
+		return m.AddedOverlayEffectPresetID()
 	case devicesettings.FieldWledPort:
 		return m.AddedWledPort()
 	case devicesettings.FieldWledChannel:
@@ -15024,6 +15224,13 @@ func (m *DeviceSettingsMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddOverlaySpeedPx(v)
 		return nil
+	case devicesettings.FieldOverlayEffectPresetID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOverlayEffectPresetID(v)
+		return nil
 	case devicesettings.FieldWledPort:
 		v, ok := value.(int)
 		if !ok {
@@ -15095,6 +15302,9 @@ func (m *DeviceSettingsMutation) ClearedFields() []string {
 	if m.FieldCleared(devicesettings.FieldGroupID) {
 		fields = append(fields, devicesettings.FieldGroupID)
 	}
+	if m.FieldCleared(devicesettings.FieldOverlayEffectPresetID) {
+		fields = append(fields, devicesettings.FieldOverlayEffectPresetID)
+	}
 	if m.FieldCleared(devicesettings.FieldApprovedAt) {
 		fields = append(fields, devicesettings.FieldApprovedAt)
 	}
@@ -15138,6 +15348,9 @@ func (m *DeviceSettingsMutation) ClearField(name string) error {
 		return nil
 	case devicesettings.FieldGroupID:
 		m.ClearGroupID()
+		return nil
+	case devicesettings.FieldOverlayEffectPresetID:
+		m.ClearOverlayEffectPresetID()
 		return nil
 	case devicesettings.FieldApprovedAt:
 		m.ClearApprovedAt()
@@ -15248,6 +15461,9 @@ func (m *DeviceSettingsMutation) ResetField(name string) error {
 		return nil
 	case devicesettings.FieldOverlayFg:
 		m.ResetOverlayFg()
+		return nil
+	case devicesettings.FieldOverlayEffectPresetID:
+		m.ResetOverlayEffectPresetID()
 		return nil
 	case devicesettings.FieldTransport:
 		m.ResetTransport()
@@ -16443,6 +16659,602 @@ func (m *DisplayRuleMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *DisplayRuleMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown DisplayRule edge %s", name)
+}
+
+// EffectPresetMutation represents an operation that mutates the EffectPreset nodes in the graph.
+type EffectPresetMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	name          *string
+	effect        *string
+	params        *string
+	built_in      *bool
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*EffectPreset, error)
+	predicates    []predicate.EffectPreset
+}
+
+var _ ent.Mutation = (*EffectPresetMutation)(nil)
+
+// effectpresetOption allows management of the mutation configuration using functional options.
+type effectpresetOption func(*EffectPresetMutation)
+
+// newEffectPresetMutation creates new mutation for the EffectPreset entity.
+func newEffectPresetMutation(c config, op Op, opts ...effectpresetOption) *EffectPresetMutation {
+	m := &EffectPresetMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeEffectPreset,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withEffectPresetID sets the ID field of the mutation.
+func withEffectPresetID(id int) effectpresetOption {
+	return func(m *EffectPresetMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *EffectPreset
+		)
+		m.oldValue = func(ctx context.Context) (*EffectPreset, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().EffectPreset.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withEffectPreset sets the old EffectPreset of the mutation.
+func withEffectPreset(node *EffectPreset) effectpresetOption {
+	return func(m *EffectPresetMutation) {
+		m.oldValue = func(context.Context) (*EffectPreset, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m EffectPresetMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m EffectPresetMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *EffectPresetMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *EffectPresetMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().EffectPreset.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *EffectPresetMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *EffectPresetMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the EffectPreset entity.
+// If the EffectPreset object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EffectPresetMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *EffectPresetMutation) ResetName() {
+	m.name = nil
+}
+
+// SetEffect sets the "effect" field.
+func (m *EffectPresetMutation) SetEffect(s string) {
+	m.effect = &s
+}
+
+// Effect returns the value of the "effect" field in the mutation.
+func (m *EffectPresetMutation) Effect() (r string, exists bool) {
+	v := m.effect
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEffect returns the old "effect" field's value of the EffectPreset entity.
+// If the EffectPreset object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EffectPresetMutation) OldEffect(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEffect is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEffect requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEffect: %w", err)
+	}
+	return oldValue.Effect, nil
+}
+
+// ResetEffect resets all changes to the "effect" field.
+func (m *EffectPresetMutation) ResetEffect() {
+	m.effect = nil
+}
+
+// SetParams sets the "params" field.
+func (m *EffectPresetMutation) SetParams(s string) {
+	m.params = &s
+}
+
+// Params returns the value of the "params" field in the mutation.
+func (m *EffectPresetMutation) Params() (r string, exists bool) {
+	v := m.params
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParams returns the old "params" field's value of the EffectPreset entity.
+// If the EffectPreset object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EffectPresetMutation) OldParams(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParams is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParams requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParams: %w", err)
+	}
+	return oldValue.Params, nil
+}
+
+// ResetParams resets all changes to the "params" field.
+func (m *EffectPresetMutation) ResetParams() {
+	m.params = nil
+}
+
+// SetBuiltIn sets the "built_in" field.
+func (m *EffectPresetMutation) SetBuiltIn(b bool) {
+	m.built_in = &b
+}
+
+// BuiltIn returns the value of the "built_in" field in the mutation.
+func (m *EffectPresetMutation) BuiltIn() (r bool, exists bool) {
+	v := m.built_in
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBuiltIn returns the old "built_in" field's value of the EffectPreset entity.
+// If the EffectPreset object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EffectPresetMutation) OldBuiltIn(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBuiltIn is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBuiltIn requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBuiltIn: %w", err)
+	}
+	return oldValue.BuiltIn, nil
+}
+
+// ResetBuiltIn resets all changes to the "built_in" field.
+func (m *EffectPresetMutation) ResetBuiltIn() {
+	m.built_in = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *EffectPresetMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *EffectPresetMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the EffectPreset entity.
+// If the EffectPreset object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EffectPresetMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *EffectPresetMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *EffectPresetMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *EffectPresetMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the EffectPreset entity.
+// If the EffectPreset object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EffectPresetMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *EffectPresetMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the EffectPresetMutation builder.
+func (m *EffectPresetMutation) Where(ps ...predicate.EffectPreset) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the EffectPresetMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *EffectPresetMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.EffectPreset, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *EffectPresetMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *EffectPresetMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (EffectPreset).
+func (m *EffectPresetMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *EffectPresetMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.name != nil {
+		fields = append(fields, effectpreset.FieldName)
+	}
+	if m.effect != nil {
+		fields = append(fields, effectpreset.FieldEffect)
+	}
+	if m.params != nil {
+		fields = append(fields, effectpreset.FieldParams)
+	}
+	if m.built_in != nil {
+		fields = append(fields, effectpreset.FieldBuiltIn)
+	}
+	if m.created_at != nil {
+		fields = append(fields, effectpreset.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, effectpreset.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *EffectPresetMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case effectpreset.FieldName:
+		return m.Name()
+	case effectpreset.FieldEffect:
+		return m.Effect()
+	case effectpreset.FieldParams:
+		return m.Params()
+	case effectpreset.FieldBuiltIn:
+		return m.BuiltIn()
+	case effectpreset.FieldCreatedAt:
+		return m.CreatedAt()
+	case effectpreset.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *EffectPresetMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case effectpreset.FieldName:
+		return m.OldName(ctx)
+	case effectpreset.FieldEffect:
+		return m.OldEffect(ctx)
+	case effectpreset.FieldParams:
+		return m.OldParams(ctx)
+	case effectpreset.FieldBuiltIn:
+		return m.OldBuiltIn(ctx)
+	case effectpreset.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case effectpreset.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown EffectPreset field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *EffectPresetMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case effectpreset.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case effectpreset.FieldEffect:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEffect(v)
+		return nil
+	case effectpreset.FieldParams:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParams(v)
+		return nil
+	case effectpreset.FieldBuiltIn:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBuiltIn(v)
+		return nil
+	case effectpreset.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case effectpreset.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown EffectPreset field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *EffectPresetMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *EffectPresetMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *EffectPresetMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown EffectPreset numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *EffectPresetMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *EffectPresetMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *EffectPresetMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown EffectPreset nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *EffectPresetMutation) ResetField(name string) error {
+	switch name {
+	case effectpreset.FieldName:
+		m.ResetName()
+		return nil
+	case effectpreset.FieldEffect:
+		m.ResetEffect()
+		return nil
+	case effectpreset.FieldParams:
+		m.ResetParams()
+		return nil
+	case effectpreset.FieldBuiltIn:
+		m.ResetBuiltIn()
+		return nil
+	case effectpreset.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case effectpreset.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown EffectPreset field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *EffectPresetMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *EffectPresetMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *EffectPresetMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *EffectPresetMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *EffectPresetMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *EffectPresetMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *EffectPresetMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown EffectPreset unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *EffectPresetMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown EffectPreset edge %s", name)
 }
 
 // EmailSettingsMutation represents an operation that mutates the EmailSettings nodes in the graph.

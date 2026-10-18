@@ -60,6 +60,9 @@ type DeviceSettings func(*sql.Selector)
 // DisplayRule is the predicate function for displayrule builders.
 type DisplayRule func(*sql.Selector)
 
+// EffectPreset is the predicate function for effectpreset builders.
+type EffectPreset func(*sql.Selector)
+
 // EmailSettings is the predicate function for emailsettings builders.
 type EmailSettings func(*sql.Selector)
 

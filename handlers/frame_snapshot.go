@@ -12,6 +12,7 @@ import (
 	"ledit/datasource"
 	"ledit/ent"
 	"ledit/render"
+	"ledit/render/effects"
 )
 
 // errVideoContent marks a snapshot request whose current slot renders video
@@ -115,12 +116,15 @@ func (s *Server) APIFrame(c *gin.Context) {
 
 // frameOverlay composites the send-time overlay exactly as serveFeed does: a
 // scene overlay replaces the device strip, and an unset spec is a no-op.
-func frameOverlay(data []byte, spec render.OverlaySpec) []byte {
+func frameOverlay(data []byte, spec render.OverlaySpec, palette effects.Palette) []byte {
 	if sceneSpec, ok := ActiveSceneOverlay(time.Now()); ok {
 		spec = sceneSpec
 	}
 	if !spec.Enabled {
 		return data
+	}
+	if spec.EffectName != "" {
+		spec.EffectPalette = palette
 	}
 	out, err := render.CompositeOverlayPNG(data, spec, time.Now())
 	if err != nil {
@@ -208,6 +212,6 @@ func (s *Server) renderCurrentFrame(c *gin.Context, deviceID int, device *ent.De
 		return nil, "", false, cacheKey, errVideoContent
 	}
 
-	data := slicePanels(frameOverlay(img.Data, overlay))
+	data := slicePanels(frameOverlay(img.Data, overlay, effects.PaletteFromRGB(theme.BackgroundColor, theme.AccentColor, theme.TextColor)))
 	return &render.RenderedImage{Data: data, Format: "PNG"}, sw.Name, stale, cacheKey, nil
 }

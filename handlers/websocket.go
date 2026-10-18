@@ -46,6 +46,7 @@ import (
 	"ledit/ent/generalsettings"
 	"ledit/ent/playlist"
 	"ledit/render"
+	"ledit/render/effects"
 )
 
 var upgrader = websocket.Upgrader{
@@ -102,7 +103,7 @@ type feedConn struct {
 
 // overlaySpecForDevice maps persisted device columns to the render overlay spec.
 func overlaySpecForDevice(d *ent.DeviceSettings) render.OverlaySpec {
-	return render.OverlaySpec{
+	spec := render.OverlaySpec{
 		Enabled:    d.OverlayEnabled,
 		Position:   d.OverlayPosition,
 		Height:     d.OverlayHeight,
@@ -111,6 +112,7 @@ func overlaySpecForDevice(d *ent.DeviceSettings) render.OverlaySpec {
 		Background: d.OverlayBg,
 		Foreground: d.OverlayFg,
 	}
+	return overlayEffectFields(spec, overlayEffectPresetID(d))
 }
 
 func splitCacheKey(k string) []string { return strings.SplitN(k, ":", 2) }
@@ -192,6 +194,11 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 	sources = append(sources, sourceWithName{Name: "Matrix Rain", Source: &datasource.MatrixRainDS{}, cacheKey: "matrix-rain:0"})
 	for i, v := range []string{"starfield", "dvd", "matrix", "plasma"} {
 		sources = append(sources, sourceWithName{Name: "Screensaver: " + v, Source: &datasource.ScreensaverDS{Variant: v}, cacheKey: fmt.Sprintf("screensaver:%d", i)})
+	}
+
+	// Effect presets (procedural, theme-driven, no config).
+	for _, p := range cachedEffectPresets() {
+		sources = append(sources, sourceWithName{Name: datasource.EffectSourceName(p.Name, p.Effect), Source: effectSourceFor(p), cacheKey: fmt.Sprintf("effect:%d", p.ID)})
 	}
 
 	rssFeeds, _ := settings.Edges.RssFeedsOrErr()
@@ -1242,8 +1249,14 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 	// so the cached content frame stays overlay-free and all devices sharing a
 	// cache key still get their own strip. Skipped for transition ramp and
 	// notification frames (v1).
+	// overlayPalette is refreshed from the effective theme of the frame being
+	// sent so an effect-backed strip follows theme changes.
+	var overlayPalette effects.Palette
 	applyOverlay := func(data []byte) []byte {
 		spec := fc.overlay
+		if spec.EffectName != "" {
+			spec.EffectPalette = overlayPalette
+		}
 		// Scene overlay text replaces the per-device strip while a scene holds;
 		// notifications/incidents render before this path so they still win.
 		if sceneSpec, ok := ActiveSceneOverlay(time.Now()); ok {
@@ -1412,6 +1425,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				datasource.SetChartContext(parts[0], parts[1])
 				sourceTheme = ResolveTheme(parts[0], mustAtoi(parts[1]))
 			}
+			overlayPalette = effects.PaletteFromRGB(sourceTheme.BackgroundColor, sourceTheme.AccentColor, sourceTheme.TextColor)
 			cacheKey := lkgCacheKey(fc.cacheKeyPrefix+sw.cacheKey, renderWidth, height) + "|" + themeCacheSig(sourceTheme)
 			img, stale, err := defaultLKG.GetPNG(cacheKey, datasourceConfigSig(sw.Source), func() (*render.RenderedImage, error) {
 				start := time.Now()

@@ -9,6 +9,8 @@ import (
 	"image/draw"
 	"image/png"
 	"time"
+
+	"ledit/render/effects"
 )
 
 // OverlaySpec describes a persistent text strip composited over content frames
@@ -21,6 +23,13 @@ type OverlaySpec struct {
 	SpeedPx    int    // 0 = static
 	Background string // "#rrggbb"
 	Foreground string // "#rrggbb"
+
+	// Optional procedural effect drawn behind the text strip. Empty means the
+	// solid Background fill, which keeps the v1 output byte-identical.
+	EffectName    string
+	EffectParams  string // versioned params JSON; palette is ignored
+	EffectSeed    int64
+	EffectPalette effects.Palette
 }
 
 // DefaultOverlaySpec returns the v1 defaults matching the device_settings schema.
@@ -75,7 +84,49 @@ func ValidateOverlaySpec(spec OverlaySpec, deviceHeight int) error {
 	if !isValidHexColor(spec.Foreground) {
 		return errors.New("overlay_fg must be a #rrggbb hex color")
 	}
+	if spec.EffectName != "" {
+		if _, _, ok := effects.Lookup(spec.EffectName); !ok {
+			return fmt.Errorf("overlay_effect_preset names an unknown effect: %s", spec.EffectName)
+		}
+		if _, err := effects.UnmarshalParams([]byte(spec.EffectParams)); err != nil {
+			return errors.New("overlay effect parameters are invalid")
+		}
+	}
 	return nil
+}
+
+// drawOverlayEffect renders the configured effect into the strip rect. It
+// reports false when the effect cannot be rendered so the caller can fall back
+// to the solid background fill.
+func drawOverlayEffect(dst *image.RGBA, spec OverlaySpec, x0, y0, w, h int, now time.Time) bool {
+	r, ok := effects.NewRendererFor(spec.EffectName)
+	if !ok || w <= 0 || h <= 0 {
+		return false
+	}
+	params, err := effects.UnmarshalParams([]byte(spec.EffectParams))
+	if err != nil {
+		params = effects.Params{}
+	}
+	params = params.StripPalette()
+	if spec.EffectSeed != 0 {
+		params.Seed = spec.EffectSeed
+	}
+	params.Palette = spec.EffectPalette
+	if params.Palette.IsZero() {
+		params.Palette = effects.DefaultPalette()
+	}
+	// The effect clock is the send-time wall clock quantized to the shared tick,
+	// so the strip effect advances with the feed and matches previews.
+	frame := r.Frame(w, h, params, time.Duration(now.UnixMilli())*time.Millisecond)
+	if frame == nil {
+		return false
+	}
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			dst.Set(x0+x, y0+y, frame.RGBAAt(x, y))
+		}
+	}
+	return true
 }
 
 // CompositeOverlayPNG decodes a PNG content frame, draws the overlay strip, and
@@ -109,7 +160,9 @@ func CompositeOverlayPNG(data []byte, spec OverlaySpec, now time.Time) ([]byte, 
 	bg := parseHexColor(spec.Background, color.RGBA{0, 0, 0, 255})
 	fg := parseHexColor(spec.Foreground, color.RGBA{255, 255, 255, 255})
 
-	fillRect(rgba, b.Min.X, b.Min.Y+y, b.Max.X-1, b.Min.Y+y+h-1, bg)
+	if spec.EffectName == "" || !drawOverlayEffect(rgba, spec, b.Min.X, b.Min.Y+y, b.Dx(), h, now) {
+		fillRect(rgba, b.Min.X, b.Min.Y+y, b.Max.X-1, b.Min.Y+y+h-1, bg)
+	}
 
 	textY := b.Min.Y + y + (h-simpleCharH)/2
 	if textY < b.Min.Y+y {

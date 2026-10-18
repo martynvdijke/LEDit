@@ -589,6 +589,33 @@ func (_u *DeviceSettingsUpdate) SetNillableOverlayFg(v *string) *DeviceSettingsU
 	return _u
 }
 
+// SetOverlayEffectPresetID sets the "overlay_effect_preset_id" field.
+func (_u *DeviceSettingsUpdate) SetOverlayEffectPresetID(v int) *DeviceSettingsUpdate {
+	_u.mutation.ResetOverlayEffectPresetID()
+	_u.mutation.SetOverlayEffectPresetID(v)
+	return _u
+}
+
+// SetNillableOverlayEffectPresetID sets the "overlay_effect_preset_id" field if the given value is not nil.
+func (_u *DeviceSettingsUpdate) SetNillableOverlayEffectPresetID(v *int) *DeviceSettingsUpdate {
+	if v != nil {
+		_u.SetOverlayEffectPresetID(*v)
+	}
+	return _u
+}
+
+// AddOverlayEffectPresetID adds value to the "overlay_effect_preset_id" field.
+func (_u *DeviceSettingsUpdate) AddOverlayEffectPresetID(v int) *DeviceSettingsUpdate {
+	_u.mutation.AddOverlayEffectPresetID(v)
+	return _u
+}
+
+// ClearOverlayEffectPresetID clears the value of the "overlay_effect_preset_id" field.
+func (_u *DeviceSettingsUpdate) ClearOverlayEffectPresetID() *DeviceSettingsUpdate {
+	_u.mutation.ClearOverlayEffectPresetID()
+	return _u
+}
+
 // SetTransport sets the "transport" field.
 func (_u *DeviceSettingsUpdate) SetTransport(v string) *DeviceSettingsUpdate {
 	_u.mutation.SetTransport(v)
@@ -1181,6 +1208,15 @@ func (_u *DeviceSettingsUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.OverlayFg(); ok {
 		_spec.SetField(devicesettings.FieldOverlayFg, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OverlayEffectPresetID(); ok {
+		_spec.SetField(devicesettings.FieldOverlayEffectPresetID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOverlayEffectPresetID(); ok {
+		_spec.AddField(devicesettings.FieldOverlayEffectPresetID, field.TypeInt, value)
+	}
+	if _u.mutation.OverlayEffectPresetIDCleared() {
+		_spec.ClearField(devicesettings.FieldOverlayEffectPresetID, field.TypeInt)
 	}
 	if value, ok := _u.mutation.Transport(); ok {
 		_spec.SetField(devicesettings.FieldTransport, field.TypeString, value)
@@ -1881,6 +1917,33 @@ func (_u *DeviceSettingsUpdateOne) SetNillableOverlayFg(v *string) *DeviceSettin
 	return _u
 }
 
+// SetOverlayEffectPresetID sets the "overlay_effect_preset_id" field.
+func (_u *DeviceSettingsUpdateOne) SetOverlayEffectPresetID(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.ResetOverlayEffectPresetID()
+	_u.mutation.SetOverlayEffectPresetID(v)
+	return _u
+}
+
+// SetNillableOverlayEffectPresetID sets the "overlay_effect_preset_id" field if the given value is not nil.
+func (_u *DeviceSettingsUpdateOne) SetNillableOverlayEffectPresetID(v *int) *DeviceSettingsUpdateOne {
+	if v != nil {
+		_u.SetOverlayEffectPresetID(*v)
+	}
+	return _u
+}
+
+// AddOverlayEffectPresetID adds value to the "overlay_effect_preset_id" field.
+func (_u *DeviceSettingsUpdateOne) AddOverlayEffectPresetID(v int) *DeviceSettingsUpdateOne {
+	_u.mutation.AddOverlayEffectPresetID(v)
+	return _u
+}
+
+// ClearOverlayEffectPresetID clears the value of the "overlay_effect_preset_id" field.
+func (_u *DeviceSettingsUpdateOne) ClearOverlayEffectPresetID() *DeviceSettingsUpdateOne {
+	_u.mutation.ClearOverlayEffectPresetID()
+	return _u
+}
+
 // SetTransport sets the "transport" field.
 func (_u *DeviceSettingsUpdateOne) SetTransport(v string) *DeviceSettingsUpdateOne {
 	_u.mutation.SetTransport(v)
@@ -2503,6 +2566,15 @@ func (_u *DeviceSettingsUpdateOne) sqlSave(ctx context.Context) (_node *DeviceSe
 	}
 	if value, ok := _u.mutation.OverlayFg(); ok {
 		_spec.SetField(devicesettings.FieldOverlayFg, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OverlayEffectPresetID(); ok {
+		_spec.SetField(devicesettings.FieldOverlayEffectPresetID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOverlayEffectPresetID(); ok {
+		_spec.AddField(devicesettings.FieldOverlayEffectPresetID, field.TypeInt, value)
+	}
+	if _u.mutation.OverlayEffectPresetIDCleared() {
+		_spec.ClearField(devicesettings.FieldOverlayEffectPresetID, field.TypeInt)
 	}
 	if value, ok := _u.mutation.Transport(); ok {
 		_spec.SetField(devicesettings.FieldTransport, field.TypeString, value)

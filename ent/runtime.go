@@ -21,6 +21,7 @@ import (
 	"ledit/ent/devicemessagestate"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
+	"ledit/ent/effectpreset"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/firmwarerelease"
@@ -558,83 +559,83 @@ func init() {
 	// devicesettings.DefaultOverlayFg holds the default value on creation for the overlay_fg field.
 	devicesettings.DefaultOverlayFg = devicesettingsDescOverlayFg.Default.(string)
 	// devicesettingsDescTransport is the schema descriptor for transport field.
-	devicesettingsDescTransport := devicesettingsFields[31].Descriptor()
+	devicesettingsDescTransport := devicesettingsFields[32].Descriptor()
 	// devicesettings.DefaultTransport holds the default value on creation for the transport field.
 	devicesettings.DefaultTransport = devicesettingsDescTransport.Default.(string)
 	// devicesettings.TransportValidator is a validator for the "transport" field. It is called by the builders before save.
 	devicesettings.TransportValidator = devicesettingsDescTransport.Validators[0].(func(string) error)
 	// devicesettingsDescWledHost is the schema descriptor for wled_host field.
-	devicesettingsDescWledHost := devicesettingsFields[32].Descriptor()
+	devicesettingsDescWledHost := devicesettingsFields[33].Descriptor()
 	// devicesettings.DefaultWledHost holds the default value on creation for the wled_host field.
 	devicesettings.DefaultWledHost = devicesettingsDescWledHost.Default.(string)
 	// devicesettingsDescWledPort is the schema descriptor for wled_port field.
-	devicesettingsDescWledPort := devicesettingsFields[33].Descriptor()
+	devicesettingsDescWledPort := devicesettingsFields[34].Descriptor()
 	// devicesettings.DefaultWledPort holds the default value on creation for the wled_port field.
 	devicesettings.DefaultWledPort = devicesettingsDescWledPort.Default.(int)
 	// devicesettingsDescWledRealtimeMode is the schema descriptor for wled_realtime_mode field.
-	devicesettingsDescWledRealtimeMode := devicesettingsFields[34].Descriptor()
+	devicesettingsDescWledRealtimeMode := devicesettingsFields[35].Descriptor()
 	// devicesettings.DefaultWledRealtimeMode holds the default value on creation for the wled_realtime_mode field.
 	devicesettings.DefaultWledRealtimeMode = devicesettingsDescWledRealtimeMode.Default.(string)
 	// devicesettings.WledRealtimeModeValidator is a validator for the "wled_realtime_mode" field. It is called by the builders before save.
 	devicesettings.WledRealtimeModeValidator = devicesettingsDescWledRealtimeMode.Validators[0].(func(string) error)
 	// devicesettingsDescWledChannel is the schema descriptor for wled_channel field.
-	devicesettingsDescWledChannel := devicesettingsFields[35].Descriptor()
+	devicesettingsDescWledChannel := devicesettingsFields[36].Descriptor()
 	// devicesettings.DefaultWledChannel holds the default value on creation for the wled_channel field.
 	devicesettings.DefaultWledChannel = devicesettingsDescWledChannel.Default.(int)
 	// devicesettingsDescArtnetHost is the schema descriptor for artnet_host field.
-	devicesettingsDescArtnetHost := devicesettingsFields[36].Descriptor()
+	devicesettingsDescArtnetHost := devicesettingsFields[37].Descriptor()
 	// devicesettings.DefaultArtnetHost holds the default value on creation for the artnet_host field.
 	devicesettings.DefaultArtnetHost = devicesettingsDescArtnetHost.Default.(string)
 	// devicesettingsDescArtnetPort is the schema descriptor for artnet_port field.
-	devicesettingsDescArtnetPort := devicesettingsFields[37].Descriptor()
+	devicesettingsDescArtnetPort := devicesettingsFields[38].Descriptor()
 	// devicesettings.DefaultArtnetPort holds the default value on creation for the artnet_port field.
 	devicesettings.DefaultArtnetPort = devicesettingsDescArtnetPort.Default.(int)
 	// devicesettingsDescArtnetUniverse is the schema descriptor for artnet_universe field.
-	devicesettingsDescArtnetUniverse := devicesettingsFields[38].Descriptor()
+	devicesettingsDescArtnetUniverse := devicesettingsFields[39].Descriptor()
 	// devicesettings.DefaultArtnetUniverse holds the default value on creation for the artnet_universe field.
 	devicesettings.DefaultArtnetUniverse = devicesettingsDescArtnetUniverse.Default.(int)
 	// devicesettingsDescOutputFps is the schema descriptor for output_fps field.
-	devicesettingsDescOutputFps := devicesettingsFields[39].Descriptor()
+	devicesettingsDescOutputFps := devicesettingsFields[40].Descriptor()
 	// devicesettings.DefaultOutputFps holds the default value on creation for the output_fps field.
 	devicesettings.DefaultOutputFps = devicesettingsDescOutputFps.Default.(int)
 	// devicesettingsDescOutputColorOrder is the schema descriptor for output_color_order field.
-	devicesettingsDescOutputColorOrder := devicesettingsFields[40].Descriptor()
+	devicesettingsDescOutputColorOrder := devicesettingsFields[41].Descriptor()
 	// devicesettings.DefaultOutputColorOrder holds the default value on creation for the output_color_order field.
 	devicesettings.DefaultOutputColorOrder = devicesettingsDescOutputColorOrder.Default.(string)
 	// devicesettings.OutputColorOrderValidator is a validator for the "output_color_order" field. It is called by the builders before save.
 	devicesettings.OutputColorOrderValidator = devicesettingsDescOutputColorOrder.Validators[0].(func(string) error)
 	// devicesettingsDescOutputGamma is the schema descriptor for output_gamma field.
-	devicesettingsDescOutputGamma := devicesettingsFields[41].Descriptor()
+	devicesettingsDescOutputGamma := devicesettingsFields[42].Descriptor()
 	// devicesettings.DefaultOutputGamma holds the default value on creation for the output_gamma field.
 	devicesettings.DefaultOutputGamma = devicesettingsDescOutputGamma.Default.(float64)
 	// devicesettingsDescOutputMatrixLayout is the schema descriptor for output_matrix_layout field.
-	devicesettingsDescOutputMatrixLayout := devicesettingsFields[42].Descriptor()
+	devicesettingsDescOutputMatrixLayout := devicesettingsFields[43].Descriptor()
 	// devicesettings.DefaultOutputMatrixLayout holds the default value on creation for the output_matrix_layout field.
 	devicesettings.DefaultOutputMatrixLayout = devicesettingsDescOutputMatrixLayout.Default.(string)
 	// devicesettings.OutputMatrixLayoutValidator is a validator for the "output_matrix_layout" field. It is called by the builders before save.
 	devicesettings.OutputMatrixLayoutValidator = devicesettingsDescOutputMatrixLayout.Validators[0].(func(string) error)
 	// devicesettingsDescOutputBilinear is the schema descriptor for output_bilinear field.
-	devicesettingsDescOutputBilinear := devicesettingsFields[43].Descriptor()
+	devicesettingsDescOutputBilinear := devicesettingsFields[44].Descriptor()
 	// devicesettings.DefaultOutputBilinear holds the default value on creation for the output_bilinear field.
 	devicesettings.DefaultOutputBilinear = devicesettingsDescOutputBilinear.Default.(bool)
 	// devicesettingsDescOutputPanelGammas is the schema descriptor for output_panel_gammas field.
-	devicesettingsDescOutputPanelGammas := devicesettingsFields[44].Descriptor()
+	devicesettingsDescOutputPanelGammas := devicesettingsFields[45].Descriptor()
 	// devicesettings.DefaultOutputPanelGammas holds the default value on creation for the output_panel_gammas field.
 	devicesettings.DefaultOutputPanelGammas = devicesettingsDescOutputPanelGammas.Default.(string)
 	// devicesettingsDescOutputPanelColorOrders is the schema descriptor for output_panel_color_orders field.
-	devicesettingsDescOutputPanelColorOrders := devicesettingsFields[45].Descriptor()
+	devicesettingsDescOutputPanelColorOrders := devicesettingsFields[46].Descriptor()
 	// devicesettings.DefaultOutputPanelColorOrders holds the default value on creation for the output_panel_color_orders field.
 	devicesettings.DefaultOutputPanelColorOrders = devicesettingsDescOutputPanelColorOrders.Default.(string)
 	// devicesettingsDescFingerprint is the schema descriptor for fingerprint field.
-	devicesettingsDescFingerprint := devicesettingsFields[46].Descriptor()
+	devicesettingsDescFingerprint := devicesettingsFields[47].Descriptor()
 	// devicesettings.DefaultFingerprint holds the default value on creation for the fingerprint field.
 	devicesettings.DefaultFingerprint = devicesettingsDescFingerprint.Default.(string)
 	// devicesettingsDescFirmwareVersion is the schema descriptor for firmware_version field.
-	devicesettingsDescFirmwareVersion := devicesettingsFields[48].Descriptor()
+	devicesettingsDescFirmwareVersion := devicesettingsFields[49].Descriptor()
 	// devicesettings.DefaultFirmwareVersion holds the default value on creation for the firmware_version field.
 	devicesettings.DefaultFirmwareVersion = devicesettingsDescFirmwareVersion.Default.(string)
 	// devicesettingsDescLastUpdateStatus is the schema descriptor for last_update_status field.
-	devicesettingsDescLastUpdateStatus := devicesettingsFields[50].Descriptor()
+	devicesettingsDescLastUpdateStatus := devicesettingsFields[51].Descriptor()
 	// devicesettings.DefaultLastUpdateStatus holds the default value on creation for the last_update_status field.
 	devicesettings.DefaultLastUpdateStatus = devicesettingsDescLastUpdateStatus.Default.(string)
 	displayruleFields := schema.DisplayRule{}.Fields()
@@ -693,6 +694,44 @@ func init() {
 	displayruleDescThenActions := displayruleFields[11].Descriptor()
 	// displayrule.DefaultThenActions holds the default value on creation for the then_actions field.
 	displayrule.DefaultThenActions = displayruleDescThenActions.Default.(string)
+	effectpresetFields := schema.EffectPreset{}.Fields()
+	_ = effectpresetFields
+	// effectpresetDescName is the schema descriptor for name field.
+	effectpresetDescName := effectpresetFields[0].Descriptor()
+	// effectpreset.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	effectpreset.NameValidator = func() func(string) error {
+		validators := effectpresetDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// effectpresetDescParams is the schema descriptor for params field.
+	effectpresetDescParams := effectpresetFields[2].Descriptor()
+	// effectpreset.DefaultParams holds the default value on creation for the params field.
+	effectpreset.DefaultParams = effectpresetDescParams.Default.(string)
+	// effectpresetDescBuiltIn is the schema descriptor for built_in field.
+	effectpresetDescBuiltIn := effectpresetFields[3].Descriptor()
+	// effectpreset.DefaultBuiltIn holds the default value on creation for the built_in field.
+	effectpreset.DefaultBuiltIn = effectpresetDescBuiltIn.Default.(bool)
+	// effectpresetDescCreatedAt is the schema descriptor for created_at field.
+	effectpresetDescCreatedAt := effectpresetFields[4].Descriptor()
+	// effectpreset.DefaultCreatedAt holds the default value on creation for the created_at field.
+	effectpreset.DefaultCreatedAt = effectpresetDescCreatedAt.Default.(func() time.Time)
+	// effectpresetDescUpdatedAt is the schema descriptor for updated_at field.
+	effectpresetDescUpdatedAt := effectpresetFields[5].Descriptor()
+	// effectpreset.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	effectpreset.DefaultUpdatedAt = effectpresetDescUpdatedAt.Default.(func() time.Time)
+	// effectpreset.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	effectpreset.UpdateDefaultUpdatedAt = effectpresetDescUpdatedAt.UpdateDefault.(func() time.Time)
 	emailsettingsFields := schema.EmailSettings{}.Fields()
 	_ = emailsettingsFields
 	// emailsettingsDescUseTLS is the schema descriptor for use_tls field.

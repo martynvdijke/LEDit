@@ -347,6 +347,7 @@ var (
 		{Name: "overlay_speed_px", Type: field.TypeInt, Default: 0},
 		{Name: "overlay_bg", Type: field.TypeString, Default: "#000000"},
 		{Name: "overlay_fg", Type: field.TypeString, Default: "#ffffff"},
+		{Name: "overlay_effect_preset_id", Type: field.TypeInt, Nullable: true},
 	}
 	// DeviceGroupsTable holds the schema information for the "device_groups" table.
 	DeviceGroupsTable = &schema.Table{
@@ -415,6 +416,7 @@ var (
 		{Name: "overlay_speed_px", Type: field.TypeInt, Default: 0},
 		{Name: "overlay_bg", Type: field.TypeString, Default: "#000000"},
 		{Name: "overlay_fg", Type: field.TypeString, Default: "#ffffff"},
+		{Name: "overlay_effect_preset_id", Type: field.TypeInt, Nullable: true},
 		{Name: "transport", Type: field.TypeString, Default: "websocket"},
 		{Name: "wled_host", Type: field.TypeString, Default: ""},
 		{Name: "wled_port", Type: field.TypeInt, Default: 4048},
@@ -447,13 +449,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "device_settings_device_groups_devices",
-				Columns:    []*schema.Column{DeviceSettingsColumns[52]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[53]},
 				RefColumns: []*schema.Column{DeviceGroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "device_settings_general_settings_device_settings",
-				Columns:    []*schema.Column{DeviceSettingsColumns[53]},
+				Columns:    []*schema.Column{DeviceSettingsColumns[54]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -489,6 +491,22 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 		},
+	}
+	// EffectPresetsColumns holds the columns for the "effect_presets" table.
+	EffectPresetsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true, Size: 64},
+		{Name: "effect", Type: field.TypeString},
+		{Name: "params", Type: field.TypeString, Size: 2147483647, Default: "{}"},
+		{Name: "built_in", Type: field.TypeBool, Default: false},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// EffectPresetsTable holds the schema information for the "effect_presets" table.
+	EffectPresetsTable = &schema.Table{
+		Name:       "effect_presets",
+		Columns:    EffectPresetsColumns,
+		PrimaryKey: []*schema.Column{EffectPresetsColumns[0]},
 	}
 	// EmailSettingsColumns holds the columns for the "email_settings" table.
 	EmailSettingsColumns = []*schema.Column{
@@ -1962,6 +1980,7 @@ var (
 		DeviceMessageStatesTable,
 		DeviceSettingsTable,
 		DisplayRulesTable,
+		EffectPresetsTable,
 		EmailSettingsTable,
 		F1sTable,
 		FirmwareReleasesTable,

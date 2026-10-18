@@ -53,6 +53,7 @@ The project identity lives in [`brandkit/README.md`](brandkit/README.md), with r
 - **Custom Font Rendering** — Pixel font (PixelifySans) for crisp LED display text
 - **Theme System** — Cyber (dracula-inspired), Default, F1, and Untappd themes
 - **Custom Theme Editor** — Configure background color, accent color, text color, title, font size
+- **Effects Library** — Procedural, theme-driven effects (`plasma`, `fire`, `sparkle`, `scan`, `noise`, `gradient`) plus byte-identical adapters for the legacy screensaver animations (`legacy-matrix-rain`, `legacy-plasma`, `legacy-starfield`, `legacy-dvd`). Effects are pure functions of the effect name, parameters, seed and a 66 ms tick, so feed, preview and snapshot render the same frame. Configure named presets under Admin → Effects (speed/intensity/density/direction/seed, live debounced preview, built-in presets are read-only and duplicable), then reference them anywhere a source is accepted — rotation, playlists, matrix cells, composition regions, scene actions — as `effect:<preset id>`. Presets store behaviour only; colours always come from the effective theme (per-source override → global default → built-in). A device or group overlay strip can optionally draw a preset behind its text (`overlay_effect_preset_id`, default off and byte-identical when unset). Rendering is allocation-free in steady state and budgeted at ≤0.5 ms (64x32), ≤2 ms (128x64) and ≤6 ms (256x128) for the draw pass on the reference host.
 
 ### Administration
 - **Admin Authentication** — Session-based login for admin panel
@@ -239,7 +240,7 @@ slides and pixel art — export, import and one-click catalog installs (see
 
 ### Admin Endpoints
 
-All admin endpoints are under `/admin/` and require authentication. Full CRUD for every datasource type (Sonarr, Radarr, F1, Weather, HomeAssistant, Untappd, Crypto, Stock, RSS Feeds, Calendars, Images, Videos, Text Slides), plus schedules, devices, playlists, event rules, theme, settings, logs, analytics, and API token management.
+All admin endpoints are under `/admin/` and require authentication. Full CRUD for every datasource type (Sonarr, Radarr, F1, Weather, HomeAssistant, Untappd, Crypto, Stock, RSS Feeds, Calendars, Images, Videos, Text Slides), plus schedules, devices, playlists, event rules, themes, effect presets (`/admin/effects`, with a live preview at `POST /admin/preview/effect`), settings, logs, analytics, and API token management.
 
 ## License
 

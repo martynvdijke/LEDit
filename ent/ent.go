@@ -24,6 +24,7 @@ import (
 	"ledit/ent/devicemessagestate"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
+	"ledit/ent/effectpreset"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/firmwarerelease"
@@ -173,6 +174,7 @@ func checkColumn(t, c string) error {
 			devicemessagestate.Table: devicemessagestate.ValidColumn,
 			devicesettings.Table:     devicesettings.ValidColumn,
 			displayrule.Table:        displayrule.ValidColumn,
+			effectpreset.Table:       effectpreset.ValidColumn,
 			emailsettings.Table:      emailsettings.ValidColumn,
 			f1.Table:                 f1.ValidColumn,
 			firmwarerelease.Table:    firmwarerelease.ValidColumn,
