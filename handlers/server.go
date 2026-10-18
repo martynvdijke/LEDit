@@ -1009,6 +1009,12 @@ func (s *Server) setupRoutes() {
 		admin.GET("/api/backup/export", s.BackupExportHandler)
 		admin.POST("/api/backup/import", s.BackupImportHandler)
 
+		// Artifact sharing
+		admin.GET("/artifacts", s.AdminArtifactsPage)
+		admin.GET("/artifacts/catalog", s.AdminArtifactCatalog)
+		admin.POST("/artifacts/import", s.AdminArtifactImportForm)
+		admin.POST("/artifacts/catalog/install", s.AdminArtifactCatalogInstall)
+
 		// Users management (admin-only)
 		admin.GET("/users", s.AdminUsersPage)
 		admin.GET("/api/users", s.APIUsersList)
@@ -1017,4 +1023,11 @@ func (s *Server) setupRoutes() {
 		admin.POST("/api/users/:id/role", s.APIUsersChangeRole)
 		admin.POST("/api/users/:id/password", s.APIUsersResetPassword)
 	}
+
+	// Artifact sharing JSON API (admin session or admin bearer token; the
+	// endpoints answer 401/403 JSON rather than redirecting to the login page).
+	artifactAPI := s.Router.Group("/admin/api/artifacts")
+	artifactAPI.Use(s.RequireAdmin())
+	artifactAPI.GET("/export/:kind/:id", s.AdminArtifactExport)
+	artifactAPI.POST("/import", s.AdminArtifactImport)
 }

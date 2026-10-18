@@ -34,6 +34,7 @@
                         <td class="items-count text-muted">—</td>
                         <td>
                             <a href="/admin/playlists/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            <a href="/admin/api/artifacts/export/playlist/{{.ID}}" class="btn btn-sm btn-outline-secondary">Export</a>
                             <form method="POST" action="/admin/playlists/{{.ID}}/delete" style="display:inline">
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                             </form>

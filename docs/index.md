@@ -10,3 +10,5 @@ See the [project README](https://github.com/martynvdijke/LEDit#readme) for an ov
   token links, sizing, snapshots and security notes.
 - [Authelia OIDC](authelia-oidc.md) — single sign-on configuration, user
   provisioning and rollback.
+- [Sharing artifacts](artifact-sharing.md) — bundle format, import/export API,
+  conflict handling and the remote catalog.

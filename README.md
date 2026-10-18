@@ -64,6 +64,7 @@ The project identity lives in [`brandkit/README.md`](brandkit/README.md), with r
 - **Email Settings** — SMTP configuration for email notifications
 - **AI Settings** — LLM provider configuration for AI features
 - **Analytics** — Display tracking (displays by source, uptime stats)
+- **Artifact Sharing** — Export a single theme, layout, playlist, scene, text slide or pixel art as a portable bundle and import one from a file, URL or remote catalog (see [docs/artifact-sharing.md](docs/artifact-sharing.md))
 - **Umami Analytics** — Optional web analytics integration
 
 ### Datasource Plugins
@@ -104,6 +105,8 @@ LEDit is configured through the admin panel at `/admin/settings`. Key environmen
 | Variable | Description |
 |----------|-------------|
 | `DOCKER` | Set to `true` when running in Docker (auto-configured in Dockerfile) |
+| `ARTIFACT_CATALOG_URL` | Optional JSON index URL for one-click artifact installs (unset = catalog disabled) |
+| `ARTIFACT_CATALOG_HOSTS` | Optional comma-separated host allowlist for remote artifact bundles (default: public addresses only) |
 
 All other settings (datasources, schedules, devices, themes) are managed through the web UI.
 
@@ -219,6 +222,20 @@ navigation, no login redirect, server-pushed frames only (see
 All embed and snapshot responses are `Cache-Control: no-store` and rate limited
 per client (429 + `Retry-After`); device views require a read-only **embed**
 guest token created under Admin → Guest Remotes.
+
+### Artifact sharing
+
+Portable single-artifact bundles for themes, layouts, playlists, scenes, text
+slides and pixel art — export, import and one-click catalog installs (see
+[docs/artifact-sharing.md](docs/artifact-sharing.md)).
+
+| Method | Endpoint | Purpose | Auth |
+|--------|----------|---------|------|
+| `GET` | `/admin/api/artifacts/export/:kind/:id` | Download an artifact bundle | admin |
+| `POST` | `/admin/api/artifacts/import` | Import a bundle (file, raw body or `url`) | admin |
+| `GET` | `/admin/artifacts` | Share page (export list + import form) | admin |
+| `GET` | `/admin/artifacts/catalog` | Remote catalog | admin |
+| `POST` | `/admin/artifacts/catalog/install` | Install a catalog bundle | admin |
 
 ### Admin Endpoints
 
