@@ -181,6 +181,13 @@ var deviceMessageTexts sync.Map // deviceID int -> string
 // characters is rejected, and devices without a live feed are ignored per the
 // offline no-op rule. The TTL matches the webhook default.
 func (s *Server) ApplyDeviceMessage(deviceID int, text string) error {
+	return s.ApplyDeviceMessageTTL(deviceID, text, 0)
+}
+
+// ApplyDeviceMessageTTL is ApplyDeviceMessage with an explicit TTL override in
+// seconds (used by the REST API's duration picker). ttlSeconds <= 0 keeps the
+// webhook default TTL.
+func (s *Server) ApplyDeviceMessageTTL(deviceID int, text string, ttlSeconds int) error {
 	if s == nil || s.DB == nil || deviceID <= 0 {
 		return fmt.Errorf("message: invalid device")
 	}
@@ -202,7 +209,10 @@ func (s *Server) ApplyDeviceMessage(deviceID int, text string) error {
 		slog.Debug("message: no live feed, ignored", "device", deviceID)
 		return nil
 	}
-	ttl := time.Duration(s.webhookDefaultTTL()) * time.Second
+	if ttlSeconds <= 0 {
+		ttlSeconds = s.webhookDefaultTTL()
+	}
+	ttl := time.Duration(ttlSeconds) * time.Second
 	entry := s.AddNotification(msg, "", WithTTL(ttl), withTargetDevice(deviceID))
 	PublishOutbound(fmt.Sprintf("ledit/device/%d/message/state", deviceID), msg, true)
 	if ttl > 0 {

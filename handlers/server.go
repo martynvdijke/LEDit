@@ -362,6 +362,11 @@ func (s *Server) setupRoutes() {
 			authReads.GET("/incidents", s.APIIncidentList)
 			authReads.GET("/delivery-log", s.APIDeliveryLog)
 			authReads.GET("/playlists/resolve", s.HandlePlaylistResolve)
+			// Remote-control REST surface (Flutter app / API clients).
+			authReads.GET("/devices", s.APIDeviceList)
+			authReads.GET("/playlists", s.APIPlaylistList)
+			authReads.GET("/scenes", s.APISceneList)
+			authReads.GET("/images", s.APIImageList)
 			authReads.GET("/timelapse/frames", s.APITimelapseFrames)
 			authReads.POST("/timelapse/export", s.APITimelapseExport)
 			authReads.GET("/device/discovery", s.AdminDeviceDiscovery)
@@ -377,6 +382,10 @@ func (s *Server) setupRoutes() {
 			apiMut.POST("/feed/alarm/dismiss", s.APIFeedAlarmDismiss)
 			apiMut.POST("/incidents/:id/resolve", s.APIIncidentResolve)
 			apiMut.POST("/scenes/:id/preview", s.APIScenePreview)
+			// Remote-control REST surface (Flutter app / API clients).
+			apiMut.POST("/devices/:id/brightness", s.APIDeviceBrightness)
+			apiMut.POST("/devices/:id/select", s.APIDeviceSelect)
+			apiMut.POST("/devices/:id/message", s.APIDeviceMessage)
 			apiMut.POST("/eventrules/:id/simulate", s.APIEventRuleSimulate)
 			apiMut.GET("/control/actions", s.APIControlActions)
 			apiMut.POST("/control/execute", s.APIControlExecute)

@@ -39,7 +39,7 @@ jobs:
 
       - name: Semantic Release
         id: semantic
-        uses: cycjimmy/semantic-release-action@v6
+        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
         with:
           extra_plugins: |
             @semantic-release/changelog
@@ -51,7 +51,7 @@ jobs:
 
       - name: Set up Python
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.14'
 
@@ -86,7 +86,7 @@ jobs:
 
       - name: Set up Go
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: '1.27'
 
@@ -105,6 +105,52 @@ jobs:
           docker push martynvandijke/ledit:$VERSION
           docker push ghcr.io/martynvdijke/ledit:latest
           docker push ghcr.io/martynvdijke/ledit:$VERSION
+
+  android:
+    needs: [ci, release]
+    if: >-
+      needs.release.result == 'success' &&
+      needs.release.outputs.new_release_published == 'true'
+    name: Android APK
+    runs-on: ubuntu-latest
+    # Non-blocking on purpose: a failing Android build must not fail the
+    # release run, the notify job, or the published Docker image.
+    continue-on-error: true
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          cache: true
+
+      - name: Download dependencies
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Build release APK
+        working-directory: mobile
+        run: flutter build apk --release
+
+      - name: Attach APK to the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.release.outputs.new_release_version }}
+        run: |
+          cp mobile/build/app/outputs/flutter-apk/app-release.apk "LEDit-${VERSION}-android.apk"
+          gh release upload "v${VERSION}" "LEDit-${VERSION}-android.apk" --clobber
 
   notify:
     needs: [ci, release]
