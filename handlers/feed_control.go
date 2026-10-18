@@ -35,6 +35,10 @@ type FeedController struct {
 	// reloadRequested asks the live feed to re-resolve its sources at the
 	// next rotation boundary (e.g. after a playlist switch); guarded by mu.
 	reloadRequested bool
+	// currentCacheKey is the cache key (type:id) of the slot currently on
+	// screen. The frame snapshot endpoint reads it to re-render the current
+	// slot when no live connection has buffered a frame. Guarded by mu.
+	currentCacheKey string
 }
 
 var GlobalFeed = &FeedController{}
@@ -299,6 +303,22 @@ func (fc *FeedController) SetCurrent(name, next string) {
 		GlobalBus.Emit(Event{Type: EventSourceChanged, Timestamp: time.Now(), Data: map[string]string{"from": prev, "to": name}})
 	}
 	return
+}
+
+// SetCurrentCacheKey records the cache key of the slot currently on screen so
+// the frame snapshot endpoint can re-render it when nothing is buffered.
+func (fc *FeedController) SetCurrentCacheKey(key string) {
+	fc.mu.Lock()
+	fc.currentCacheKey = key
+	fc.mu.Unlock()
+}
+
+// CurrentCacheKey returns the cache key of the slot currently on screen, or ""
+// when no slot has been selected yet.
+func (fc *FeedController) CurrentCacheKey() string {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	return fc.currentCacheKey
 }
 
 func (fc *FeedController) Status() map[string]any {

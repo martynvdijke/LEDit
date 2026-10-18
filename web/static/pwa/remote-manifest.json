@@ -33,5 +33,19 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live embed",
+      "short_name": "Embed",
+      "description": "Chrome-free live widget for OBS and iframes",
+      "url": "/embed"
+    },
+    {
+      "name": "Send a photo",
+      "short_name": "Send photo",
+      "description": "Upload a photo to the wall",
+      "url": "/frame"
+    }
   ]
 }

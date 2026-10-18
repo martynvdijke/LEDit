@@ -39,6 +39,7 @@ The project identity lives in [`brandkit/README.md`](brandkit/README.md), with r
 - **Feed Control** — Pause, resume, skip via API or WebSocket commands
 - **Slide Transitions** — Optional animated hand-off between sources: `fade`, `wipe` (left→right), or `dissolve`; duration configurable 100–2000 ms (default 500 ms) under Admin → Settings. Disabled (`none`) by default. Tuned for LED refresh rates (~12 steps at the default); e-ink/TRMNL devices are unaffected as they poll static images.
 - **Priority Messages** — Urgent notifications that interrupt the current feed
+- **Embed Surfaces** — Chrome-free live views for OBS Browser Sources, iframes and kiosks at `/embed` (shared) and `/embed/device/:id` (token link), plus one-shot snapshots at `/api/frame`. Frames are server-pushed (no polling), the background is transparent by default, sizes clamp to 8–1024 px, and device links exchange the URL-fragment secret for a short-lived HttpOnly cookie. See [docs/embedding.md](docs/embedding.md).
 - **Notification History** — View past priority notifications
 - **Random/Sequential Ordering** — Cycle sources randomly or in order
 - **Configurable Display Timeout** — Per-source display duration
@@ -199,6 +200,25 @@ are rejected with `401 Unauthorized`.
 | Endpoint | Description |
 |----------|-------------|
 | `GET` `/ws/feed` | WebSocket endpoint for receiving rendered display content and sending commands (pause, resume, next) |
+
+### Embed and snapshot
+
+Chrome-free live views for OBS Browser Sources, iframes and kiosks — no admin
+navigation, no login redirect, server-pushed frames only (see
+[docs/embedding.md](docs/embedding.md)).
+
+| Method | Endpoint | Purpose | Auth |
+|--------|----------|---------|------|
+| `GET` | `/embed` | Shared wall embed page (OBS/iframe) | public |
+| `GET` | `/embed/device/:id` | Single-device embed page (secret in the URL fragment) | embed-scoped guest token |
+| `POST` | `/embed/session` | Exchange a guest secret for the short-lived `ledit_embed` cookie | guest secret in body |
+| `GET` | `/ws/embed` | Shared wall frame stream for embeds | public |
+| `GET` | `/ws/embed/device/:id` | Device frame stream for embeds | embed-scoped guest token or admin session |
+| `GET` | `/api/frame` | One-shot PNG/WebP snapshot of the current frame | public (shared) / embed token (device) |
+
+All embed and snapshot responses are `Cache-Control: no-store` and rate limited
+per client (429 + `Retry-After`); device views require a read-only **embed**
+guest token created under Admin → Guest Remotes.
 
 ### Admin Endpoints
 

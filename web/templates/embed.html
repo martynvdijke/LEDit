@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LEDit</title>
+    <style>
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }
+        body { display: flex; align-items: center; justify-content: center; }
+        #embed-surface { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        #embed-canvas { display: block; max-width: 100%; max-height: 100%; image-rendering: pixelated; }
+        #embed-video { display: none; max-width: 100%; max-height: 100%; background: #000; image-rendering: pixelated; }
+        #embed-error { display: none; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #8a8a8a; font-size: 1rem; padding: 1rem; text-align: center; }
+        #embed-status { position: absolute; bottom: 8px; right: 10px; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 0.75rem; color: #9a9a9a; opacity: 0; transition: opacity 150ms ease-in; pointer-events: none; }
+        body[data-state="error"] #embed-canvas,
+        body[data-state="error"] #embed-video { display: none; }
+        body[data-state="error"] #embed-error { display: block; }
+        body[data-state="video"] #embed-canvas { display: none; }
+        body[data-state="video"] #embed-video { display: block; }
+        body[data-state="connecting"] #embed-status { opacity: 1; }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body data-embed-target="{{.embedTarget}}" data-device-id="{{.embedDeviceID}}">
+    <div id="embed-surface">
+        <canvas id="embed-canvas"></canvas>
+        <video id="embed-video" muted playsinline></video>
+        <p id="embed-error" role="status">Live view unavailable — this link is invalid or expired.</p>
+        <span id="embed-status" aria-live="polite">Reconnecting…</span>
+    </div>
+    <script type="module" src="/static/assets/embed.js"></script>
+</body>
+</html>

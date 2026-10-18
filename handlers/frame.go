@@ -3,10 +3,8 @@ package handlers
 import (
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"ledit/ent/guesttoken"
 )
 
 func (s *Server) FramePage(c *gin.Context) {
@@ -29,10 +27,8 @@ func (s *Server) FrameSession(c *gin.Context) {
 		return
 	}
 
-	tok, err := s.DB.GuestToken.Query().
-		Where(guesttoken.TokenHashEQ(hashGuestToken(secret))).
-		Only(c.Request.Context())
-	if err != nil || tok.RevokedAt != nil || (tok.ExpiresAt != nil && !tok.ExpiresAt.After(time.Now())) {
+	tok, ok := s.lookupGuestToken(c.Request.Context(), secret)
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}

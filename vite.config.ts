@@ -22,6 +22,7 @@ export default defineConfig({
         remote: resolve(__dirname, 'web/frontend/remote.ts'),
         layout_editor: resolve(__dirname, 'web/frontend/layout_editor.ts'),
         frame: resolve(__dirname, 'web/frontend/frame.ts'),
+        embed: resolve(__dirname, 'web/frontend/embed.ts'),
         theme_editor: resolve(__dirname, 'web/frontend/theme_editor.ts'),
       },
       output: {

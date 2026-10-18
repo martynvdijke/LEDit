@@ -1321,9 +1321,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			// until the incident is resolved or expires.
 			if scene, ok := CurrentIncidentScene(); ok {
 				if incData, err := render.IncidentPNG(renderWidth, height, scene, time.Now()); err == nil {
+					incSend := slicePanels(incData)
 					msg := map[string]any{
 						"format": "PNG",
-						"image":  base64.StdEncoding.EncodeToString(slicePanels(incData)),
+						"image":  base64.StdEncoding.EncodeToString(incSend),
 						"source": "INCIDENT",
 						"next":   "INCIDENT",
 					}
@@ -1331,6 +1332,12 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 						if err := conn.WriteMessage(websocket.TextMessage, frame); err != nil {
 							return
 						}
+						storeFrame(frameTarget(fc.deviceID), width, height, &lastFrame{
+							Data:   incSend,
+							Format: "PNG",
+							Source: "INCIDENT",
+							Next:   "INCIDENT",
+						})
 					}
 				}
 				time.Sleep(timeout)
@@ -1388,6 +1395,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			}
 
 			feed.SetCurrent(sw.Name, nextName)
+			feed.SetCurrentCacheKey(sw.cacheKey)
 
 			// Wait if paused
 			for feed.IsPaused() {
@@ -1541,6 +1549,16 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 					fc.frames()
 				}
 			}
+			// Buffer the physical frame so embed clients and GET /api/frame can
+			// join mid-rotation without waiting for the next slot. Notification
+			// frames carry no image and never reach this point.
+			storeFrame(frameTarget(fc.deviceID), width, height, &lastFrame{
+				Data:   sendData,
+				Format: img.Format,
+				Source: sw.Name,
+				Next:   nextName,
+				Video:  !strings.EqualFold(img.Format, "PNG"),
+			})
 			TrackDisplay(sw.Name, timeout.Seconds())
 			// Timelapse capture piggyback after final composition (post-brightness).
 			if fc.deviceID > 0 && TimelapseEnabled() {
@@ -1631,6 +1649,13 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 							if fc.deviceID > 0 && fc.frames != nil {
 								fc.frames()
 							}
+							storeFrame(frameTarget(fc.deviceID), width, height, &lastFrame{
+								Data:   slicePanels(d2),
+								Format: rendered.Format,
+								Source: sw.Name,
+								Next:   nextName,
+								Video:  !strings.EqualFold(rendered.Format, "PNG"),
+							})
 							lastIdx = curIdx
 						}
 					}

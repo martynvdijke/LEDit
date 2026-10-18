@@ -326,7 +326,15 @@ func (s *Server) setupRoutes() {
 	// exchanged for a short-lived HttpOnly cookie by /frame/session).
 	s.Router.GET("/frame", s.FramePage)
 	s.Router.POST("/frame/session", s.FrameSession)
+	// Embeddable live widget shells (public, chrome-free; the device embed
+	// reads its secret from the URL fragment and exchanges it at
+	// /embed/session, so it never appears in a request line).
+	s.Router.GET("/embed", s.EmbedPage)
+	s.Router.GET("/embed/device/:id", s.EmbedDevicePage)
+	s.Router.POST("/embed/session", s.EmbedSession)
 	s.Router.GET("/ws/feed", s.WSHub.HandleWS)
+	s.Router.GET("/ws/embed", s.WSHub.HandleEmbedWS)
+	s.Router.GET("/ws/embed/device/:id", s.EmbedAuthMiddleware(), s.WSHub.HandleEmbedDeviceWS)
 	s.Router.GET("/ws/device/:token", s.WSHub.HandleDeviceWS)
 	// Device-accurate preview: admin session (not the device token), never
 	// touches last_seen_at. AuthMiddleware redirects to /login on failure.
@@ -342,6 +350,9 @@ func (s *Server) setupRoutes() {
 		api.GET("/trmnl/messages", s.APITrmnlMessages)
 		api.POST("/trmnl/messages/refresh", s.APITrmnlMessagesRefresh)
 		api.GET("/health", s.APIHealth)
+		// Frame snapshot: the shared feed is public; a device target is
+		// authorized inside the handler (admin session or embed token).
+		api.GET("/frame", s.APIFrame)
 
 		// Guest remote: scoped X-Guest-Token auth, deliberately outside the
 		// authenticated reads/mutations groups and never cookie-authenticated.
