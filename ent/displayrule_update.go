@@ -118,6 +118,55 @@ func (_u *DisplayRuleUpdate) SetNillableStatePath(v *string) *DisplayRuleUpdate 
 	return _u
 }
 
+// SetForSeconds sets the "for_seconds" field.
+func (_u *DisplayRuleUpdate) SetForSeconds(v int) *DisplayRuleUpdate {
+	_u.mutation.ResetForSeconds()
+	_u.mutation.SetForSeconds(v)
+	return _u
+}
+
+// SetNillableForSeconds sets the "for_seconds" field if the given value is not nil.
+func (_u *DisplayRuleUpdate) SetNillableForSeconds(v *int) *DisplayRuleUpdate {
+	if v != nil {
+		_u.SetForSeconds(*v)
+	}
+	return _u
+}
+
+// AddForSeconds adds value to the "for_seconds" field.
+func (_u *DisplayRuleUpdate) AddForSeconds(v int) *DisplayRuleUpdate {
+	_u.mutation.AddForSeconds(v)
+	return _u
+}
+
+// SetTriggerKind sets the "trigger_kind" field.
+func (_u *DisplayRuleUpdate) SetTriggerKind(v string) *DisplayRuleUpdate {
+	_u.mutation.SetTriggerKind(v)
+	return _u
+}
+
+// SetNillableTriggerKind sets the "trigger_kind" field if the given value is not nil.
+func (_u *DisplayRuleUpdate) SetNillableTriggerKind(v *string) *DisplayRuleUpdate {
+	if v != nil {
+		_u.SetTriggerKind(*v)
+	}
+	return _u
+}
+
+// SetSequence sets the "sequence" field.
+func (_u *DisplayRuleUpdate) SetSequence(v string) *DisplayRuleUpdate {
+	_u.mutation.SetSequence(v)
+	return _u
+}
+
+// SetNillableSequence sets the "sequence" field if the given value is not nil.
+func (_u *DisplayRuleUpdate) SetNillableSequence(v *string) *DisplayRuleUpdate {
+	if v != nil {
+		_u.SetSequence(*v)
+	}
+	return _u
+}
+
 // SetCheckIntervalSeconds sets the "check_interval_seconds" field.
 func (_u *DisplayRuleUpdate) SetCheckIntervalSeconds(v int) *DisplayRuleUpdate {
 	_u.mutation.ResetCheckIntervalSeconds()
@@ -208,6 +257,11 @@ func (_u *DisplayRuleUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *DisplayRuleUpdate) check() error {
+	if v, ok := _u.mutation.ForSeconds(); ok {
+		if err := displayrule.ForSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "for_seconds", err: fmt.Errorf(`ent: validator failed for field "DisplayRule.for_seconds": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.CheckIntervalSeconds(); ok {
 		if err := displayrule.CheckIntervalSecondsValidator(v); err != nil {
 			return &ValidationError{Name: "check_interval_seconds", err: fmt.Errorf(`ent: validator failed for field "DisplayRule.check_interval_seconds": %w`, err)}
@@ -253,6 +307,18 @@ func (_u *DisplayRuleUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if value, ok := _u.mutation.StatePath(); ok {
 		_spec.SetField(displayrule.FieldStatePath, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ForSeconds(); ok {
+		_spec.SetField(displayrule.FieldForSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedForSeconds(); ok {
+		_spec.AddField(displayrule.FieldForSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.TriggerKind(); ok {
+		_spec.SetField(displayrule.FieldTriggerKind, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Sequence(); ok {
+		_spec.SetField(displayrule.FieldSequence, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.CheckIntervalSeconds(); ok {
 		_spec.SetField(displayrule.FieldCheckIntervalSeconds, field.TypeInt, value)
@@ -380,6 +446,55 @@ func (_u *DisplayRuleUpdateOne) SetNillableStatePath(v *string) *DisplayRuleUpda
 	return _u
 }
 
+// SetForSeconds sets the "for_seconds" field.
+func (_u *DisplayRuleUpdateOne) SetForSeconds(v int) *DisplayRuleUpdateOne {
+	_u.mutation.ResetForSeconds()
+	_u.mutation.SetForSeconds(v)
+	return _u
+}
+
+// SetNillableForSeconds sets the "for_seconds" field if the given value is not nil.
+func (_u *DisplayRuleUpdateOne) SetNillableForSeconds(v *int) *DisplayRuleUpdateOne {
+	if v != nil {
+		_u.SetForSeconds(*v)
+	}
+	return _u
+}
+
+// AddForSeconds adds value to the "for_seconds" field.
+func (_u *DisplayRuleUpdateOne) AddForSeconds(v int) *DisplayRuleUpdateOne {
+	_u.mutation.AddForSeconds(v)
+	return _u
+}
+
+// SetTriggerKind sets the "trigger_kind" field.
+func (_u *DisplayRuleUpdateOne) SetTriggerKind(v string) *DisplayRuleUpdateOne {
+	_u.mutation.SetTriggerKind(v)
+	return _u
+}
+
+// SetNillableTriggerKind sets the "trigger_kind" field if the given value is not nil.
+func (_u *DisplayRuleUpdateOne) SetNillableTriggerKind(v *string) *DisplayRuleUpdateOne {
+	if v != nil {
+		_u.SetTriggerKind(*v)
+	}
+	return _u
+}
+
+// SetSequence sets the "sequence" field.
+func (_u *DisplayRuleUpdateOne) SetSequence(v string) *DisplayRuleUpdateOne {
+	_u.mutation.SetSequence(v)
+	return _u
+}
+
+// SetNillableSequence sets the "sequence" field if the given value is not nil.
+func (_u *DisplayRuleUpdateOne) SetNillableSequence(v *string) *DisplayRuleUpdateOne {
+	if v != nil {
+		_u.SetSequence(*v)
+	}
+	return _u
+}
+
 // SetCheckIntervalSeconds sets the "check_interval_seconds" field.
 func (_u *DisplayRuleUpdateOne) SetCheckIntervalSeconds(v int) *DisplayRuleUpdateOne {
 	_u.mutation.ResetCheckIntervalSeconds()
@@ -483,6 +598,11 @@ func (_u *DisplayRuleUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *DisplayRuleUpdateOne) check() error {
+	if v, ok := _u.mutation.ForSeconds(); ok {
+		if err := displayrule.ForSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "for_seconds", err: fmt.Errorf(`ent: validator failed for field "DisplayRule.for_seconds": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.CheckIntervalSeconds(); ok {
 		if err := displayrule.CheckIntervalSecondsValidator(v); err != nil {
 			return &ValidationError{Name: "check_interval_seconds", err: fmt.Errorf(`ent: validator failed for field "DisplayRule.check_interval_seconds": %w`, err)}
@@ -545,6 +665,18 @@ func (_u *DisplayRuleUpdateOne) sqlSave(ctx context.Context) (_node *DisplayRule
 	}
 	if value, ok := _u.mutation.StatePath(); ok {
 		_spec.SetField(displayrule.FieldStatePath, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ForSeconds(); ok {
+		_spec.SetField(displayrule.FieldForSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedForSeconds(); ok {
+		_spec.AddField(displayrule.FieldForSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.TriggerKind(); ok {
+		_spec.SetField(displayrule.FieldTriggerKind, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Sequence(); ok {
+		_spec.SetField(displayrule.FieldSequence, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.CheckIntervalSeconds(); ok {
 		_spec.SetField(displayrule.FieldCheckIntervalSeconds, field.TypeInt, value)

@@ -663,20 +663,34 @@ func init() {
 	displayruleDescStatePath := displayruleFields[5].Descriptor()
 	// displayrule.DefaultStatePath holds the default value on creation for the state_path field.
 	displayrule.DefaultStatePath = displayruleDescStatePath.Default.(string)
+	// displayruleDescForSeconds is the schema descriptor for for_seconds field.
+	displayruleDescForSeconds := displayruleFields[6].Descriptor()
+	// displayrule.DefaultForSeconds holds the default value on creation for the for_seconds field.
+	displayrule.DefaultForSeconds = displayruleDescForSeconds.Default.(int)
+	// displayrule.ForSecondsValidator is a validator for the "for_seconds" field. It is called by the builders before save.
+	displayrule.ForSecondsValidator = displayruleDescForSeconds.Validators[0].(func(int) error)
+	// displayruleDescTriggerKind is the schema descriptor for trigger_kind field.
+	displayruleDescTriggerKind := displayruleFields[7].Descriptor()
+	// displayrule.DefaultTriggerKind holds the default value on creation for the trigger_kind field.
+	displayrule.DefaultTriggerKind = displayruleDescTriggerKind.Default.(string)
+	// displayruleDescSequence is the schema descriptor for sequence field.
+	displayruleDescSequence := displayruleFields[8].Descriptor()
+	// displayrule.DefaultSequence holds the default value on creation for the sequence field.
+	displayrule.DefaultSequence = displayruleDescSequence.Default.(string)
 	// displayruleDescCheckIntervalSeconds is the schema descriptor for check_interval_seconds field.
-	displayruleDescCheckIntervalSeconds := displayruleFields[6].Descriptor()
+	displayruleDescCheckIntervalSeconds := displayruleFields[9].Descriptor()
 	// displayrule.DefaultCheckIntervalSeconds holds the default value on creation for the check_interval_seconds field.
 	displayrule.DefaultCheckIntervalSeconds = displayruleDescCheckIntervalSeconds.Default.(int)
 	// displayrule.CheckIntervalSecondsValidator is a validator for the "check_interval_seconds" field. It is called by the builders before save.
 	displayrule.CheckIntervalSecondsValidator = displayruleDescCheckIntervalSeconds.Validators[0].(func(int) error)
 	// displayruleDescCooldownSeconds is the schema descriptor for cooldown_seconds field.
-	displayruleDescCooldownSeconds := displayruleFields[7].Descriptor()
+	displayruleDescCooldownSeconds := displayruleFields[10].Descriptor()
 	// displayrule.DefaultCooldownSeconds holds the default value on creation for the cooldown_seconds field.
 	displayrule.DefaultCooldownSeconds = displayruleDescCooldownSeconds.Default.(int)
 	// displayrule.CooldownSecondsValidator is a validator for the "cooldown_seconds" field. It is called by the builders before save.
 	displayrule.CooldownSecondsValidator = displayruleDescCooldownSeconds.Validators[0].(func(int) error)
 	// displayruleDescThenActions is the schema descriptor for then_actions field.
-	displayruleDescThenActions := displayruleFields[8].Descriptor()
+	displayruleDescThenActions := displayruleFields[11].Descriptor()
 	// displayrule.DefaultThenActions holds the default value on creation for the then_actions field.
 	displayrule.DefaultThenActions = displayruleDescThenActions.Default.(string)
 	emailsettingsFields := schema.EmailSettings{}.Fields()

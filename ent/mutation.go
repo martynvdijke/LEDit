@@ -15403,6 +15403,10 @@ type DisplayRuleMutation struct {
 	addsource_id              *int
 	condition                 *string
 	state_path                *string
+	for_seconds               *int
+	addfor_seconds            *int
+	trigger_kind              *string
+	sequence                  *string
 	check_interval_seconds    *int
 	addcheck_interval_seconds *int
 	cooldown_seconds          *int
@@ -15748,6 +15752,134 @@ func (m *DisplayRuleMutation) ResetStatePath() {
 	m.state_path = nil
 }
 
+// SetForSeconds sets the "for_seconds" field.
+func (m *DisplayRuleMutation) SetForSeconds(i int) {
+	m.for_seconds = &i
+	m.addfor_seconds = nil
+}
+
+// ForSeconds returns the value of the "for_seconds" field in the mutation.
+func (m *DisplayRuleMutation) ForSeconds() (r int, exists bool) {
+	v := m.for_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForSeconds returns the old "for_seconds" field's value of the DisplayRule entity.
+// If the DisplayRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DisplayRuleMutation) OldForSeconds(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForSeconds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForSeconds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForSeconds: %w", err)
+	}
+	return oldValue.ForSeconds, nil
+}
+
+// AddForSeconds adds i to the "for_seconds" field.
+func (m *DisplayRuleMutation) AddForSeconds(i int) {
+	if m.addfor_seconds != nil {
+		*m.addfor_seconds += i
+	} else {
+		m.addfor_seconds = &i
+	}
+}
+
+// AddedForSeconds returns the value that was added to the "for_seconds" field in this mutation.
+func (m *DisplayRuleMutation) AddedForSeconds() (r int, exists bool) {
+	v := m.addfor_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetForSeconds resets all changes to the "for_seconds" field.
+func (m *DisplayRuleMutation) ResetForSeconds() {
+	m.for_seconds = nil
+	m.addfor_seconds = nil
+}
+
+// SetTriggerKind sets the "trigger_kind" field.
+func (m *DisplayRuleMutation) SetTriggerKind(s string) {
+	m.trigger_kind = &s
+}
+
+// TriggerKind returns the value of the "trigger_kind" field in the mutation.
+func (m *DisplayRuleMutation) TriggerKind() (r string, exists bool) {
+	v := m.trigger_kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTriggerKind returns the old "trigger_kind" field's value of the DisplayRule entity.
+// If the DisplayRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DisplayRuleMutation) OldTriggerKind(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTriggerKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTriggerKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTriggerKind: %w", err)
+	}
+	return oldValue.TriggerKind, nil
+}
+
+// ResetTriggerKind resets all changes to the "trigger_kind" field.
+func (m *DisplayRuleMutation) ResetTriggerKind() {
+	m.trigger_kind = nil
+}
+
+// SetSequence sets the "sequence" field.
+func (m *DisplayRuleMutation) SetSequence(s string) {
+	m.sequence = &s
+}
+
+// Sequence returns the value of the "sequence" field in the mutation.
+func (m *DisplayRuleMutation) Sequence() (r string, exists bool) {
+	v := m.sequence
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSequence returns the old "sequence" field's value of the DisplayRule entity.
+// If the DisplayRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DisplayRuleMutation) OldSequence(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSequence is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSequence requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSequence: %w", err)
+	}
+	return oldValue.Sequence, nil
+}
+
+// ResetSequence resets all changes to the "sequence" field.
+func (m *DisplayRuleMutation) ResetSequence() {
+	m.sequence = nil
+}
+
 // SetCheckIntervalSeconds sets the "check_interval_seconds" field.
 func (m *DisplayRuleMutation) SetCheckIntervalSeconds(i int) {
 	m.check_interval_seconds = &i
@@ -15930,7 +16062,7 @@ func (m *DisplayRuleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DisplayRuleMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 12)
 	if m.name != nil {
 		fields = append(fields, displayrule.FieldName)
 	}
@@ -15948,6 +16080,15 @@ func (m *DisplayRuleMutation) Fields() []string {
 	}
 	if m.state_path != nil {
 		fields = append(fields, displayrule.FieldStatePath)
+	}
+	if m.for_seconds != nil {
+		fields = append(fields, displayrule.FieldForSeconds)
+	}
+	if m.trigger_kind != nil {
+		fields = append(fields, displayrule.FieldTriggerKind)
+	}
+	if m.sequence != nil {
+		fields = append(fields, displayrule.FieldSequence)
 	}
 	if m.check_interval_seconds != nil {
 		fields = append(fields, displayrule.FieldCheckIntervalSeconds)
@@ -15978,6 +16119,12 @@ func (m *DisplayRuleMutation) Field(name string) (ent.Value, bool) {
 		return m.Condition()
 	case displayrule.FieldStatePath:
 		return m.StatePath()
+	case displayrule.FieldForSeconds:
+		return m.ForSeconds()
+	case displayrule.FieldTriggerKind:
+		return m.TriggerKind()
+	case displayrule.FieldSequence:
+		return m.Sequence()
 	case displayrule.FieldCheckIntervalSeconds:
 		return m.CheckIntervalSeconds()
 	case displayrule.FieldCooldownSeconds:
@@ -16005,6 +16152,12 @@ func (m *DisplayRuleMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldCondition(ctx)
 	case displayrule.FieldStatePath:
 		return m.OldStatePath(ctx)
+	case displayrule.FieldForSeconds:
+		return m.OldForSeconds(ctx)
+	case displayrule.FieldTriggerKind:
+		return m.OldTriggerKind(ctx)
+	case displayrule.FieldSequence:
+		return m.OldSequence(ctx)
 	case displayrule.FieldCheckIntervalSeconds:
 		return m.OldCheckIntervalSeconds(ctx)
 	case displayrule.FieldCooldownSeconds:
@@ -16062,6 +16215,27 @@ func (m *DisplayRuleMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetStatePath(v)
 		return nil
+	case displayrule.FieldForSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForSeconds(v)
+		return nil
+	case displayrule.FieldTriggerKind:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTriggerKind(v)
+		return nil
+	case displayrule.FieldSequence:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSequence(v)
+		return nil
 	case displayrule.FieldCheckIntervalSeconds:
 		v, ok := value.(int)
 		if !ok {
@@ -16094,6 +16268,9 @@ func (m *DisplayRuleMutation) AddedFields() []string {
 	if m.addsource_id != nil {
 		fields = append(fields, displayrule.FieldSourceID)
 	}
+	if m.addfor_seconds != nil {
+		fields = append(fields, displayrule.FieldForSeconds)
+	}
 	if m.addcheck_interval_seconds != nil {
 		fields = append(fields, displayrule.FieldCheckIntervalSeconds)
 	}
@@ -16110,6 +16287,8 @@ func (m *DisplayRuleMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case displayrule.FieldSourceID:
 		return m.AddedSourceID()
+	case displayrule.FieldForSeconds:
+		return m.AddedForSeconds()
 	case displayrule.FieldCheckIntervalSeconds:
 		return m.AddedCheckIntervalSeconds()
 	case displayrule.FieldCooldownSeconds:
@@ -16129,6 +16308,13 @@ func (m *DisplayRuleMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddSourceID(v)
+		return nil
+	case displayrule.FieldForSeconds:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddForSeconds(v)
 		return nil
 	case displayrule.FieldCheckIntervalSeconds:
 		v, ok := value.(int)
@@ -16188,6 +16374,15 @@ func (m *DisplayRuleMutation) ResetField(name string) error {
 		return nil
 	case displayrule.FieldStatePath:
 		m.ResetStatePath()
+		return nil
+	case displayrule.FieldForSeconds:
+		m.ResetForSeconds()
+		return nil
+	case displayrule.FieldTriggerKind:
+		m.ResetTriggerKind()
+		return nil
+	case displayrule.FieldSequence:
+		m.ResetSequence()
 		return nil
 	case displayrule.FieldCheckIntervalSeconds:
 		m.ResetCheckIntervalSeconds()

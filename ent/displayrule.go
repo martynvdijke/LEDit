@@ -28,6 +28,12 @@ type DisplayRule struct {
 	Condition string `json:"condition,omitempty"`
 	// StatePath holds the value of the "state_path" field.
 	StatePath string `json:"state_path,omitempty"`
+	// ForSeconds holds the value of the "for_seconds" field.
+	ForSeconds int `json:"for_seconds,omitempty"`
+	// TriggerKind holds the value of the "trigger_kind" field.
+	TriggerKind string `json:"trigger_kind,omitempty"`
+	// Sequence holds the value of the "sequence" field.
+	Sequence string `json:"sequence,omitempty"`
 	// CheckIntervalSeconds holds the value of the "check_interval_seconds" field.
 	CheckIntervalSeconds int `json:"check_interval_seconds,omitempty"`
 	// CooldownSeconds holds the value of the "cooldown_seconds" field.
@@ -45,9 +51,9 @@ func (*DisplayRule) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case displayrule.FieldEnabled:
 			values[i] = new(sql.NullBool)
-		case displayrule.FieldID, displayrule.FieldSourceID, displayrule.FieldCheckIntervalSeconds, displayrule.FieldCooldownSeconds:
+		case displayrule.FieldID, displayrule.FieldSourceID, displayrule.FieldForSeconds, displayrule.FieldCheckIntervalSeconds, displayrule.FieldCooldownSeconds:
 			values[i] = new(sql.NullInt64)
-		case displayrule.FieldName, displayrule.FieldSourceType, displayrule.FieldCondition, displayrule.FieldStatePath, displayrule.FieldThenActions:
+		case displayrule.FieldName, displayrule.FieldSourceType, displayrule.FieldCondition, displayrule.FieldStatePath, displayrule.FieldTriggerKind, displayrule.FieldSequence, displayrule.FieldThenActions:
 			values[i] = new(sql.NullString)
 		case displayrule.ForeignKeys[0]: // general_settings_displayrules
 			values[i] = new(sql.NullInt64)
@@ -107,6 +113,24 @@ func (_m *DisplayRule) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field state_path", values[i])
 			} else if value.Valid {
 				_m.StatePath = value.String
+			}
+		case displayrule.FieldForSeconds:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field for_seconds", values[i])
+			} else if value.Valid {
+				_m.ForSeconds = int(value.Int64)
+			}
+		case displayrule.FieldTriggerKind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field trigger_kind", values[i])
+			} else if value.Valid {
+				_m.TriggerKind = value.String
+			}
+		case displayrule.FieldSequence:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field sequence", values[i])
+			} else if value.Valid {
+				_m.Sequence = value.String
 			}
 		case displayrule.FieldCheckIntervalSeconds:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -186,6 +210,15 @@ func (_m *DisplayRule) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("state_path=")
 	builder.WriteString(_m.StatePath)
+	builder.WriteString(", ")
+	builder.WriteString("for_seconds=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ForSeconds))
+	builder.WriteString(", ")
+	builder.WriteString("trigger_kind=")
+	builder.WriteString(_m.TriggerKind)
+	builder.WriteString(", ")
+	builder.WriteString("sequence=")
+	builder.WriteString(_m.Sequence)
 	builder.WriteString(", ")
 	builder.WriteString("check_interval_seconds=")
 	builder.WriteString(fmt.Sprintf("%v", _m.CheckIntervalSeconds))

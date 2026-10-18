@@ -468,6 +468,9 @@ var (
 		{Name: "source_id", Type: field.TypeInt, Default: 0},
 		{Name: "condition", Type: field.TypeString, Size: 2147483647, Default: "{}"},
 		{Name: "state_path", Type: field.TypeString, Default: ""},
+		{Name: "for_seconds", Type: field.TypeInt, Default: 0},
+		{Name: "trigger_kind", Type: field.TypeString, Default: "condition"},
+		{Name: "sequence", Type: field.TypeString, Size: 2147483647, Default: ""},
 		{Name: "check_interval_seconds", Type: field.TypeInt, Default: 30},
 		{Name: "cooldown_seconds", Type: field.TypeInt, Default: 0},
 		{Name: "then_actions", Type: field.TypeString, Size: 2147483647, Default: "{}"},
@@ -481,7 +484,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "display_rules_general_settings_displayrules",
-				Columns:    []*schema.Column{DisplayRulesColumns[10]},
+				Columns:    []*schema.Column{DisplayRulesColumns[13]},
 				RefColumns: []*schema.Column{GeneralSettingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

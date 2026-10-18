@@ -21,6 +21,15 @@ func (DisplayRule) Fields() []ent.Field {
 		// state_path optionally scopes the condition to a sub-value of the
 		// source state map (dotted). Empty = evaluate against the whole map.
 		field.String("state_path").Default(""),
+		// for_seconds requires the condition to hold for this many seconds
+		// before the rule fires. 0 = fire on the first matching check.
+		field.Int("for_seconds").Default(0).Min(0),
+		// trigger_kind selects how the rule arms: "condition" (default) uses
+		// condition/for_seconds, "sequence" uses the ordered steps in sequence.
+		field.String("trigger_kind").Default("condition"),
+		// sequence holds the ordered step trigger definition (JSON) used when
+		// trigger_kind is "sequence". Empty for condition rules.
+		field.Text("sequence").Default(""),
 		field.Int("check_interval_seconds").Default(30).Min(5),
 		field.Int("cooldown_seconds").Default(0).Min(0),
 		field.Text("then_actions").Default("{}"),
