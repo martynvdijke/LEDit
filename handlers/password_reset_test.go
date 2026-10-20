@@ -97,7 +97,7 @@ func TestResetPasswordFullFlow(t *testing.T) {
 
 	// Seed a session so we can verify it gets invalidated on reset.
 	authMu.Lock()
-	sessions["fakesession"] = sessionData{UserID: 0, Username: "admin", Role: "admin", Expiry: time.Now().Add(time.Hour)}
+	sessions[hashSessionToken("fakesession")] = sessionData{UserID: 0, Username: "admin", Role: "admin", Expiry: time.Now().Add(time.Hour)}
 	authMu.Unlock()
 
 	storeResetToken("testtoken")

@@ -87,6 +87,7 @@ import (
 	"ledit/ent/waste"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
+	"ledit/ent/websession"
 	"ledit/ent/zigbee2mqtt"
 	"reflect"
 	"sync"
@@ -234,6 +235,7 @@ func checkColumn(t, c string) error {
 			wakealarm.Table:          wakealarm.ValidColumn,
 			waste.Table:              waste.ValidColumn,
 			weather.Table:            weather.ValidColumn,
+			websession.Table:         websession.ValidColumn,
 			webhooksettings.Table:    webhooksettings.ValidColumn,
 			zigbee2mqtt.Table:        zigbee2mqtt.ValidColumn,
 		})

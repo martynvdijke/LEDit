@@ -100,7 +100,7 @@ func (s *Server) renderPage(c *gin.Context, httpCode int, name string, obj gin.H
 	}
 	if r, ok := c.Get("user_role"); ok {
 		obj["user_role"] = r
-	} else if r := getSessionRole(c); r != "" {
+	} else if r := s.getSessionRole(c); r != "" {
 		obj["user_role"] = r
 	}
 	// isViewer flag for templates

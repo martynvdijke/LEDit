@@ -41,6 +41,9 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 		panic(err)
 	}
 
+	// Restore browser sessions from the database.
+	initSessionStore()
+
 	// Bootstrap admin credentials on first run.
 	initAdminSettings(client, ctx)
 
@@ -299,10 +302,7 @@ func (s *Server) setupRoutes() {
 				if t, err := c.Cookie("session"); err == nil {
 					token = t
 				}
-				authMu.Lock()
-				_, valid := sessions[token]
-				authMu.Unlock()
-				if !valid {
+				if _, valid := lookupSession(s.DB, token); !valid {
 					// Also accept bearer token via IsAuthenticated when Server available
 					if !strings.HasPrefix(c.GetHeader("Authorization"), "Bearer ") {
 						c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -328,7 +328,7 @@ func (s *Server) setupRoutes() {
 	// touches last_seen_at. AuthMiddleware redirects to /login on failure.
 	// NOTE: the param must stay named ":token" — gin rejects a different
 	// wildcard name at the same tree position as /ws/device/:token.
-	s.Router.GET("/ws/device/:token/preview", AuthMiddleware(), s.WSHub.HandleDevicePreviewWS)
+	s.Router.GET("/ws/device/:token/preview", s.AuthMiddleware(), s.WSHub.HandleDevicePreviewWS)
 	s.Router.GET("/eink/toggle", s.AdminEInkToggleFeed)
 
 	api := s.Router.Group("/api")
@@ -442,7 +442,7 @@ func (s *Server) setupRoutes() {
 	s.Router.POST("/reset-password", s.ResetPasswordAction)
 
 	admin := s.Router.Group("/admin")
-	admin.Use(AuthMiddleware(), FlashMiddleware(), s.AdminRoleMiddleware())
+	admin.Use(s.AuthMiddleware(), FlashMiddleware(), s.AdminRoleMiddleware())
 	{
 		admin.GET("/", s.AdminDashboard)
 		admin.GET("/settings", s.AdminSettings)

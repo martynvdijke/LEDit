@@ -21,7 +21,7 @@ func (s *Server) handleMPDCreate(c *gin.Context) {
 	}
 	_, err := s.DB.MPD.Create().SetHost(host).SetPort(port).SetPassword(password).SetEnabled(true).Save(s.Ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	c.Redirect(http.StatusFound, "/admin/")
@@ -38,7 +38,7 @@ func (s *Server) handleMPDUpdate(c *gin.Context) {
 		return
 	}
 	if err := s.DB.MPD.UpdateOneID(id).SetHost(host).SetPort(port).SetPassword(password).Exec(s.Ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	c.Redirect(http.StatusFound, "/admin/")

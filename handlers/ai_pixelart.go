@@ -283,7 +283,7 @@ func (s *Server) PixelArtGenerate(c *gin.Context) {
 	entry := dsRegistry["pixelart"]
 	obj, err := entry.CreateFields(s.DB, s.Ctx, f)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create pixelart: " + err.Error()})
+		internalError(c, err)
 		return
 	}
 	// set is_draft=true

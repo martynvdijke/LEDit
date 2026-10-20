@@ -60,7 +60,7 @@ func qrcodeTestServer(t *testing.T) (*Server, *http.Cookie) {
 	}
 	// admin routes
 	admin := srv.Router.Group("/admin")
-	admin.Use(AuthMiddleware())
+	admin.Use(srv.AuthMiddleware())
 	{
 		admin.GET("/api/qrcodes", srv.APIQrcodeList)
 		admin.GET("/api/qrcodes/:id", srv.APIQrcodeGet)

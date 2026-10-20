@@ -55,7 +55,7 @@ func nowPlayingTestServer(t *testing.T) (*Server, *http.Cookie) {
 		t.Fatalf("no session: %d %s", w.Code, w.Body.String())
 	}
 	admin := srv.Router.Group("/admin")
-	admin.Use(AuthMiddleware())
+	admin.Use(srv.AuthMiddleware())
 	{
 		admin.GET("/api/nowplaying", srv.APINowPlayingList)
 		admin.GET("/api/nowplaying/:id", srv.APINowPlayingGet)

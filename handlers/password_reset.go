@@ -200,9 +200,7 @@ func (s *Server) ResetPasswordAction(c *gin.Context) {
 	// Password updated: the token is now single-use and all existing sessions
 	// are invalidated so the old password is fully dead.
 	consumeResetToken(token)
-	authMu.Lock()
-	sessions = map[string]sessionData{}
-	authMu.Unlock()
+	clearAllSessions(s.DB)
 
 	c.Redirect(http.StatusFound, "/login?reset=1")
 }

@@ -137,14 +137,7 @@ func (s *Server) APIUsersDelete(c *gin.Context) {
 		}
 	}
 	_ = s.DB.User.DeleteOneID(id).Exec(s.Ctx)
-	// clear sessions for that user
-	authMu.Lock()
-	for tok, sd := range sessions {
-		if sd.UserID == id {
-			delete(sessions, tok)
-		}
-	}
-	authMu.Unlock()
+	clearUserSessions(s.DB, id)
 	c.JSON(http.StatusOK, gin.H{"status": "deleted"})
 }
 
@@ -185,14 +178,7 @@ func (s *Server) APIUsersChangeRole(c *gin.Context) {
 		role = user.RoleViewer
 	}
 	_, _ = s.DB.User.UpdateOneID(id).SetRole(role).Save(s.Ctx)
-	// force re-login
-	authMu.Lock()
-	for tok, sd := range sessions {
-		if sd.UserID == id {
-			delete(sessions, tok)
-		}
-	}
-	authMu.Unlock()
+	clearUserSessions(s.DB, id)
 	c.JSON(http.StatusOK, gin.H{"status": "updated"})
 }
 
@@ -220,13 +206,6 @@ func (s *Server) APIUsersResetPassword(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
-	// clear sessions
-	authMu.Lock()
-	for tok, sd := range sessions {
-		if sd.UserID == id {
-			delete(sessions, tok)
-		}
-	}
-	authMu.Unlock()
+	clearUserSessions(s.DB, id)
 	c.JSON(http.StatusOK, gin.H{"status": "password reset"})
 }

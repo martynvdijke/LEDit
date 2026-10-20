@@ -172,6 +172,8 @@ type Tx struct {
 	Waste *WasteClient
 	// Weather is the client for interacting with the Weather builders.
 	Weather *WeatherClient
+	// WebSession is the client for interacting with the WebSession builders.
+	WebSession *WebSessionClient
 	// WebhookSettings is the client for interacting with the WebhookSettings builders.
 	WebhookSettings *WebhookSettingsClient
 	// Zigbee2MQTT is the client for interacting with the Zigbee2MQTT builders.
@@ -387,6 +389,7 @@ func (tx *Tx) init() {
 	tx.WakeAlarm = NewWakeAlarmClient(tx.config)
 	tx.Waste = NewWasteClient(tx.config)
 	tx.Weather = NewWeatherClient(tx.config)
+	tx.WebSession = NewWebSessionClient(tx.config)
 	tx.WebhookSettings = NewWebhookSettingsClient(tx.config)
 	tx.Zigbee2MQTT = NewZigbee2MQTTClient(tx.config)
 }

@@ -187,7 +187,7 @@ func (s *Server) APINowPlayingCreate(c *gin.Context) {
 		SetURL(in.URL).SetToken(in.Token).SetUsername(in.Username).SetShowAlbumArt(in.ShowAlbumArt).
 		Save(s.Ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	if gs, err := s.DB.GeneralSettings.Query().Only(s.Ctx); err == nil && gs != nil {
@@ -218,7 +218,7 @@ func (s *Server) APINowPlayingUpdate(c *gin.Context) {
 		upd = upd.SetShowAlbumArt(*req.ShowAlbumArt)
 	}
 	if err := upd.Exec(s.Ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	obj, _ := s.DB.NowPlayingSource.Get(s.Ctx, id)
@@ -228,7 +228,7 @@ func (s *Server) APINowPlayingUpdate(c *gin.Context) {
 func (s *Server) APINowPlayingDelete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	if err := s.DB.NowPlayingSource.DeleteOneID(id).Exec(s.Ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})

@@ -345,12 +345,12 @@ func (s *Server) writeImageResponse(c *gin.Context, img *render.RenderedImage) {
 	if format == "webp" {
 		nrgba, err := render.DecodeNRGBA(img.Data)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			internalError(c, err)
 			return
 		}
 		data, err := render.EncodeWebP(nrgba)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			internalError(c, err)
 			return
 		}
 		c.Data(http.StatusOK, "image/webp", data)

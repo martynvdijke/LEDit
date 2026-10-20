@@ -1158,7 +1158,7 @@ func (s *Server) BackupExportHandler(c *gin.Context) {
 	includeMedia := c.Query("include_media") == "true"
 	bundle, err := s.ExportBundle(includeSecrets, includeMedia)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	slog.Info("backup export", "include_secrets", includeSecrets, "include_media", includeMedia)
@@ -1340,7 +1340,7 @@ func (s *Server) BackupImportHandler(c *gin.Context) {
 	}
 	result := s.ImportBundle(bundle, includeSecrets)
 	if result.FailedType != "" && result.FailedType != "validation" {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error, "completed_types": result.CompletedTypes, "failed_type": result.FailedType})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "import failed", "completed_types": result.CompletedTypes, "failed_type": result.FailedType})
 		return
 	}
 	if result.FailedType == "validation" {

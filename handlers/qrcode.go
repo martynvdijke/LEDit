@@ -188,7 +188,7 @@ func (s *Server) APIQrcodeCreate(c *gin.Context) {
 		SetCaption(qs.Caption).SetErrorCorrection(qrcode.ErrorCorrection(qs.ErrorCorrection)).SetQuietZone(qs.QuietZone).
 		Save(s.Ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	if gs, err := s.DB.GeneralSettings.Query().Only(s.Ctx); err == nil && gs != nil {
@@ -238,7 +238,7 @@ func (s *Server) APIQrcodeUpdate(c *gin.Context) {
 		SetCaption(qs.Caption).SetErrorCorrection(qrcode.ErrorCorrection(qs.ErrorCorrection)).SetQuietZone(qs.QuietZone).
 		Exec(s.Ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	obj, _ := s.DB.Qrcode.Get(s.Ctx, id)
@@ -247,7 +247,7 @@ func (s *Server) APIQrcodeUpdate(c *gin.Context) {
 func (s *Server) APIQrcodeDelete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	if err := s.DB.Qrcode.DeleteOneID(id).Exec(s.Ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})

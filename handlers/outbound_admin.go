@@ -39,7 +39,7 @@ func (s *Server) OutboundWebhooksCreate(c *gin.Context) {
 	}
 	h, err := s.DB.OutboundWebhook.Create().SetURL(req.URL).SetSecret(req.Secret).SetEnabled(enabled).Save(s.Ctx)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	c.JSON(200, h)
@@ -106,7 +106,7 @@ func (s *Server) OutboundSettingsPut(c *gin.Context) {
 	}
 	updated, err := upd.Save(s.Ctx)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	c.JSON(200, updated)

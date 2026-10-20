@@ -1,16 +1,23 @@
 package handlers
 
 import (
+	"context"
+	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
+	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"ledit/ent"
 	"ledit/ent/apitoken"
+	"ledit/ent/websession"
 )
 
 type sessionData struct {
@@ -26,6 +33,15 @@ var (
 	authEnabled = false
 )
 
+// initSessionStore gives the session helpers a database handle so logins
+// survive restarts. The in-memory map stays as a hot cache and still works in
+// tests that do not create an ent client.
+func initSessionStore() {
+	authMu.Lock()
+	defer authMu.Unlock()
+	sessions = map[string]sessionData{}
+}
+
 // EnableAuth is used by tests to re-enable authentication.
 func EnableAuth() {
 	authMu.Lock()
@@ -33,29 +49,143 @@ func EnableAuth() {
 	authEnabled = true
 }
 
-func hashSessionToken(pwd string) string {
-	h := sha256.Sum256([]byte(pwd))
+func hashSessionToken(token string) string {
+	h := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(h[:])
 }
 
-func AuthMiddleware() gin.HandlerFunc {
+func newSessionToken() (string, error) {
+	buf := make([]byte, 32)
+	if _, err := rand.Read(buf); err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(buf), nil
+}
+
+// putSession creates a random session token, persists its hash, and caches it.
+func putSession(db *ent.Client, sd sessionData) (string, error) {
+	token, err := newSessionToken()
+	if err != nil {
+		return "", err
+	}
+	hash := hashSessionToken(token)
+	authMu.Lock()
+	defer authMu.Unlock()
+	if db != nil {
+		if _, err := db.WebSession.Create().
+			SetTokenHash(hash).
+			SetUserID(sd.UserID).
+			SetUsername(sd.Username).
+			SetRole(sd.Role).
+			SetExpiry(sd.Expiry).
+			Save(context.Background()); err != nil {
+			return "", err
+		}
+	}
+	sessions[hash] = sd
+	return token, nil
+}
+
+// lookupSession returns a cached session or reloads it from the database.
+func lookupSession(db *ent.Client, token string) (sessionData, bool) {
+	if token == "" {
+		return sessionData{}, false
+	}
+	hash := hashSessionToken(token)
+	now := time.Now()
+	authMu.Lock()
+	if sd, ok := sessions[hash]; ok {
+		if sd.Expiry.After(now) {
+			authMu.Unlock()
+			return sd, true
+		}
+		delete(sessions, hash)
+	}
+	authMu.Unlock()
+	if db == nil {
+		return sessionData{}, false
+	}
+	row, err := db.WebSession.Query().Where(websession.TokenHashEQ(hash)).Only(context.Background())
+	if err != nil {
+		return sessionData{}, false
+	}
+	if !row.Expiry.After(now) {
+		_ = db.WebSession.DeleteOneID(row.ID).Exec(context.Background())
+		return sessionData{}, false
+	}
+	sd := sessionData{UserID: row.UserID, Username: row.Username, Role: row.Role, Expiry: row.Expiry}
+	authMu.Lock()
+	sessions[hash] = sd
+	authMu.Unlock()
+	return sd, true
+}
+
+func deleteSession(db *ent.Client, token string) {
+	if token == "" {
+		return
+	}
+	hash := hashSessionToken(token)
+	authMu.Lock()
+	delete(sessions, hash)
+	authMu.Unlock()
+	if db != nil {
+		_, _ = db.WebSession.Delete().Where(websession.TokenHashEQ(hash)).Exec(context.Background())
+	}
+}
+
+func clearUserSessions(db *ent.Client, userID int) {
+	authMu.Lock()
+	for hash, sd := range sessions {
+		if sd.UserID == userID {
+			delete(sessions, hash)
+		}
+	}
+	authMu.Unlock()
+	if db != nil {
+		_, _ = db.WebSession.Delete().Where(websession.UserID(userID)).Exec(context.Background())
+	}
+}
+
+func clearAllSessions(db *ent.Client) {
+	authMu.Lock()
+	sessions = map[string]sessionData{}
+	authMu.Unlock()
+	if db != nil {
+		_, _ = db.WebSession.Delete().Exec(context.Background())
+	}
+}
+
+func sessionCookieSecure(c *gin.Context) bool {
+	if v := strings.TrimSpace(strings.ToLower(c.GetHeader("X-Forwarded-Proto"))); v != "" {
+		return v == "https"
+	}
+	if v := strings.TrimSpace(strings.ToLower(os.Getenv("COOKIE_SECURE"))); v != "" {
+		return v == "1" || v == "true" || v == "yes"
+	}
+	return c.Request.TLS != nil
+}
+
+func setSessionCookie(c *gin.Context, token string, maxAge int) {
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("session", token, maxAge, "/", "", sessionCookieSecure(c), true)
+}
+
+func clearSessionCookie(c *gin.Context) {
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("session", "", -1, "/", "", sessionCookieSecure(c), true)
+}
+
+func (s *Server) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !authEnabled {
 			c.Next()
 			return
 		}
-		token := ""
-		if t, err := c.Cookie("session"); err == nil {
-			token = t
+		token, err := c.Cookie("session")
+		if err != nil {
+			token = ""
 		}
-		authMu.Lock()
-		sd, valid := sessions[token]
-		if valid && sd.Expiry.Before(time.Now()) {
-			valid = false
-			delete(sessions, token)
-		}
-		authMu.Unlock()
-		if !valid {
+		if _, valid := lookupSession(s.DB, token); !valid {
 			c.Redirect(http.StatusFound, "/login")
 			c.Abort()
 			return
@@ -122,11 +252,13 @@ func (s *Server) LoginAction(c *gin.Context) {
 		}
 	}
 
-	token := hashSessionToken(time.Now().String() + username)
-	authMu.Lock()
-	sessions[token] = sessionData{UserID: uid, Username: username, Role: role, Expiry: time.Now().Add(24 * time.Hour)}
-	authMu.Unlock()
-	c.SetCookie("session", token, 86400, "/", "", false, true)
+	token, err := putSession(s.DB, sessionData{UserID: uid, Username: username, Role: role, Expiry: time.Now().Add(24 * time.Hour)})
+	if err != nil {
+		slog.Error("failed to persist session", "error", err)
+		c.HTML(http.StatusOK, "login.html", gin.H{"error": "Unable to start session"})
+		return
+	}
+	setSessionCookie(c, token, 86400)
 	// Update last_login_at if real user.
 	if uid != 0 {
 		_, _ = s.DB.User.UpdateOneID(uid).SetLastLoginAt(time.Now()).Save(s.Ctx)
@@ -136,11 +268,9 @@ func (s *Server) LoginAction(c *gin.Context) {
 
 func (s *Server) LogoutAction(c *gin.Context) {
 	if token, err := c.Cookie("session"); err == nil {
-		authMu.Lock()
-		delete(sessions, token)
-		authMu.Unlock()
+		deleteSession(s.DB, token)
 	}
-	c.SetCookie("session", "", -1, "/", "", false, true)
+	clearSessionCookie(c)
 	c.Redirect(http.StatusFound, "/login")
 }
 
@@ -151,14 +281,7 @@ func (s *Server) IsAuthenticated(c *gin.Context) bool {
 		return true
 	}
 	if token, err := c.Cookie("session"); err == nil {
-		authMu.Lock()
-		sd, valid := sessions[token]
-		if valid && sd.Expiry.Before(time.Now()) {
-			valid = false
-			delete(sessions, token)
-		}
-		authMu.Unlock()
-		if valid {
+		if _, valid := lookupSession(s.DB, token); valid {
 			return true
 		}
 	}

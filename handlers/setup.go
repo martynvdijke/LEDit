@@ -62,10 +62,7 @@ func (s *Server) SetupMiddleware() gin.HandlerFunc {
 			// tests and an admin who already logged in with the default
 			// password finish the wizard without being locked out).
 			if token, err := c.Cookie("session"); err == nil {
-				authMu.Lock()
-				_, valid := sessions[token]
-				authMu.Unlock()
-				if valid {
+				if _, valid := lookupSession(s.DB, token); valid {
 					c.Next()
 					return
 				}

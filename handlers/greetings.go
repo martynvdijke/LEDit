@@ -402,7 +402,7 @@ func (s *Server) APIGreetingCreate(c *gin.Context) {
 	}
 	obj, err := cre.Save(s.Ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	c.JSON(http.StatusCreated, obj)
@@ -470,7 +470,7 @@ func (s *Server) APIGreetingUpdate(c *gin.Context) {
 	}
 	obj, err := upd.Save(s.Ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, obj)

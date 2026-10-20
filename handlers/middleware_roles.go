@@ -20,10 +20,7 @@ func (s *Server) CurrentUser(c *gin.Context) (*ent.User, bool) {
 	}
 	// Try session first.
 	if token, err := c.Cookie("session"); err == nil {
-		authMu.Lock()
-		sd, ok := sessions[token]
-		authMu.Unlock()
-		if ok && sd.Expiry.After(time.Now()) {
+		if sd, ok := lookupSession(s.DB, token); ok {
 			u, err := s.DB.User.Get(c.Request.Context(), sd.UserID)
 			if err == nil {
 				return u, true
@@ -57,15 +54,13 @@ func abortInsufficientRole(c *gin.Context) {
 }
 
 // getSessionRole returns role of session if valid, else "".
-func getSessionRole(c *gin.Context) string {
+func (s *Server) getSessionRole(c *gin.Context) string {
 	token, err := c.Cookie("session")
 	if err != nil {
 		return ""
 	}
-	authMu.Lock()
-	sd, ok := sessions[token]
-	authMu.Unlock()
-	if !ok || sd.Expiry.Before(time.Now()) {
+	sd, ok := lookupSession(s.DB, token)
+	if !ok {
 		return ""
 	}
 	return sd.Role
@@ -95,7 +90,7 @@ func (s *Server) isAuthenticatedWithRole(c *gin.Context, required string) (authe
 		return true, "admin"
 	}
 	// Session has priority.
-	if r := getSessionRole(c); r != "" {
+	if r := s.getSessionRole(c); r != "" {
 		if required == "viewer" {
 			return true, r
 		}
@@ -111,7 +106,7 @@ func (s *Server) isAuthenticatedWithRole(c *gin.Context, required string) (authe
 	}
 	// Check if any valid session or token exists but with wrong role handled above.
 	// Determine if completely unauthenticated.
-	if getSessionRole(c) == "" && s.getBearerRole(c) == "" {
+	if s.getSessionRole(c) == "" && s.getBearerRole(c) == "" {
 		// also check raw session existence for unauthenticated vs insufficient
 		if token, err := c.Cookie("session"); err == nil {
 			authMu.Lock()
@@ -134,7 +129,7 @@ func (s *Server) RequireViewer() gin.HandlerFunc {
 			return
 		}
 		// Check session.
-		if r := getSessionRole(c); r == "viewer" || r == "admin" {
+		if r := s.getSessionRole(c); r == "viewer" || r == "admin" {
 			c.Set("user_role", r)
 			c.Next()
 			return
@@ -163,7 +158,7 @@ func (s *Server) AdminRoleMiddleware() gin.HandlerFunc {
 		}
 		// Users page is admin-only even for GET.
 		if c.Request.URL.Path == "/admin/users" || strings.HasPrefix(c.Request.URL.Path, "/admin/users") || strings.HasPrefix(c.Request.URL.Path, "/admin/api/users") {
-			r := getSessionRole(c)
+			r := s.getSessionRole(c)
 			if r == "" {
 				r = s.getBearerRole(c)
 			}
@@ -189,7 +184,7 @@ func (s *Server) AdminRoleMiddleware() gin.HandlerFunc {
 		}
 		// API tokens management is admin-only.
 		if strings.HasPrefix(c.Request.URL.Path, "/admin/api-tokens") {
-			r := getSessionRole(c)
+			r := s.getSessionRole(c)
 			if r == "" {
 				r = s.getBearerRole(c)
 			}
@@ -209,7 +204,7 @@ func (s *Server) AdminRoleMiddleware() gin.HandlerFunc {
 		// Guest remote management is admin-only (page and JSON API).
 		if strings.HasPrefix(c.Request.URL.Path, "/admin/guest-remotes") ||
 			strings.HasPrefix(c.Request.URL.Path, "/admin/api/guest-remotes") {
-			r := getSessionRole(c)
+			r := s.getSessionRole(c)
 			if r == "" {
 				r = s.getBearerRole(c)
 			}
@@ -234,7 +229,7 @@ func (s *Server) AdminRoleMiddleware() gin.HandlerFunc {
 		}
 		if c.Request.Method == http.MethodGet {
 			// require viewer (viewer or admin)
-			if r := getSessionRole(c); r == "viewer" || r == "admin" {
+			if r := s.getSessionRole(c); r == "viewer" || r == "admin" {
 				c.Set("user_role", r)
 				c.Next()
 				return
@@ -249,7 +244,7 @@ func (s *Server) AdminRoleMiddleware() gin.HandlerFunc {
 			return
 		}
 		// Mutations require admin
-		if r := getSessionRole(c); r != "" {
+		if r := s.getSessionRole(c); r != "" {
 			if r == "admin" {
 				c.Set("user_role", r)
 				c.Next()
@@ -279,7 +274,7 @@ func (s *Server) RequireAdmin() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		if r := getSessionRole(c); r != "" {
+		if r := s.getSessionRole(c); r != "" {
 			if r == "admin" {
 				c.Set("user_role", r)
 				c.Next()

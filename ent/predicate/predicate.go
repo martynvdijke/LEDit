@@ -246,6 +246,9 @@ type Waste func(*sql.Selector)
 // Weather is the predicate function for weather builders.
 type Weather func(*sql.Selector)
 
+// WebSession is the predicate function for websession builders.
+type WebSession func(*sql.Selector)
+
 // WebhookSettings is the predicate function for webhooksettings builders.
 type WebhookSettings func(*sql.Selector)
 

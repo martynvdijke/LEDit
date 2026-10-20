@@ -243,7 +243,7 @@ func (s *Server) APISportsCreate(c *gin.Context) {
 	}
 	obj, err := dsRegistry["sports"].CreateFields(s.DB, s.Ctx, in.fields())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil && settings != nil {
@@ -270,7 +270,7 @@ func (s *Server) APISportsUpdate(c *gin.Context) {
 		}
 	}
 	if err := dsRegistry["sports"].UpdateFields(s.DB, s.Ctx, id, in.fields()); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	obj, _ := s.DB.Sports.Get(s.Ctx, id)
@@ -280,7 +280,7 @@ func (s *Server) APISportsUpdate(c *gin.Context) {
 func (s *Server) APISportsDelete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	if err := s.DB.Sports.DeleteOneID(id).Exec(s.Ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})

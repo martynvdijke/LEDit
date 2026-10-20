@@ -92,6 +92,7 @@ import (
 	"ledit/ent/waste"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
+	"ledit/ent/websession"
 	"ledit/ent/zigbee2mqtt"
 
 	"entgo.io/ent"
@@ -265,6 +266,8 @@ type Client struct {
 	Waste *WasteClient
 	// Weather is the client for interacting with the Weather builders.
 	Weather *WeatherClient
+	// WebSession is the client for interacting with the WebSession builders.
+	WebSession *WebSessionClient
 	// WebhookSettings is the client for interacting with the WebhookSettings builders.
 	WebhookSettings *WebhookSettingsClient
 	// Zigbee2MQTT is the client for interacting with the Zigbee2MQTT builders.
@@ -360,6 +363,7 @@ func (c *Client) init() {
 	c.WakeAlarm = NewWakeAlarmClient(c.config)
 	c.Waste = NewWasteClient(c.config)
 	c.Weather = NewWeatherClient(c.config)
+	c.WebSession = NewWebSessionClient(c.config)
 	c.WebhookSettings = NewWebhookSettingsClient(c.config)
 	c.Zigbee2MQTT = NewZigbee2MQTTClient(c.config)
 }
@@ -534,6 +538,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		WakeAlarm:          NewWakeAlarmClient(cfg),
 		Waste:              NewWasteClient(cfg),
 		Weather:            NewWeatherClient(cfg),
+		WebSession:         NewWebSessionClient(cfg),
 		WebhookSettings:    NewWebhookSettingsClient(cfg),
 		Zigbee2MQTT:        NewZigbee2MQTTClient(cfg),
 	}, nil
@@ -635,6 +640,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		WakeAlarm:          NewWakeAlarmClient(cfg),
 		Waste:              NewWasteClient(cfg),
 		Weather:            NewWeatherClient(cfg),
+		WebSession:         NewWebSessionClient(cfg),
 		WebhookSettings:    NewWebhookSettingsClient(cfg),
 		Zigbee2MQTT:        NewZigbee2MQTTClient(cfg),
 	}, nil
@@ -680,8 +686,8 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Schedule, c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon,
 		c.TelegramSettings, c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame,
 		c.Transit, c.Transmission, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma,
-		c.User, c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings,
-		c.Zigbee2MQTT,
+		c.User, c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebSession,
+		c.WebhookSettings, c.Zigbee2MQTT,
 	} {
 		n.Use(hooks...)
 	}
@@ -705,8 +711,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Schedule, c.Sonarr, c.Speedtest, c.Sports, c.Stock, c.SunMoon,
 		c.TelegramSettings, c.TextSlide, c.Theme, c.ThemeAssignment, c.TimelapseFrame,
 		c.Transit, c.Transmission, c.UmamiSettings, c.Untappd, c.Uptime, c.UptimeKuma,
-		c.User, c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebhookSettings,
-		c.Zigbee2MQTT,
+		c.User, c.Video, c.WakeAlarm, c.Waste, c.Weather, c.WebSession,
+		c.WebhookSettings, c.Zigbee2MQTT,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -875,6 +881,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Waste.mutate(ctx, m)
 	case *WeatherMutation:
 		return c.Weather.mutate(ctx, m)
+	case *WebSessionMutation:
+		return c.WebSession.mutate(ctx, m)
 	case *WebhookSettingsMutation:
 		return c.WebhookSettings.mutate(ctx, m)
 	case *Zigbee2MQTTMutation:
@@ -12532,6 +12540,139 @@ func (c *WeatherClient) mutate(ctx context.Context, m *WeatherMutation) (Value, 
 	}
 }
 
+// WebSessionClient is a client for the WebSession schema.
+type WebSessionClient struct {
+	config
+}
+
+// NewWebSessionClient returns a client for the WebSession from the given config.
+func NewWebSessionClient(c config) *WebSessionClient {
+	return &WebSessionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `websession.Hooks(f(g(h())))`.
+func (c *WebSessionClient) Use(hooks ...Hook) {
+	c.hooks.WebSession = append(c.hooks.WebSession, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `websession.Intercept(f(g(h())))`.
+func (c *WebSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WebSession = append(c.inters.WebSession, interceptors...)
+}
+
+// Create returns a builder for creating a WebSession entity.
+func (c *WebSessionClient) Create() *WebSessionCreate {
+	mutation := newWebSessionMutation(c.config, OpCreate)
+	return &WebSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WebSession entities.
+func (c *WebSessionClient) CreateBulk(builders ...*WebSessionCreate) *WebSessionCreateBulk {
+	return &WebSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WebSessionClient) MapCreateBulk(slice any, setFunc func(*WebSessionCreate, int)) *WebSessionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WebSessionCreateBulk{err: fmt.Errorf("calling to WebSessionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WebSessionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WebSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WebSession.
+func (c *WebSessionClient) Update() *WebSessionUpdate {
+	mutation := newWebSessionMutation(c.config, OpUpdate)
+	return &WebSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WebSessionClient) UpdateOne(_m *WebSession) *WebSessionUpdateOne {
+	mutation := newWebSessionMutation(c.config, OpUpdateOne, withWebSession(_m))
+	return &WebSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WebSessionClient) UpdateOneID(id int) *WebSessionUpdateOne {
+	mutation := newWebSessionMutation(c.config, OpUpdateOne, withWebSessionID(id))
+	return &WebSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WebSession.
+func (c *WebSessionClient) Delete() *WebSessionDelete {
+	mutation := newWebSessionMutation(c.config, OpDelete)
+	return &WebSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WebSessionClient) DeleteOne(_m *WebSession) *WebSessionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WebSessionClient) DeleteOneID(id int) *WebSessionDeleteOne {
+	builder := c.Delete().Where(websession.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WebSessionDeleteOne{builder}
+}
+
+// Query returns a query builder for WebSession.
+func (c *WebSessionClient) Query() *WebSessionQuery {
+	return &WebSessionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWebSession},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WebSession entity by its id.
+func (c *WebSessionClient) Get(ctx context.Context, id int) (*WebSession, error) {
+	return c.Query().Where(websession.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WebSessionClient) GetX(ctx context.Context, id int) *WebSession {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *WebSessionClient) Hooks() []Hook {
+	return c.hooks.WebSession
+}
+
+// Interceptors returns the client interceptors.
+func (c *WebSessionClient) Interceptors() []Interceptor {
+	return c.inters.WebSession
+}
+
+func (c *WebSessionClient) mutate(ctx context.Context, m *WebSessionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WebSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WebSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WebSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WebSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WebSession mutation op: %q", m.Op())
+	}
+}
+
 // WebhookSettingsClient is a client for the WebhookSettings schema.
 type WebhookSettingsClient struct {
 	config
@@ -12813,7 +12954,7 @@ type (
 		Scene, Schedule, Sonarr, Speedtest, Sports, Stock, SunMoon, TelegramSettings,
 		TextSlide, Theme, ThemeAssignment, TimelapseFrame, Transit, Transmission,
 		UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm, Waste,
-		Weather, WebhookSettings, Zigbee2MQTT []ent.Hook
+		Weather, WebSession, WebhookSettings, Zigbee2MQTT []ent.Hook
 	}
 	inters struct {
 		AIDigest, AISettings, AdGuard, AdminSettings, AirQuality, AlertSettings,
@@ -12828,6 +12969,6 @@ type (
 		Scene, Schedule, Sonarr, Speedtest, Sports, Stock, SunMoon, TelegramSettings,
 		TextSlide, Theme, ThemeAssignment, TimelapseFrame, Transit, Transmission,
 		UmamiSettings, Untappd, Uptime, UptimeKuma, User, Video, WakeAlarm, Waste,
-		Weather, WebhookSettings, Zigbee2MQTT []ent.Interceptor
+		Weather, WebSession, WebhookSettings, Zigbee2MQTT []ent.Interceptor
 	}
 )

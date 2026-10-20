@@ -19,7 +19,7 @@ func (s *Server) ChartHistory(c *gin.Context) {
 	since := time.Now().Add(-time.Duration(hours) * time.Hour)
 	rows, err := QueryHistory(c.Request.Context(), s.DB, typ, id, since)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, rows)

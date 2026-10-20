@@ -82,6 +82,7 @@ import (
 	"ledit/ent/waste"
 	"ledit/ent/weather"
 	"ledit/ent/webhooksettings"
+	"ledit/ent/websession"
 	"ledit/ent/zigbee2mqtt"
 	"time"
 )
@@ -1977,6 +1978,20 @@ func init() {
 	weatherDescURL := weatherFields[1].Descriptor()
 	// weather.DefaultURL holds the default value on creation for the url field.
 	weather.DefaultURL = weatherDescURL.Default.(string)
+	websessionFields := schema.WebSession{}.Fields()
+	_ = websessionFields
+	// websessionDescUsername is the schema descriptor for username field.
+	websessionDescUsername := websessionFields[3].Descriptor()
+	// websession.DefaultUsername holds the default value on creation for the username field.
+	websession.DefaultUsername = websessionDescUsername.Default.(string)
+	// websessionDescRole is the schema descriptor for role field.
+	websessionDescRole := websessionFields[4].Descriptor()
+	// websession.DefaultRole holds the default value on creation for the role field.
+	websession.DefaultRole = websessionDescRole.Default.(string)
+	// websessionDescCreatedAt is the schema descriptor for created_at field.
+	websessionDescCreatedAt := websessionFields[6].Descriptor()
+	// websession.DefaultCreatedAt holds the default value on creation for the created_at field.
+	websession.DefaultCreatedAt = websessionDescCreatedAt.Default.(func() time.Time)
 	webhooksettingsFields := schema.WebhookSettings{}.Fields()
 	_ = webhooksettingsFields
 	// webhooksettingsDescAPIKey is the schema descriptor for api_key field.

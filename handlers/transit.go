@@ -263,7 +263,7 @@ func (s *Server) APITransitCreate(c *gin.Context) {
 	}
 	obj, err := dsRegistry["transit"].CreateFields(s.DB, s.Ctx, in.fields())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	if settings, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil && settings != nil {
@@ -290,7 +290,7 @@ func (s *Server) APITransitUpdate(c *gin.Context) {
 		}
 	}
 	if err := dsRegistry["transit"].UpdateFields(s.DB, s.Ctx, id, in.fields()); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	obj, _ := s.DB.Transit.Get(s.Ctx, id)
@@ -300,7 +300,7 @@ func (s *Server) APITransitUpdate(c *gin.Context) {
 func (s *Server) APITransitDelete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	if err := s.DB.Transit.DeleteOneID(id).Exec(s.Ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})
