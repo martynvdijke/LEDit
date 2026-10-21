@@ -360,6 +360,8 @@ func (s *Server) setupRoutes() {
 		api.GET("/trmnl/messages", s.APITrmnlMessages)
 		api.POST("/trmnl/messages/refresh", s.APITrmnlMessagesRefresh)
 		api.GET("/health", s.APIHealth)
+		// Login capabilities for native clients (no secrets, mirrors /login).
+		api.GET("/auth/config", s.APIAuthConfig)
 		// Frame snapshot: the shared feed is public; a device target is
 		// authorized inside the handler (admin session or embed token).
 		api.GET("/frame", s.APIFrame)

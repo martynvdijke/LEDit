@@ -40,6 +40,25 @@ func oidcTestServer(t *testing.T, enabled bool) *Server {
 	return srv
 }
 
+func TestAPIAuthConfigReportsOIDCToggle(t *testing.T) {
+	for _, tc := range []struct {
+		enabled bool
+		want    string
+	}{
+		{enabled: true, want: `"oidc_enabled":true`},
+		{enabled: false, want: `"oidc_enabled":false`},
+	} {
+		srv := oidcTestServer(t, tc.enabled)
+		w := doRequest(t, srv, http.MethodGet, "/api/auth/config", "")
+		if w.Code != http.StatusOK {
+			t.Fatalf("oidc=%v: expected 200, got %d", tc.enabled, w.Code)
+		}
+		if !strings.Contains(w.Body.String(), tc.want) {
+			t.Errorf("oidc=%v: expected body to contain %s, got %s", tc.enabled, tc.want, w.Body.String())
+		}
+	}
+}
+
 func TestOIDCDisabledRoutesReturnNotFound(t *testing.T) {
 	srv := oidcTestServer(t, false)
 

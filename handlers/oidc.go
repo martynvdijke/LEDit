@@ -101,6 +101,13 @@ func oidcCookieSecure() bool {
 }
 
 // OIDCLogin starts Authorization Code + PKCE S256 flow.
+// APIAuthConfig reports which login methods a native client can offer. It is
+// public and intentionally limited to booleans, matching what /login already
+// reveals by rendering the SSO button.
+func (s *Server) APIAuthConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"oidc_enabled": oidcEnabled()})
+}
+
 func (s *Server) OIDCLogin(c *gin.Context) {
 	if !oidcEnabled() {
 		c.JSON(http.StatusNotFound, gin.H{"error": "oidc_disabled"})
