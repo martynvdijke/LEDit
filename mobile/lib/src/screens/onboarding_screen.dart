@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api_client.dart';
 import '../state.dart';
+import 'browser_login_screen.dart';
 
 /// First-run (and sign-out) screen: point the app at a server and pick how to
-/// authenticate. Mirrors the server's auth options: an API token, a
-/// username/password session, or a session cookie captured after completing
-/// the OIDC/Authelia flow in a browser.
+/// authenticate. OIDC runs in an embedded browser because the IdP owns the
+/// login form; API tokens and username/password cover headless servers.
+///
+/// There is deliberately no default address: a LEDit instance can live
+/// anywhere, so the user always supplies it.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -17,12 +20,12 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _serverUrl = TextEditingController(text: 'http://');
+  final _serverUrl = TextEditingController();
   final _credential = TextEditingController();
   final _username = TextEditingController();
   final _password = TextEditingController();
 
-  AuthMode _mode = AuthMode.apiToken;
+  AuthMode _mode = AuthMode.oidc;
   bool _busy = false;
   String? _error;
 
@@ -48,8 +51,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         throw ApiException('Could not reach a LEDit server at $serverUrl.');
       }
 
-      SessionConfig config;
-      if (_mode == AuthMode.password) {
+      SessionConfig? config;
+      if (_mode == AuthMode.oidc) {
+        if (!await LeditApi.oidcEnabled(serverUrl)) {
+          throw ApiException(
+            'This server does not have OIDC enabled. '
+            'Use an API token or username & password instead.',
+          );
+        }
+        if (!mounted) return;
+        final cookie = await BrowserLoginScreen.show(context, serverUrl);
+        if (cookie == null) return; // The user closed the login page.
+        config = SessionConfig(
+          serverUrl: serverUrl,
+          mode: AuthMode.oidcCookie,
+          sessionCookie: cookie,
+        );
+      } else if (_mode == AuthMode.password) {
         final cookie = await LeditApi.login(
           serverUrl,
           _username.text.trim(),
@@ -66,12 +84,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           serverUrl: serverUrl,
           mode: _mode,
           apiToken: _mode == AuthMode.apiToken ? _credential.text.trim() : null,
-          sessionCookie: _mode == AuthMode.oidcCookie ? _credential.text.trim() : null,
+          sessionCookie: _mode == AuthMode.oidcCookie
+              ? _credential.text.trim()
+              : null,
         );
       }
 
       // Verify the credential against an authenticated read before persisting.
-      final api = LeditApi(baseUrl: config.baseUrl, headers: config.authHeaders);
+      final api = LeditApi(
+        baseUrl: config.baseUrl,
+        headers: config.authHeaders,
+      );
       await api.devices();
       await ref.read(sessionControllerProvider.notifier).save(config);
     } on ApiException catch (e) {
@@ -94,6 +117,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
+              Center(
+                child: Image.asset(
+                  'assets/brand/ledit-mark.png',
+                  width: 84,
+                  height: 84,
+                  filterQuality: FilterQuality.medium,
+                ),
+              ),
+              const SizedBox(height: 16),
               Text('LED matrix remote', style: theme.textTheme.headlineSmall),
               const SizedBox(height: 8),
               Text(
@@ -108,13 +140,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 autocorrect: false,
                 decoration: const InputDecoration(
                   labelText: 'Server URL',
-                  hintText: 'http://ledit.local:8081',
+                  hintText: 'ledit.local:8081',
+                  helperText:
+                      'Where your LEDit server is reachable from this phone.',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) =>
-                    (value == null || normaliseServerUrl(value).isEmpty)
-                        ? 'Enter the LEDit server address'
-                        : null,
+                validator: (value) => isValidServerUrl(value ?? '')
+                    ? null
+                    : 'Enter the LEDit server address',
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<AuthMode>(
@@ -133,7 +166,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              if (_mode == AuthMode.password) ...[
+              if (_mode == AuthMode.oidc) ...[
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.travel_explore,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Sign-in happens on your server\'s own login page. '
+                            'Authelia (or the configured OIDC provider) handles '
+                            'your credentials; the app only keeps the session '
+                            'cookie it issues.',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ] else if (_mode == AuthMode.password) ...[
                 TextFormField(
                   controller: _username,
                   autocorrect: false,
@@ -174,9 +231,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) =>
-                      _mode != AuthMode.password && (value == null || value.trim().isEmpty)
-                          ? 'Required'
-                          : null,
+                      _mode != AuthMode.password &&
+                          (value == null || value.trim().isEmpty)
+                      ? 'Required'
+                      : null,
                 ),
               const SizedBox(height: 24),
               if (_error != null) ...[
@@ -186,7 +244,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     padding: const EdgeInsets.all(12),
                     child: Text(
                       _error!,
-                      style: TextStyle(color: theme.colorScheme.onErrorContainer),
+                      style: TextStyle(
+                        color: theme.colorScheme.onErrorContainer,
+                      ),
                     ),
                   ),
                 ),
@@ -201,7 +261,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.link),
-                label: Text(_busy ? 'Connecting…' : 'Connect'),
+                label: Text(
+                  _busy
+                      ? 'Connecting…'
+                      : _mode == AuthMode.oidc
+                      ? 'Sign in with browser'
+                      : 'Connect',
+                ),
               ),
             ],
           ),

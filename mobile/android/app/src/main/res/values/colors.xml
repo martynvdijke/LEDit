@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand ink from web/static/brand/brand.css (the ledit-ink token). -->
+    <color name="ledit_ink">#050806</color>
+    <color name="ic_launcher_background">#050806</color>
+</resources>

@@ -20,9 +20,10 @@ class LeditApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF00B4D8),
+          seedColor: const Color(0xFFB7FF35),
           brightness: Brightness.dark,
         ),
+        scaffoldBackgroundColor: const Color(0xFF050806),
         useMaterial3: true,
       ),
       home: session.when(

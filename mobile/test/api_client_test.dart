@@ -123,6 +123,16 @@ void main() {
       'xyz',
     );
   });
+
+  test('server URL validation requires a real host', () {
+    expect(isValidServerUrl('ledit.local:8081'), isTrue);
+    expect(isValidServerUrl('https://ledit.example.com'), isTrue);
+    expect(isValidServerUrl('  http://192.168.1.10:8081/  '), isTrue);
+    expect(isValidServerUrl(''), isFalse);
+    expect(isValidServerUrl('   '), isFalse);
+    expect(isValidServerUrl('http://'), isFalse);
+    expect(isValidServerUrl('https://'), isFalse);
+  });
 }
 
 /// Local indirection so the assertion documents the header format the login

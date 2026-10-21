@@ -11,6 +11,7 @@ import 'models.dart';
 /// itself is a browser redirect, so the app captures the resulting session
 /// cookie instead of driving the IdP.
 enum AuthMode {
+  oidc('Single sign-on (OIDC)'),
   apiToken('API token'),
   password('Username & password'),
   oidcCookie('OIDC session cookie');
@@ -57,14 +58,27 @@ class SessionConfig {
 /// Adds a scheme when the user typed a bare host and strips trailing slashes.
 String normaliseServerUrl(String raw) {
   var url = raw.trim();
-  while (url.endsWith('/')) {
-    url = url.substring(0, url.length - 1);
-  }
   if (url.isEmpty) return url;
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
     url = 'http://$url';
   }
+  while (url.endsWith('/')) {
+    url = url.substring(0, url.length - 1);
+  }
   return url;
+}
+
+/// True when [raw] normalises to an absolute `http(s)` URL with a host.
+///
+/// `http://` on its own passes [normaliseServerUrl] but has no host, so the
+/// onboarding form rejects it instead of trying to reach an empty address.
+bool isValidServerUrl(String raw) {
+  final url = normaliseServerUrl(raw);
+  if (url.isEmpty) return false;
+  final uri = Uri.tryParse(url);
+  return uri != null &&
+      (uri.scheme == 'http' || uri.scheme == 'https') &&
+      uri.host.isNotEmpty;
 }
 
 /// `http`/`https` origin rewritten to `ws`/`wss` for WebSocket routes.
@@ -284,6 +298,27 @@ class LeditApi {
         options: Options(validateStatus: (_) => true),
       );
       return res.statusCode != null && res.statusCode! < 500;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Whether the server exposes the OIDC (Authelia) login flow.
+  static Future<bool> oidcEnabled(String baseUrl) async {
+    try {
+      final res = await Dio().get<dynamic>(
+        '${normaliseServerUrl(baseUrl)}/api/auth/config',
+        options: Options(validateStatus: (_) => true),
+      );
+      final data = res.data;
+      if (data is Map<String, dynamic>) return data['oidc_enabled'] == true;
+      if (data is String && data.isNotEmpty) {
+        final decoded = jsonDecode(data);
+        if (decoded is Map<String, dynamic>) {
+          return decoded['oidc_enabled'] == true;
+        }
+      }
+      return false;
     } catch (_) {
       return false;
     }

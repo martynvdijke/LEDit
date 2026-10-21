@@ -6,7 +6,7 @@ import 'package:ledit/src/api_client.dart';
 import 'package:ledit/src/widgets/matrix_preview.dart';
 
 void main() {
-  testWidgets('onboarding asks for a server URL and a credential', (tester) async {
+  testWidgets('onboarding asks for a server URL and offers OIDC by default', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(home: OnboardingScreen()),
@@ -16,9 +16,16 @@ void main() {
     expect(find.text('Connect to LEDit'), findsOneWidget);
     expect(find.text('Server URL'), findsOneWidget);
     expect(find.text('Authentication'), findsOneWidget);
-    // Default mode is API token.
-    expect(find.text('API token'), findsWidgets);
-    expect(find.widgetWithText(FilledButton, 'Connect'), findsOneWidget);
+    // No default address: the user must type where their server lives.
+    final serverField = tester.widget<EditableText>(find.byType(EditableText).first);
+    expect(serverField.controller.text, isEmpty);
+    // OIDC is preselected and explains that the server owns the login form.
+    expect(find.text('Single sign-on (OIDC)'), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Sign-in happens on your server'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Sign in with browser'), findsOneWidget);
+    expect(find.text('API token'), findsNothing);
   });
 
   testWidgets('onboarding switches to username/password fields', (tester) async {

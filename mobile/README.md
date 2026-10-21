@@ -6,9 +6,15 @@ playlist/scene switching, and priority text/image pushes.
 
 ## Features
 
-- **Onboarding** — server URL plus one of three credentials: an API token
-  (Admin → API tokens), a username/password session, or a `session` cookie
-  value copied after signing in through the browser (OIDC/Authelia).
+- **Onboarding** — server URL (no default; type the address of your instance)
+  plus browser-based OIDC sign-in: the app opens the server's own login page
+  in an embedded browser, lets Authelia (or the configured provider) handle
+  credentials, and keeps the `session` cookie issued by the OIDC callback.
+  API tokens (Admin → API tokens) and username/password remain available for
+  servers without OIDC.
+- **Branded icon** — the launcher/adaptive icon and splash screen use the PWA
+  mark (`web/static/pwa/icon.svg`) and the ink/phosphor palette from
+  `web/static/brand/brand.css`.
 - **Dashboard** — every device with liveness, live preview thumbnail, wall-wide
   pause/resume/next.
 - **Device screen** — full-resolution live preview, debounced (150ms)

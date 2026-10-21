@@ -1,9 +1,10 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final manifest =
-      File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+  final manifest = File('android/app/src/main/AndroidManifest.xml')
+      .readAsStringSync();
   final gradle = File('android/app/build.gradle.kts').readAsStringSync();
 
   test('manifest grants INTERNET', () {
@@ -18,5 +19,28 @@ void main() {
     expect(gradle, contains('key.properties'));
     expect(gradle, contains('releaseSigningConfig'));
     expect(gradle, contains('signingConfigs.getByName("debug")'));
+  });
+
+  test('launcher icon and splash use the LEDit brand mark', () {
+    expect(
+      File('android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml')
+          .existsSync(),
+      isTrue,
+    );
+    expect(
+      File('android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png')
+          .existsSync(),
+      isTrue,
+    );
+    expect(
+      File('android/app/src/main/res/mipmap-xxxhdpi/launch_image.png')
+          .existsSync(),
+      isTrue,
+    );
+    final splash = File(
+      'android/app/src/main/res/drawable/launch_background.xml',
+    ).readAsStringSync();
+    expect(splash, contains('@color/ledit_ink'));
+    expect(splash, isNot(contains('@android:color/white')));
   });
 }
