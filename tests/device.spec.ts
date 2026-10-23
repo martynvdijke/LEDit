@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures';
+import { deviceRow, getDeviceId as findDeviceId } from './helpers/devices';
 
 function pwName(prefix: string) {
   return `PW-${test.info().parallelIndex}-${Math.random().toString(36).slice(2, 6)}-${prefix}`;
@@ -6,12 +7,7 @@ function pwName(prefix: string) {
 
 async function getDeviceId(page: import('@playwright/test').Page, name: string): Promise<string> {
   await page.goto('/admin/devices');
-  const html = await page.content();
-  const idx = html.indexOf(name);
-  if (idx < 0) return '';
-  const snippet = html.slice(Math.max(0, idx - 1200), idx + 1200);
-  const m = snippet.match(/\/admin\/devices\/(\d+)\/delete/) || snippet.match(/\/admin\/devices\/(\d+)\/preview/);
-  return m ? m[1] : '';
+  return findDeviceId(page, name);
 }
 
 test.describe('Device lifecycle', () => {
@@ -124,15 +120,13 @@ test.describe('Device lifecycle', () => {
     await expect(page).toHaveURL(/\/admin\/devices$/);
     const id = await getDeviceId(page, name);
     expect(id).not.toBe('');
-    // Get token from devices page html ws url
-    const html = await page.content();
-    const tokenMatch = html.match(/ws:\/\/[^/]+\/ws\/device\/([a-zA-Z0-9_-]+)/);
-    let token = '';
-    if (tokenMatch) token = tokenMatch[1];
+    // Read the token from this device's own row, not the first token on the page.
+    const row = deviceRow(page, name);
+    const token = (await row.locator('td code').first().textContent())?.trim() ?? '';
     // Delete
-    await page.locator(`tr:has-text("${name}") form[action$="/delete"] button`).click();
+    await row.locator('form[action$="/delete"] button').click();
     await page.waitForLoadState('networkidle');
-    await expect(page.getByText(name)).toHaveCount(0);
+    await expect(page.locator('tbody tr').filter({ hasText: name })).toHaveCount(0);
     if (token) {
       // Token should be rejected - ws connect fails or http 401
       // Try via page evaluate WebSocket error

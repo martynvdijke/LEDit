@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures';
+import { getDeviceId } from './helpers/devices';
 
 function pwName(p: string) { return `PW-${test.info().parallelIndex}-${Math.random().toString(36).slice(2,6)}-${p}`; }
 
@@ -23,12 +24,8 @@ test.describe('WebSocket feed', () => {
     await page.locator('#enabled').check();
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/admin\/devices$/);
-    // get id
-    const html = await page.content();
-    const idx = html.indexOf(name);
-    const snippet = html.slice(Math.max(0, idx - 1200), idx + 1200);
-    const m = snippet.match(/\/admin\/devices\/(\d+)\/preview/) || snippet.match(/\/admin\/devices\/(\d+)\/delete/);
-    const id = m ? m[1] : '';
+    // Resolve the id from this device's own row (neighbouring rows may match otherwise).
+    const id = await getDeviceId(page, name);
     expect(id).not.toBe('');
     await page.goto('/');
     const feed = await wsFeed(`/ws/device/${id}/preview`);
