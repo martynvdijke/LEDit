@@ -1,3 +1,10 @@
+## [1.53.11](https://github.com/martynvdijke/LEDit/compare/v1.53.10...v1.53.11) (2026-10-23)
+
+
+### Bug Fixes
+
+* **test:** isolate telegram handler test database ([5d3a3a2](https://github.com/martynvdijke/LEDit/commit/5d3a3a2feffd7b926262dabf14be8f492f8364f1))
+
 ## [1.53.10](https://github.com/martynvdijke/LEDit/compare/v1.53.9...v1.53.10) (2026-10-22)
 
 ## [1.53.9](https://github.com/martynvdijke/LEDit/compare/v1.53.8...v1.53.9) (2026-10-21)
