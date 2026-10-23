@@ -19,7 +19,8 @@ import (
 
 func newTelegramTestServer(t *testing.T) *Server {
 	t.Helper()
-	drv, err := sql.Open(dialect.SQLite, "file:telegram_test.db?cache=shared&_fk=1&_busy_timeout=5000&mode=memory")
+	dsn := fmt.Sprintf("file:%s?cache=shared&_fk=1&_busy_timeout=5000&mode=memory", strings.ReplaceAll(t.Name(), "/", "_"))
+	drv, err := sql.Open(dialect.SQLite, dsn)
 	if err != nil {
 		t.Fatalf("open db: %v", err)
 	}
