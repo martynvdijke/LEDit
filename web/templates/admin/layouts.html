@@ -34,6 +34,7 @@
                         <td><span class="badge bg-dark" style="background:{{.Background}}">{{.Background}}</span></td>
                         <td>
                             <a href="/admin/layouts/{{.ID}}/edit" class="btn btn-sm btn-primary">Open editor</a>
+                            <a href="/admin/api/artifacts/export/layout/{{.ID}}" class="btn btn-sm btn-outline-secondary">Export</a>
                             <form method="POST" action="/admin/layouts/{{.ID}}/delete" style="display:inline">
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                             </form>

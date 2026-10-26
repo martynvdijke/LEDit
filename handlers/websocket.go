@@ -46,6 +46,7 @@ import (
 	"ledit/ent/generalsettings"
 	"ledit/ent/playlist"
 	"ledit/render"
+	"ledit/render/effects"
 )
 
 var upgrader = websocket.Upgrader{
@@ -102,7 +103,7 @@ type feedConn struct {
 
 // overlaySpecForDevice maps persisted device columns to the render overlay spec.
 func overlaySpecForDevice(d *ent.DeviceSettings) render.OverlaySpec {
-	return render.OverlaySpec{
+	spec := render.OverlaySpec{
 		Enabled:    d.OverlayEnabled,
 		Position:   d.OverlayPosition,
 		Height:     d.OverlayHeight,
@@ -111,12 +112,16 @@ func overlaySpecForDevice(d *ent.DeviceSettings) render.OverlaySpec {
 		Background: d.OverlayBg,
 		Foreground: d.OverlayFg,
 	}
+	return overlayEffectFields(spec, overlayEffectPresetID(d))
 }
 
 func splitCacheKey(k string) []string { return strings.SplitN(k, ":", 2) }
 
 type WSHub struct {
 	Client *ent.Client
+	// Srv is the owning server, set in Server.New. It is nil in bare test
+	// hubs, which register their own input sinks instead.
+	Srv *Server
 }
 
 func NewWSHub(client *ent.Client) *WSHub {
@@ -189,6 +194,11 @@ func (h *WSHub) loadSources(settings *ent.GeneralSettings) []sourceWithName {
 	sources = append(sources, sourceWithName{Name: "Matrix Rain", Source: &datasource.MatrixRainDS{}, cacheKey: "matrix-rain:0"})
 	for i, v := range []string{"starfield", "dvd", "matrix", "plasma"} {
 		sources = append(sources, sourceWithName{Name: "Screensaver: " + v, Source: &datasource.ScreensaverDS{Variant: v}, cacheKey: fmt.Sprintf("screensaver:%d", i)})
+	}
+
+	// Effect presets (procedural, theme-driven, no config).
+	for _, p := range cachedEffectPresets() {
+		sources = append(sources, sourceWithName{Name: datasource.EffectSourceName(p.Name, p.Effect), Source: effectSourceFor(p), cacheKey: fmt.Sprintf("effect:%d", p.ID)})
 	}
 
 	rssFeeds, _ := settings.Edges.RssFeedsOrErr()
@@ -762,7 +772,7 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		welcome, _ := json.Marshal(map[string]any{
 			"type":         "welcome",
 			"protocol":     2,
-			"capabilities": []string{"brightness", "spectrum", "hold"},
+			"capabilities": []string{"brightness", "spectrum", "hold", "inputs"},
 		})
 		if err := conn.WriteMessage(websocket.TextMessage, welcome); err != nil {
 			slog.Warn("failed to send device welcome", "device", device.Name, "error", err)
@@ -841,16 +851,41 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 	var lastSensorFetch time.Time
 	var sensorCache *int
 	var sensorCacheTime time.Time
+
+	// Registered before bFn so brightness commands can reach a live connection
+	// through the ephemeral controller hint.
+	fc := &FeedController{DeviceID: device.ID}
+	registerDeviceFeed(device.ID, fc)
+	defer unregisterDeviceFeed(device.ID)
+
+	// Input events are dispatched through a per-device sink so serveFeed's
+	// read loop never needs a *Server. Bare test hubs (h.Srv == nil) register
+	// their own sinks.
+	if h.Srv != nil {
+		srv := h.Srv
+		registerInputSink(device.ID, func(ev InputEvent) { srv.handleDeviceInput(device.ID, ev) })
+		defer unregisterInputSink(device.ID)
+	}
+
 	bFn := func() int {
 		if brightnessProviderForTest != nil {
 			return brightnessProviderForTest()
+		}
+		if lvl, ok := fc.BrightnessHint(); ok {
+			return lvl
 		}
 		if !ebEnabled {
 			return 100
 		}
 		now := time.Now()
-		// Sensor polling with jitter ≥5s
-		if sensorCfg != nil && now.Sub(lastSensorFetch) >= 5*time.Second {
+		var deviceLux float64
+		hasDeviceLux := false
+		if sensorCfg != nil && strings.TrimSpace(strings.ToLower(sensorCfg.Source)) == "device" {
+			deviceLux, hasDeviceLux = freshDeviceLux(device.ID, now)
+		}
+		// Sensor polling with jitter ≥5s. Skipped while a fresh device-reported
+		// lux reading exists; stale readings fall back to HA/schedule.
+		if !hasDeviceLux && sensorCfg != nil && now.Sub(lastSensorFetch) >= 5*time.Second {
 			// jitter check via ShouldFetch
 			if sensorState.ShouldFetch(now, lastSensorFetch) {
 				lastSensorFetch = now
@@ -869,7 +904,9 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 			}
 		}
 		var sensorLevel *int
-		if sensorCfg != nil && !sensorState.IsStale(now) && sensorCache != nil && now.Sub(sensorCacheTime) <= 60*time.Second {
+		if hasDeviceLux {
+			sensorLevel = SensorLevelForLux(deviceLux, sensorCfg)
+		} else if sensorCfg != nil && !sensorState.IsStale(now) && sensorCache != nil && now.Sub(sensorCacheTime) <= 60*time.Second {
 			sensorLevel = sensorCache
 		} else if sensorCfg != nil && sensorCache != nil && now.Sub(sensorCacheTime) > 60*time.Second {
 			sensorCache = nil
@@ -879,36 +916,26 @@ func (h *WSHub) HandleDeviceWS(c *gin.Context) {
 		return ramp.Advance()
 	}
 
-	// Each device gets its own feed controller so pause/skip/next are
-	// independent of the shared preview feed.
-	fc := &FeedController{}
-	registerDeviceFeed(device.ID, fc)
-	defer unregisterDeviceFeed(device.ID)
-	// ponytail: poll every 60s at rotation boundary; cheap vs per-frame DB, catches window changes without scheduler refactor.
-	var reschedule func() []sourceWithName
-	if device.ContentMode == "scheduled" || func() bool {
-		if !isDeviceContentExplicit(device) {
-			if grp, err := device.Edges.GroupOrErr(); err == nil && grp != nil && isGroupContentSet(grp) {
-				return grp.ContentMode == "scheduled"
-			}
-		}
-		return false
-	}() {
-		deviceID := device.ID
-		reschedule = func() []sourceWithName {
-			dev, err := h.Client.DeviceSettings.Query().Where(devicesettings.ID(deviceID)).WithGroup().Only(context.Background())
-			if err != nil {
-				return nil
-			}
-			gs, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().WithAdguards().WithFrigates().WithZigbee2mqtts().WithTransmissions().WithProxmoxs().WithWastes().WithAirqualities().WithParcels().Only(context.Background())
-			if err != nil {
-				return h.composeDeviceSources(dev, settings)
-			}
-			if fresh := h.composeDeviceSources(dev, gs); len(fresh) > 0 {
-				return fresh
-			}
+	// Each device gets its own feed controller (created above) so pause/skip/
+	// next are independent of the shared preview feed.
+	//
+	// ponytail: poll every 60s at rotation boundary; cheap vs per-frame DB,
+	// catches window/content changes without a scheduler refactor. Runs for
+	// every device connection so content selections land without a reconnect.
+	deviceID := device.ID
+	reschedule := func() []sourceWithName {
+		dev, err := h.Client.DeviceSettings.Query().Where(devicesettings.ID(deviceID)).WithGroup().Only(context.Background())
+		if err != nil {
 			return nil
 		}
+		gs, err := h.Client.GeneralSettings.Query().Where(generalsettings.ID(1)).WithRssFeeds().WithCalendars().WithStocks().WithTextSlides().WithGoogleCalendars().WithNewsFeeds().WithGenericApis().WithMatrixLayouts().WithCompositions().WithCountdowns().WithAiDigests().WithTransits().WithUptimes().WithPiholes().WithGithubs().WithSports().WithSunmoons().WithJellyfins().WithImmichs().WithQbittorrents().WithSabnzbd().WithOverseerrs().WithUptimeKumas().WithSpeedtests().WithAdguards().WithFrigates().WithZigbee2mqtts().WithTransmissions().WithProxmoxs().WithWastes().WithAirqualities().WithParcels().Only(context.Background())
+		if err != nil {
+			return h.composeDeviceSources(dev, settings)
+		}
+		if fresh := h.composeDeviceSources(dev, gs); len(fresh) > 0 {
+			return fresh
+		}
+		return nil
 	}
 	serveFeed(conn, feedConn{
 		deviceID:   device.ID,
@@ -1061,6 +1088,17 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 	}
 	cursor := CurrentNotifSeq()
 
+	// Rotation keys let content-selection commands reject sources this
+	// connection cannot render.
+	setRotation := func(srcs []sourceWithName) {
+		keys := make([]string, 0, len(srcs))
+		for _, s := range srcs {
+			keys = append(keys, s.cacheKey)
+		}
+		feed.SetRotationKeys(keys)
+	}
+	setRotation(sources)
+
 	// Transition config is fixed per connection (loaded ONCE at handshake).
 	// Normalize defaults.
 	if transitionStyle == "" {
@@ -1094,6 +1132,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 	// to carry the level; v1 never sends one.
 	lastSentBrightness := -1
 
+	// Per-connection token bucket for device input events (add-physical-inputs
+	// D3): excess is dropped, never fatal to the feed.
+	inputLimiter := newInputRateLimiter(20, 40)
+
 	// Read control messages in a goroutine
 	done := make(chan struct{})
 	defer close(done)
@@ -1124,6 +1166,26 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			}
 			if d, _ := cmd["dismiss"].(string); d != "" {
 				recordDismiss(fc.deviceID, d)
+				continue
+			}
+			// v2 local input events: {"type":"input","source":...,"event":...}.
+			// Closed vocabulary (ParseInputEvent); malformed/oversized frames
+			// are dropped without touching the feed loop. v1 connections and
+			// the preview feed (protocol 0 / deviceID 0) never ingest.
+			if typ, _ := cmd["type"].(string); typ == "input" {
+				if fc.protocol >= 2 && fc.deviceID > 0 {
+					if !inputLimiter.allow(time.Now()) {
+						slog.Debug("input event dropped: rate limited", "device", fc.deviceID)
+						continue
+					}
+					if ev, err := ParseInputEvent(msg); err != nil {
+						slog.Debug("input event dropped", "device", fc.deviceID, "error", err)
+					} else if sink, ok := getInputSink(fc.deviceID); ok {
+						sink(ev)
+					} else {
+						slog.Debug("input event ignored: no sink", "device", fc.deviceID)
+					}
+				}
 				continue
 			}
 			// v2 client spectrum tap: {"type":"spectrum","bins":[...]} at ~20Hz.
@@ -1187,8 +1249,14 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 	// so the cached content frame stays overlay-free and all devices sharing a
 	// cache key still get their own strip. Skipped for transition ramp and
 	// notification frames (v1).
+	// overlayPalette is refreshed from the effective theme of the frame being
+	// sent so an effect-backed strip follows theme changes.
+	var overlayPalette effects.Palette
 	applyOverlay := func(data []byte) []byte {
 		spec := fc.overlay
+		if spec.EffectName != "" {
+			spec.EffectPalette = overlayPalette
+		}
 		// Scene overlay text replaces the per-device strip while a scene holds;
 		// notifications/incidents render before this path so they still win.
 		if sceneSpec, ok := ActiveSceneOverlay(time.Now()); ok {
@@ -1210,19 +1278,39 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 	tlInterval := TimelapseInterval()
 	// ponytail: 60s throttle avoids per-frame DB load; per-rotation would still hit DB every ~refreshInterval.
 	lastReschedule := time.Now()
+	pendingPrev := false
 	for {
 		// Re-resolve scheduled sources at rotation boundary (throttled).
 		if fc.reschedule != nil && time.Since(lastReschedule) >= 60*time.Second {
 			lastReschedule = time.Now()
 			if fresh := fc.reschedule(); fresh != nil && !sameSources(sources, fresh) {
 				sources = fresh
-				slog.Info("scheduled sources re-resolved", "device", fc.deviceID, "sources", len(sources))
+				setRotation(sources)
+				slog.Info("sources re-resolved", "device", fc.deviceID, "sources", len(sources))
 			}
 		}
-		for i, sw := range sources {
-			// Broadcast any new notifications to this connection.
+		// Source-reload request (e.g. playlist switch): re-resolve now,
+		// bypassing the 60s throttle.
+		if feed.ConsumeReload() && fc.reschedule != nil {
+			lastReschedule = time.Now()
+			if fresh := fc.reschedule(); len(fresh) > 0 {
+				sources = fresh
+				setRotation(sources)
+				slog.Info("sources reloaded", "device", fc.deviceID, "sources", len(sources))
+			}
+		}
+		for i := 0; i < len(sources); i++ {
+			sw := sources[i]
+			// Broadcast any new notifications to this connection. The cursor
+			// advances over every entry so targeted entries are not replayed,
+			// but only broadcast (target 0) or matching entries render.
 			if notifs := NotificationsAfter(cursor); len(notifs) > 0 {
+				rendered := false
 				for _, n := range notifs {
+					cursor = n.ID
+					if !notificationMatchesDevice(n, fc.deviceID) {
+						continue
+					}
 					msg := map[string]string{
 						"format":  "PNG",
 						"source":  "NOTIFICATION",
@@ -1233,10 +1321,12 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 					if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
 						return
 					}
-					cursor = n.ID
+					rendered = true
 				}
-				time.Sleep(timeout)
-				continue
+				if rendered {
+					time.Sleep(timeout)
+					continue
+				}
 			}
 
 			// Incident tier: a persistent monitoring takeover. Outranks alarms
@@ -1244,9 +1334,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			// until the incident is resolved or expires.
 			if scene, ok := CurrentIncidentScene(); ok {
 				if incData, err := render.IncidentPNG(renderWidth, height, scene, time.Now()); err == nil {
+					incSend := slicePanels(incData)
 					msg := map[string]any{
 						"format": "PNG",
-						"image":  base64.StdEncoding.EncodeToString(slicePanels(incData)),
+						"image":  base64.StdEncoding.EncodeToString(incSend),
 						"source": "INCIDENT",
 						"next":   "INCIDENT",
 					}
@@ -1254,6 +1345,12 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 						if err := conn.WriteMessage(websocket.TextMessage, frame); err != nil {
 							return
 						}
+						storeFrame(frameTarget(fc.deviceID), width, height, &lastFrame{
+							Data:   incSend,
+							Format: "PNG",
+							Source: "INCIDENT",
+							Next:   "INCIDENT",
+						})
 					}
 				}
 				time.Sleep(timeout)
@@ -1311,6 +1408,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 			}
 
 			feed.SetCurrent(sw.Name, nextName)
+			feed.SetCurrentCacheKey(sw.cacheKey)
 
 			// Wait if paused
 			for feed.IsPaused() {
@@ -1327,6 +1425,7 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 				datasource.SetChartContext(parts[0], parts[1])
 				sourceTheme = ResolveTheme(parts[0], mustAtoi(parts[1]))
 			}
+			overlayPalette = effects.PaletteFromRGB(sourceTheme.BackgroundColor, sourceTheme.AccentColor, sourceTheme.TextColor)
 			cacheKey := lkgCacheKey(fc.cacheKeyPrefix+sw.cacheKey, renderWidth, height) + "|" + themeCacheSig(sourceTheme)
 			img, stale, err := defaultLKG.GetPNG(cacheKey, datasourceConfigSig(sw.Source), func() (*render.RenderedImage, error) {
 				start := time.Now()
@@ -1409,6 +1508,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 						if feed.ShouldSkip() {
 							break
 						}
+						if feed.ShouldPrev() {
+							pendingPrev = true
+							break
+						}
 						if feed.IsPaused() {
 							for feed.IsPaused() {
 								time.Sleep(100 * time.Millisecond)
@@ -1417,6 +1520,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 						if i < steps-1 {
 							time.Sleep(pacing)
 							if feed.ShouldSkip() {
+								break
+							}
+							if feed.ShouldPrev() {
+								pendingPrev = true
 								break
 							}
 						}
@@ -1456,6 +1563,16 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 					fc.frames()
 				}
 			}
+			// Buffer the physical frame so embed clients and GET /api/frame can
+			// join mid-rotation without waiting for the next slot. Notification
+			// frames carry no image and never reach this point.
+			storeFrame(frameTarget(fc.deviceID), width, height, &lastFrame{
+				Data:   sendData,
+				Format: img.Format,
+				Source: sw.Name,
+				Next:   nextName,
+				Video:  !strings.EqualFold(img.Format, "PNG"),
+			})
 			TrackDisplay(sw.Name, timeout.Seconds())
 			// Timelapse capture piggyback after final composition (post-brightness).
 			if fc.deviceID > 0 && TimelapseEnabled() {
@@ -1501,6 +1618,10 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 					if feed.ShouldSkip() {
 						break
 					}
+					if feed.ShouldPrev() {
+						pendingPrev = true
+						break
+					}
 					// While paused, do not advance/send; resume continues.
 					if feed.IsPaused() {
 						time.Sleep(100 * time.Millisecond)
@@ -1542,6 +1663,13 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 							if fc.deviceID > 0 && fc.frames != nil {
 								fc.frames()
 							}
+							storeFrame(frameTarget(fc.deviceID), width, height, &lastFrame{
+								Data:   slicePanels(d2),
+								Format: rendered.Format,
+								Source: sw.Name,
+								Next:   nextName,
+								Video:  !strings.EqualFold(rendered.Format, "PNG"),
+							})
 							lastIdx = curIdx
 						}
 					}
@@ -1565,7 +1693,19 @@ func serveFeed(conn *websocket.Conn, fc feedConn, sources []sourceWithName, rand
 					if feed.ShouldSkip() {
 						break
 					}
+					if feed.ShouldPrev() {
+						pendingPrev = true
+						break
+					}
 					time.Sleep(50 * time.Millisecond)
+				}
+			}
+			if pendingPrev {
+				pendingPrev = false
+				if i == 0 {
+					i = len(sources) - 2
+				} else {
+					i -= 2
 				}
 			}
 		}

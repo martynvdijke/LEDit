@@ -38,5 +38,20 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live embed",
+      "short_name": "Embed",
+      "description": "Chrome-free live widget for OBS and iframes",
+      "url": "/embed",
+      "icons": [
+        {
+          "src": "/static/pwa/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

@@ -113,6 +113,8 @@ class Client:
         self._capabilities = set()
         self._last_source = None
         self._ws = None
+        self._inputs_cap = False
+        self._input_hub = None
 
         # Audio spectrum tap (opt-in, off by default).
         self._spectrum_opt_in = config.spectrum_enabled()
@@ -160,6 +162,45 @@ class Client:
         self.display.show(img)
         self._frames_rendered.add(1, {"frame.type": "text"})
 
+    # -- physical inputs -----------------------------------------------------
+
+    def set_input_hub(self, hub):
+        """Attach the local input hub wired to this client's transport."""
+        self._input_hub = hub
+
+    def send_input_json(self, payload):
+        """Send an encoded input event; fall back to legacy actions on v1."""
+        if self._inputs_cap:
+            ws = self._ws
+            if ws is None:
+                return
+            try:
+                ws.send(payload)
+            except Exception:  # noqa: BLE001 - disconnected socket is best-effort
+                pass
+            return
+        try:
+            data = json.loads(payload)
+        except (ValueError, TypeError):
+            return
+        if not isinstance(data, dict):
+            return
+        src = data.get("source")
+        ev = data.get("event")
+        if src == "button:next" and ev in ("press", "hold"):
+            action = "next" if ev == "press" else "hold"
+        elif src == "button:pause" and ev in ("press", "hold"):
+            action = "pause" if ev == "press" else "hold"
+        else:
+            return
+        ws = self._ws
+        if ws is None:
+            return
+        try:
+            ws.send(json.dumps({"action": action}))
+        except Exception:  # noqa: BLE001 - disconnected socket is best-effort
+            pass
+
     # -- protocol v2 negotiation --------------------------------------------
 
     def _handle_welcome(self, data):
@@ -172,6 +213,9 @@ class Client:
             return
         self._protocol = 2
         self._capabilities = {c for c in caps if isinstance(c, str)}
+        self._inputs_cap = "inputs" in self._capabilities
+        if self._input_hub is not None:
+            self._input_hub.set_active(self._inputs_cap)
         log("info", "server protocol v2: capabilities=%s" % sorted(self._capabilities))
         self._maybe_start_ota()
 
@@ -307,6 +351,12 @@ class Client:
         ota = self._ota_thread
         if ota is not None and ota.is_alive():
             ota.join(timeout=0.2)
+        hub = self._input_hub
+        if hub is not None:
+            try:
+                hub.close()
+            except Exception:  # noqa: BLE001 - best-effort shutdown
+                pass
 
     # -- websocket callbacks -------------------------------------------------
 

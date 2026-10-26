@@ -265,6 +265,20 @@ func (_c *DeviceGroupCreate) SetNillableOverlayFg(v *string) *DeviceGroupCreate 
 	return _c
 }
 
+// SetOverlayEffectPresetID sets the "overlay_effect_preset_id" field.
+func (_c *DeviceGroupCreate) SetOverlayEffectPresetID(v int) *DeviceGroupCreate {
+	_c.mutation.SetOverlayEffectPresetID(v)
+	return _c
+}
+
+// SetNillableOverlayEffectPresetID sets the "overlay_effect_preset_id" field if the given value is not nil.
+func (_c *DeviceGroupCreate) SetNillableOverlayEffectPresetID(v *int) *DeviceGroupCreate {
+	if v != nil {
+		_c.SetOverlayEffectPresetID(*v)
+	}
+	return _c
+}
+
 // AddDeviceIDs adds the "devices" edge to the DeviceSettings entity by IDs.
 func (_c *DeviceGroupCreate) AddDeviceIDs(ids ...int) *DeviceGroupCreate {
 	_c.mutation.AddDeviceIDs(ids...)
@@ -530,6 +544,10 @@ func (_c *DeviceGroupCreate) createSpec() (*DeviceGroup, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.OverlayFg(); ok {
 		_spec.SetField(devicegroup.FieldOverlayFg, field.TypeString, value)
 		_node.OverlayFg = value
+	}
+	if value, ok := _c.mutation.OverlayEffectPresetID(); ok {
+		_spec.SetField(devicegroup.FieldOverlayEffectPresetID, field.TypeInt, value)
+		_node.OverlayEffectPresetID = &value
 	}
 	if nodes := _c.mutation.DevicesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

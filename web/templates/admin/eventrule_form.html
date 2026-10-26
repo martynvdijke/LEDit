@@ -28,6 +28,9 @@
                 <input type="hidden" name="source_type" id="source_type" value="{{.fSrcType}}">
                 <input type="hidden" name="source_id" id="source_id" value="{{.fSrcID}}">
                 <input type="hidden" name="condition" id="condition" value="{{.fCondition}}">
+                <input type="hidden" name="trigger_kind" id="trigger_kind" value="{{.fTriggerKind}}">
+                <input type="hidden" name="for_seconds" id="for_seconds" value="{{.fForSeconds}}">
+                <input type="hidden" name="sequence" id="sequence" value="{{.fSequence}}">
 
                 <div class="mb-3">
                     <label class="form-label">Target</label>
@@ -43,22 +46,50 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Condition</label>
-                    <div class="d-flex gap-2 align-items-center flex-wrap">
-                        <input type="text" class="form-control" id="cond_path" placeholder="dot.path (e.g. status.temp)" style="max-width:260px" value="">
-                        <select id="cond_operator" class="form-select" style="width:auto;min-width:130px">
-                            <option value="eq">eq</option>
-                            <option value="ne">ne</option>
-                            <option value="gt">gt</option>
-                            <option value="lt">lt</option>
-                            <option value="ge">ge</option>
-                            <option value="le">le</option>
-                            <option value="contains">contains</option>
-                            <option value="exists">exists</option>
-                        </select>
-                        <input type="text" class="form-control" id="cond_value" placeholder="value" style="max-width:200px" value="">
+                    <label for="trigger_mode" class="form-label">Trigger</label>
+                    <select class="form-select" id="trigger_mode" style="max-width:280px">
+                        <option value="condition">Condition (and/or)</option>
+                        <option value="sequence">Sequence (ordered steps)</option>
+                    </select>
+                    <small class="text-muted">A condition fires when it matches, optionally after holding. A sequence fires once its ordered steps complete inside the window.</small>
+                </div>
+
+                <div id="condition-editor">
+                    <div class="mb-3">
+                        <label class="form-label">Condition</label>
+                        <div id="cond-builder" class="border rounded p-2"></div>
+                        <small class="text-muted">Leaves compare a dot-path against a value; groups combine children with and/or (up to 4 levels, 32 leaves). A single leaf stays a plain condition.</small>
                     </div>
-                    <small class="text-muted">Condition evaluated against the source state map.</small>
+                    <div class="mb-3">
+                        <label for="hold_value" class="form-label">Hold for</label>
+                        <div class="input-group" style="max-width:260px">
+                            <input type="number" class="form-control" id="hold_value" min="0" value="{{.fForSeconds}}">
+                            <select class="form-select" id="hold_unit" style="max-width:120px">
+                                <option value="seconds">seconds</option>
+                                <option value="minutes">minutes</option>
+                            </select>
+                        </div>
+                        <small class="text-muted">The condition must hold continuously for this long before firing. 0 fires on the first matching check.</small>
+                    </div>
+                </div>
+
+                <div id="sequence-editor" class="d-none">
+                    <div class="mb-3">
+                        <label for="seq_window_value" class="form-label">Window</label>
+                        <div class="input-group" style="max-width:260px">
+                            <input type="number" class="form-control" id="seq_window_value" min="1" value="15">
+                            <select class="form-select" id="seq_window_unit" style="max-width:120px">
+                                <option value="seconds">seconds</option>
+                                <option value="minutes" selected>minutes</option>
+                            </select>
+                        </div>
+                        <small class="text-muted">Measured from the first step completing; the final step must finish inside it. Between 2 and 4 steps.</small>
+                    </div>
+                    <div id="seq-steps"></div>
+                    <div class="d-flex gap-2 mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="seq-add-step">Add step</button>
+                    </div>
+                    <small class="text-muted d-block mb-3">Each step's hold must be 0 or at least the check interval. The rule-level hold is unused in sequence mode.</small>
                 </div>
 
                 <div class="mb-3">
@@ -88,29 +119,82 @@
                                 <option value="scene" {{if eq .fThenKind "scene"}}selected{{end}}>scene</option>
                                 <option value="notification" {{if eq .fThenKind "notification"}}selected{{end}}>notification</option>
                                 <option value="webhook" {{if eq .fThenKind "webhook"}}selected{{end}}>webhook</option>
+                                <option value="brightness" {{if eq .fThenKind "brightness"}}selected{{end}}>brightness</option>
+                                <option value="source" {{if eq .fThenKind "source"}}selected{{end}}>source</option>
+                                <option value="playlist" {{if eq .fThenKind "playlist"}}selected{{end}}>playlist</option>
+                                <option value="mqtt" {{if eq .fThenKind "mqtt"}}selected{{end}}>mqtt</option>
+                                <option value="http" {{if eq .fThenKind "http"}}selected{{end}}>http</option>
                             </select>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-3 then-field" data-kinds="scene">
                             <label for="then_scene_id" class="form-label">Scene ID</label>
                             <input type="number" class="form-control" id="then_scene_id" name="then_scene_id" value="{{.fThenScene}}">
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-3 then-field" data-kinds="scene notification">
                             <label for="then_ttl_seconds" class="form-label">TTL seconds</label>
                             <input type="number" class="form-control" id="then_ttl_seconds" name="then_ttl_seconds" min="0" value="{{.fThenTTL}}">
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <label for="then_event" class="form-label">Event</label>
-                            <input type="text" class="form-control" id="then_event" name="then_event" placeholder="webhook event name" value="{{.fThenEvent}}">
+                        <div class="col-md-3 mb-3 then-field" data-kinds="brightness playlist">
+                            <label for="then_device_id" class="form-label">Device ID (0 = all)</label>
+                            <input type="number" class="form-control" id="then_device_id" name="then_device_id" min="0" value="{{.fThenDevice}}">
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-3 mb-3 then-field" data-kinds="brightness">
+                            <label for="then_level" class="form-label">Level (0-100)</label>
+                            <input type="number" class="form-control" id="then_level" name="then_level" min="0" max="100" value="{{.fThenLevel}}">
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="source">
+                            <label for="then_source_type" class="form-label">Source type</label>
+                            <input type="text" class="form-control" id="then_source_type" name="then_source_type" placeholder="weather" value="{{.fThenSrcType}}">
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="source">
+                            <label for="then_source_id" class="form-label">Source ID</label>
+                            <input type="number" class="form-control" id="then_source_id" name="then_source_id" min="0" value="{{.fThenSrcID}}">
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="playlist">
+                            <label for="then_playlist_id" class="form-label">Playlist ID</label>
+                            <input type="number" class="form-control" id="then_playlist_id" name="then_playlist_id" min="0" value="{{.fThenPlaylist}}">
+                        </div>
+                        <div class="col-md-4 mb-3 then-field" data-kinds="mqtt">
+                            <label for="then_topic" class="form-label">MQTT topic</label>
+                            <input type="text" class="form-control" id="then_topic" name="then_topic" placeholder="ledit/custom/event" value="{{.fThenTopic}}">
+                        </div>
+                        <div class="col-md-2 mb-3 then-field form-check" data-kinds="mqtt" style="padding-top:28px">
+                            <input type="checkbox" class="form-check-input" id="then_retain" name="then_retain" {{if .fThenRetain}}checked{{end}}>
+                            <label for="then_retain" class="form-check-label">Retain</label>
+                        </div>
+                        <div class="col-md-6 mb-3 then-field" data-kinds="http">
+                            <label for="then_url" class="form-label">URL</label>
+                            <input type="text" class="form-control" id="then_url" name="then_url" placeholder="https://example.com/hook" value="{{.fThenURL}}">
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="http">
+                            <label for="then_method" class="form-label">Method</label>
+                            <select class="form-select" id="then_method" name="then_method">
+                                <option value="POST" {{if or (eq .fThenMethod "") (eq .fThenMethod "POST")}}selected{{end}}>POST</option>
+                                <option value="GET" {{if eq .fThenMethod "GET"}}selected{{end}}>GET</option>
+                                <option value="PUT" {{if eq .fThenMethod "PUT"}}selected{{end}}>PUT</option>
+                                <option value="PATCH" {{if eq .fThenMethod "PATCH"}}selected{{end}}>PATCH</option>
+                                <option value="DELETE" {{if eq .fThenMethod "DELETE"}}selected{{end}}>DELETE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="http">
+                            <label for="then_secret" class="form-label">HMAC secret</label>
+                            <input type="password" class="form-control" id="then_secret" name="then_secret" value="{{.fThenSecret}}">
+                        </div>
+                        <div class="col-md-3 mb-3 then-field" data-kinds="webhook http">
+                            <label for="then_event" class="form-label">Event</label>
+                            <input type="text" class="form-control" id="then_event" name="then_event" placeholder="rule_triggered" value="{{.fThenEvent}}">
+                        </div>
+                        <div class="col-md-6 mb-3 then-field" data-kinds="notification webhook">
                             <label for="then_title" class="form-label">Title</label>
                             <input type="text" class="form-control" id="then_title" name="then_title" value="{{.fThenTitle}}">
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-3 then-field" data-kinds="notification webhook">
                             <label for="then_message" class="form-label">Message</label>
                             <input type="text" class="form-control" id="then_message" name="then_message" value="{{.fThenMsg}}">
+                        </div>
+                        <div class="col-md-6 mb-3 then-field" data-kinds="webhook mqtt">
+                            <label for="then_payload" class="form-label">Payload (JSON object, optional)</label>
+                            <input type="text" class="form-control" id="then_payload" name="then_payload" value="{{.fThenPayload}}">
                         </div>
                     </div>
                 </fieldset>
@@ -128,9 +212,6 @@
     var sourceSel = document.getElementById('source-select');
     var hiddenType = document.getElementById('source_type');
     var hiddenID = document.getElementById('source_id');
-    var condPath = document.getElementById('cond_path');
-    var condOp = document.getElementById('cond_operator');
-    var condVal = document.getElementById('cond_value');
     var condHidden = document.getElementById('condition');
     var form = document.getElementById('eventrule-form');
 
@@ -166,19 +247,21 @@
     groupSel.addEventListener('change', function(){ renderSourceOptions(); syncTargetHidden(); });
     sourceSel.addEventListener('change', syncTargetHidden);
 
-    // Prepopulate condition builder from .obj.Condition raw JSON (edit + error re-render map)
-    try{
-        var raw = condHidden.value || '';
-        if(raw){
-            var c = JSON.parse(raw);
-            if(c && typeof c==='object'){
-                if(c.path) condPath.value = c.path;
-                if(c.operator) condOp.value = c.operator;
-                if(c.value!==undefined && c.value!==null) condVal.value = String(c.value);
-                else condVal.value = '';
-            }
-        }
-    }catch(e){}
+    // --- Trigger builder -------------------------------------------------
+    var MAX_GROUP_DEPTH = 4;
+    var triggerKindHidden = document.getElementById('trigger_kind');
+    var forHidden = document.getElementById('for_seconds');
+    var seqHidden = document.getElementById('sequence');
+    var modeSel = document.getElementById('trigger_mode');
+    var condEditor = document.getElementById('condition-editor');
+    var seqEditor = document.getElementById('sequence-editor');
+    var condBuilderHost = document.getElementById('cond-builder');
+    var seqSteps = document.getElementById('seq-steps');
+    var seqAddStep = document.getElementById('seq-add-step');
+    var seqWindowValue = document.getElementById('seq_window_value');
+    var seqWindowUnit = document.getElementById('seq_window_unit');
+    var holdValue = document.getElementById('hold_value');
+    var holdUnit = document.getElementById('hold_unit');
 
     function coerceValue(s){
         if(s===''||s===null||s===undefined) return null;
@@ -186,22 +269,266 @@
         if(s==='false') return false;
         var n = Number(s);
         if(s!=='' && !isNaN(n) && String(n)===String(s).trim()) return n;
-        // also handle numeric strings like "3.14" where Number succeeds
         if(!isNaN(n) && s.trim()!=='' && isFinite(n)){
-            // only coerce if the string is purely numeric
             if(/^[-+]?\d+(\.\d+)?$/.test(s.trim())) return n;
         }
         return s;
     }
 
+    function make(tag, cls, text){
+        var e = document.createElement(tag);
+        if(cls) e.className = cls;
+        if(text !== undefined) e.textContent = text;
+        return e;
+    }
+    function unitToSeconds(raw, unit){
+        var n = parseInt(raw, 10);
+        if(isNaN(n) || n < 0) n = 0;
+        return unit === 'minutes' ? n * 60 : n;
+    }
+    function secondsToUnit(sec){
+        if(sec > 0 && sec % 60 === 0) return [String(sec/60), 'minutes'];
+        return [String(sec), 'seconds'];
+    }
+
+    // makeBuilder renders one and/or group. childDepth is the depth of the
+    // condition nodes it contains (root children are depth 1), which bounds
+    // the nesting the client can produce.
+    function makeBuilder(childDepth, data){
+        var wrap = make('div', 'cond-builder');
+        var head = make('div', 'd-flex gap-2 align-items-center mb-2');
+        head.appendChild(make('span', 'text-muted', 'Match'));
+        var opSel = make('select', 'form-select');
+        opSel.style.width = 'auto';
+        opSel.style.minWidth = '110px';
+        opSel.innerHTML = '<option value="and">all (and)</option><option value="or">any (or)</option>';
+        if(data && data.op === 'or') opSel.value = 'or';
+        head.appendChild(opSel);
+        head.appendChild(make('span', 'text-muted', 'of'));
+        var children = make('div', '');
+        var actions = make('div', 'd-flex gap-2 mt-2');
+        var addLeaf = make('button', 'btn btn-sm btn-outline-secondary', 'Add condition');
+        addLeaf.type = 'button';
+        addLeaf.addEventListener('click', function(){ children.appendChild(makeLeaf({})); });
+        var addGroup = make('button', 'btn btn-sm btn-outline-secondary', 'Add group');
+        addGroup.type = 'button';
+        addGroup.addEventListener('click', function(){ children.appendChild(makeGroup(childDepth)); });
+        if(childDepth > MAX_GROUP_DEPTH) addGroup.style.display = 'none';
+        actions.appendChild(addLeaf);
+        actions.appendChild(addGroup);
+        wrap.appendChild(head);
+        wrap.appendChild(children);
+        wrap.appendChild(actions);
+        wrap._op = opSel;
+        wrap._children = children;
+        var list = (data && data.conditions) ? data.conditions : [];
+        list.forEach(function(c){ children.appendChild(makeNode(c, childDepth)); });
+        return wrap;
+    }
+
+    function makeNode(data, depth){
+        if(data && data.op) return makeGroup(depth, data);
+        return makeLeaf(data || {});
+    }
+
+    function makeLeaf(data){
+        var row = make('div', 'cond-node d-flex gap-2 align-items-center flex-wrap mb-2');
+        row.dataset.kind = 'leaf';
+        var path = make('input', 'form-control');
+        path.type = 'text';
+        path.placeholder = 'dot.path (e.g. status.temp)';
+        path.style.maxWidth = '260px';
+        path.value = data.path || '';
+        var op = make('select', 'form-select');
+        op.style.width = 'auto';
+        op.style.minWidth = '120px';
+        op.innerHTML = '<option value="eq">eq</option><option value="ne">ne</option><option value="gt">gt</option><option value="lt">lt</option><option value="ge">ge</option><option value="le">le</option><option value="contains">contains</option><option value="exists">exists</option>';
+        op.value = data.operator || 'eq';
+        var val = make('input', 'form-control');
+        val.type = 'text';
+        val.placeholder = 'value';
+        val.style.maxWidth = '200px';
+        val.value = (data.value === undefined || data.value === null) ? '' : String(data.value);
+        val.style.display = op.value === 'exists' ? 'none' : '';
+        op.addEventListener('change', function(){ val.style.display = op.value === 'exists' ? 'none' : ''; });
+        var rm = make('button', 'btn btn-sm btn-outline-danger', 'Remove');
+        rm.type = 'button';
+        rm.addEventListener('click', function(){ row.remove(); });
+        row.appendChild(path);
+        row.appendChild(op);
+        row.appendChild(val);
+        row.appendChild(rm);
+        row._path = path;
+        row._op = op;
+        row._value = val;
+        return row;
+    }
+
+    function makeGroup(depth, data){
+        var box = make('div', 'cond-node border rounded p-2 mb-2');
+        box.dataset.kind = 'group';
+        var head = make('div', 'd-flex justify-content-between align-items-center mb-2');
+        head.appendChild(make('span', 'text-muted', 'Group'));
+        var rm = make('button', 'btn btn-sm btn-outline-danger', 'Remove group');
+        rm.type = 'button';
+        rm.addEventListener('click', function(){ box.remove(); });
+        head.appendChild(rm);
+        var builder = makeBuilder(depth + 1, data || {});
+        box.appendChild(head);
+        box.appendChild(builder);
+        box._builder = builder;
+        return box;
+    }
+
+    function serializeBuilder(builder){
+        if(!builder) return null;
+        var kids = [];
+        Array.prototype.forEach.call(builder._children.children, function(c){
+            if(c.classList && c.classList.contains('cond-node')) kids.push(serializeNode(c));
+        });
+        kids = kids.filter(function(k){ return !!k; });
+        if(kids.length === 0) return null;
+        if(kids.length === 1) return kids[0];
+        return {op: builder._op.value, conditions: kids};
+    }
+
+    function serializeNode(node){
+        if(node.dataset.kind === 'group') return serializeBuilder(node._builder);
+        var op = node._op.value;
+        var v = op === 'exists' ? null : coerceValue(node._value.value);
+        return {path: node._path.value.trim(), operator: op, value: v};
+    }
+
+    // --- Sequence steps --------------------------------------------------
+    function stepCards(){
+        return Array.prototype.slice.call(seqSteps.querySelectorAll('.seq-step'));
+    }
+    function refreshStepControls(){
+        var cards = stepCards();
+        cards.forEach(function(card, i){
+            var title = card.querySelector('.seq-step-title');
+            if(title) title.textContent = 'Step ' + (i + 1);
+            var rm = card.querySelector('.seq-step-remove');
+            if(rm) rm.disabled = cards.length <= 2;
+        });
+        seqAddStep.disabled = cards.length >= 4;
+    }
+    function addStepCard(data){
+        var card = make('div', 'seq-step card mb-2');
+        var body = make('div', 'card-body');
+        var head = make('div', 'd-flex justify-content-between align-items-center mb-2');
+        head.appendChild(make('span', 'seq-step-title fw-semibold', 'Step'));
+        var rm = make('button', 'btn btn-sm btn-outline-danger seq-step-remove', 'Remove step');
+        rm.type = 'button';
+        rm.addEventListener('click', function(){ card.remove(); refreshStepControls(); });
+        head.appendChild(rm);
+        var cond = data && data.condition;
+        var builder = makeBuilder(1, cond ? (cond.op ? cond : {op:'and', conditions:[cond]}) : null);
+        if(builder._children.children.length === 0) builder._children.appendChild(makeLeaf({}));
+        var hold = make('div', 'd-flex gap-2 align-items-center mt-2');
+        hold.appendChild(make('span', 'text-muted', 'Hold for'));
+        var hv = make('input', 'form-control');
+        hv.type = 'number';
+        hv.min = '0';
+        hv.style.maxWidth = '140px';
+        var hu = make('select', 'form-select');
+        hu.style.maxWidth = '130px';
+        hu.innerHTML = '<option value="seconds">seconds</option><option value="minutes">minutes</option>';
+        var sec = (data && data.for_seconds) ? data.for_seconds : 0;
+        var pair = secondsToUnit(sec);
+        hv.value = pair[0];
+        hu.value = pair[1];
+        hold.appendChild(hv);
+        hold.appendChild(hu);
+        body.appendChild(head);
+        body.appendChild(builder);
+        body.appendChild(hold);
+        card.appendChild(body);
+        card._builder = builder;
+        card._holdValue = hv;
+        card._holdUnit = hu;
+        seqSteps.appendChild(card);
+        refreshStepControls();
+        return card;
+    }
+    seqAddStep.addEventListener('click', function(){ addStepCard(null); });
+
+    // --- Mode selection and load ----------------------------------------
+    function applyMode(){
+        var m = modeSel.value === 'sequence' ? 'sequence' : 'condition';
+        condEditor.classList.toggle('d-none', m !== 'condition');
+        seqEditor.classList.toggle('d-none', m !== 'sequence');
+        triggerKindHidden.value = m;
+    }
+    modeSel.addEventListener('change', applyMode);
+
+    var rootBuilder = makeBuilder(1, {op:'and', conditions:[{}]});
+    condBuilderHost.appendChild(rootBuilder);
+    (function loadCondition(){
+        var data = null;
+        try { data = JSON.parse(condHidden.value || ''); } catch(e) { data = null; }
+        if(data && typeof data === 'object'){
+            rootBuilder = makeBuilder(1, data.op ? data : {op:'and', conditions:[data]});
+        }
+        condBuilderHost.innerHTML = '';
+        condBuilderHost.appendChild(rootBuilder);
+    })();
+
+    (function loadHold(){
+        var sec = parseInt(forHidden.value, 10);
+        if(isNaN(sec) || sec < 0) sec = 0;
+        var pair = secondsToUnit(sec);
+        holdValue.value = pair[0];
+        holdUnit.value = pair[1];
+    })();
+
+    (function loadSequence(){
+        var data = null;
+        try { data = JSON.parse(seqHidden.value || ''); } catch(e) { data = null; }
+        var win = (data && data.window_seconds) ? data.window_seconds : 900;
+        var pair = secondsToUnit(win);
+        seqWindowValue.value = pair[0];
+        seqWindowUnit.value = pair[1];
+        var steps = (data && data.steps) ? data.steps : [];
+        steps.forEach(function(s){ addStepCard(s); });
+        if(stepCards().length === 0){ addStepCard(null); addStepCard(null); }
+        else if(stepCards().length === 1){ addStepCard(null); }
+    })();
+
+    if(triggerKindHidden.value === 'sequence') modeSel.value = 'sequence';
+    applyMode();
+
+    // Show/hide then-action fields by kind
+    var thenKind = document.getElementById('then_kind');
+    function showThenFields(){
+        var k = thenKind.value;
+        document.querySelectorAll('.then-field').forEach(function(el){
+            var kinds = (el.getAttribute('data-kinds')||'').split(/\s+/);
+            el.style.display = (kinds.indexOf(k)!==-1) ? '' : 'none';
+        });
+    }
+    thenKind.addEventListener('change', showThenFields);
+    showThenFields();
+
     form.addEventListener('submit', function(){
         syncTargetHidden();
-        var op = condOp.value;
-        var v = coerceValue(condVal.value);
-        // exists operator still includes value:null per spec
-        if(op==='exists') v = null;
-        var obj = {path: condPath.value, operator: op, value: v};
-        condHidden.value = JSON.stringify(obj);
+        if(modeSel.value === 'sequence'){
+            triggerKindHidden.value = 'sequence';
+            forHidden.value = '0';
+            var steps = stepCards().map(function(card){
+                var cond = serializeBuilder(card._builder) || {path:'', operator:'eq', value:null};
+                return {condition: cond, for_seconds: unitToSeconds(card._holdValue.value, card._holdUnit.value)};
+            });
+            seqHidden.value = JSON.stringify({
+                window_seconds: unitToSeconds(seqWindowValue.value, seqWindowUnit.value),
+                steps: steps
+            });
+            return;
+        }
+        triggerKindHidden.value = 'condition';
+        seqHidden.value = '';
+        forHidden.value = String(unitToSeconds(holdValue.value, holdUnit.value));
+        condHidden.value = JSON.stringify(serializeBuilder(rootBuilder) || {path:'', operator:'eq', value:null});
     });
 })();
 </script>

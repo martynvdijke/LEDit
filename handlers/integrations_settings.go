@@ -182,3 +182,23 @@ func (s *Server) AdminTelegramSettingsPOST(c *gin.Context) {
 	SetFlash(c, "success", "Telegram settings saved")
 	c.Redirect(http.StatusFound, "/admin/telegram")
 }
+
+func (s *Server) AdminTelegramTestPOST(c *gin.Context) {
+	ts := LoadTelegramSettings(s)
+	if ts == nil || !ts.Enabled || strings.TrimSpace(ts.BotToken) == "" {
+		SetFlash(c, "danger", "Enable Telegram and set a bot token first")
+		c.Redirect(http.StatusFound, "/admin/telegram")
+		return
+	}
+	if ts.AllowedChatID == 0 {
+		SetFlash(c, "danger", "Set an allowed chat ID first")
+		c.Redirect(http.StatusFound, "/admin/telegram")
+		return
+	}
+	if err := SendTelegramTestMessage(ts.BotToken, ts.AllowedChatID, "LEDit Telegram test ✅"); err != nil {
+		SetFlash(c, "danger", "Test message failed: "+err.Error())
+	} else {
+		SetFlash(c, "success", "Test message sent")
+	}
+	c.Redirect(http.StatusFound, "/admin/telegram")
+}

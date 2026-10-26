@@ -263,3 +263,74 @@ func TestEventRuleAuth_DeleteRemovesRow(t *testing.T) {
 		t.Fatalf("expected 0 rules after delete, got %d", count)
 	}
 }
+
+func TestEventRuleAuth_NewThenKindsRoundTrip(t *testing.T) {
+	srv := newEventRuleAuthTestServer(t)
+	session := loginAsAdmin(t, srv)
+	ctx := context.Background()
+
+	form := url.Values{}
+	form.Set("name", "MQTT Rule")
+	form.Set("source_type", "systemstats")
+	form.Set("source_id", "0")
+	form.Set("condition", `{"path":"cpu","operator":"gt","value":50}`)
+	form.Set("check_interval_seconds", "30")
+	form.Set("cooldown_seconds", "0")
+	form.Set("enabled", "on")
+	form.Set("then_kind", "mqtt")
+	form.Set("then_topic", "ledit/rules/fired")
+	form.Set("then_payload", `{"a":1}`)
+
+	req := httptest.NewRequest(http.MethodPost, "/admin/eventrules/new", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.AddCookie(session)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusFound {
+		t.Fatalf("create: expected 302, got %d body %s", w.Code, w.Body.String())
+	}
+	rule := srv.DB.DisplayRule.Query().FirstX(ctx)
+	ta, err := ParseThenAction(rule.ThenActions)
+	if err != nil || ta.Kind != "mqtt" || ta.Topic != "ledit/rules/fired" {
+		t.Fatalf("stored then = %q parse=%+v err=%v", rule.ThenActions, ta, err)
+	}
+
+	editReq := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/admin/eventrules/%d/edit", rule.ID), nil)
+	editReq.AddCookie(session)
+	ew := httptest.NewRecorder()
+	srv.ServeHTTP(ew, editReq)
+	if ew.Code != http.StatusOK {
+		t.Fatalf("edit page: %d body %s", ew.Code, ew.Body.String())
+	}
+	if body := ew.Body.String(); !strings.Contains(body, `value="ledit/rules/fired"`) {
+		t.Fatalf("edit page missing mqtt topic value")
+	}
+}
+
+func TestEventRuleAuth_InvalidThenRejected(t *testing.T) {
+	srv := newEventRuleAuthTestServer(t)
+	session := loginAsAdmin(t, srv)
+	ctx := context.Background()
+
+	form := url.Values{}
+	form.Set("name", "Bad Then")
+	form.Set("source_type", "systemstats")
+	form.Set("source_id", "0")
+	form.Set("condition", `{"path":"cpu","operator":"gt","value":50}`)
+	form.Set("check_interval_seconds", "30")
+	form.Set("cooldown_seconds", "0")
+	form.Set("then_kind", "mqtt") // missing topic
+
+	req := httptest.NewRequest(http.MethodPost, "/admin/eventrules/new", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.AddCookie(session)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("invalid then: expected 200 re-render, got %d", w.Code)
+	}
+	count, _ := srv.DB.DisplayRule.Query().Count(ctx)
+	if count != 0 {
+		t.Fatalf("invalid then should not persist, got %d", count)
+	}
+}

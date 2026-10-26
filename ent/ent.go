@@ -24,6 +24,7 @@ import (
 	"ledit/ent/devicemessagestate"
 	"ledit/ent/devicesettings"
 	"ledit/ent/displayrule"
+	"ledit/ent/effectpreset"
 	"ledit/ent/emailsettings"
 	"ledit/ent/f1"
 	"ledit/ent/firmwarerelease"
@@ -41,6 +42,7 @@ import (
 	"ledit/ent/immich"
 	"ledit/ent/inboundadapter"
 	"ledit/ent/incident"
+	"ledit/ent/inputbinding"
 	"ledit/ent/jellyfin"
 	"ledit/ent/logentry"
 	"ledit/ent/logsettings"
@@ -173,6 +175,7 @@ func checkColumn(t, c string) error {
 			devicemessagestate.Table: devicemessagestate.ValidColumn,
 			devicesettings.Table:     devicesettings.ValidColumn,
 			displayrule.Table:        displayrule.ValidColumn,
+			effectpreset.Table:       effectpreset.ValidColumn,
 			emailsettings.Table:      emailsettings.ValidColumn,
 			f1.Table:                 f1.ValidColumn,
 			firmwarerelease.Table:    firmwarerelease.ValidColumn,
@@ -190,6 +193,7 @@ func checkColumn(t, c string) error {
 			immich.Table:             immich.ValidColumn,
 			inboundadapter.Table:     inboundadapter.ValidColumn,
 			incident.Table:           incident.ValidColumn,
+			inputbinding.Table:       inputbinding.ValidColumn,
 			jellyfin.Table:           jellyfin.ValidColumn,
 			logentry.Table:           logentry.ValidColumn,
 			logsettings.Table:        logsettings.ValidColumn,

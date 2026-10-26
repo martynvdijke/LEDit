@@ -50,6 +50,8 @@ const (
 	FieldOverlayBg = "overlay_bg"
 	// FieldOverlayFg holds the string denoting the overlay_fg field in the database.
 	FieldOverlayFg = "overlay_fg"
+	// FieldOverlayEffectPresetID holds the string denoting the overlay_effect_preset_id field in the database.
+	FieldOverlayEffectPresetID = "overlay_effect_preset_id"
 	// EdgeDevices holds the string denoting the devices edge name in mutations.
 	EdgeDevices = "devices"
 	// Table holds the table name of the devicegroup in the database.
@@ -84,6 +86,7 @@ var Columns = []string{
 	FieldOverlaySpeedPx,
 	FieldOverlayBg,
 	FieldOverlayFg,
+	FieldOverlayEffectPresetID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -229,6 +232,11 @@ func ByOverlayBg(opts ...sql.OrderTermOption) OrderOption {
 // ByOverlayFg orders the results by the overlay_fg field.
 func ByOverlayFg(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOverlayFg, opts...).ToFunc()
+}
+
+// ByOverlayEffectPresetID orders the results by the overlay_effect_preset_id field.
+func ByOverlayEffectPresetID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayEffectPresetID, opts...).ToFunc()
 }
 
 // ByDevicesCount orders the results by devices count.

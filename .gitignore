@@ -32,3 +32,8 @@ device/dist/
 
 # Zensical build output
 site/
+
+# Android release signing material
+mobile/android/key.properties
+mobile/android/*.jks
+mobile/android/*.keystore

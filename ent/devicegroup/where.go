@@ -145,6 +145,11 @@ func OverlayFg(v string) predicate.DeviceGroup {
 	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayFg, v))
 }
 
+// OverlayEffectPresetID applies equality check predicate on the "overlay_effect_preset_id" field. It's identical to OverlayEffectPresetIDEQ.
+func OverlayEffectPresetID(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayEffectPresetID, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.DeviceGroup {
 	return predicate.DeviceGroup(sql.FieldEQ(FieldName, v))
@@ -1093,6 +1098,56 @@ func OverlayFgEqualFold(v string) predicate.DeviceGroup {
 // OverlayFgContainsFold applies the ContainsFold predicate on the "overlay_fg" field.
 func OverlayFgContainsFold(v string) predicate.DeviceGroup {
 	return predicate.DeviceGroup(sql.FieldContainsFold(FieldOverlayFg, v))
+}
+
+// OverlayEffectPresetIDEQ applies the EQ predicate on the "overlay_effect_preset_id" field.
+func OverlayEffectPresetIDEQ(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldEQ(FieldOverlayEffectPresetID, v))
+}
+
+// OverlayEffectPresetIDNEQ applies the NEQ predicate on the "overlay_effect_preset_id" field.
+func OverlayEffectPresetIDNEQ(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNEQ(FieldOverlayEffectPresetID, v))
+}
+
+// OverlayEffectPresetIDIn applies the In predicate on the "overlay_effect_preset_id" field.
+func OverlayEffectPresetIDIn(vs ...int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIn(FieldOverlayEffectPresetID, vs...))
+}
+
+// OverlayEffectPresetIDNotIn applies the NotIn predicate on the "overlay_effect_preset_id" field.
+func OverlayEffectPresetIDNotIn(vs ...int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotIn(FieldOverlayEffectPresetID, vs...))
+}
+
+// OverlayEffectPresetIDGT applies the GT predicate on the "overlay_effect_preset_id" field.
+func OverlayEffectPresetIDGT(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGT(FieldOverlayEffectPresetID, v))
+}
+
+// OverlayEffectPresetIDGTE applies the GTE predicate on the "overlay_effect_preset_id" field.
+func OverlayEffectPresetIDGTE(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldGTE(FieldOverlayEffectPresetID, v))
+}
+
+// OverlayEffectPresetIDLT applies the LT predicate on the "overlay_effect_preset_id" field.
+func OverlayEffectPresetIDLT(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLT(FieldOverlayEffectPresetID, v))
+}
+
+// OverlayEffectPresetIDLTE applies the LTE predicate on the "overlay_effect_preset_id" field.
+func OverlayEffectPresetIDLTE(v int) predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldLTE(FieldOverlayEffectPresetID, v))
+}
+
+// OverlayEffectPresetIDIsNil applies the IsNil predicate on the "overlay_effect_preset_id" field.
+func OverlayEffectPresetIDIsNil() predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldIsNull(FieldOverlayEffectPresetID))
+}
+
+// OverlayEffectPresetIDNotNil applies the NotNil predicate on the "overlay_effect_preset_id" field.
+func OverlayEffectPresetIDNotNil() predicate.DeviceGroup {
+	return predicate.DeviceGroup(sql.FieldNotNull(FieldOverlayEffectPresetID))
 }
 
 // HasDevices applies the HasEdge predicate on the "devices" edge.

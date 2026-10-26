@@ -57,6 +57,9 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 	seedThemes(client, ctx)
 	InitThemeResolver(client, ctx)
 
+	// Seed built-in effect presets.
+	seedEffectPresets(client, ctx)
+
 	// Initialize central logging system (DB-backed, OTEL-ready).
 	// This sets slog.SetDefault, so all subsequent slog calls use it.
 	logStore, otelExp, logCleanup := logging.InitLogging(client, "warn")
@@ -80,6 +83,10 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 		LogCleanup:   logCleanup,
 		Telemetry:    telemetry,
 	}
+
+	// The hub registers per-device input sinks through the server so the
+	// device read loop never needs a *Server.
+	srv.WSHub.Srv = srv
 
 	globalServerDB = func() *ent.Client { return client }
 	srv.setupRoutes()
@@ -108,9 +115,10 @@ func New(driver *sql.Driver, telemetry *logging.Telemetry) *Server {
 			}(gs.HolidayIcsURL)
 		}
 	}
-	StartEventRuleEngine(client)
+	StartEventRuleEngine(srv)
 	StartIncidentManager(client)
 	StartPluginManager(client)
+	StartEffectPresetCache(client)
 	StartGreetingWatcher(ctx, client, defaultHAFetcher(srv), srv)
 	InitOutbound(srv)
 
@@ -230,6 +238,12 @@ func (s *Server) setupRoutes() {
 			}
 			return false
 		},
+		"effectPresets": func() []cachedEffectPreset {
+			return cachedEffectPresets()
+		},
+		"eqIntPtr": func(p *int, v int) bool {
+			return p != nil && *p == v
+		},
 		"index": func(item any, key any) any {
 			if item == nil || key == nil {
 				return ""
@@ -322,7 +336,15 @@ func (s *Server) setupRoutes() {
 	// exchanged for a short-lived HttpOnly cookie by /frame/session).
 	s.Router.GET("/frame", s.FramePage)
 	s.Router.POST("/frame/session", s.FrameSession)
+	// Embeddable live widget shells (public, chrome-free; the device embed
+	// reads its secret from the URL fragment and exchanges it at
+	// /embed/session, so it never appears in a request line).
+	s.Router.GET("/embed", s.EmbedPage)
+	s.Router.GET("/embed/device/:id", s.EmbedDevicePage)
+	s.Router.POST("/embed/session", s.EmbedSession)
 	s.Router.GET("/ws/feed", s.WSHub.HandleWS)
+	s.Router.GET("/ws/embed", s.WSHub.HandleEmbedWS)
+	s.Router.GET("/ws/embed/device/:id", s.EmbedAuthMiddleware(), s.WSHub.HandleEmbedDeviceWS)
 	s.Router.GET("/ws/device/:token", s.WSHub.HandleDeviceWS)
 	// Device-accurate preview: admin session (not the device token), never
 	// touches last_seen_at. AuthMiddleware redirects to /login on failure.
@@ -338,6 +360,11 @@ func (s *Server) setupRoutes() {
 		api.GET("/trmnl/messages", s.APITrmnlMessages)
 		api.POST("/trmnl/messages/refresh", s.APITrmnlMessagesRefresh)
 		api.GET("/health", s.APIHealth)
+		// Login capabilities for native clients (no secrets, mirrors /login).
+		api.GET("/auth/config", s.APIAuthConfig)
+		// Frame snapshot: the shared feed is public; a device target is
+		// authorized inside the handler (admin session or embed token).
+		api.GET("/frame", s.APIFrame)
 
 		// Guest remote: scoped X-Guest-Token auth, deliberately outside the
 		// authenticated reads/mutations groups and never cookie-authenticated.
@@ -358,6 +385,11 @@ func (s *Server) setupRoutes() {
 			authReads.GET("/incidents", s.APIIncidentList)
 			authReads.GET("/delivery-log", s.APIDeliveryLog)
 			authReads.GET("/playlists/resolve", s.HandlePlaylistResolve)
+			// Remote-control REST surface (Flutter app / API clients).
+			authReads.GET("/devices", s.APIDeviceList)
+			authReads.GET("/playlists", s.APIPlaylistList)
+			authReads.GET("/scenes", s.APISceneList)
+			authReads.GET("/images", s.APIImageList)
 			authReads.GET("/timelapse/frames", s.APITimelapseFrames)
 			authReads.POST("/timelapse/export", s.APITimelapseExport)
 			authReads.GET("/device/discovery", s.AdminDeviceDiscovery)
@@ -373,6 +405,10 @@ func (s *Server) setupRoutes() {
 			apiMut.POST("/feed/alarm/dismiss", s.APIFeedAlarmDismiss)
 			apiMut.POST("/incidents/:id/resolve", s.APIIncidentResolve)
 			apiMut.POST("/scenes/:id/preview", s.APIScenePreview)
+			// Remote-control REST surface (Flutter app / API clients).
+			apiMut.POST("/devices/:id/brightness", s.APIDeviceBrightness)
+			apiMut.POST("/devices/:id/select", s.APIDeviceSelect)
+			apiMut.POST("/devices/:id/message", s.APIDeviceMessage)
 			apiMut.POST("/eventrules/:id/simulate", s.APIEventRuleSimulate)
 			apiMut.GET("/control/actions", s.APIControlActions)
 			apiMut.POST("/control/execute", s.APIControlExecute)
@@ -554,6 +590,15 @@ func (s *Server) setupRoutes() {
 		admin.POST("/themes/:id/delete", s.AdminThemeDelete)
 		admin.POST("/themes/:id/default", s.AdminThemeSetDefault)
 		admin.POST("/theme/assign", s.AdminThemeAssign)
+
+		// Effect presets (procedural, theme-driven sources).
+		admin.GET("/effects", s.AdminEffectList)
+		admin.GET("/effects/new", s.AdminEffectNew)
+		admin.GET("/effects/:id/edit", s.AdminEffectEditor)
+		admin.POST("/effects/:id/edit", s.AdminEffectSave)
+		admin.POST("/effects/:id/duplicate", s.AdminEffectDuplicate)
+		admin.POST("/effects/:id/delete", s.AdminEffectDelete)
+		admin.POST("/preview/effect", s.AdminPreviewEffect)
 		// Legacy URL kept working.
 		admin.GET("/theme", s.AdminThemeLegacyRedirect)
 		admin.POST("/theme", s.AdminThemeLegacyRedirect)
@@ -806,6 +851,13 @@ func (s *Server) setupRoutes() {
 		admin.DELETE("/api/greetings/:id", s.APIGreetingDelete)
 		admin.POST("/api/greetings/:id/test", s.APIGreetingTest)
 
+		admin.GET("/input-bindings", s.AdminInputBindings)
+		admin.GET("/api/input-bindings", s.APIInputBindingList)
+		admin.POST("/api/input-bindings", s.APIInputBindingCreate)
+		admin.PUT("/api/input-bindings/:id", s.APIInputBindingUpdate)
+		admin.DELETE("/api/input-bindings/:id", s.APIInputBindingDelete)
+		admin.POST("/api/input-bindings/:id/toggle", s.APIInputBindingToggle)
+
 		// Matrix layouts
 		admin.GET("/matrixlayouts", s.AdminMatrixLayoutList)
 		admin.GET("/matrixlayouts/new", s.AdminMatrixLayoutNew)
@@ -917,6 +969,7 @@ func (s *Server) setupRoutes() {
 		admin.POST("/mqtt", s.AdminMQTTSettingsPOST)
 		admin.GET("/telegram", s.AdminTelegramSettingsGET)
 		admin.POST("/telegram", s.AdminTelegramSettingsPOST)
+		admin.POST("/telegram/test", s.AdminTelegramTestPOST)
 
 		// Password Change
 		admin.GET("/password", s.AdminPasswordChange)
@@ -977,6 +1030,12 @@ func (s *Server) setupRoutes() {
 		admin.GET("/api/backup/export", s.BackupExportHandler)
 		admin.POST("/api/backup/import", s.BackupImportHandler)
 
+		// Artifact sharing
+		admin.GET("/artifacts", s.AdminArtifactsPage)
+		admin.GET("/artifacts/catalog", s.AdminArtifactCatalog)
+		admin.POST("/artifacts/import", s.AdminArtifactImportForm)
+		admin.POST("/artifacts/catalog/install", s.AdminArtifactCatalogInstall)
+
 		// Users management (admin-only)
 		admin.GET("/users", s.AdminUsersPage)
 		admin.GET("/api/users", s.APIUsersList)
@@ -985,4 +1044,11 @@ func (s *Server) setupRoutes() {
 		admin.POST("/api/users/:id/role", s.APIUsersChangeRole)
 		admin.POST("/api/users/:id/password", s.APIUsersResetPassword)
 	}
+
+	// Artifact sharing JSON API (admin session or admin bearer token; the
+	// endpoints answer 401/403 JSON rather than redirecting to the login page).
+	artifactAPI := s.Router.Group("/admin/api/artifacts")
+	artifactAPI.Use(s.RequireAdmin())
+	artifactAPI.GET("/export/:kind/:id", s.AdminArtifactExport)
+	artifactAPI.POST("/import", s.AdminArtifactImport)
 }

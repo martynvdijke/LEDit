@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -11,15 +12,33 @@ import (
 )
 
 type FeedController struct {
-	mu          sync.Mutex
-	Paused      bool
-	Skip        bool
+	mu     sync.Mutex
+	Paused bool
+	Skip   bool
+	// Prev requests a step backwards; consumed symmetrically to Skip.
+	Prev        bool
 	CurrentName string
 	NextName    string
 	PinnedKey   string
 	PinnedBy    string
 	AlarmSource *sourceWithName
 	SceneSource *sourceWithName
+	// DeviceID is the device this controller drives (0 for the global feed);
+	// pause/resume events carry it so HA per-device state can be republished.
+	DeviceID int
+	// brightnessHint is an ephemeral manual level (0-100) set by actuation
+	// commands; nil means no hint. Guarded by mu.
+	brightnessHint *int
+	// rotationKeys is the set of cache keys this controller can currently
+	// render; used to reject off-rotation content selections.
+	rotationKeys map[string]bool
+	// reloadRequested asks the live feed to re-resolve its sources at the
+	// next rotation boundary (e.g. after a playlist switch); guarded by mu.
+	reloadRequested bool
+	// currentCacheKey is the cache key (type:id) of the slot currently on
+	// screen. The frame snapshot endpoint reads it to re-render the current
+	// slot when no live connection has buffered a frame. Guarded by mu.
+	currentCacheKey string
 }
 
 var GlobalFeed = &FeedController{}
@@ -72,20 +91,49 @@ func (fc *FeedController) ShouldSkip() bool {
 	return false
 }
 
+// ShouldPrev consumes a pending previous request, mirroring ShouldSkip.
+func (fc *FeedController) ShouldPrev() bool {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	if fc.Prev {
+		fc.Prev = false
+		return true
+	}
+	return false
+}
+
+// RequestReload asks the live feed to re-resolve its sources at the next
+// rotation boundary; ConsumeReload clears the flag.
+func (fc *FeedController) RequestReload() {
+	fc.mu.Lock()
+	fc.reloadRequested = true
+	fc.mu.Unlock()
+}
+
+func (fc *FeedController) ConsumeReload() bool {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	if fc.reloadRequested {
+		fc.reloadRequested = false
+		return true
+	}
+	return false
+}
+
 func (fc *FeedController) Pause() {
 	fc.mu.Lock()
 	fc.Paused = true
 	fc.mu.Unlock()
 	// D6: a manual pause reclaims the wall from ambient automation.
 	SuppressActiveScene()
-	GlobalBus.Emit(Event{Type: EventFeedPaused, Timestamp: time.Now()})
+	GlobalBus.Emit(Event{Type: EventFeedPaused, Timestamp: time.Now(), Data: map[string]any{"device_id": fc.DeviceID}})
 }
 
 func (fc *FeedController) Resume() {
 	fc.mu.Lock()
-	defer fc.mu.Unlock()
 	fc.Paused = false
-	GlobalBus.Emit(Event{Type: EventFeedResumed, Timestamp: time.Now()})
+	fc.mu.Unlock()
+	GlobalBus.Emit(Event{Type: EventFeedResumed, Timestamp: time.Now(), Data: map[string]any{"device_id": fc.DeviceID}})
 }
 
 func (fc *FeedController) Next() {
@@ -108,6 +156,21 @@ func (fc *FeedController) Next() {
 		RecordSkip("", 0, "")
 	}
 	triggerSkipRecompute()
+}
+
+// Previous requests a step backwards; symmetric to Next but without skip
+// attribution.
+func (fc *FeedController) Previous() {
+	fc.mu.Lock()
+	fc.Prev = true
+	fc.PinnedKey = ""
+	fc.PinnedBy = ""
+	fc.AlarmSource = nil
+	fc.SceneSource = nil
+	fc.mu.Unlock()
+	DismissActiveAlarm()
+	// A manual step reclaims the wall from ambient automation.
+	SuppressActiveScene()
 }
 
 // SetAlarmSource publishes the active wake source to this controller; nil
@@ -171,6 +234,65 @@ func (fc *FeedController) IsPinned() (string, string, bool) {
 	return fc.PinnedKey, fc.PinnedBy, true
 }
 
+// SetBrightnessHint stores an ephemeral manual brightness level for this
+// controller. The level wins over schedule/sensor resolved values until the
+// process restarts or the hint is cleared.
+func (fc *FeedController) SetBrightnessHint(level int) {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	fc.brightnessHint = &level
+}
+
+// BrightnessHint returns the ephemeral brightness hint when set.
+func (fc *FeedController) BrightnessHint() (int, bool) {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	if fc.brightnessHint == nil {
+		return 0, false
+	}
+	return *fc.brightnessHint, true
+}
+
+// ClearBrightnessHint removes any ephemeral brightness hint.
+func (fc *FeedController) ClearBrightnessHint() {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	fc.brightnessHint = nil
+}
+
+// SetRotationKeys records the cache keys this connection can render.
+func (fc *FeedController) SetRotationKeys(keys []string) {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	m := make(map[string]bool, len(keys))
+	for _, k := range keys {
+		if k != "" {
+			m[k] = true
+		}
+	}
+	fc.rotationKeys = m
+}
+
+// HasRotationKey reports whether key is part of this controller's rotation.
+func (fc *FeedController) HasRotationKey(key string) bool {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	return fc.rotationKeys[key]
+}
+
+// RotationKeys returns a sorted snapshot of the cache keys this controller can
+// currently render; used to build the HA select option list.
+func (fc *FeedController) RotationKeys() []string {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	keys := make([]string, 0, len(fc.rotationKeys))
+	for k := range fc.rotationKeys {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
 func (fc *FeedController) SetCurrent(name, next string) {
 	fc.mu.Lock()
 	prev := fc.CurrentName
@@ -181,6 +303,22 @@ func (fc *FeedController) SetCurrent(name, next string) {
 		GlobalBus.Emit(Event{Type: EventSourceChanged, Timestamp: time.Now(), Data: map[string]string{"from": prev, "to": name}})
 	}
 	return
+}
+
+// SetCurrentCacheKey records the cache key of the slot currently on screen so
+// the frame snapshot endpoint can re-render it when nothing is buffered.
+func (fc *FeedController) SetCurrentCacheKey(key string) {
+	fc.mu.Lock()
+	fc.currentCacheKey = key
+	fc.mu.Unlock()
+}
+
+// CurrentCacheKey returns the cache key of the slot currently on screen, or ""
+// when no slot has been selected yet.
+func (fc *FeedController) CurrentCacheKey() string {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+	return fc.currentCacheKey
 }
 
 func (fc *FeedController) Status() map[string]any {
@@ -353,15 +491,19 @@ type notifEntry struct {
 	Priority int `json:"-"`
 	// Media optionally attaches an image; json:"-" likewise.
 	Media *MessageMedia `json:"-"`
+	// Target optionally scopes a notification to one device id (0 = all
+	// devices); json:"-" keeps the existing notification API shape unchanged.
+	Target int `json:"-"`
 }
 
 // NotifOption configures AddNotification.
 type notifConfig struct {
-	ttl       time.Duration
-	color     string
-	expiresAt time.Time
-	priority  int
-	media     *MessageMedia
+	ttl          time.Duration
+	color        string
+	expiresAt    time.Time
+	priority     int
+	media        *MessageMedia
+	targetDevice int
 }
 
 // NotifOption is an exported functional option for AddNotification.
@@ -391,6 +533,12 @@ func WithPriority(p int) NotifOption {
 // WithMedia attaches an image to the notification for display surfaces.
 func WithMedia(m *MessageMedia) NotifOption {
 	return func(c *notifConfig) { c.media = m }
+}
+
+// withTargetDevice scopes a notification to a single device feed (0 = all
+// devices). Internal: targeted messages are created by the actuation helpers.
+func withTargetDevice(id int) NotifOption {
+	return func(c *notifConfig) { c.targetDevice = id }
 }
 
 // addToMemoryQueue stores a notification in the in-memory queue (for live feed display).
@@ -424,6 +572,7 @@ func addToMemoryQueueWithOptions(title, message string, opts ...NotifOption) not
 		CreatedAt: now,
 		Priority:  cfg.priority,
 		Media:     cfg.media,
+		Target:    cfg.targetDevice,
 	}
 	notifHistory = append(notifHistory, entry)
 	// Keep last 50

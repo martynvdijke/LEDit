@@ -83,6 +83,21 @@ func StatePath(v string) predicate.DisplayRule {
 	return predicate.DisplayRule(sql.FieldEQ(FieldStatePath, v))
 }
 
+// ForSeconds applies equality check predicate on the "for_seconds" field. It's identical to ForSecondsEQ.
+func ForSeconds(v int) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEQ(FieldForSeconds, v))
+}
+
+// TriggerKind applies equality check predicate on the "trigger_kind" field. It's identical to TriggerKindEQ.
+func TriggerKind(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEQ(FieldTriggerKind, v))
+}
+
+// Sequence applies equality check predicate on the "sequence" field. It's identical to SequenceEQ.
+func Sequence(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEQ(FieldSequence, v))
+}
+
 // CheckIntervalSeconds applies equality check predicate on the "check_interval_seconds" field. It's identical to CheckIntervalSecondsEQ.
 func CheckIntervalSeconds(v int) predicate.DisplayRule {
 	return predicate.DisplayRule(sql.FieldEQ(FieldCheckIntervalSeconds, v))
@@ -406,6 +421,176 @@ func StatePathEqualFold(v string) predicate.DisplayRule {
 // StatePathContainsFold applies the ContainsFold predicate on the "state_path" field.
 func StatePathContainsFold(v string) predicate.DisplayRule {
 	return predicate.DisplayRule(sql.FieldContainsFold(FieldStatePath, v))
+}
+
+// ForSecondsEQ applies the EQ predicate on the "for_seconds" field.
+func ForSecondsEQ(v int) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEQ(FieldForSeconds, v))
+}
+
+// ForSecondsNEQ applies the NEQ predicate on the "for_seconds" field.
+func ForSecondsNEQ(v int) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldNEQ(FieldForSeconds, v))
+}
+
+// ForSecondsIn applies the In predicate on the "for_seconds" field.
+func ForSecondsIn(vs ...int) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldIn(FieldForSeconds, vs...))
+}
+
+// ForSecondsNotIn applies the NotIn predicate on the "for_seconds" field.
+func ForSecondsNotIn(vs ...int) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldNotIn(FieldForSeconds, vs...))
+}
+
+// ForSecondsGT applies the GT predicate on the "for_seconds" field.
+func ForSecondsGT(v int) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldGT(FieldForSeconds, v))
+}
+
+// ForSecondsGTE applies the GTE predicate on the "for_seconds" field.
+func ForSecondsGTE(v int) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldGTE(FieldForSeconds, v))
+}
+
+// ForSecondsLT applies the LT predicate on the "for_seconds" field.
+func ForSecondsLT(v int) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldLT(FieldForSeconds, v))
+}
+
+// ForSecondsLTE applies the LTE predicate on the "for_seconds" field.
+func ForSecondsLTE(v int) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldLTE(FieldForSeconds, v))
+}
+
+// TriggerKindEQ applies the EQ predicate on the "trigger_kind" field.
+func TriggerKindEQ(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEQ(FieldTriggerKind, v))
+}
+
+// TriggerKindNEQ applies the NEQ predicate on the "trigger_kind" field.
+func TriggerKindNEQ(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldNEQ(FieldTriggerKind, v))
+}
+
+// TriggerKindIn applies the In predicate on the "trigger_kind" field.
+func TriggerKindIn(vs ...string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldIn(FieldTriggerKind, vs...))
+}
+
+// TriggerKindNotIn applies the NotIn predicate on the "trigger_kind" field.
+func TriggerKindNotIn(vs ...string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldNotIn(FieldTriggerKind, vs...))
+}
+
+// TriggerKindGT applies the GT predicate on the "trigger_kind" field.
+func TriggerKindGT(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldGT(FieldTriggerKind, v))
+}
+
+// TriggerKindGTE applies the GTE predicate on the "trigger_kind" field.
+func TriggerKindGTE(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldGTE(FieldTriggerKind, v))
+}
+
+// TriggerKindLT applies the LT predicate on the "trigger_kind" field.
+func TriggerKindLT(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldLT(FieldTriggerKind, v))
+}
+
+// TriggerKindLTE applies the LTE predicate on the "trigger_kind" field.
+func TriggerKindLTE(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldLTE(FieldTriggerKind, v))
+}
+
+// TriggerKindContains applies the Contains predicate on the "trigger_kind" field.
+func TriggerKindContains(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldContains(FieldTriggerKind, v))
+}
+
+// TriggerKindHasPrefix applies the HasPrefix predicate on the "trigger_kind" field.
+func TriggerKindHasPrefix(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldHasPrefix(FieldTriggerKind, v))
+}
+
+// TriggerKindHasSuffix applies the HasSuffix predicate on the "trigger_kind" field.
+func TriggerKindHasSuffix(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldHasSuffix(FieldTriggerKind, v))
+}
+
+// TriggerKindEqualFold applies the EqualFold predicate on the "trigger_kind" field.
+func TriggerKindEqualFold(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEqualFold(FieldTriggerKind, v))
+}
+
+// TriggerKindContainsFold applies the ContainsFold predicate on the "trigger_kind" field.
+func TriggerKindContainsFold(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldContainsFold(FieldTriggerKind, v))
+}
+
+// SequenceEQ applies the EQ predicate on the "sequence" field.
+func SequenceEQ(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEQ(FieldSequence, v))
+}
+
+// SequenceNEQ applies the NEQ predicate on the "sequence" field.
+func SequenceNEQ(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldNEQ(FieldSequence, v))
+}
+
+// SequenceIn applies the In predicate on the "sequence" field.
+func SequenceIn(vs ...string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldIn(FieldSequence, vs...))
+}
+
+// SequenceNotIn applies the NotIn predicate on the "sequence" field.
+func SequenceNotIn(vs ...string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldNotIn(FieldSequence, vs...))
+}
+
+// SequenceGT applies the GT predicate on the "sequence" field.
+func SequenceGT(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldGT(FieldSequence, v))
+}
+
+// SequenceGTE applies the GTE predicate on the "sequence" field.
+func SequenceGTE(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldGTE(FieldSequence, v))
+}
+
+// SequenceLT applies the LT predicate on the "sequence" field.
+func SequenceLT(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldLT(FieldSequence, v))
+}
+
+// SequenceLTE applies the LTE predicate on the "sequence" field.
+func SequenceLTE(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldLTE(FieldSequence, v))
+}
+
+// SequenceContains applies the Contains predicate on the "sequence" field.
+func SequenceContains(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldContains(FieldSequence, v))
+}
+
+// SequenceHasPrefix applies the HasPrefix predicate on the "sequence" field.
+func SequenceHasPrefix(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldHasPrefix(FieldSequence, v))
+}
+
+// SequenceHasSuffix applies the HasSuffix predicate on the "sequence" field.
+func SequenceHasSuffix(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldHasSuffix(FieldSequence, v))
+}
+
+// SequenceEqualFold applies the EqualFold predicate on the "sequence" field.
+func SequenceEqualFold(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldEqualFold(FieldSequence, v))
+}
+
+// SequenceContainsFold applies the ContainsFold predicate on the "sequence" field.
+func SequenceContainsFold(v string) predicate.DisplayRule {
+	return predicate.DisplayRule(sql.FieldContainsFold(FieldSequence, v))
 }
 
 // CheckIntervalSecondsEQ applies the EQ predicate on the "check_interval_seconds" field.

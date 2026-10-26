@@ -26,9 +26,10 @@ type LuxLevel struct {
 	Level  int     `json:"level"`
 }
 
-// SensorConfig holds HA sensor binding.
+// SensorConfig holds HA or device sensor binding.
 type SensorConfig struct {
 	EntityID  string     `json:"entity_id"`
+	Source    string     `json:"source,omitempty"`
 	LuxLevels []LuxLevel `json:"lux_levels"`
 }
 
@@ -112,7 +113,11 @@ func ValidateSensorConfig(c *SensorConfig) error {
 	if c == nil {
 		return nil
 	}
-	if strings.TrimSpace(c.EntityID) == "" {
+	source := strings.TrimSpace(strings.ToLower(c.Source))
+	if source != "" && source != "ha" && source != "device" {
+		return fmt.Errorf("sensor_config: source must be \"ha\" or \"device\"")
+	}
+	if source != "device" && strings.TrimSpace(c.EntityID) == "" {
 		return fmt.Errorf("sensor_config: entity_id required")
 	}
 	if len(c.LuxLevels) == 0 {

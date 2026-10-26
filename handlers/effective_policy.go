@@ -5,6 +5,7 @@ import (
 
 	"ledit/ent"
 	"ledit/render"
+	"ledit/render/effects"
 )
 
 func isDeviceBrightnessExplicit(d *ent.DeviceSettings) bool {
@@ -64,15 +65,42 @@ func effectiveBrightnessConfig(d *ent.DeviceSettings) (bool, string, *int, *stri
 }
 
 func isDeviceOverlayExplicit(d *ent.DeviceSettings) bool {
-	return d != nil && (d.OverlayEnabled || d.OverlayText != "")
+	return d != nil && (d.OverlayEnabled || d.OverlayText != "" || d.OverlayEffectPresetID != nil)
 }
 
 func isGroupOverlaySet(g *ent.DeviceGroup) bool {
-	return g != nil && (g.OverlayEnabled || g.OverlayText != "")
+	return g != nil && (g.OverlayEnabled || g.OverlayText != "" || g.OverlayEffectPresetID != nil)
+}
+
+// overlayEffectFields resolves an effect preset reference into the render spec.
+// A missing, deleted or malformed preset leaves the spec unchanged so the strip
+// falls back to the solid background instead of breaking the frame.
+func overlayEffectFields(spec render.OverlaySpec, presetID *int) render.OverlaySpec {
+	if presetID == nil {
+		return spec
+	}
+	p, ok := cachedEffectPresetByID(*presetID)
+	if !ok || p.Effect == "" {
+		return spec
+	}
+	if _, err := effects.UnmarshalParams([]byte(p.Params)); err != nil {
+		return spec
+	}
+	spec.EffectName = p.Effect
+	spec.EffectParams = p.Params
+	return spec
+}
+
+// overlayEffectPresetID loads the preset id for a device (nil-safe).
+func overlayEffectPresetID(d *ent.DeviceSettings) *int {
+	if d == nil {
+		return nil
+	}
+	return d.OverlayEffectPresetID
 }
 
 func overlaySpecForGroup(g *ent.DeviceGroup) render.OverlaySpec {
-	return render.OverlaySpec{
+	spec := render.OverlaySpec{
 		Enabled:    g.OverlayEnabled,
 		Position:   g.OverlayPosition,
 		Height:     g.OverlayHeight,
@@ -81,6 +109,7 @@ func overlaySpecForGroup(g *ent.DeviceGroup) render.OverlaySpec {
 		Background: g.OverlayBg,
 		Foreground: g.OverlayFg,
 	}
+	return overlayEffectFields(spec, g.OverlayEffectPresetID)
 }
 
 func overlaySpecForDeviceWithGroup(d *ent.DeviceSettings) render.OverlaySpec {

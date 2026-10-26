@@ -66,6 +66,7 @@
                         <td>{{if .ApiURL}}<span class="badge bg-info">bound</span><span class="small text-muted ms-1" title="{{.ApiURL}}">●</span>{{else}}<span class="text-muted">—</span>{{end}}</td>
                         <td>
                             <a href="/admin/pixelarts/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            <a href="/admin/api/artifacts/export/pixel-art/{{.ID}}" class="btn btn-sm btn-outline-secondary">Export</a>
                             {{if .IsDraft}}<form method="POST" action="/api/pixelart/{{.ID}}/publish" style="display:inline" class="publish-form"><button type="button" onclick="fetch('/api/pixelart/{{.ID}}/publish',{method:'POST'}).then(()=>location.reload())" class="btn btn-sm btn-success">Publish</button></form>{{end}}
                             <form method="POST" action="/admin/pixelarts/{{.ID}}/delete" style="display:inline">
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>

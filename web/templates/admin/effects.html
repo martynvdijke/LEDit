@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEDit - Effects</title>
+    <link rel="stylesheet" href="/static/assets/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        {{template "sidebar" .}}
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Effects</h1>
+                <a href="/admin/effects/new" class="btn btn-primary">New Effect Preset</a>
+            </div>
+            <p class="text-muted">
+                Effect presets are procedural, theme-driven sources. Colours always come from the
+                effective theme; a preset only stores behaviour. Presets can be used anywhere a
+                source is selectable (playlists, matrix cells, compositions, scenes, overlay strips).
+            </p>
+            {{if .presets}}
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Effect</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .presets}}
+                    <tr data-effect-list-item>
+                        <td>{{.Name}}</td>
+                        <td><code>{{.Effect}}</code></td>
+                        <td>{{if .BuiltIn}}<span class="badge bg-secondary">Built-in</span>{{else}}<span class="badge bg-success">Custom</span>{{end}}</td>
+                        <td>
+                            {{if not .BuiltIn}}<a href="/admin/effects/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>{{end}}
+                            <form method="POST" action="/admin/effects/{{.ID}}/duplicate" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-secondary">Duplicate</button>
+                            </form>
+                            {{if not .BuiltIn}}
+                            <form method="POST" action="/admin/effects/{{.ID}}/delete" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            {{else}}
+            <p class="text-muted mt-4">No effect presets yet. <a href="/admin/effects/new">Create one</a>.</p>
+            {{end}}
+        </div>
+    </div>
+</body>
+</html>

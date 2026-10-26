@@ -74,6 +74,8 @@ const (
 	FieldOverlayBg = "overlay_bg"
 	// FieldOverlayFg holds the string denoting the overlay_fg field in the database.
 	FieldOverlayFg = "overlay_fg"
+	// FieldOverlayEffectPresetID holds the string denoting the overlay_effect_preset_id field in the database.
+	FieldOverlayEffectPresetID = "overlay_effect_preset_id"
 	// FieldTransport holds the string denoting the transport field in the database.
 	FieldTransport = "transport"
 	// FieldWledHost holds the string denoting the wled_host field in the database.
@@ -163,6 +165,7 @@ var Columns = []string{
 	FieldOverlaySpeedPx,
 	FieldOverlayBg,
 	FieldOverlayFg,
+	FieldOverlayEffectPresetID,
 	FieldTransport,
 	FieldWledHost,
 	FieldWledPort,
@@ -469,6 +472,11 @@ func ByOverlayBg(opts ...sql.OrderTermOption) OrderOption {
 // ByOverlayFg orders the results by the overlay_fg field.
 func ByOverlayFg(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOverlayFg, opts...).ToFunc()
+}
+
+// ByOverlayEffectPresetID orders the results by the overlay_effect_preset_id field.
+func ByOverlayEffectPresetID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOverlayEffectPresetID, opts...).ToFunc()
 }
 
 // ByTransport orders the results by the transport field.

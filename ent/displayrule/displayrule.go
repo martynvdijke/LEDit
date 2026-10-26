@@ -23,6 +23,12 @@ const (
 	FieldCondition = "condition"
 	// FieldStatePath holds the string denoting the state_path field in the database.
 	FieldStatePath = "state_path"
+	// FieldForSeconds holds the string denoting the for_seconds field in the database.
+	FieldForSeconds = "for_seconds"
+	// FieldTriggerKind holds the string denoting the trigger_kind field in the database.
+	FieldTriggerKind = "trigger_kind"
+	// FieldSequence holds the string denoting the sequence field in the database.
+	FieldSequence = "sequence"
 	// FieldCheckIntervalSeconds holds the string denoting the check_interval_seconds field in the database.
 	FieldCheckIntervalSeconds = "check_interval_seconds"
 	// FieldCooldownSeconds holds the string denoting the cooldown_seconds field in the database.
@@ -42,6 +48,9 @@ var Columns = []string{
 	FieldSourceID,
 	FieldCondition,
 	FieldStatePath,
+	FieldForSeconds,
+	FieldTriggerKind,
+	FieldSequence,
 	FieldCheckIntervalSeconds,
 	FieldCooldownSeconds,
 	FieldThenActions,
@@ -81,6 +90,14 @@ var (
 	DefaultCondition string
 	// DefaultStatePath holds the default value on creation for the "state_path" field.
 	DefaultStatePath string
+	// DefaultForSeconds holds the default value on creation for the "for_seconds" field.
+	DefaultForSeconds int
+	// ForSecondsValidator is a validator for the "for_seconds" field. It is called by the builders before save.
+	ForSecondsValidator func(int) error
+	// DefaultTriggerKind holds the default value on creation for the "trigger_kind" field.
+	DefaultTriggerKind string
+	// DefaultSequence holds the default value on creation for the "sequence" field.
+	DefaultSequence string
 	// DefaultCheckIntervalSeconds holds the default value on creation for the "check_interval_seconds" field.
 	DefaultCheckIntervalSeconds int
 	// CheckIntervalSecondsValidator is a validator for the "check_interval_seconds" field. It is called by the builders before save.
@@ -129,6 +146,21 @@ func ByCondition(opts ...sql.OrderTermOption) OrderOption {
 // ByStatePath orders the results by the state_path field.
 func ByStatePath(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatePath, opts...).ToFunc()
+}
+
+// ByForSeconds orders the results by the for_seconds field.
+func ByForSeconds(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForSeconds, opts...).ToFunc()
+}
+
+// ByTriggerKind orders the results by the trigger_kind field.
+func ByTriggerKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTriggerKind, opts...).ToFunc()
+}
+
+// BySequence orders the results by the sequence field.
+func BySequence(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSequence, opts...).ToFunc()
 }
 
 // ByCheckIntervalSeconds orders the results by the check_interval_seconds field.

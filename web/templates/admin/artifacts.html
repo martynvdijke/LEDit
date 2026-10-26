@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Share Artifacts</title><link rel="stylesheet" href="/static/assets/styles.css"></head>
+<body>
+<div class="d-flex">{{template "sidebar" .}}
+<div class="container-fluid p-4">
+<h1>Share Artifacts</h1>
+<p class="text-muted">Export themes, layouts, playlists, scenes, text slides and pixel art as portable bundles, or import a bundle from a file or URL.</p>
+
+<div class="row g-4">
+<div class="col-lg-7">
+<div class="card"><div class="card-body">
+<h2 class="h5">Shareable artifacts</h2>
+<table class="table table-striped align-middle">
+<thead><tr><th>Kind</th><th>Name</th><th>Details</th><th class="text-end">Actions</th></tr></thead>
+<tbody>
+{{range .rows}}
+<tr>
+<td><span class="badge bg-secondary">{{.KindLabel}}</span></td>
+<td>{{.Name}}</td>
+<td class="text-muted small">{{.Detail}}</td>
+<td class="text-end">
+{{if .Exportable}}
+<a class="btn btn-sm btn-outline-primary" href="/admin/api/artifacts/export/{{.Kind}}/{{.ID}}">Export</a>
+{{else}}
+<button class="btn btn-sm btn-outline-secondary" disabled title="Built-in themes cannot be exported">Built-in</button>
+{{end}}
+</td>
+</tr>
+{{else}}
+<tr><td colspan="4" class="text-muted">No artifacts yet.</td></tr>
+{{end}}
+</tbody>
+</table>
+</div></div>
+</div>
+
+<div class="col-lg-5">
+<div class="card mb-3"><div class="card-body">
+<h2 class="h5">Import a bundle</h2>
+<form method="POST" action="/admin/artifacts/import" enctype="multipart/form-data" id="artifact-import-form">
+<div class="mb-2">
+<label class="form-label" for="artifact-file">Bundle file (.zip)</label>
+<input class="form-control" type="file" name="file" id="artifact-file" accept=".zip,application/zip">
+</div>
+<div class="mb-2">
+<label class="form-label" for="artifact-url">…or a bundle URL</label>
+<input class="form-control" type="url" name="url" id="artifact-url" placeholder="https://example.com/ledit-theme.zip" value="{{.prefill.url}}">
+</div>
+<div class="mb-2">
+<label class="form-label" for="artifact-sha">Expected SHA-256 (optional)</label>
+<input class="form-control" type="text" name="sha256" id="artifact-sha" placeholder="hex digest of the bundle" value="{{.prefill.sha256}}">
+</div>
+<div class="mb-2">
+<label class="form-label" for="artifact-name">Name when renaming</label>
+<input class="form-control" type="text" name="name" id="artifact-name" value="{{.prefill.name}}">
+</div>
+<div class="mb-2">
+<label class="form-label" for="artifact-conflict">On name conflict</label>
+<select class="form-select" name="on_conflict" id="artifact-conflict">
+<option value="">Report the conflict</option>
+<option value="rename" {{if eq .prefill.on_conflict "rename"}}selected{{end}}>Rename</option>
+<option value="skip" {{if eq .prefill.on_conflict "skip"}}selected{{end}}>Skip</option>
+<option value="replace" {{if eq .prefill.on_conflict "replace"}}selected{{end}}>Replace</option>
+</select>
+</div>
+<button class="btn btn-primary" type="submit">Import</button>
+<button class="btn btn-outline-secondary" type="button" id="artifact-validate">Validate (dry run)</button>
+</form>
+<div id="artifact-result" class="mt-3" hidden></div>
+<p class="text-muted small mt-2 mb-0">Deep link: <code>ledit://import?url=&amp;sha256=</code> only prefills this form. LEDit never fetches a URL until you press Import.</p>
+</div></div>
+
+<div class="card"><div class="card-body">
+<h2 class="h5">Remote catalog</h2>
+{{if .catalog}}
+<p class="mb-2">Browse shareable artifacts published by a catalog.</p>
+<a class="btn btn-outline-primary" href="/admin/artifacts/catalog">Open catalog</a>
+{{else}}
+<p class="text-muted mb-0">No catalog configured. Set <code>ARTIFACT_CATALOG_URL</code> to enable one-click installs.</p>
+{{end}}
+</div></div>
+</div>
+</div>
+</div></div>
+<script type="module" src="/static/assets/artifacts.js"></script>
+</body></html>

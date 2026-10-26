@@ -224,6 +224,18 @@ func (f DisplayRuleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DisplayRuleMutation", m)
 }
 
+// The EffectPresetFunc type is an adapter to allow the use of ordinary
+// function as EffectPreset mutator.
+type EffectPresetFunc func(context.Context, *ent.EffectPresetMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EffectPresetFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EffectPresetMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EffectPresetMutation", m)
+}
+
 // The EmailSettingsFunc type is an adapter to allow the use of ordinary
 // function as EmailSettings mutator.
 type EmailSettingsFunc func(context.Context, *ent.EmailSettingsMutation) (ent.Value, error)
@@ -426,6 +438,18 @@ func (f IncidentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentMutation", m)
+}
+
+// The InputBindingFunc type is an adapter to allow the use of ordinary
+// function as InputBinding mutator.
+type InputBindingFunc func(context.Context, *ent.InputBindingMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InputBindingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InputBindingMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InputBindingMutation", m)
 }
 
 // The JellyfinFunc type is an adapter to allow the use of ordinary

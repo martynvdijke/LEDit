@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ledit-v2';
+const CACHE_NAME = 'ledit-v3';
 const ASSETS = [
   '/',
   '/login',
@@ -33,8 +33,20 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: network-first, fallback to cache
+// Fetch: network-first, fallback to cache. Embed pages, snapshot responses and
+// WebSocket upgrades must never be stored: they are per-session, short-lived
+// and (for the wall) live streams.
+function isUncacheable(url) {
+  return url.pathname.startsWith('/embed') ||
+    url.pathname.startsWith('/api/frame') ||
+    url.pathname.startsWith('/ws/');
+}
+
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if (url.origin === self.location.origin && isUncacheable(url)) {
+    return; // let the browser talk to the network directly
+  }
   event.respondWith(
     fetch(event.request)
       .then(response => {

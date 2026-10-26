@@ -100,7 +100,9 @@
                         <div class="mb-2"><label class="form-label">Speed (px/s, 0=static)</label><input type="number" class="form-control" name="overlay_speed_px" min="0" max="200" value="{{if .obj}}{{.obj.OverlaySpeedPx}}{{else}}0{{end}}" style="max-width:160px"></div>
                         <div class="mb-2"><label class="form-label">Background</label><input type="color" class="form-control form-control-color" name="overlay_bg" value="{{if .obj}}{{.obj.OverlayBg}}{{else}}#000000{{end}}"></div>
                         <div class="mb-2"><label class="form-label">Text color</label><input type="color" class="form-control form-control-color" name="overlay_fg" value="{{if .obj}}{{.obj.OverlayFg}}{{else}}#ffffff{{end}}"></div>
+                        <div class="mb-2"><label class="form-label">Effect background</label><select class="form-select" id="overlay_effect_preset_id" name="overlay_effect_preset_id"><option value="">None (solid background)</option>{{$cur := .overlayEffectID}}{{range effectPresets}}<option value="{{.ID}}" {{if eqIntPtr $cur .ID}}selected{{end}}>{{.Name}}</option>{{end}}</select></div>
                     </div>
+                    <div class="form-text small text-muted">An effect preset is drawn behind the overlay text instead of the solid background color.</div>
                     <div class="form-text small text-muted">Height max is min(32, matrix height / 2). Overlay enabled with empty text is rejected.</div>
                 </div>
                 <div class="card mb-3 p-3">
@@ -127,6 +129,18 @@
                     <div class="mt-2"><label class="form-label">Per-panel gammas (JSON array)</label><textarea class="form-control" name="output_panel_gammas" rows="1">{{if .obj}}{{.obj.OutputPanelGammas}}{{else}}[]{{end}}</textarea><div class="form-text">JSON arrays, one entry per panel; empty falls back to device gamma/color order</div></div>
                     <div class="mt-2"><label class="form-label">Per-panel color orders (JSON array)</label><textarea class="form-control" name="output_panel_color_orders" rows="1">{{if .obj}}{{.obj.OutputPanelColorOrders}}{{else}}[]{{end}}</textarea><div class="form-text">JSON arrays, one entry per panel; empty falls back to device gamma/color order</div></div>
                 </div>
+                {{if .edit}}
+                <div class="card mb-3 p-3">
+                    <h5>Inputs</h5>
+                    {{if .hasInputStatus}}
+                    <p class="mb-1"><strong>Known sources:</strong> {{range $i, $src := .inputSources}}{{if $i}}, {{end}}<code>{{$src}}</code>{{end}}</p>
+                    <p class="mb-1"><strong>Last event:</strong> <code>{{.inputLastEvent}}</code></p>
+                    <p class="text-muted mb-0">Last seen {{.inputLastSeen}}</p>
+                    {{else}}
+                    <p class="text-muted mb-0">No input events seen since this server started.</p>
+                    {{end}}
+                </div>
+                {{end}}
                 <button type="submit" class="btn btn-primary">{{if .edit}}Update{{else}}Create{{end}}</button>
                 <a href="/admin/devices" class="btn btn-secondary">Cancel</a>
             </form>

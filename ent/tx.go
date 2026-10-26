@@ -48,6 +48,8 @@ type Tx struct {
 	DeviceSettings *DeviceSettingsClient
 	// DisplayRule is the client for interacting with the DisplayRule builders.
 	DisplayRule *DisplayRuleClient
+	// EffectPreset is the client for interacting with the EffectPreset builders.
+	EffectPreset *EffectPresetClient
 	// EmailSettings is the client for interacting with the EmailSettings builders.
 	EmailSettings *EmailSettingsClient
 	// F1 is the client for interacting with the F1 builders.
@@ -82,6 +84,8 @@ type Tx struct {
 	InboundAdapter *InboundAdapterClient
 	// Incident is the client for interacting with the Incident builders.
 	Incident *IncidentClient
+	// InputBinding is the client for interacting with the InputBinding builders.
+	InputBinding *InputBindingClient
 	// Jellyfin is the client for interacting with the Jellyfin builders.
 	Jellyfin *JellyfinClient
 	// LogEntry is the client for interacting with the LogEntry builders.
@@ -327,6 +331,7 @@ func (tx *Tx) init() {
 	tx.DeviceMessageState = NewDeviceMessageStateClient(tx.config)
 	tx.DeviceSettings = NewDeviceSettingsClient(tx.config)
 	tx.DisplayRule = NewDisplayRuleClient(tx.config)
+	tx.EffectPreset = NewEffectPresetClient(tx.config)
 	tx.EmailSettings = NewEmailSettingsClient(tx.config)
 	tx.F1 = NewF1Client(tx.config)
 	tx.FirmwareRelease = NewFirmwareReleaseClient(tx.config)
@@ -344,6 +349,7 @@ func (tx *Tx) init() {
 	tx.Immich = NewImmichClient(tx.config)
 	tx.InboundAdapter = NewInboundAdapterClient(tx.config)
 	tx.Incident = NewIncidentClient(tx.config)
+	tx.InputBinding = NewInputBindingClient(tx.config)
 	tx.Jellyfin = NewJellyfinClient(tx.config)
 	tx.LogEntry = NewLogEntryClient(tx.config)
 	tx.LogSettings = NewLogSettingsClient(tx.config)

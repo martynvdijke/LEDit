@@ -34,10 +34,28 @@ class ButtonHandler:
             ``{"action": "hold"}`` when *sender* is supplied.
         sender: optional callable ``sender(json_str)`` used to build default
             callbacks when *on_next*/*on_pause*/*on_hold* are not supplied.
+        hub: optional InputHub; when supplied, default callbacks emit input
+            events instead of legacy ``{"action": ...}`` messages.
     """
 
-    def __init__(self, on_next=None, on_pause=None, sender=None, on_hold=None):
-        if sender is not None:
+    def __init__(self, on_next=None, on_pause=None, sender=None, on_hold=None, hub=None):
+        if hub is not None:
+            if on_next is None:
+                def _next(hub=hub):
+                    hub.emit("button:next", "press")
+
+                on_next = _next
+            if on_pause is None:
+                def _pause(hub=hub):
+                    hub.emit("button:pause", "press")
+
+                on_pause = _pause
+            if on_hold is None:
+                def _hold(hub=hub):
+                    hub.emit("button:next", "hold")
+
+                on_hold = _hold
+        elif sender is not None:
             if on_next is None:
                 def _next(sender=sender):
                     sender(json.dumps({"action": "next"}))

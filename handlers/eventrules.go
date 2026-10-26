@@ -211,12 +211,16 @@ func clearStateFetchLogged(cacheKey string) {
 	stateFetchMu.Unlock()
 }
 
-func StartEventRuleEngine(client *ent.Client) {
+func StartEventRuleEngine(srv *Server) {
 	engineMu.Lock()
 	defer engineMu.Unlock()
 	if engineCancel != nil {
 		return
 	}
+	if srv == nil || srv.DB == nil {
+		return
+	}
+	client := srv.DB
 	engineClient = client
 	ctx, cancel := context.WithCancel(context.Background())
 	engineCancel = cancel
@@ -245,7 +249,7 @@ func StartEventRuleEngine(client *ent.Client) {
 			return resolveSceneSource(client, s)
 		}
 	}
-	go runEvaluator(ctx, client)
+	go runEvaluator(ctx, srv, client)
 	slog.Info("event rule engine started")
 }
 
@@ -268,6 +272,7 @@ func ResetNonCapableLogged() {
 	stateFetchMu.Lock()
 	defer stateFetchMu.Unlock()
 	stateFetchLogged = map[string]bool{}
+	resetTriggerLogged()
 }
 
 type ruleState struct {
@@ -275,6 +280,16 @@ type ruleState struct {
 	nextCheck     time.Time
 	cooldownUntil time.Time
 	pinned        bool
+
+	// Trigger timers. conditionSince is the first tick the composed condition
+	// held true; the sequence fields track the ordered-step state machine.
+	conditionSince time.Time
+	triggerSig     string
+	seqArmed       bool
+	held           bool
+	seqStep        int
+	stepSince      time.Time
+	armedAt        time.Time
 }
 
 func jitter(d time.Duration) time.Duration {
@@ -323,7 +338,7 @@ func resolveTarget(sourceType string, sourceID int, client *ent.Client) (datasou
 	return nil, false
 }
 
-func runEvaluator(ctx context.Context, client *ent.Client) {
+func runEvaluator(ctx context.Context, srv *Server, client *ent.Client) {
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Error("event rule evaluator panic recovered", "panic", r)
@@ -332,7 +347,7 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 			case <-ctx.Done():
 				return
 			case <-time.After(5 * time.Second):
-				go runEvaluator(ctx, client)
+				go runEvaluator(ctx, srv, client)
 			}
 		}
 	}()
@@ -350,20 +365,7 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 			slog.Error("event evaluator: failed to load rules", "error", err)
 			return
 		}
-		seen := map[int]bool{}
-		for _, r := range rules {
-			seen[r.ID] = true
-			if _, ok := states[r.ID]; !ok {
-				states[r.ID] = &ruleState{rule: r, nextCheck: time.Now().Add(jitter(time.Duration(r.CheckIntervalSeconds) * time.Second))}
-			} else {
-				states[r.ID].rule = r
-			}
-		}
-		for id := range states {
-			if !seen[id] {
-				delete(states, id)
-			}
-		}
+		syncRuleStates(states, rules, time.Now())
 	}
 	loadRules()
 
@@ -431,11 +433,12 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 					nonCapableMu.Unlock()
 					continue
 				}
-				cond, err := datasource.ParseCondition(rs.rule.Condition)
-				if err != nil {
-					slog.Warn("event rule condition parse failed", "rule", rs.rule.Name, "error", err)
+				sig := triggerSignature(rs.rule)
+				if _, _, _, err := parseRuleTrigger(rs.rule); err != nil {
+					logTriggerParseOnce(sig, rs.rule.Name, err)
 					continue
 				}
+				clearTriggerLogged(sig)
 				cacheKey := fmt.Sprintf("%s:%d", rs.rule.SourceType, rs.rule.SourceID)
 				fetchCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 				state, ferr := sp.CurrentState(fetchCtx)
@@ -449,42 +452,8 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 					clearStateFetchLogged(cacheKey)
 				}
 				state = resolveStatePath(state, rs.rule.StatePath)
-				result := datasource.Evaluate(state, cond)
-				if result {
-					if !rs.pinned {
-						// enforce min-hold: cooldown already handled via cooldownUntil check before fetch, but also need min-hold after fire?
-						// D6: cooldown acts as min-hold after fire. So after pin, set cooldownUntil? Actually min-hold means don't unpin until cooldown seconds after fire.
-						// We'll store pinned time and suppress unpin until cooldown elapsed. For pin direction, cooldown suppresses re-fire after release.
-						// So pin case: set pinned=true and broadcast
-						pinAll(cacheKey, rs.rule.Name)
-						rs.pinned = true
-						if rs.rule.CooldownSeconds > 0 {
-							rs.cooldownUntil = now.Add(time.Duration(rs.rule.CooldownSeconds) * time.Second)
-						}
-						actCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-						executeThenAction(actCtx, client, rs.rule)
-						cancel()
-					} else {
-						// already pinned, extend cooldown? Keep min-hold: don't unpin until cooldown after fire. Already pinned, keep pinned.
-						// cooldown for flicker tolerance: if condition flickers false then true within cooldown, still pinned so no change
-						if rs.rule.CooldownSeconds > 0 {
-							// reset cooldown hold
-							rs.cooldownUntil = now.Add(time.Duration(rs.rule.CooldownSeconds) * time.Second)
-						}
-					}
-				} else {
-					if rs.pinned {
-						// check min-hold: if cooldownUntil still in future, suppress unpin
-						if now.Before(rs.cooldownUntil) {
-							continue
-						}
-						unpinAll()
-						rs.pinned = false
-						if rs.rule.CooldownSeconds > 0 {
-							rs.cooldownUntil = now.Add(time.Duration(rs.rule.CooldownSeconds) * time.Second)
-						}
-					}
-				}
+				fire, release := advanceTrigger(rs, now, state)
+				applyTriggerOutcome(ctx, srv, rs, cacheKey, now, fire, release)
 			}
 		}
 	}
@@ -494,6 +463,10 @@ func runEvaluator(ctx context.Context, client *ent.Client) {
 func EvaluateRulesOnce(client *ent.Client, states map[int]*ruleState) {
 	if states == nil {
 		return
+	}
+	var srv *Server
+	if client != nil {
+		srv = &Server{DB: client, Ctx: context.Background()}
 	}
 	now := time.Now()
 	for _, rs := range states {
@@ -522,10 +495,12 @@ func EvaluateRulesOnce(client *ent.Client, states map[int]*ruleState) {
 			nonCapableMu.Unlock()
 			continue
 		}
-		cond, err := datasource.ParseCondition(rs.rule.Condition)
-		if err != nil {
+		sig := triggerSignature(rs.rule)
+		if _, _, _, err := parseRuleTrigger(rs.rule); err != nil {
+			logTriggerParseOnce(sig, rs.rule.Name, err)
 			continue
 		}
+		clearTriggerLogged(sig)
 		cacheKey := fmt.Sprintf("%s:%d", rs.rule.SourceType, rs.rule.SourceID)
 		fetchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		state, ferr := sp.CurrentState(fetchCtx)
@@ -537,30 +512,8 @@ func EvaluateRulesOnce(client *ent.Client, states map[int]*ruleState) {
 			clearStateFetchLogged(cacheKey)
 		}
 		state = resolveStatePath(state, rs.rule.StatePath)
-		result := datasource.Evaluate(state, cond)
-		if result {
-			if !rs.pinned {
-				pinAll(cacheKey, rs.rule.Name)
-				rs.pinned = true
-				if rs.rule.CooldownSeconds > 0 {
-					rs.cooldownUntil = now.Add(time.Duration(rs.rule.CooldownSeconds) * time.Second)
-				}
-				actCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				executeThenAction(actCtx, client, rs.rule)
-				cancel()
-			}
-		} else {
-			if rs.pinned {
-				if now.Before(rs.cooldownUntil) {
-					continue
-				}
-				unpinAll()
-				rs.pinned = false
-				if rs.rule.CooldownSeconds > 0 {
-					rs.cooldownUntil = now.Add(time.Duration(rs.rule.CooldownSeconds) * time.Second)
-				}
-			}
-		}
+		fire, release := advanceTrigger(rs, now, state)
+		applyTriggerOutcome(context.Background(), srv, rs, cacheKey, now, fire, release)
 	}
 }
 
@@ -568,37 +521,84 @@ func EvaluateRulesOnce(client *ent.Client, states map[int]*ruleState) {
 // CRUD handlers
 // ---------------------------------------------------------------------------
 
+// eventRuleRow is the list-page projection of a rule. The readable trigger
+// summary is rendered server-side so grouped and sequence triggers show up
+// without any client-side JSON handling; legacy leaf rules keep the historic
+// "path operator value" text.
+type eventRuleRow struct {
+	ID                   int
+	Name                 string
+	Enabled              bool
+	SourceType           string
+	SourceID             int
+	Condition            string
+	ConditionSummary     string
+	CheckIntervalSeconds int
+	CooldownSeconds      int
+}
+
 func (s *Server) AdminEventRuleList(c *gin.Context) {
 	rows, err := s.DB.DisplayRule.Query().Order(ent.Asc(displayrule.FieldID)).All(s.Ctx)
 	if err != nil {
 		rows = []*ent.DisplayRule{}
 	}
-	s.renderPage(c, http.StatusOK, "eventrules.html", gin.H{"eventrules": rows})
+	view := make([]eventRuleRow, 0, len(rows))
+	for _, r := range rows {
+		view = append(view, eventRuleRow{
+			ID:                   r.ID,
+			Name:                 r.Name,
+			Enabled:              r.Enabled,
+			SourceType:           r.SourceType,
+			SourceID:             r.SourceID,
+			Condition:            r.Condition,
+			ConditionSummary:     datasource.FormatTriggerSummary(r.TriggerKind, r.Condition, r.Sequence, r.CheckIntervalSeconds),
+			CheckIntervalSeconds: r.CheckIntervalSeconds,
+			CooldownSeconds:      r.CooldownSeconds,
+		})
+	}
+	s.renderPage(c, http.StatusOK, "eventrules.html", gin.H{"eventrules": view})
 }
 
 // eventRuleFormVars supplies flat prepopulation strings for
 // eventrule_form.html so ent rows and error-replay maps render identically
 // (templates never branch on the obj type).
-func eventRuleFormVars(name, srcType, srcID, condition, statePath, interval, cooldown string, enabled bool) gin.H {
+func eventRuleFormVars(name, srcType, srcID, condition, statePath, interval, cooldown, forSeconds, triggerKind, sequence string, enabled bool) gin.H {
 	e := ""
 	if enabled {
 		e = "on"
 	}
+	if triggerKind == "" {
+		triggerKind = triggerKindCondition
+	}
 	return gin.H{
-		"fName":      name,
-		"fEnabled":   e,
-		"fSrcType":   srcType,
-		"fSrcID":     srcID,
-		"fCondition": condition,
-		"fStatePath": statePath,
-		"fInterval":  interval,
-		"fCooldown":  cooldown,
-		"fThenKind":  "none",
-		"fThenScene": "",
-		"fThenTitle": "",
-		"fThenMsg":   "",
-		"fThenTTL":   "",
-		"fThenEvent": "",
+		"fName":         name,
+		"fEnabled":      e,
+		"fSrcType":      srcType,
+		"fSrcID":        srcID,
+		"fCondition":    condition,
+		"fStatePath":    statePath,
+		"fInterval":     interval,
+		"fCooldown":     cooldown,
+		"fForSeconds":   forSeconds,
+		"fTriggerKind":  triggerKind,
+		"fSequence":     sequence,
+		"fThenKind":     "none",
+		"fThenScene":    "",
+		"fThenTitle":    "",
+		"fThenMsg":      "",
+		"fThenTTL":      "",
+		"fThenEvent":    "",
+		"fThenPayload":  "",
+		"fThenDevice":   "",
+		"fThenLevel":    "",
+		"fThenSrcType":  "",
+		"fThenSrcID":    "",
+		"fThenPlaylist": "",
+		"fThenTopic":    "",
+		"fThenRetain":   "",
+		"fThenURL":      "",
+		"fThenMethod":   "",
+		"fThenSecret":   "",
 	}
 }
 
@@ -620,43 +620,125 @@ func eventRuleFormVarsWithThen(base gin.H, thenRaw string) gin.H {
 		base["fThenTTL"] = strconv.Itoa(ta.TTLSeconds)
 	}
 	base["fThenEvent"] = ta.Event
-	// payload is stored as JSON string in ta.Payload but not exposed separately; event field suffices per spec
 	if ta.Payload != "" {
 		base["fThenPayload"] = ta.Payload
 	}
+	if ta.DeviceID != 0 {
+		base["fThenDevice"] = strconv.Itoa(ta.DeviceID)
+	}
+	if ta.Level != nil {
+		base["fThenLevel"] = strconv.Itoa(*ta.Level)
+	}
+	base["fThenSrcType"] = ta.SourceType
+	if ta.SourceID != 0 {
+		base["fThenSrcID"] = strconv.Itoa(ta.SourceID)
+	}
+	if ta.PlaylistID != 0 {
+		base["fThenPlaylist"] = strconv.Itoa(ta.PlaylistID)
+	}
+	base["fThenTopic"] = ta.Topic
+	if ta.Retain {
+		base["fThenRetain"] = "on"
+	}
+	base["fThenURL"] = ta.URL
+	base["fThenMethod"] = ta.Method
+	base["fThenSecret"] = ta.Secret
 	return base
 }
 
-func buildThenJSON(kind, sceneIDStr, title, message, ttlStr, event string) string {
-	// default kind none
-	if strings.TrimSpace(kind) == "" {
-		kind = "none"
-	}
-	ta := ThenAction{Kind: kind}
-	if sceneIDStr != "" {
-		if v, _ := strconv.Atoi(sceneIDStr); v != 0 {
-			ta.SceneID = v
-		}
-	}
-	ta.Title = title
-	ta.Message = message
-	if ttlStr != "" {
-		if v, _ := strconv.Atoi(ttlStr); v != 0 {
-			ta.TTLSeconds = v
-		}
-	}
-	ta.Event = event
-	// payload not collected from form per spec (event/message fields cover it); keep empty
-	if ta.Kind == "none" {
+func marshalThenAction(ta ThenAction) string {
+	if strings.TrimSpace(ta.Kind) == "" || ta.Kind == "none" {
 		return "{}"
 	}
-	b, _ := json.Marshal(ta)
+	b, err := json.Marshal(ta)
+	if err != nil {
+		return "{}"
+	}
 	return string(b)
+}
+
+// thenActionFromForm reads every then-action field from the submitted form.
+// Unknown/blank fields stay zero so validation can reject only what the chosen
+// kind actually requires.
+func thenActionFromForm(c *gin.Context) ThenAction {
+	kind := strings.TrimSpace(c.PostForm("then_kind"))
+	if kind == "" {
+		kind = "none"
+	}
+	ta := ThenAction{
+		Kind:       kind,
+		Title:      c.PostForm("then_title"),
+		Message:    c.PostForm("then_message"),
+		Event:      c.PostForm("then_event"),
+		Payload:    c.PostForm("then_payload"),
+		SourceType: strings.TrimSpace(c.PostForm("then_source_type")),
+		Topic:      strings.TrimSpace(c.PostForm("then_topic")),
+		URL:        strings.TrimSpace(c.PostForm("then_url")),
+		Method:     strings.ToUpper(strings.TrimSpace(c.PostForm("then_method"))),
+		Secret:     c.PostForm("then_secret"),
+		Retain:     c.PostForm("then_retain") == "on",
+	}
+	if v, _ := strconv.Atoi(c.PostForm("then_scene_id")); v != 0 {
+		ta.SceneID = v
+	}
+	if v, _ := strconv.Atoi(c.PostForm("then_ttl_seconds")); v != 0 {
+		ta.TTLSeconds = v
+	}
+	if v, _ := strconv.Atoi(c.PostForm("then_device_id")); v != 0 {
+		ta.DeviceID = v
+	}
+	if v, _ := strconv.Atoi(c.PostForm("then_source_id")); v != 0 {
+		ta.SourceID = v
+	}
+	if v, _ := strconv.Atoi(c.PostForm("then_playlist_id")); v != 0 {
+		ta.PlaylistID = v
+	}
+	if raw := strings.TrimSpace(c.PostForm("then_level")); raw != "" {
+		if v, err := strconv.Atoi(raw); err == nil {
+			ta.Level = &v
+		}
+	}
+	if ta.Kind == "http" && ta.Method == "" {
+		ta.Method = http.MethodPost
+	}
+	return ta
+}
+
+// thenReplayVars returns the raw posted then-action fields for redisplaying the
+// form after a validation failure.
+func thenReplayVars(c *gin.Context) gin.H {
+	kind := strings.TrimSpace(c.PostForm("then_kind"))
+	if kind == "" {
+		kind = "none"
+	}
+	retain := ""
+	if c.PostForm("then_retain") == "on" {
+		retain = "on"
+	}
+	return gin.H{
+		"fThenKind":     kind,
+		"fThenScene":    c.PostForm("then_scene_id"),
+		"fThenTitle":    c.PostForm("then_title"),
+		"fThenMsg":      c.PostForm("then_message"),
+		"fThenTTL":      c.PostForm("then_ttl_seconds"),
+		"fThenEvent":    c.PostForm("then_event"),
+		"fThenPayload":  c.PostForm("then_payload"),
+		"fThenDevice":   c.PostForm("then_device_id"),
+		"fThenLevel":    c.PostForm("then_level"),
+		"fThenSrcType":  c.PostForm("then_source_type"),
+		"fThenSrcID":    c.PostForm("then_source_id"),
+		"fThenPlaylist": c.PostForm("then_playlist_id"),
+		"fThenTopic":    c.PostForm("then_topic"),
+		"fThenRetain":   retain,
+		"fThenURL":      c.PostForm("then_url"),
+		"fThenMethod":   c.PostForm("then_method"),
+		"fThenSecret":   c.PostForm("then_secret"),
+	}
 }
 
 func (s *Server) AdminEventRuleNew(c *gin.Context) {
 	opts := s.bindingOptions(c)
-	vars := eventRuleFormVars("", "", "", "{}", "", "30", "0", true)
+	vars := eventRuleFormVars("", "", "", "{}", "", "30", "0", "0", triggerKindCondition, "", true)
 	vars["options"] = opts
 	vars["options_json"] = bindingOptionsJSON(opts)
 	s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
@@ -674,16 +756,24 @@ func (s *Server) APIEventRuleSimulate(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
+	kind := normalizeTriggerKind(rule.TriggerKind)
 	// Resolve target (do not use pin/unpin)
 	ds, ok := resolveTarget(rule.SourceType, rule.SourceID, s.DB)
 	response := gin.H{
-		"rule_id":     rule.ID,
-		"name":        rule.Name,
-		"enabled":     rule.Enabled,
-		"source_type": rule.SourceType,
-		"source_id":   rule.SourceID,
-		"state_path":  rule.StatePath,
-		"condition":   rule.Condition,
+		"rule_id":      rule.ID,
+		"name":         rule.Name,
+		"enabled":      rule.Enabled,
+		"source_type":  rule.SourceType,
+		"source_id":    rule.SourceID,
+		"state_path":   rule.StatePath,
+		"condition":    rule.Condition,
+		"trigger_kind": kind,
+		"for_seconds":  rule.ForSeconds,
+		"sequence":     rule.Sequence,
+		// Sustained conditions and sequences depend on holds this endpoint has
+		// not observed, so matched/would are instantaneous snapshots only and
+		// the response says so rather than claiming a fire verdict.
+		"history_dependent": kind == triggerKindSequence || rule.ForSeconds > 0,
 	}
 	// Parse then for response
 	ta, _ := ParseThenAction(rule.ThenActions)
@@ -719,18 +809,56 @@ func (s *Server) APIEventRuleSimulate(c *gin.Context) {
 	if origState == nil {
 		response["state"] = map[string]any{}
 	}
-	cond, err := datasource.ParseCondition(rule.Condition)
-	if err != nil {
-		response["matched"] = false
-		response["would"] = false
-		response["error"] = err.Error()
+	if kind == triggerKindSequence {
+		seq, serr := datasource.ParseSequence(rule.Sequence, rule.CheckIntervalSeconds)
+		if serr != nil {
+			response["matched"] = false
+			response["would"] = false
+			response["error"] = serr.Error()
+			c.JSON(http.StatusOK, response)
+			return
+		}
+		steps := simulateSequenceSteps(seq, scoped)
+		response["steps"] = steps
+		// Report the completing (final) step's instantaneous match. Whether the
+		// sequence would actually fire depends on each step's hold and on the
+		// window, so this is a snapshot, not a verdict.
+		final := false
+		if len(steps) > 0 {
+			final = steps[len(steps)-1].Matched
+		}
+		response["matched"] = final
+		response["would"] = final
 		c.JSON(http.StatusOK, response)
 		return
 	}
-	matched := datasource.Evaluate(scoped, cond)
+	node, nerr := datasource.ParseConditionNode(rule.Condition)
+	if nerr != nil {
+		response["matched"] = false
+		response["would"] = false
+		response["error"] = nerr.Error()
+		c.JSON(http.StatusOK, response)
+		return
+	}
+	leaves := make([]simulateNode, 0, 4)
+	collectConditionLeaves(node, scoped, &leaves)
+	matched := datasource.EvaluateNode(scoped, node)
+	response["nodes"] = leaves
 	response["matched"] = matched
 	response["would"] = matched
 	c.JSON(http.StatusOK, response)
+}
+
+// parseHoldSeconds reads the hold duration from the form. The builder submits
+// seconds (its unit select converts minutes to seconds before posting), and a
+// missing or malformed value reads as 0, which means "fire on the first
+// matching check".
+func parseHoldSeconds(raw string) int {
+	v, err := strconv.Atoi(strings.TrimSpace(raw))
+	if err != nil || v < 0 {
+		return 0
+	}
+	return v
 }
 
 func validateStatePath(p string) string {
@@ -750,7 +878,7 @@ func validateStatePath(p string) string {
 	return ""
 }
 
-func validateEventRule(s *Server, c *gin.Context, name, sourceType string, sourceID int, condition, statePath string, checkInterval, cooldown int) string {
+func validateEventRule(s *Server, c *gin.Context, name, sourceType string, sourceID int, condition, statePath string, checkInterval, cooldown, forSeconds int, triggerKind, sequence string) string {
 	if name == "" {
 		return "name is required"
 	}
@@ -771,14 +899,35 @@ func validateEventRule(s *Server, c *gin.Context, name, sourceType string, sourc
 	if !found {
 		return fmt.Sprintf("target %s:%d not found", sourceType, sourceID)
 	}
-	if _, err := datasource.ParseCondition(condition); err != nil {
-		return "invalid condition: " + err.Error()
-	}
 	if checkInterval < 5 {
 		return "check_interval_seconds must be >= 5"
 	}
 	if cooldown < 0 {
 		return "cooldown_seconds must be >= 0"
+	}
+	if !validTriggerKind(triggerKind) {
+		return fmt.Sprintf("invalid trigger_kind %q: must be %q or %q", triggerKind, triggerKindCondition, triggerKindSequence)
+	}
+	if normalizeTriggerKind(triggerKind) == triggerKindSequence {
+		if forSeconds != 0 {
+			return "for_seconds must be 0 for sequence triggers; set each step's hold instead"
+		}
+		if strings.TrimSpace(sequence) == "" {
+			return "invalid sequence: a sequence trigger requires an ordered list of steps"
+		}
+		if _, err := datasource.ParseSequence(sequence, checkInterval); err != nil {
+			return "invalid sequence: " + err.Error()
+		}
+		return ""
+	}
+	if strings.TrimSpace(sequence) != "" {
+		return "sequence must be empty unless trigger_kind is sequence"
+	}
+	if _, err := datasource.ParseConditionNode(condition); err != nil {
+		return "invalid condition: " + err.Error()
+	}
+	if err := datasource.ValidateHoldSeconds(forSeconds, checkInterval); err != nil {
+		return "invalid for_seconds: " + err.Error()
 	}
 	return ""
 }
@@ -797,83 +946,40 @@ func (s *Server) AdminEventRuleCreate(c *gin.Context) {
 		checkInterval = 30
 	}
 	cooldown, _ := strconv.Atoi(c.PostForm("cooldown_seconds"))
-	enabled := c.PostForm("enabled") == "on"
-	thenKind := c.PostForm("then_kind")
-	if thenKind == "" {
-		thenKind = "none"
+	forSeconds := parseHoldSeconds(c.PostForm("for_seconds"))
+	triggerKind := strings.TrimSpace(c.PostForm("trigger_kind"))
+	if triggerKind == "" {
+		triggerKind = triggerKindCondition
 	}
-	thenSceneID := c.PostForm("then_scene_id")
-	thenTitle := c.PostForm("then_title")
-	thenMessage := c.PostForm("then_message")
-	thenTTL := c.PostForm("then_ttl_seconds")
-	thenEvent := c.PostForm("then_event")
-	thenJSON := buildThenJSON(thenKind, thenSceneID, thenTitle, thenMessage, thenTTL, thenEvent)
-	if ta, err := ParseThenAction(thenJSON); err != nil {
-		msg := "invalid then action: " + err.Error()
+	sequence := strings.TrimSpace(c.PostForm("sequence"))
+	enabled := c.PostForm("enabled") == "on"
+	ta := thenActionFromForm(c)
+	thenJSON := marshalThenAction(ta)
+	replay := func(msg string) {
 		SetFlash(c, "danger", msg)
 		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), strconv.Itoa(forSeconds), triggerKind, sequence, enabled)
+		for k, v := range thenReplayVars(c) {
+			vars[k] = v
+		}
+		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown), "for_seconds": strconv.Itoa(forSeconds), "trigger_kind": triggerKind, "sequence": sequence}
 		vars["error"] = msg
 		vars["options"] = opts
 		vars["options_json"] = bindingOptionsJSON(opts)
 		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
-		return
-	} else if msg := validateThenAction(ta); msg != "" {
-		SetFlash(c, "danger", msg)
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
-		vars["error"] = msg
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+	}
+	if msg := validateThenAction(ta); msg != "" {
+		replay(msg)
 		return
 	}
 
-	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, statePath, checkInterval, cooldown); msg != "" {
-		SetFlash(c, "danger", msg)
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
-		vars["error"] = msg
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, statePath, checkInterval, cooldown, forSeconds, triggerKind, sequence); msg != "" {
+		replay(msg)
 		return
 	}
-	obj, err := s.DB.DisplayRule.Create().SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetStatePath(statePath).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).SetThenActions(thenJSON).Save(s.Ctx)
+	obj, err := s.DB.DisplayRule.Create().SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetStatePath(statePath).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).SetForSeconds(forSeconds).SetTriggerKind(normalizeTriggerKind(triggerKind)).SetSequence(sequence).SetThenActions(thenJSON).Save(s.Ctx)
 	if err != nil {
-		SetFlash(c, "danger", "Failed to create: "+err.Error())
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+		replay("Failed to create: " + err.Error())
 		return
 	}
 	if gs, err := s.DB.GeneralSettings.Query().Where(generalsettings.ID(1)).Only(s.Ctx); err == nil && gs != nil {
@@ -892,7 +998,7 @@ func (s *Server) AdminEventRuleEdit(c *gin.Context) {
 		return
 	}
 	opts := s.bindingOptions(c)
-	vars := eventRuleFormVars(obj.Name, obj.SourceType, strconv.Itoa(obj.SourceID), obj.Condition, obj.StatePath, strconv.Itoa(obj.CheckIntervalSeconds), strconv.Itoa(obj.CooldownSeconds), obj.Enabled)
+	vars := eventRuleFormVars(obj.Name, obj.SourceType, strconv.Itoa(obj.SourceID), obj.Condition, obj.StatePath, strconv.Itoa(obj.CheckIntervalSeconds), strconv.Itoa(obj.CooldownSeconds), strconv.Itoa(obj.ForSeconds), obj.TriggerKind, obj.Sequence, obj.Enabled)
 	vars = eventRuleFormVarsWithThen(vars, obj.ThenActions)
 	vars["obj"] = obj
 	vars["edit"] = true
@@ -917,90 +1023,41 @@ func (s *Server) AdminEventRuleUpdate(c *gin.Context) {
 		checkInterval = 30
 	}
 	cooldown, _ := strconv.Atoi(c.PostForm("cooldown_seconds"))
-	enabled := c.PostForm("enabled") == "on"
-	thenKind := c.PostForm("then_kind")
-	if thenKind == "" {
-		thenKind = "none"
+	forSeconds := parseHoldSeconds(c.PostForm("for_seconds"))
+	triggerKind := strings.TrimSpace(c.PostForm("trigger_kind"))
+	if triggerKind == "" {
+		triggerKind = triggerKindCondition
 	}
-	thenSceneID := c.PostForm("then_scene_id")
-	thenTitle := c.PostForm("then_title")
-	thenMessage := c.PostForm("then_message")
-	thenTTL := c.PostForm("then_ttl_seconds")
-	thenEvent := c.PostForm("then_event")
-	thenJSON := buildThenJSON(thenKind, thenSceneID, thenTitle, thenMessage, thenTTL, thenEvent)
-	if ta, err := ParseThenAction(thenJSON); err != nil {
-		msg := "invalid then action: " + err.Error()
+	sequence := strings.TrimSpace(c.PostForm("sequence"))
+	enabled := c.PostForm("enabled") == "on"
+	ta := thenActionFromForm(c)
+	thenJSON := marshalThenAction(ta)
+	replay := func(msg string) {
 		SetFlash(c, "danger", msg)
 		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
+		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), strconv.Itoa(forSeconds), triggerKind, sequence, enabled)
+		for k, v := range thenReplayVars(c) {
+			vars[k] = v
+		}
+		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown), "for_seconds": strconv.Itoa(forSeconds), "trigger_kind": triggerKind, "sequence": sequence}
 		vars["edit"] = true
 		vars["id"] = id
 		vars["error"] = msg
 		vars["options"] = opts
 		vars["options_json"] = bindingOptionsJSON(opts)
 		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
-		return
-	} else if msg := validateThenAction(ta); msg != "" {
-		SetFlash(c, "danger", msg)
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
-		vars["edit"] = true
-		vars["id"] = id
-		vars["error"] = msg
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+	}
+	if msg := validateThenAction(ta); msg != "" {
+		replay(msg)
 		return
 	}
 
-	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, statePath, checkInterval, cooldown); msg != "" {
-		SetFlash(c, "danger", msg)
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["obj"] = map[string]string{"name": name, "source_type": sourceType, "source_id": strconv.Itoa(sourceID), "condition": condition, "state_path": statePath, "check_interval_seconds": strconv.Itoa(checkInterval), "cooldown_seconds": strconv.Itoa(cooldown)}
-		vars["edit"] = true
-		vars["id"] = id
-		vars["error"] = msg
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+	if msg := validateEventRule(s, c, name, sourceType, sourceID, condition, statePath, checkInterval, cooldown, forSeconds, triggerKind, sequence); msg != "" {
+		replay(msg)
 		return
 	}
-	if err := s.DB.DisplayRule.UpdateOneID(id).SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetStatePath(statePath).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).SetThenActions(thenJSON).Exec(s.Ctx); err != nil {
-		SetFlash(c, "danger", "Failed to update: "+err.Error())
-		opts := s.bindingOptions(c)
-		vars := eventRuleFormVars(name, sourceType, strconv.Itoa(sourceID), condition, statePath, strconv.Itoa(checkInterval), strconv.Itoa(cooldown), enabled)
-		vars["fThenKind"] = thenKind
-		vars["fThenScene"] = thenSceneID
-		vars["fThenTitle"] = thenTitle
-		vars["fThenMsg"] = thenMessage
-		vars["fThenTTL"] = thenTTL
-		vars["fThenEvent"] = thenEvent
-		vars["edit"] = true
-		vars["id"] = id
-		vars["options"] = opts
-		vars["options_json"] = bindingOptionsJSON(opts)
-		s.renderPage(c, http.StatusOK, "eventrule_form.html", vars)
+	if err := s.DB.DisplayRule.UpdateOneID(id).SetName(name).SetEnabled(enabled).SetSourceType(sourceType).SetSourceID(sourceID).SetCondition(condition).SetStatePath(statePath).SetCheckIntervalSeconds(checkInterval).SetCooldownSeconds(cooldown).SetForSeconds(forSeconds).SetTriggerKind(normalizeTriggerKind(triggerKind)).SetSequence(sequence).SetThenActions(thenJSON).Exec(s.Ctx); err != nil {
+		replay("Failed to update: " + err.Error())
 		return
 	}
 	SetFlash(c, "success", "Event rule updated")

@@ -118,7 +118,7 @@ func startTransportRunner(s *Server, d *ent.DeviceSettings) {
 	r := &transportRunner{
 		cancel:     cancel,
 		done:       make(chan struct{}),
-		fc:         &FeedController{},
+		fc:         &FeedController{DeviceID: d.ID},
 		pb:         newPushBrightness(d),
 		nextRotate: time.Now(),
 	}

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/base64"
 	"net/http"
 	"strconv"
@@ -24,6 +25,7 @@ var guestValidScopes = map[string]struct{}{
 	"next":    {},
 	"message": {},
 	"photo":   {},
+	"embed":   {},
 }
 
 // frameCookieName is the short-lived HttpOnly cookie the frame page exchanges
@@ -64,37 +66,65 @@ func abortGuestUnauthorized(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 }
 
+// guestSecretFromRequest resolves the presented guest secret from the request:
+// the `X-Guest-Token` header, then `Authorization: Bearer`, then the first set
+// cookie among cookies. The frame and embed pages exchange their URL-fragment
+// secret for such a cookie at POST /frame/session and POST /embed/session.
+func guestSecretFromRequest(c *gin.Context, cookies ...string) string {
+	secret := strings.TrimSpace(c.GetHeader("X-Guest-Token"))
+	if secret == "" {
+		if auth := c.GetHeader("Authorization"); strings.HasPrefix(auth, "Bearer ") {
+			secret = strings.TrimSpace(strings.TrimPrefix(auth, "Bearer "))
+		}
+	}
+	if secret != "" {
+		return secret
+	}
+	for _, name := range cookies {
+		if ck, err := c.Cookie(name); err == nil {
+			if v := strings.TrimSpace(ck); v != "" {
+				return v
+			}
+		}
+	}
+	return ""
+}
+
+// lookupGuestToken resolves the single guest token for a presented secret.
+// Unknown, revoked, and expired tokens all read as not-found so callers can
+// fail closed without disclosing which condition applied.
+func (s *Server) lookupGuestToken(ctx context.Context, secret string) (*ent.GuestToken, bool) {
+	if secret == "" {
+		return nil, false
+	}
+	tok, err := s.DB.GuestToken.Query().
+		Where(guesttoken.TokenHashEQ(hashGuestToken(secret))).
+		Only(ctx)
+	if err != nil || tok.RevokedAt != nil ||
+		(tok.ExpiresAt != nil && !tok.ExpiresAt.After(time.Now())) {
+		return nil, false
+	}
+	return tok, true
+}
+
 // GuestAuthMiddleware authenticates guest API calls via the `X-Guest-Token`
 // header (or `Authorization: Bearer`). It hashes the secret, looks up the row,
 // rejects unknown/revoked/expired tokens with 401 without revealing whether the
 // token exists, enforces requiredScope with 403 insufficient_scope, and records
-// last use best-effort. It never reads cookies, so an admin session cannot
-// authenticate a guest route.
+// last use best-effort. It never reads the admin session cookie, so an admin
+// session cannot authenticate a guest route.
 func (s *Server) GuestAuthMiddleware(requiredScope string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		secret := strings.TrimSpace(c.GetHeader("X-Guest-Token"))
-		if secret == "" {
-			if auth := c.GetHeader("Authorization"); strings.HasPrefix(auth, "Bearer ") {
-				secret = strings.TrimSpace(strings.TrimPrefix(auth, "Bearer "))
-			}
-		}
 		// Frame-page fallback: the browser flow exchanges its fragment secret for
 		// this HttpOnly cookie at POST /frame/session, then keeps using it.
-		if secret == "" {
-			if ck, err := c.Cookie(frameCookieName); err == nil {
-				secret = strings.TrimSpace(ck)
-			}
-		}
+		secret := guestSecretFromRequest(c, frameCookieName)
 		if secret == "" {
 			abortGuestUnauthorized(c)
 			return
 		}
 
-		tok, err := s.DB.GuestToken.Query().
-			Where(guesttoken.TokenHashEQ(hashGuestToken(secret))).
-			Only(c.Request.Context())
-		if err != nil || tok.RevokedAt != nil ||
-			(tok.ExpiresAt != nil && !tok.ExpiresAt.After(time.Now())) {
+		tok, ok := s.lookupGuestToken(c.Request.Context(), secret)
+		if !ok {
 			abortGuestUnauthorized(c)
 			return
 		}
@@ -360,7 +390,7 @@ func (s *Server) APIGuestRemotesCreate(c *gin.Context) {
 	}
 	scopes, ok := normalizeGuestScopes(req.Scopes)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "scopes must be a non-empty subset of pause, next, message, photo"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "scopes must be a non-empty subset of pause, next, message, photo, embed"})
 		return
 	}
 

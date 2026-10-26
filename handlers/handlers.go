@@ -958,7 +958,7 @@ func (s *Server) AdminDevicePreview(c *gin.Context) {
 
 func (s *Server) AdminDeviceSettingsNew(c *gin.Context) {
 	playlists, _ := s.DB.Playlist.Query().Where(playlist.EnabledEQ(true)).Order(playlist.ByName()).All(s.Ctx)
-	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"playlists": playlists, "selectedPlaylistID": 0, "selectedScheduledIDs": []int{}, "selectedFallbackID": 0})
+	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"playlists": playlists, "selectedPlaylistID": 0, "selectedScheduledIDs": []int{}, "selectedFallbackID": 0, "overlayEffectID": (*int)(nil)})
 }
 
 // parseOverlayForm reads and validates overlay_* form fields for a device of
@@ -991,6 +991,24 @@ func parseOverlayForm(c *gin.Context, deviceHeight int) (render.OverlaySpec, err
 		return spec, err
 	}
 	return spec, nil
+}
+
+// parseOverlayEffectPresetID reads the optional effect preset that backs the
+// overlay strip. Empty, "0" or an unknown/removed preset yields nil, which keeps
+// the solid background fill so a deleted preset degrades gracefully.
+func parseOverlayEffectPresetID(c *gin.Context) *int {
+	raw := strings.TrimSpace(c.PostForm("overlay_effect_preset_id"))
+	if raw == "" || raw == "0" {
+		return nil
+	}
+	id, err := strconv.Atoi(raw)
+	if err != nil || id <= 0 {
+		return nil
+	}
+	if _, ok := cachedEffectPresetByID(id); !ok {
+		return nil
+	}
+	return &id
 }
 
 func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
@@ -1334,6 +1352,7 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 		SetOverlaySpeedPx(overlay.SpeedPx).
 		SetOverlayBg(overlay.Background).
 		SetOverlayFg(overlay.Foreground).
+		SetNillableOverlayEffectPresetID(parseOverlayEffectPresetID(c)).
 		SetTransport(transport).
 		SetWledHost(wledHost).SetWledPort(wledPort).SetWledRealtimeMode(wledRealtimeMode).SetWledChannel(wledChannel).
 		SetArtnetHost(artnetHost).SetArtnetPort(artnetPort).SetArtnetUniverse(artnetUniverse).
@@ -1372,7 +1391,7 @@ func (s *Server) AdminDeviceSettingsCreate(c *gin.Context) {
 	}
 	RestartTransportDevice(s, obj.ID)
 	if haDiscoveryEnabled(s) {
-		publishHADiscoveryForDevice(obj)
+		publishHADiscoveryForDevice(s, obj)
 	}
 	SetFlash(c, "success", "Device created")
 	c.Redirect(http.StatusFound, "/admin/devices")
@@ -1398,7 +1417,8 @@ func (s *Server) AdminDeviceSettingsEdit(c *gin.Context) {
 	if obj.FallbackPlaylistID != nil {
 		selectedFallbackID = *obj.FallbackPlaylistID
 	}
-	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"obj": obj, "edit": true, "playlists": playlists, "selectedPlaylistID": selectedID, "selectedScheduledIDs": selectedScheduledIDs, "selectedFallbackID": selectedFallbackID})
+	inputSources, inputLastEvent, inputLastSeen, hasInputStatus := DeviceInputStatus(id)
+	s.renderPage(c, http.StatusOK, "device_form.html", gin.H{"obj": obj, "edit": true, "playlists": playlists, "selectedPlaylistID": selectedID, "selectedScheduledIDs": selectedScheduledIDs, "selectedFallbackID": selectedFallbackID, "inputSources": inputSources, "inputLastEvent": inputLastEvent, "inputLastSeen": inputLastSeen, "hasInputStatus": hasInputStatus, "overlayEffectID": obj.OverlayEffectPresetID})
 }
 
 func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
@@ -1743,6 +1763,11 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 		SetWledHost(wledHost).SetWledPort(wledPort).SetWledRealtimeMode(wledRealtimeMode).SetWledChannel(wledChannel).
 		SetArtnetHost(artnetHost).SetArtnetPort(artnetPort).SetArtnetUniverse(artnetUniverse).
 		SetOutputFps(outputFps).SetOutputColorOrder(outputColorOrder).SetOutputGamma(outputGamma).SetOutputMatrixLayout(outputMatrixLayout).SetOutputBilinear(outputBilinear2).SetOutputPanelGammas(panelGammasRaw2).SetOutputPanelColorOrders(panelCORaw2)
+	if effectID := parseOverlayEffectPresetID(c); effectID != nil {
+		upd.SetOverlayEffectPresetID(*effectID)
+	} else {
+		upd.ClearOverlayEffectPresetID()
+	}
 	if idleRaw2 != "" {
 		upd.SetIdleScreensaver(idleRaw2)
 	} else {
@@ -1783,7 +1808,7 @@ func (s *Server) AdminDeviceSettingsUpdate(c *gin.Context) {
 	RestartTransportDevice(s, id)
 	if haDiscoveryEnabled(s) {
 		if d, err := s.DB.DeviceSettings.Get(s.Ctx, id); err == nil {
-			publishHADiscoveryForDevice(d)
+			publishHADiscoveryForDevice(s, d)
 		}
 	}
 	SetFlash(c, "success", "Device updated")

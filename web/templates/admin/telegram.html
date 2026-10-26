@@ -30,8 +30,12 @@
                 {{end}}
                 <button type="submit" class="btn btn-primary">Save Settings</button>
             </form>
+            <form method="POST" action="/admin/telegram/test" class="mt-3">
+                <button type="submit" id="test-telegram" class="btn btn-secondary">Send test message</button>
+                <div class="form-text">Sends a test message to the allowed chat ID.</div>
+            </form>
             <div class="mt-4 alert alert-info">
-                <strong>Natural-language control:</strong> NL control uses your configured AI provider — send free text like 'pause' or 'show weather for 30 seconds'. When AI is not configured, use slash commands: /pause /resume /next /status /sources /display &lt;text&gt;. Invalid or ambiguous messages get a fallback reply listing those commands. MQTT topic <code>ledit/control/nl</code> accepts the same NL payloads.
+                <strong>Natural-language control:</strong> NL control uses your configured AI provider — send free text like 'pause' or 'show weather for 30 seconds'. When AI is not configured, use slash commands: <code>/help</code>, <code>/display &lt;text&gt;</code>, <code>/next</code>, <code>/pause</code>, <code>/resume</code>, <code>/status</code>, <code>/sources</code>, <code>/devices</code>, <code>/playlists</code>, <code>/playlist &lt;id&gt;</code>, <code>/scenes</code>, <code>/scene &lt;id&gt;</code>, <code>/brightness &lt;0-100&gt;</code>, <code>/pin &lt;type:id&gt;</code>, <code>/unpin</code>. Invalid or ambiguous messages get a fallback reply listing those commands. MQTT topic <code>ledit/control/nl</code> accepts the same NL payloads.
             </div>
         </div>
     </div>

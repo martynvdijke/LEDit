@@ -53,6 +53,9 @@ func (DeviceGroup) Fields() []ent.Field {
 		field.Int("overlay_speed_px").Default(0),
 		field.String("overlay_bg").Default("#000000"),
 		field.String("overlay_fg").Default("#ffffff"),
+		// overlay_effect_preset_id optionally draws an effect preset behind the
+		// overlay text strip. Null keeps the solid background fill.
+		field.Int("overlay_effect_preset_id").Optional().Nillable(),
 	}
 }
 

@@ -39,18 +39,21 @@ The project identity lives in [`brandkit/README.md`](brandkit/README.md), with r
 - **Feed Control** — Pause, resume, skip via API or WebSocket commands
 - **Slide Transitions** — Optional animated hand-off between sources: `fade`, `wipe` (left→right), or `dissolve`; duration configurable 100–2000 ms (default 500 ms) under Admin → Settings. Disabled (`none`) by default. Tuned for LED refresh rates (~12 steps at the default); e-ink/TRMNL devices are unaffected as they poll static images.
 - **Priority Messages** — Urgent notifications that interrupt the current feed
+- **Embed Surfaces** — Chrome-free live views for OBS Browser Sources, iframes and kiosks at `/embed` (shared) and `/embed/device/:id` (token link), plus one-shot snapshots at `/api/frame`. Frames are server-pushed (no polling), the background is transparent by default, sizes clamp to 8–1024 px, and device links exchange the URL-fragment secret for a short-lived HttpOnly cookie. See [docs/embedding.md](docs/embedding.md).
 - **Notification History** — View past priority notifications
 - **Random/Sequential Ordering** — Cycle sources randomly or in order
 - **Configurable Display Timeout** — Per-source display duration
 - **Multiple Device Support** — Manage multiple LED matrix devices with individual settings (IP, port, resolution)
 - **Device Playlists** — Bind a device to a named, ordered playlist of datasources instead of the global rotation (Admin → Playlists, then pick it on the device form's Content section). Playlists play in saved order; Random/shuffle applies to global mode only. Missing or empty playlists fall back to the global list so a wall never goes blank.
-- **Event-Driven Switching** — Rules that hold the wall on a target source while a live condition is true (Admin → Event Rules). A rule watches one dot-path on a state-capable source (Generic API, Home Assistant, System Stats) with an operator (`eq`, `ne`, `gt`, `lt`, `ge`, `le`, `contains`, `exists`), checked every ≥5 s (±10% jitter, 30 s config reload). Precedence: notifications > pinned rule > rotation; manual skip releases a pin until the condition re-fires. Cooldown (default 0) suppresses flapping on both edges — no re-fire after release and a minimum hold after firing. Rule targets without live-state support are skipped safely.
-- **Push-to-Display** — Drive the wall from anywhere: `GET /api/display?text=...&ttl=...` or `POST /api/webhook/notify` push a priority message that holds the screen for its TTL (1–3600 s, default from Admin → Webhook; optional `X-API-Key`/`?token=` protection, open when unset for backward compatibility). MQTT control plane subscribes to control (`next`/`skip`, `pause`, `resume`) and display topics with exponential-backoff reconnect (Admin → MQTT); a long-polling Telegram bot offers `/display`, `/next`, `/pause`, `/resume`, `/status`, `/sources` with an optional chat allowlist (Admin → Telegram). Optional GPIO buttons on the device client (`LEDIT_BTN_NEXT_PIN`/`LEDIT_BTN_PAUSE_PIN`) trigger next/pause via the existing WebSocket commands. All paths converge on the same feed controller, so behavior is identical regardless of trigger.
+- **Event-Driven Switching** — Rules that hold the wall on a target source while a live trigger holds (Admin → Event Rules). A rule watches one or more dot-paths on a state-capable source (Generic API, Home Assistant, System Stats) with operators (`eq`, `ne`, `gt`, `lt`, `ge`, `le`, `contains`, `exists`). Conditions compose with `and`/`or` groups up to 4 levels deep and 32 leaves (`{"op":"and","conditions":[...]}`); a bare `{"path","operator","value"}` object is a single leaf, so existing rules are unchanged. Rules fire on the first matching check by default, or only after the condition has held for `for_seconds` (0, or `max(5, check_interval_seconds)`..86400; a false or failed check resets the hold). A sequence trigger swaps the single condition for 2–4 ordered steps (`{"window_seconds":900,"steps":[{"condition":{...},"for_seconds":600},...]}`): the run arms when the first step holds, fires once when the final step completes inside the window, resets without firing on window expiry, restarts only a blipped step's hold, and keeps the pin while the final condition still matches. Validation rejects mode mixing (no rule-level `for_seconds` in sequence mode, no sequence in condition mode), out-of-range holds, windows too small to fit the step holds plus one check interval, excess depth/leaves, and degenerate (single-child or mixed-field) groups. Checking is every ≥5 s (±10% jitter, 30 s config reload). Precedence: notifications > pinned rule > rotation; manual skip releases a pin until the trigger re-fires. Cooldown (default 0) suppresses flapping on both edges — no re-fire after release and a minimum hold after firing. Rule targets without live-state support are skipped safely. `POST /admin/eventrules/:id/simulate` evaluates a rule against live state and returns per-leaf (condition) or per-step (sequence) match results without pinning anything or running its then-action. On fire, a rule can also run a then-action beyond the original `scene`/`notification`/`webhook` kinds: set brightness (one device or all enabled), pin a source, switch a playlist, publish to MQTT, or call a signed HTTP endpoint (payload with `X-LEDit-Signature: sha256=<hmac>` when a secret is set).
+- **Push-to-Display** — Drive the wall from anywhere: `GET /api/display?text=...&ttl=...` or `POST /api/webhook/notify` push a priority message that holds the screen for its TTL (1–3600 s, default from Admin → Webhook; optional `X-API-Key`/`?token=` protection, open when unset for backward compatibility). MQTT control plane subscribes to control (`next`/`skip`, `pause`, `resume`) and display topics, plus per-device actuation topics (`ledit/device/<id>/brightness/set`, `select/set` with `source:<type>:<id>` / `playlist:<id>` / `scene:<id>`, and `message/set`), with exponential-backoff reconnect (Admin → MQTT); a long-polling Telegram bot offers `/display`, `/next`, `/pause`, `/resume`, `/status`, `/sources` with an optional chat allowlist (Admin → Telegram). Optional GPIO buttons on the device client (`LEDIT_BTN_NEXT_PIN`/`LEDIT_BTN_PAUSE_PIN`) trigger next/pause via the existing WebSocket commands. All paths converge on the same feed controller, so behavior is identical regardless of trigger. Local device inputs — NFC tags, a rotary encoder, presence (PIR/mmWave) and ambient lux — are reported over the protocol v2 `inputs` capability as `{"type":"input",...}` events and mapped in **Admin → Input Bindings** to scenes, playlists, feed verbs, brightness, rules, greetings or notifications (built-in next/pause and encoder defaults apply when no binding matches). Accepted events are republished to `ledit/device/<id>/input/<event>` for automations (a no-op while MQTT is disabled).
+- **Home Assistant Control Entities** — With HA discovery enabled (`ha_discovery_enabled` via `PUT /admin/api/outbound/settings`), every device exposes a `light` (brightness 0–100, off/on), a `select` (rotation sources + enabled playlists and scenes), a `text` entity (up to 255 chars pushed as a targeted priority message), the original pause switch, next button, and online/firmware/transport sensors. State is retained and republished on brightness/pause/source/select/message changes, on playlist/scene edits, and on every MQTT reconnect. Commands share the same feed-controller paths as the UI and MQTT; broker ACLs remain the only authority. A per-device `event` entity (state topic `ledit/device/<id>/input/event`, event types `press`/`rotate`/`tap`/`presence`/`lux`) is exposed for automations and cleared with the device.
 
 ### Rendering
 - **Custom Font Rendering** — Pixel font (PixelifySans) for crisp LED display text
 - **Theme System** — Cyber (dracula-inspired), Default, F1, and Untappd themes
 - **Custom Theme Editor** — Configure background color, accent color, text color, title, font size
+- **Effects Library** — Procedural, theme-driven effects (`plasma`, `fire`, `sparkle`, `scan`, `noise`, `gradient`) plus byte-identical adapters for the legacy screensaver animations (`legacy-matrix-rain`, `legacy-plasma`, `legacy-starfield`, `legacy-dvd`). Effects are pure functions of the effect name, parameters, seed and a 66 ms tick, so feed, preview and snapshot render the same frame. Configure named presets under Admin → Effects (speed/intensity/density/direction/seed, live debounced preview, built-in presets are read-only and duplicable), then reference them anywhere a source is accepted — rotation, playlists, matrix cells, composition regions, scene actions — as `effect:<preset id>`. Presets store behaviour only; colours always come from the effective theme (per-source override → global default → built-in). A device or group overlay strip can optionally draw a preset behind its text (`overlay_effect_preset_id`, default off and byte-identical when unset). Rendering is allocation-free in steady state and budgeted at ≤0.5 ms (64x32), ≤2 ms (128x64) and ≤6 ms (256x128) for the draw pass on the reference host.
 
 ### Administration
 - **Admin Authentication** — Session-based login for admin panel
@@ -62,6 +65,7 @@ The project identity lives in [`brandkit/README.md`](brandkit/README.md), with r
 - **Email Settings** — SMTP configuration for email notifications
 - **AI Settings** — LLM provider configuration for AI features
 - **Analytics** — Display tracking (displays by source, uptime stats)
+- **Artifact Sharing** — Export a single theme, layout, playlist, scene, text slide or pixel art as a portable bundle and import one from a file, URL or remote catalog (see [docs/artifact-sharing.md](docs/artifact-sharing.md))
 - **Umami Analytics** — Optional web analytics integration
 
 ### Datasource Plugins
@@ -102,6 +106,8 @@ LEDit is configured through the admin panel at `/admin/settings`. Key environmen
 | Variable | Description |
 |----------|-------------|
 | `DOCKER` | Set to `true` when running in Docker (auto-configured in Dockerfile) |
+| `ARTIFACT_CATALOG_URL` | Optional JSON index URL for one-click artifact installs (unset = catalog disabled) |
+| `ARTIFACT_CATALOG_HOSTS` | Optional comma-separated host allowlist for remote artifact bundles (default: public addresses only) |
 
 All other settings (datasources, schedules, devices, themes) are managed through the web UI.
 
@@ -199,9 +205,42 @@ are rejected with `401 Unauthorized`.
 |----------|-------------|
 | `GET` `/ws/feed` | WebSocket endpoint for receiving rendered display content and sending commands (pause, resume, next) |
 
+### Embed and snapshot
+
+Chrome-free live views for OBS Browser Sources, iframes and kiosks — no admin
+navigation, no login redirect, server-pushed frames only (see
+[docs/embedding.md](docs/embedding.md)).
+
+| Method | Endpoint | Purpose | Auth |
+|--------|----------|---------|------|
+| `GET` | `/embed` | Shared wall embed page (OBS/iframe) | public |
+| `GET` | `/embed/device/:id` | Single-device embed page (secret in the URL fragment) | embed-scoped guest token |
+| `POST` | `/embed/session` | Exchange a guest secret for the short-lived `ledit_embed` cookie | guest secret in body |
+| `GET` | `/ws/embed` | Shared wall frame stream for embeds | public |
+| `GET` | `/ws/embed/device/:id` | Device frame stream for embeds | embed-scoped guest token or admin session |
+| `GET` | `/api/frame` | One-shot PNG/WebP snapshot of the current frame | public (shared) / embed token (device) |
+
+All embed and snapshot responses are `Cache-Control: no-store` and rate limited
+per client (429 + `Retry-After`); device views require a read-only **embed**
+guest token created under Admin → Guest Remotes.
+
+### Artifact sharing
+
+Portable single-artifact bundles for themes, layouts, playlists, scenes, text
+slides and pixel art — export, import and one-click catalog installs (see
+[docs/artifact-sharing.md](docs/artifact-sharing.md)).
+
+| Method | Endpoint | Purpose | Auth |
+|--------|----------|---------|------|
+| `GET` | `/admin/api/artifacts/export/:kind/:id` | Download an artifact bundle | admin |
+| `POST` | `/admin/api/artifacts/import` | Import a bundle (file, raw body or `url`) | admin |
+| `GET` | `/admin/artifacts` | Share page (export list + import form) | admin |
+| `GET` | `/admin/artifacts/catalog` | Remote catalog | admin |
+| `POST` | `/admin/artifacts/catalog/install` | Install a catalog bundle | admin |
+
 ### Admin Endpoints
 
-All admin endpoints are under `/admin/` and require authentication. Full CRUD for every datasource type (Sonarr, Radarr, F1, Weather, HomeAssistant, Untappd, Crypto, Stock, RSS Feeds, Calendars, Images, Videos, Text Slides), plus schedules, devices, playlists, event rules, theme, settings, logs, analytics, and API token management.
+All admin endpoints are under `/admin/` and require authentication. Full CRUD for every datasource type (Sonarr, Radarr, F1, Weather, HomeAssistant, Untappd, Crypto, Stock, RSS Feeds, Calendars, Images, Videos, Text Slides), plus schedules, devices, playlists, event rules, themes, effect presets (`/admin/effects`, with a live preview at `POST /admin/preview/effect`), settings, logs, analytics, and API token management.
 
 ## License
 

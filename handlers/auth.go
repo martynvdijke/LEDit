@@ -252,18 +252,28 @@ func (s *Server) LoginAction(c *gin.Context) {
 		}
 	}
 
-	token, err := putSession(s.DB, sessionData{UserID: uid, Username: username, Role: role, Expiry: time.Now().Add(24 * time.Hour)})
-	if err != nil {
+	if err := s.startSession(c, uid, username, role); err != nil {
 		slog.Error("failed to persist session", "error", err)
 		c.HTML(http.StatusOK, "login.html", gin.H{"error": "Unable to start session"})
 		return
 	}
-	setSessionCookie(c, token, 86400)
 	// Update last_login_at if real user.
 	if uid != 0 {
 		_, _ = s.DB.User.UpdateOneID(uid).SetLastLoginAt(time.Now()).Save(s.Ctx)
 	}
 	c.Redirect(http.StatusFound, "/admin/")
+}
+
+// startSession records an authenticated session in the database and issues the
+// `session` cookie. Password and OIDC logins share this so both methods produce
+// an identical cookie shape and feed the same session store.
+func (s *Server) startSession(c *gin.Context, uid int, username, role string) error {
+	token, err := putSession(s.DB, sessionData{UserID: uid, Username: username, Role: role, Expiry: time.Now().Add(24 * time.Hour)})
+	if err != nil {
+		return err
+	}
+	setSessionCookie(c, token, 86400)
+	return nil
 }
 
 func (s *Server) LogoutAction(c *gin.Context) {

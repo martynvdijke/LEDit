@@ -42,7 +42,8 @@
                             {{if .BuiltIn}}<span class="badge bg-secondary">Built-in</span>{{end}}
                         </td>
                         <td>
-                            {{if not .BuiltIn}}<a href="/admin/themes/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>{{end}}
+                            {{if not .BuiltIn}}<a href="/admin/themes/{{.ID}}/edit" class="btn btn-sm btn-primary">Edit</a>
+                            <a href="/admin/api/artifacts/export/theme/{{.ID}}" class="btn btn-sm btn-outline-secondary">Export</a>{{end}}
                             <form method="POST" action="/admin/themes/{{.ID}}/duplicate" style="display:inline">
                                 <button type="submit" class="btn btn-sm btn-secondary">Duplicate</button>
                             </form>

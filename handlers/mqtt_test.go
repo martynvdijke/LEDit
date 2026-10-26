@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -286,5 +287,174 @@ func TestMQTTLoadSettingsNilSafe(t *testing.T) {
 	srv := &Server{DB: nil, Ctx: context.Background()}
 	if got := LoadMQTTSettings(srv); got != nil {
 		t.Errorf("expected nil for nil DB")
+	}
+}
+
+func mqttPublished(fc *fakeClient, topic, payload string) bool {
+	for _, p := range fc.published {
+		if p.topic == topic && p.payload == payload && p.retained {
+			return true
+		}
+	}
+	return false
+}
+
+func TestMQTTSubscribeAllNewTopics(t *testing.T) {
+	srv := newTestServerWithDB(t)
+	fc := &fakeClient{connected: true}
+	ctrl := &MQTTController{s: srv, cfg: &ent.MQTTSettings{}, client: fc}
+	if err := ctrl.subscribeAll(); err != nil {
+		t.Fatalf("subscribeAll: %v", err)
+	}
+	for _, want := range []string{
+		"ledit/device/+/brightness/set",
+		"ledit/device/+/paused/set",
+		"ledit/device/+/next/set",
+		"ledit/device/+/select/set",
+		"ledit/device/+/message/set",
+	} {
+		if !fc.subscribed[want] {
+			t.Errorf("missing subscription %q", want)
+		}
+	}
+}
+
+func TestHandlePerDeviceCommand_SelectPlaylist(t *testing.T) {
+	srv := newTestServerWithDB(t)
+	d := srv.DB.DeviceSettings.Create().SetName("D4").SetWidth(64).SetHeight(32).SetTransport("websocket").SetEnabled(true).SaveX(srv.Ctx)
+	pl := srv.DB.Playlist.Create().SetName("pl4").SetItems("[]").SetEnabled(true).SaveX(srv.Ctx)
+	fc := &fakeClient{connected: true}
+	ctrl := &MQTTController{s: srv, client: fc}
+	mqttCtrlGlobal = &MQTTController{client: fc}
+	SetGlobalMqttCtrl(mqttCtrlGlobal)
+	t.Cleanup(func() {
+		mqttCtrlGlobal = nil
+		unregisterDeviceFeed(d.ID)
+	})
+
+	ctrl.handlePerDeviceCommand(fmt.Sprintf("ledit/device/%d/select/set", d.ID), fmt.Sprintf("playlist:%d", pl.ID))
+	updated := srv.DB.DeviceSettings.GetX(srv.Ctx, d.ID)
+	if updated.ContentMode != "playlist" || updated.PlaylistID == nil || *updated.PlaylistID != pl.ID {
+		t.Fatalf("playlist selection not persisted: mode=%q pl=%v", updated.ContentMode, updated.PlaylistID)
+	}
+	stateTopic := fmt.Sprintf("ledit/device/%d/select/state", d.ID)
+	if !mqttPublished(fc, stateTopic, fmt.Sprintf("playlist:%d", pl.ID)) {
+		t.Fatalf("select state not published: %+v", fc.published)
+	}
+
+	// disabled playlist rejected, publishes nothing new
+	before := len(fc.published)
+	disabled := srv.DB.Playlist.Create().SetName("pl-disabled").SetItems("[]").SetEnabled(false).SaveX(srv.Ctx)
+	ctrl.handlePerDeviceCommand(fmt.Sprintf("ledit/device/%d/select/set", d.ID), fmt.Sprintf("playlist:%d", disabled.ID))
+	if len(fc.published) != before {
+		t.Fatalf("rejected select should publish nothing: %+v", fc.published)
+	}
+}
+
+func TestHandlePerDeviceCommand_SelectSourceAndMessage(t *testing.T) {
+	srv := newTestServerWithDB(t)
+	d := srv.DB.DeviceSettings.Create().SetName("D5").SetWidth(64).SetHeight(32).SetTransport("websocket").SetEnabled(true).SaveX(srv.Ctx)
+	fc := &fakeClient{connected: true}
+	ctrl := &MQTTController{s: srv, client: fc}
+	mqttCtrlGlobal = &MQTTController{client: fc}
+	SetGlobalMqttCtrl(mqttCtrlGlobal)
+	t.Cleanup(func() {
+		mqttCtrlGlobal = nil
+		unregisterDeviceFeed(d.ID)
+	})
+
+	devFC := &FeedController{DeviceID: d.ID}
+	devFC.SetRotationKeys([]string{"clock:1"})
+	registerDeviceFeed(d.ID, devFC)
+
+	// clear memory queue for deterministic message assertions
+	priorityMu.Lock()
+	notifHistory = nil
+	notifID = 0
+	priorityMu.Unlock()
+
+	ctrl.handlePerDeviceCommand(fmt.Sprintf("ledit/device/%d/select/set", d.ID), "source:clock:1")
+	if _, _, ok := devFC.IsPinned(); !ok {
+		t.Fatalf("source selection should pin")
+	}
+	stateTopic := fmt.Sprintf("ledit/device/%d/select/state", d.ID)
+	if !mqttPublished(fc, stateTopic, "source:clock:1") {
+		t.Fatalf("select state not published: %+v", fc.published)
+	}
+
+	// off-rotation source ignored, pin unchanged, publishes nothing new
+	before := len(fc.published)
+	ctrl.handlePerDeviceCommand(fmt.Sprintf("ledit/device/%d/select/set", d.ID), "source:weather:9")
+	if _, _, ok := devFC.IsPinned(); !ok || len(fc.published) != before {
+		t.Fatalf("off-rotation source must be a no-op")
+	}
+
+	// malformed selection ignored
+	ctrl.handlePerDeviceCommand(fmt.Sprintf("ledit/device/%d/select/set", d.ID), "bogus")
+	if _, _, ok := devFC.IsPinned(); len(fc.published) != before || !ok {
+		t.Fatalf("malformed selection must be a no-op")
+	}
+
+	// message: trimmed and targeted to the device
+	ctrl.handlePerDeviceCommand(fmt.Sprintf("ledit/device/%d/message/set", d.ID), "  hello wall  ")
+	q := getMemoryQueue()
+	if len(q) != 1 || q[0].Title != "hello wall" || q[0].Target != d.ID {
+		t.Fatalf("expected targeted notification, got %+v", q)
+	}
+	msgTopic := fmt.Sprintf("ledit/device/%d/message/state", d.ID)
+	if !mqttPublished(fc, msgTopic, "hello wall") {
+		t.Fatalf("message state not published: %+v", fc.published)
+	}
+
+	// empty message ignored
+	ctrl.handlePerDeviceCommand(fmt.Sprintf("ledit/device/%d/message/set", d.ID), "   ")
+	if len(getMemoryQueue()) != 1 {
+		t.Fatalf("empty message should be ignored")
+	}
+	// over-long message rejected with no publish
+	before = len(fc.published)
+	ctrl.handlePerDeviceCommand(fmt.Sprintf("ledit/device/%d/message/set", d.ID), strings.Repeat("a", 256))
+	if len(getMemoryQueue()) != 1 || len(fc.published) != before {
+		t.Fatalf("over-long message must be rejected")
+	}
+
+	// offline source selection: no live feed, publishes nothing
+	unregisterDeviceFeed(d.ID)
+	before = len(fc.published)
+	ctrl.handlePerDeviceCommand(fmt.Sprintf("ledit/device/%d/select/set", d.ID), "source:clock:1")
+	if len(fc.published) != before {
+		t.Fatalf("offline select should publish nothing")
+	}
+}
+
+func TestHandlePerDeviceCommand_BrightnessClampAndOffline(t *testing.T) {
+	srv := newTestServerWithDB(t)
+	d := srv.DB.DeviceSettings.Create().SetName("D6").SetWidth(64).SetHeight(32).SetTransport("websocket").SetEnabled(true).SaveX(srv.Ctx)
+	fc := &fakeClient{connected: true}
+	ctrl := &MQTTController{s: srv, client: fc}
+	mqttCtrlGlobal = &MQTTController{client: fc}
+	SetGlobalMqttCtrl(mqttCtrlGlobal)
+	t.Cleanup(func() { mqttCtrlGlobal = nil })
+
+	ctrl.handlePerDeviceCommand(fmt.Sprintf("ledit/device/%d/brightness/set", d.ID), "142")
+	updated := srv.DB.DeviceSettings.GetX(srv.Ctx, d.ID)
+	if updated.BrightnessOverride == nil || *updated.BrightnessOverride != 100 {
+		t.Fatalf("expected clamped 100, got %v", updated.BrightnessOverride)
+	}
+	if !mqttPublished(fc, fmt.Sprintf("ledit/device/%d/brightness/state", d.ID), "100") {
+		t.Fatalf("brightness state not published: %+v", fc.published)
+	}
+
+	// malformed payload ignored, publishes nothing
+	before := len(fc.published)
+	ctrl.handlePerDeviceCommand(fmt.Sprintf("ledit/device/%d/brightness/set", d.ID), "nope")
+	if len(fc.published) != before {
+		t.Fatalf("malformed brightness must publish nothing")
+	}
+
+	// unknown device: no write, no publish, no panic
+	ctrl.handlePerDeviceCommand("ledit/device/999999/brightness/set", "50")
+	if len(fc.published) != before {
+		t.Fatalf("unknown device must publish nothing")
 	}
 }

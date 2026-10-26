@@ -103,6 +103,48 @@ func (_c *DisplayRuleCreate) SetNillableStatePath(v *string) *DisplayRuleCreate 
 	return _c
 }
 
+// SetForSeconds sets the "for_seconds" field.
+func (_c *DisplayRuleCreate) SetForSeconds(v int) *DisplayRuleCreate {
+	_c.mutation.SetForSeconds(v)
+	return _c
+}
+
+// SetNillableForSeconds sets the "for_seconds" field if the given value is not nil.
+func (_c *DisplayRuleCreate) SetNillableForSeconds(v *int) *DisplayRuleCreate {
+	if v != nil {
+		_c.SetForSeconds(*v)
+	}
+	return _c
+}
+
+// SetTriggerKind sets the "trigger_kind" field.
+func (_c *DisplayRuleCreate) SetTriggerKind(v string) *DisplayRuleCreate {
+	_c.mutation.SetTriggerKind(v)
+	return _c
+}
+
+// SetNillableTriggerKind sets the "trigger_kind" field if the given value is not nil.
+func (_c *DisplayRuleCreate) SetNillableTriggerKind(v *string) *DisplayRuleCreate {
+	if v != nil {
+		_c.SetTriggerKind(*v)
+	}
+	return _c
+}
+
+// SetSequence sets the "sequence" field.
+func (_c *DisplayRuleCreate) SetSequence(v string) *DisplayRuleCreate {
+	_c.mutation.SetSequence(v)
+	return _c
+}
+
+// SetNillableSequence sets the "sequence" field if the given value is not nil.
+func (_c *DisplayRuleCreate) SetNillableSequence(v *string) *DisplayRuleCreate {
+	if v != nil {
+		_c.SetSequence(*v)
+	}
+	return _c
+}
+
 // SetCheckIntervalSeconds sets the "check_interval_seconds" field.
 func (_c *DisplayRuleCreate) SetCheckIntervalSeconds(v int) *DisplayRuleCreate {
 	_c.mutation.SetCheckIntervalSeconds(v)
@@ -204,6 +246,18 @@ func (_c *DisplayRuleCreate) defaults() {
 		v := displayrule.DefaultStatePath
 		_c.mutation.SetStatePath(v)
 	}
+	if _, ok := _c.mutation.ForSeconds(); !ok {
+		v := displayrule.DefaultForSeconds
+		_c.mutation.SetForSeconds(v)
+	}
+	if _, ok := _c.mutation.TriggerKind(); !ok {
+		v := displayrule.DefaultTriggerKind
+		_c.mutation.SetTriggerKind(v)
+	}
+	if _, ok := _c.mutation.Sequence(); !ok {
+		v := displayrule.DefaultSequence
+		_c.mutation.SetSequence(v)
+	}
 	if _, ok := _c.mutation.CheckIntervalSeconds(); !ok {
 		v := displayrule.DefaultCheckIntervalSeconds
 		_c.mutation.SetCheckIntervalSeconds(v)
@@ -237,6 +291,20 @@ func (_c *DisplayRuleCreate) check() error {
 	}
 	if _, ok := _c.mutation.StatePath(); !ok {
 		return &ValidationError{Name: "state_path", err: errors.New(`ent: missing required field "DisplayRule.state_path"`)}
+	}
+	if _, ok := _c.mutation.ForSeconds(); !ok {
+		return &ValidationError{Name: "for_seconds", err: errors.New(`ent: missing required field "DisplayRule.for_seconds"`)}
+	}
+	if v, ok := _c.mutation.ForSeconds(); ok {
+		if err := displayrule.ForSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "for_seconds", err: fmt.Errorf(`ent: validator failed for field "DisplayRule.for_seconds": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.TriggerKind(); !ok {
+		return &ValidationError{Name: "trigger_kind", err: errors.New(`ent: missing required field "DisplayRule.trigger_kind"`)}
+	}
+	if _, ok := _c.mutation.Sequence(); !ok {
+		return &ValidationError{Name: "sequence", err: errors.New(`ent: missing required field "DisplayRule.sequence"`)}
 	}
 	if _, ok := _c.mutation.CheckIntervalSeconds(); !ok {
 		return &ValidationError{Name: "check_interval_seconds", err: errors.New(`ent: missing required field "DisplayRule.check_interval_seconds"`)}
@@ -306,6 +374,18 @@ func (_c *DisplayRuleCreate) createSpec() (*DisplayRule, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.StatePath(); ok {
 		_spec.SetField(displayrule.FieldStatePath, field.TypeString, value)
 		_node.StatePath = value
+	}
+	if value, ok := _c.mutation.ForSeconds(); ok {
+		_spec.SetField(displayrule.FieldForSeconds, field.TypeInt, value)
+		_node.ForSeconds = value
+	}
+	if value, ok := _c.mutation.TriggerKind(); ok {
+		_spec.SetField(displayrule.FieldTriggerKind, field.TypeString, value)
+		_node.TriggerKind = value
+	}
+	if value, ok := _c.mutation.Sequence(); ok {
+		_spec.SetField(displayrule.FieldSequence, field.TypeString, value)
+		_node.Sequence = value
 	}
 	if value, ok := _c.mutation.CheckIntervalSeconds(); ok {
 		_spec.SetField(displayrule.FieldCheckIntervalSeconds, field.TypeInt, value)
