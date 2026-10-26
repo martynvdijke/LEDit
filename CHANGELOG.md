@@ -1,3 +1,27 @@
+# [1.54.0](https://github.com/martynvdijke/LEDit/compare/v1.53.13...v1.54.0) (2026-10-26)
+
+
+### Bug Fixes
+
+* **android:** add release signing and pin Flutter ([2d5d023](https://github.com/martynvdijke/LEDit/commit/2d5d0239ce0316457c956fc483722db21ede4f35))
+* **ci:** stop rotary first-event debounce + valid TRMNL value class ([#87](https://github.com/martynvdijke/LEDit/issues/87)) ([a2a81d9](https://github.com/martynvdijke/LEDit/commit/a2a81d9f29548395bf1112e4d54bfcb37daba1b0))
+
+
+### Features
+
+* add physical input events with bindings, lux and MQTT/HA exposure ([41b5776](https://github.com/martynvdijke/LEDit/commit/41b5776fc42a013721baa75c79fbc9fabb88f27b))
+* **artifacts:** share single artifacts with export, import and catalogs ([c144bfa](https://github.com/martynvdijke/LEDit/commit/c144bfaea7b268bf2a93d0bb085bef16be3594c7))
+* **auth:** expose OIDC availability to native clients ([9f372a7](https://github.com/martynvdijke/LEDit/commit/9f372a706f28bf8524bcd5bcf199cbb43ba8211e))
+* **auth:** link and provision OIDC users with shared sessions ([2dea329](https://github.com/martynvdijke/LEDit/commit/2dea329477283cba737d17bee950d6138ca52ab6))
+* **effects:** procedural effect library, presets and overlay strips ([9ac03c5](https://github.com/martynvdijke/LEDit/commit/9ac03c522c3221ba08090c27dd97983192edc6f5))
+* **embed:** chrome-free live embed surfaces and frame snapshots ([e67df42](https://github.com/martynvdijke/LEDit/commit/e67df42ec9d4c6a01beba8fb683389836af14783))
+* expand actuation plane with HA entities, MQTT commands, rule actions ([db188fa](https://github.com/martynvdijke/LEDit/commit/db188fae723cc8daca00e665f3a3e2fe87a185ac))
+* merge physical inputs and Android app ([bbdf067](https://github.com/martynvdijke/LEDit/commit/bbdf067abd825a126773263d1fa31f061dfb8deb))
+* **mobile:** add browser OIDC login and LEDit branding ([8e94349](https://github.com/martynvdijke/LEDit/commit/8e94349a56b0b859b6e2199951b3b2cd6fcb6519))
+* **mobile:** add Flutter Android remote and device REST API ([f86e36f](https://github.com/martynvdijke/LEDit/commit/f86e36fa77b1ca8d497867cb8dc33ee7baeb83ca))
+* **rules:** composed conditions, sustained and sequence triggers ([a97b452](https://github.com/martynvdijke/LEDit/commit/a97b452001dec9a414362d956c626625721172db))
+* **telegram:** heat-style interactive bot with inline keyboards ([#86](https://github.com/martynvdijke/LEDit/issues/86)) ([62fd061](https://github.com/martynvdijke/LEDit/commit/62fd0617f8b84282c6dfe3b3273cf4686b2df8a1))
+
 ## [1.53.13](https://github.com/martynvdijke/LEDit/compare/v1.53.12...v1.53.13) (2026-10-26)
 
 ## [1.53.12](https://github.com/martynvdijke/LEDit/compare/v1.53.11...v1.53.12) (2026-10-25)
