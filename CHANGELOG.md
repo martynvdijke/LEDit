@@ -1,3 +1,10 @@
+# [1.55.0](https://github.com/martynvdijke/LEDit/compare/v1.54.0...v1.55.0) (2026-10-27)
+
+
+### Features
+
+* **release:** publish android bundles to google play and add emulator e2e ([c3eb9ea](https://github.com/martynvdijke/LEDit/commit/c3eb9eaada8396ee2d702da35100040325166ddc))
+
 # [1.54.0](https://github.com/martynvdijke/LEDit/compare/v1.53.13...v1.54.0) (2026-10-26)
 
 
