@@ -1,3 +1,10 @@
+## [1.55.1](https://github.com/martynvdijke/LEDit/compare/v1.55.0...v1.55.1) (2026-10-27)
+
+
+### Bug Fixes
+
+* **deps:** update dependency cupertino_icons to v2 ([5bbdb66](https://github.com/martynvdijke/LEDit/commit/5bbdb66434e38cc8ee1e536c90e004ca28300942))
+
 # [1.55.0](https://github.com/martynvdijke/LEDit/compare/v1.54.0...v1.55.0) (2026-10-27)
 
 
