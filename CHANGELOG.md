@@ -1,3 +1,10 @@
+## [1.56.1](https://github.com/martynvdijke/LEDit/compare/v1.56.0...v1.56.1) (2026-10-31)
+
+
+### Bug Fixes
+
+* **ci:** point flutter setup at root fvmrc ([c58c8ec](https://github.com/martynvdijke/LEDit/commit/c58c8ec2a7b1dcf5bd32b62794ed2ea2cee8f2d6))
+
 # [1.56.0](https://github.com/martynvdijke/LEDit/compare/v1.55.2...v1.56.0) (2026-10-31)
 
 
