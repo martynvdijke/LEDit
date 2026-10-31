@@ -3,22 +3,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledit/src/screens/onboarding_screen.dart';
 import 'package:ledit/src/api_client.dart';
+import 'package:ledit/src/state.dart';
 import 'package:ledit/src/widgets/matrix_preview.dart';
 
 void main() {
-  testWidgets('onboarding asks for a server URL and offers OIDC by default', (tester) async {
+  testWidgets('onboarding prefills the default instance and offers OIDC', (tester) async {
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: OnboardingScreen()),
+      ProviderScope(
+        overrides: [
+          // First run: nothing saved yet.
+          savedServerUrlProvider.overrideWith((ref) async => null),
+        ],
+        child: const MaterialApp(home: OnboardingScreen()),
       ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Connect to LEDit'), findsOneWidget);
     expect(find.text('Server URL'), findsOneWidget);
     expect(find.text('Authentication'), findsOneWidget);
-    // No default address: the user must type where their server lives.
+    expect(
+      find.textContaining('Use the default instance below'),
+      findsOneWidget,
+    );
+    // The hosted instance is prefilled so logging in is the primary path.
     final serverField = tester.widget<EditableText>(find.byType(EditableText).first);
-    expect(serverField.controller.text, isEmpty);
+    expect(serverField.controller.text, defaultServerUrl);
     // OIDC is preselected and explains that the server owns the login form.
     expect(find.text('Single sign-on (OIDC)'), findsOneWidget);
     await tester.drag(find.byType(ListView), const Offset(0, -400));
@@ -28,9 +38,32 @@ void main() {
     expect(find.text('API token'), findsNothing);
   });
 
+  testWidgets('onboarding honours a saved server URL over the default', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          savedServerUrlProvider.overrideWith(
+            (ref) async => 'https://matrix.example.com',
+          ),
+        ],
+        child: const MaterialApp(home: OnboardingScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final serverField = tester.widget<EditableText>(find.byType(EditableText).first);
+    expect(serverField.controller.text, 'https://matrix.example.com');
+    expect(serverField.controller.text, isNot(defaultServerUrl));
+  });
+
   testWidgets('onboarding switches to username/password fields', (tester) async {
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: OnboardingScreen())),
+      ProviderScope(
+        overrides: [
+          savedServerUrlProvider.overrideWith((ref) async => null),
+        ],
+        child: const MaterialApp(home: OnboardingScreen()),
+      ),
     );
 
     await tester.tap(find.byType(DropdownButtonFormField<AuthMode>));

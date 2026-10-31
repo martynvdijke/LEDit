@@ -9,8 +9,9 @@ import 'browser_login_screen.dart';
 /// authenticate. OIDC runs in an embedded browser because the IdP owns the
 /// login form; API tokens and username/password cover headless servers.
 ///
-/// There is deliberately no default address: a LEDit instance can live
-/// anywhere, so the user always supplies it.
+/// The hosted instance is prefilled so the common path (log in to
+/// ledit.vandijke.xyz) takes one tap, while the field stays editable for
+/// self-hosted servers. A previously saved address always takes precedence.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -20,14 +21,38 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _serverUrl = TextEditingController();
+  final _serverUrl = TextEditingController(text: defaultServerUrl);
   final _credential = TextEditingController();
   final _username = TextEditingController();
   final _password = TextEditingController();
 
   AuthMode _mode = AuthMode.oidc;
   bool _busy = false;
+  bool _serverEdited = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _restoreSavedServerUrl();
+  }
+
+  /// Prefills the address the user connected to before, if storage has one.
+  ///
+  /// A saved URL wins over [defaultServerUrl], but never over text the user
+  /// has already typed on this screen.
+  Future<void> _restoreSavedServerUrl() async {
+    try {
+      final saved = await ref.read(savedServerUrlProvider.future);
+      if (!mounted || _serverEdited || saved == null || saved.isEmpty) return;
+      setState(() {
+        _serverUrl.text = saved;
+        _serverUrl.selection = TextSelection.collapsed(offset: saved.length);
+      });
+    } catch (_) {
+      // Unreadable storage falls back to the default instance.
+    }
+  }
 
   @override
   void dispose() {
@@ -138,11 +163,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 controller: _serverUrl,
                 keyboardType: TextInputType.url,
                 autocorrect: false,
+                onChanged: (_) => _serverEdited = true,
                 decoration: const InputDecoration(
                   labelText: 'Server URL',
-                  hintText: 'ledit.local:8081',
+                  hintText: 'ledit.vandijke.xyz',
                   helperText:
-                      'Where your LEDit server is reachable from this phone.',
+                      'Use the default instance below, or enter another '
+                      'self-hosted LEDit server.',
+                  helperMaxLines: 2,
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) => isValidServerUrl(value ?? '')

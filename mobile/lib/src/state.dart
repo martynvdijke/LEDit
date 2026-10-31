@@ -8,6 +8,11 @@ import 'api_client.dart';
 import 'models.dart';
 import 'preview_frame.dart';
 
+/// Hosted LEDit instance offered when the user has not chosen a server yet.
+///
+/// Defined once here so onboarding and any future defaults stay in sync.
+const defaultServerUrl = 'https://ledit.vandijke.xyz';
+
 /// Secure persistence for the connection settings.
 class SessionStore {
   SessionStore(this._storage);
@@ -20,8 +25,11 @@ class SessionStore {
 
   final FlutterSecureStorage _storage;
 
+  /// The last server URL the user connected to, or null on first run.
+  Future<String?> loadServerUrl() => _storage.read(key: _kServerUrl);
+
   Future<SessionConfig?> load() async {
-    final url = await _storage.read(key: _kServerUrl);
+    final url = await loadServerUrl();
     if (url == null || url.isEmpty) return null;
     final mode = AuthMode.fromName(await _storage.read(key: _kMode));
     return SessionConfig(
@@ -50,6 +58,14 @@ class SessionStore {
 
 final sessionStoreProvider = Provider<SessionStore>(
   (ref) => SessionStore(const FlutterSecureStorage()),
+);
+
+/// The last server URL the user connected to, if any.
+///
+/// Onboarding uses this to honour a saved address instead of the default
+/// instance; the store itself is still the single source of truth.
+final savedServerUrlProvider = FutureProvider<String?>(
+  (ref) => ref.watch(sessionStoreProvider).loadServerUrl(),
 );
 
 /// Holds the active server + credential pair, or null when onboarding is due.
