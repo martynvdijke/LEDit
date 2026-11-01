@@ -1,3 +1,10 @@
+## [1.56.2](https://github.com/martynvdijke/LEDit/compare/v1.56.1...v1.56.2) (2026-11-01)
+
+
+### Bug Fixes
+
+* **ci:** skip Play Store publish when credentials are missing ([27735b9](https://github.com/martynvdijke/LEDit/commit/27735b9c16c318d831d60ed771d9fcc28c797c37))
+
 ## [1.56.1](https://github.com/martynvdijke/LEDit/compare/v1.56.0...v1.56.1) (2026-10-31)
 
 
