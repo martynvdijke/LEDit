@@ -187,6 +187,31 @@ class LeditApi {
     return res;
   }
 
+  Future<Response<dynamic>> _deleteJson(String path, Map<String, dynamic> body) async {
+    final res = await _dio.delete<dynamic>(
+      '$baseUrl$path',
+      data: jsonEncode(body),
+      options: _options.copyWith(contentType: Headers.jsonContentType),
+    );
+    if (res.statusCode == null || res.statusCode! >= 400) _fail(res);
+    return res;
+  }
+
+  /// The signed-in account profile. Used to confirm the typed username before
+  /// deletion; the endpoint also accepts an API token whose owner maps to a
+  /// user row.
+  Future<Map<String, dynamic>> me() async {
+    final res = await _get('/api/v1/me/export');
+    final body = _decode(res);
+    final profile = body['profile'];
+    return profile is Map<String, dynamic> ? profile : const {};
+  }
+
+  /// Deletes the current account. [confirm] must equal the username exactly.
+  Future<void> deleteAccount(String confirm) async {
+    await _deleteJson('/api/v1/me', {'confirm': confirm});
+  }
+
   Future<List<Device>> devices() async {
     final res = await _get('/api/devices');
     final list = (_decode(res)['devices'] as List<dynamic>?) ?? const [];

@@ -6,6 +6,7 @@ import '../models.dart';
 import '../state.dart';
 import '../widgets/matrix_preview.dart';
 import 'device_screen.dart';
+import 'settings_screen.dart';
 
 /// Fleet overview: every device with its liveness, live preview and the
 /// wall-wide transport controls.
@@ -36,6 +37,11 @@ class DashboardScreen extends ConsumerWidget {
             tooltip: 'Refresh',
             onPressed: () => refreshServerState(ref),
             icon: const Icon(Icons.refresh),
+          ),
+          IconButton(
+            tooltip: 'Settings',
+            onPressed: () => SettingsScreen.open(context),
+            icon: const Icon(Icons.settings_outlined),
           ),
           IconButton(
             tooltip: 'Sign out',

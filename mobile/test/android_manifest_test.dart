@@ -11,8 +11,34 @@ void main() {
     expect(manifest, contains('android.permission.INTERNET'));
   });
 
-  test('manifest permits self-hosted cleartext HTTP', () {
-    expect(manifest, contains('android:usesCleartextTraffic="true"'));
+  test('release manifest requires HTTPS and opts out of backups', () {
+    expect(manifest, contains('android:usesCleartextTraffic="false"'));
+    expect(manifest, contains('android:allowBackup="false"'));
+    expect(manifest, contains('android:fullBackupContent="false"'));
+    expect(manifest, contains('android:dataExtractionRules="@xml/data_extraction_rules"'));
+  });
+
+  test('debug manifest keeps cleartext for LAN development', () {
+    final debug = File(
+      'android/app/src/debug/AndroidManifest.xml',
+    ).readAsStringSync();
+    expect(debug, contains('android:usesCleartextTraffic="true"'));
+    expect(debug, contains('tools:replace="android:usesCleartextTraffic"'));
+  });
+
+  test('backup rules exclude every domain', () {
+    final rules = File(
+      'android/app/src/main/res/xml/data_extraction_rules.xml',
+    ).readAsStringSync();
+    for (final domain in [
+      'root',
+      'file',
+      'database',
+      'sharedpref',
+      'external',
+    ]) {
+      expect(rules, contains('<exclude domain="$domain" path="." />'));
+    }
   });
 
   test('release build wires key.properties signing with a debug fallback', () {
