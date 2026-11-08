@@ -1,3 +1,11 @@
+# [1.58.0](https://github.com/martynvdijke/LEDit/compare/v1.57.0...v1.58.0) (2026-11-08)
+
+
+### Features
+
+* **legal:** add public privacy, terms and account-deletion pages ([4cfc826](https://github.com/martynvdijke/LEDit/commit/4cfc826439ac4263e810b4448ece8bba43f1e9f8))
+* **mobile:** add account settings screen and harden the Android release build ([b54fd33](https://github.com/martynvdijke/LEDit/commit/b54fd3389b40538a718e859f5b7ac86ad5f0c574))
+
 # [1.57.0](https://github.com/martynvdijke/LEDit/compare/v1.56.3...v1.57.0) (2026-11-08)
 
 
