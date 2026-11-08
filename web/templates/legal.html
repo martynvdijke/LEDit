@@ -1,0 +1,221 @@
+{{define "legal_head"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LEDit · {{.title}}</title>
+    <meta name="theme-color" content="#08130d">
+    <link rel="icon" href="/static/pwa/favicon.png" type="image/png">
+    <link rel="stylesheet" href="/static/assets/styles.css">
+    <style>
+        .legal-page { max-width: 820px; margin: 0 auto; padding: 36px 20px 72px; }
+        .legal-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); margin-bottom: 32px; }
+        .legal-brand img { width: 34px; height: 34px; }
+        .legal-brand strong { font-family: Pixelify, var(--mono); font-size: 1.5rem; letter-spacing: .05em; }
+        .legal-brand .ledit-accent { color: var(--green); }
+        .legal-nav { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 34px; padding: 0 0 18px; border-bottom: 1px solid var(--line); }
+        .legal-nav a { color: var(--muted); text-decoration: none; font: 12px var(--mono); letter-spacing: .04em; }
+        .legal-nav a:hover, .legal-nav a[aria-current="page"] { color: var(--green); }
+        .legal h1 { margin-bottom: 8px; }
+        .legal h2 { margin: 34px 0 10px; }
+        .legal p, .legal li { color: #c9d8ce; }
+        .legal p { margin: 0 0 12px; }
+        .legal ul { margin: 0 0 14px; padding-left: 22px; }
+        .legal li { margin-bottom: 8px; }
+        .legal code { color: var(--green); font-family: var(--mono); font-size: .9em; }
+        .legal .notice { border: 1px solid var(--line); border-left: 3px solid var(--green); background: #14251d; border-radius: 8px; padding: 14px 16px; margin: 18px 0; }
+        .legal .danger { border-left-color: var(--red); }
+        .legal .muted { color: var(--muted); font-size: .92rem; }
+        .legal form { display: grid; gap: 12px; max-width: 420px; margin-top: 14px; }
+        .legal form label { margin: 0; }
+        .legal form button { justify-self: start; }
+        .legal .lede { color: var(--muted); }
+    </style>
+</head>
+<body>
+<main class="legal-page legal">
+    <a class="legal-brand" href="/"><img src="/static/brand/ledit-mark.svg" alt=""><strong>LED<span class="ledit-accent">it</span></strong></a>
+    <nav class="legal-nav" aria-label="Legal">
+        <a href="/privacy"{{if eq .active "privacy"}} aria-current="page"{{end}}>Privacy</a>
+        <a href="/terms"{{if eq .active "terms"}} aria-current="page"{{end}}>Terms</a>
+        <a href="/account/delete"{{if eq .active "account-delete"}} aria-current="page"{{end}}>Delete account</a>
+        <a href="/">Back to LEDit</a>
+    </nav>
+{{end}}
+
+{{define "legal_foot"}}
+    <p class="muted" style="margin-top:48px">LEDit is self-hosted software. The operator of this instance is responsible for the deployment and for answering requests about it.</p>
+</main>
+</body>
+</html>
+{{end}}
+
+{{define "privacy.html"}}{{template "legal_head" .}}
+    <p class="eyebrow">Legal</p>
+    <h1>Privacy</h1>
+    <p class="lede">What this LEDit instance stores, why it stores it, who else may see it, and how to get a copy or have it removed. Last updated {{.Legal.Year}}.</p>
+
+    <h2>Who is responsible</h2>
+    <p><strong>{{.Legal.Controller}}</strong> runs this instance and decides what is done with the data described here. The instance is hosted in {{.Legal.HostingRegion}}.</p>
+    {{if .Legal.ContactEmail}}
+    <p>For a privacy question or to exercise a right below, write to <a href="mailto:{{.Legal.ContactEmail}}">{{.Legal.ContactEmail}}</a>.{{if .Legal.ContactAddress}} Postal address: {{.Legal.ContactAddress}}.{{end}}</p>
+    {{else}}
+    <p>This instance has not published a dedicated privacy address. Signed-in users can export or delete their account from the pages linked below; otherwise contact the administrator who gave you access.</p>
+    {{end}}
+
+    <h2>What is stored</h2>
+    <ul>
+        <li><strong>Account.</strong> Your username, a password hash if you sign in with a password, your role (admin or viewer), the date the account was created and the time of your last sign-in. If the instance uses Authelia/OIDC, the provider's subject identifier and the login method are stored instead of a password.</li>
+        <li><strong>Sessions.</strong> When you sign in, a random session token is placed in an <code>HttpOnly</code>, <code>SameSite=Lax</code> cookie. Only its SHA-256 hash and its expiry are stored on the server. Sessions are deleted on sign-out, password reset, account deletion or expiry.</li>
+        <li><strong>API and guest tokens.</strong> API tokens created in the admin area are stored as SHA-256 hashes plus a short display prefix, role, timestamps and last-use time. Guest-remote tokens are instance credentials created by an administrator for the public guest remote; they also store only a hash, scopes, expiry and last use. Neither kind stores the raw secret.</li>
+        <li><strong>Guest uploads and photos.</strong> Photos sent through the guest photo-frame page are stored as files under the instance's media directory, together with their moderation status, size, upload time, expiry and the guest token that uploaded them.</li>
+        <li><strong>Timelapse frames.</strong> The instance can capture and retain rendered display frames as image files, with timestamps, for the timelapse feature and its configured retention period.</li>
+        <li><strong>Devices and display data.</strong> Device names, groups, firmware and protocol state, input bindings and input events, scene/playlist/schedule assignments, display and delivery logs, notifications and acknowledgement records. These describe the instance and its displays, not the person using the web app, but a device name or message can contain personal data if an operator puts it there.</li>
+        <li><strong>Instance settings.</strong> General settings can include a latitude and longitude used for sunrise/sunset, weather and scheduling. This location belongs to the instance and is set by an administrator; it is not read from a visitor's device.</li>
+        <li><strong>Technical logs.</strong> The web server records request metadata such as IP address, method, path, status, user agent and timing, plus application errors. Logs are rotated or pruned according to the instance's log settings.</li>
+        {{if .Legal.Traces}}<li><strong>Server traces.</strong> OpenTelemetry tracing is enabled. Traces describe request timings and internal spans on the server and are not used to build a profile of you.</li>{{end}}
+        {{if .Legal.Analytics}}<li><strong>Analytics.</strong> This instance has Umami analytics enabled at {{.Legal.AnalyticsURL}}. It records aggregate page views; it is self-hosted by the operator and is not used for advertising.</li>{{end}}
+        {{if .Legal.Mail}}<li><strong>Email delivery.</strong> If the operator configured SMTP, the mail server receives the recipient address and message content needed to deliver password-reset or notification mail.</li>{{end}}
+        {{if .Legal.OIDC}}<li><strong>Login provider.</strong> When you sign in through Authelia or another configured OIDC provider, that provider authenticates you and returns your identity to this instance.</li>{{end}}
+    </ul>
+
+    <h2>Why it is stored</h2>
+    <ul>
+        <li><strong>To run your account</strong> — signing you in, enforcing your role and keeping your settings. Legal basis: performance of a contract or the operator's legitimate interest in providing the service.</li>
+        <li><strong>To operate the displays</strong> — rendering the feed, controlling devices, delivering notifications and keeping a short delivery history. Legal basis: performance of the service and legitimate interest in a working system.</li>
+        <li><strong>To keep the instance secure</strong> — authenticating tokens, rate limiting, abuse prevention and diagnosing failures. Legal basis: legitimate interest in a safe, working service.</li>
+        <li><strong>To meet legal obligations</strong> — keeping the minimum records needed to show that an account was closed or a request was handled.</li>
+    </ul>
+
+    <h2>Who else may see it</h2>
+    <p>The operator and administrators of this instance can see account, device and content data. Guest photos are visible to the guest page and to administrators for moderation. Nothing is sold, and there is no advertising or cross-site tracking.</p>
+    <p>Depending on how the operator has configured this instance, the following processors or integrations may receive data on the operator's behalf. Only the ones actually configured are active:</p>
+    <ul>
+        <li><strong>Email (SMTP)</strong> for password-reset and notification mail.</li>
+        <li><strong>Notification integrations</strong> such as Gotify, ntfy, Pushover, Discord, Slack, Matrix or Telegram, which receive the notification text and whatever endpoint or chat identifier the operator configured.</li>
+        <li><strong>MQTT, Home Assistant and webhook endpoints</strong>, which receive display state, commands or event payloads configured by the operator.</li>
+        <li><strong>External datasources</strong> such as Sonarr, Radarr, weather, transit, sports, RSS, Immich, qBittorrent, SABnzbd, Overseerr and similar services. The operator supplies their URLs and credentials; only the data needed to render a display is requested.</li>
+        <li><strong>Google Calendar</strong> is read through a private iCal URL configured by the operator. LEDit does not use Google OAuth and does not receive a Google account identity or profile.</li>
+        <li><strong>AI providers</strong>, if the operator configures one, receive the prompt or content the operator sends for digest, image or text generation.</li>
+        <li><strong>The hosting provider</strong> running this server and its backups.</li>
+        <li><strong>Umami</strong>, if enabled, which is normally self-hosted by the operator and receives aggregate page-view data.</li>
+        <li><strong>OpenTelemetry collector</strong>, if configured, which receives server traces.</li>
+    </ul>
+    <p>Some providers may process data outside the European Economic Area. Where that happens, the operator relies on an adequacy decision or the provider's standard contractual clauses. Contact the operator for details of the providers in use.</p>
+
+    <h2 id="cookies">Cookies and tracking</h2>
+    <p>This site sets one cookie, <code>session</code>, and only after you sign in. It holds an opaque session token, is <code>HttpOnly</code> and <code>SameSite=Lax</code>, and exists so you do not have to sign in on every page. It is removed when you sign out; the matching server-side session row is deleted too. Guest frame, embed and guest-remote pages use scoped tokens rather than the account cookie.</p>
+    <p>There are no advertising cookies, third-party tracking scripts or cross-site pixels on the application pages.{{if .Legal.Analytics}} The analytics described above is self-hosted and aggregate.{{else}} No analytics service is enabled on this instance.{{end}}</p>
+
+    <h2>How long it is kept</h2>
+    <p>Account data is kept while the account exists. Sessions expire on their own. Guest photos expire according to their retention setting. Timelapse frames and logs are kept for the periods configured by the operator, then deleted or rotated. Notifications, delivery logs and chart samples are bounded by their own retention and row limits.</p>
+    <p>When you delete your account, the account row, username, email address, password hash and OIDC link are erased immediately, and every browser session and any API token owned by that account is revoked. Instance content such as displays, playlists, schedules, guest uploads and timelapse files is not personal to one account and is preserved. More detail is on <a href="/account/delete">Delete your account</a>.</p>
+    <p>Backups taken before deletion may still contain the old data until they rotate out. They are not used to restore individual accounts.</p>
+
+    <h2>Your rights</h2>
+    <p>Under Articles 13 to 22 GDPR you have the right to be informed, to access a copy, to correct data, to erasure, to restrict or object to processing, and to data portability. You can also complain to the data protection authority in the country where you live or work.</p>
+    <ul>
+        <li><strong>Get a copy.</strong> <a href="/api/v1/me/export">Download your account data</a> as JSON while signed in, or call <code>GET /api/v1/me/export</code> with your session or bearer token.</li>
+        <li><strong>Correct it.</strong> An administrator can change your username, role or password from the user administration page.</li>
+        <li><strong>Delete it.</strong> Use <a href="/account/delete">Delete your account</a> or the app's Settings screen. Deletion takes effect immediately.</li>
+        <li><strong>Object or restrict.</strong> Ask the operator to restrict processing, or stop using the instance.</li>
+        <li><strong>Complain.</strong> Contact the operator first, then the supervisory authority in your country if the answer is not satisfactory.</li>
+    </ul>
+    <p>Requests that are not covered by the self-service pages can be sent to the contact above; the operator answers within one month as the GDPR requires.</p>
+
+    <h2>Children</h2>
+    <p>This instance is not intended for anyone under 16, and accounts for younger users are not knowingly created. The Android app is listed for a 16+ audience.</p>
+
+    <h2>Changes</h2>
+    <p>If this policy changes in a way that affects you, the operator should announce the change before it takes effect. The current version is always available at this URL.</p>
+
+    <p class="muted">See also the <a href="/terms">terms of use</a> and <a href="/account/delete">account deletion</a> page.</p>
+{{template "legal_foot" .}}{{end}}
+
+{{define "terms.html"}}{{template "legal_head" .}}
+    <p class="eyebrow">Legal</p>
+    <h1>Terms of use</h1>
+    <p class="lede">The rules for using this LEDit instance and its Android remote. Last updated {{.Legal.Year}}.</p>
+
+    <h2>Your account</h2>
+    <p>You need an account to use the administrative and remote features of this instance. Keep one account per person, keep your password or API token to yourself, and tell the administrator if you think someone else has access. You are responsible for activity under your account.</p>
+    <p>You can delete your account at any time from <a href="/account/delete">Delete your account</a> or from Settings in the Android app. Administrators may suspend or remove accounts that break these terms or endanger the instance.</p>
+
+    <h2>Acceptable use</h2>
+    <ul>
+        <li>Do not scrape, bulk-download or resell data or device access you were not given.</li>
+        <li>Do not use automated traffic to evade rate limits, brute-force credentials or probe the service without permission.</li>
+        <li>Do not upload malware, unlawful content, or content that violates the rights of others.</li>
+        <li>Do not use the guest photo page or notification integrations to harass, impersonate or spam people.</li>
+        <li>Respect the displays, devices and network you control; commands affect real hardware.</li>
+    </ul>
+
+    <h2>Content and devices</h2>
+    <p>You keep ownership of content you upload through the guest photo page or configure in this instance. By uploading it you give the operator permission to store, display and moderate it for the purpose of running the guest frame and the instance. That permission ends when the content is deleted, except for copies in backups that have not yet rotated.</p>
+    <p>Device configurations, playlists, schedules, scenes and display output belong to the instance. Deleting your user account does not remove instance content that is not personal to your account.</p>
+
+    <h2>External services</h2>
+    <p>This instance can read data from services the operator configures, including calendar feeds, weather, media and automation services. That data is shown as it was found and may be incomplete, delayed or wrong. Each external service keeps its own terms and privacy policy.</p>
+
+    <h2>Availability</h2>
+    <p>This is a self-hosted instance, offered as it is. It can go down for maintenance, lose data if a backup fails, or be shut down entirely. Do not rely on it as the only copy of anything important. Use <a href="/api/v1/me/export">account export</a> to keep your own copy of your account data.</p>
+
+    <h2>Liability</h2>
+    <p>To the extent the law allows, the operator is not liable for indirect or consequential loss arising from use of the instance, including missed notifications, display downtime or loss of configuration. Nothing here limits liability that cannot be limited by law, including for death, personal injury or fraud.</p>
+
+    <h2>Governing law</h2>
+    <p>These terms are governed by the law of the country in which the operator is established, without affecting consumer protections you have where you live.</p>
+
+    <h2>Changes</h2>
+    <p>Material changes are announced in the app or on this page before they take effect. Continuing to use the instance after that means you accept the updated terms.</p>
+
+    <p class="muted">See also the <a href="/privacy">privacy policy</a>, which explains what data is stored and how to remove it.</p>
+{{template "legal_foot" .}}{{end}}
+
+{{define "account_delete.html"}}{{template "legal_head" .}}
+    <p class="eyebrow">Account</p>
+    <h1>Delete your account</h1>
+    <p class="lede">Deletion is immediate. Your account and credentials are removed when you confirm; nothing is held for a waiting period.</p>
+
+    {{if .deleted}}<div class="notice">Your account has been deleted.</div>{{end}}
+    {{if eq .error "last_admin"}}<div class="notice danger">This is the only administrator account. Promote another administrator first, then come back to delete this one.</div>{{end}}
+    {{if eq .error "confirm"}}<div class="notice danger">The confirmation did not match your username. Type it exactly as shown.</div>{{end}}
+    {{if eq .error "failed"}}<div class="notice danger">The account could not be deleted. Try again or contact the operator.</div>{{end}}
+
+    <h2>Delete it yourself</h2>
+    {{if .SignedIn}}
+    <p>You are signed in as <strong>{{.Username}}</strong>. Type your username to confirm. This is the same action as Settings → Delete account in the Android app.</p>
+    <form method="POST" action="/settings/account/delete">
+        <label for="confirm">Username</label>
+        <input id="confirm" name="confirm" autocomplete="off" required placeholder="{{.Username}}">
+        <button type="submit" class="btn btn-danger">Delete my account</button>
+    </form>
+    {{else}}
+    <p>Sign in, then return to this page and type your username to confirm. <a href="/login">Sign in</a> if you have not already.</p>
+    <p>In the Android app the same action lives under Settings → Delete account, and it calls the same endpoint with the same typed confirmation.</p>
+    {{end}}
+
+    <h2>If you cannot sign in</h2>
+    {{if .Legal.ContactEmail}}
+    <p>Write to <a href="mailto:{{.Legal.ContactEmail}}">{{.Legal.ContactEmail}}</a> from the address on the account and ask for it to be deleted. Requests are handled within one month, usually sooner.</p>
+    {{else}}
+    <p>Ask an administrator of this instance to remove the account. An administrator can delete users from the user administration page; there is no self-service route that works without signing in.</p>
+    {{end}}
+
+    <h2>What is removed</h2>
+    <ul>
+        <li>Your username, email address, password hash, role and account timestamps.</li>
+        <li>Your link to an external login provider (OIDC subject), if you used one.</li>
+        <li>Every browser session for the account.</li>
+        <li>Any API token whose owner matches your account; its hash is kept only as revoked metadata and can no longer authenticate.</li>
+    </ul>
+
+    <h2>What stays</h2>
+    <p>Instance content is not personal to one account and is preserved: devices, groups, playlists, schedules, scenes, display settings, guest photos and timelapse frames. Guest-remote tokens and other API tokens are instance credentials created by an administrator; they are not attached to your user account and must be revoked separately in the admin tools if needed.</p>
+    <p>Backups taken before the deletion may still contain the old account data until they rotate out. They are not used to restore individual accounts.</p>
+
+    <div class="notice">The last administrator cannot delete themselves. Promote another administrator first, otherwise the instance would be left with no one able to administer it.</div>
+
+    <p class="muted">The full detail is in the <a href="/privacy">privacy policy</a>.</p>
+{{template "legal_foot" .}}{{end}}

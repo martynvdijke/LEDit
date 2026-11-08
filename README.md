@@ -67,6 +67,7 @@ The project identity lives in [`brandkit/README.md`](brandkit/README.md), with r
 - **Analytics** — Display tracking (displays by source, uptime stats)
 - **Artifact Sharing** — Export a single theme, layout, playlist, scene, text slide or pixel art as a portable bundle and import one from a file, URL or remote catalog (see [docs/artifact-sharing.md](docs/artifact-sharing.md))
 - **Umami Analytics** — Optional web analytics integration
+- **Legal pages** — Public privacy policy, terms and account-deletion pages at `/privacy`, `/terms` and `/account/delete`; account export/delete API at `/api/v1/me` (see [docs/legal.md](docs/legal.md))
 
 ### Datasource Plugins
 - **Plugin seam** — Community datasources without forking: register an `exec` binary or `localhost` HTTP endpoint (Admin → Plugins). LEDit sends `{v:1, config, width, height, timestamp, device_id}` and the plugin returns either `{v:1, rows:[{label,value,text}]}` (server-rendered) or `{v:1, png_b64}` (validated PNG at requested resolution). Explicit enablement, `PLUGINS_ALLOW_PREFIX` env to restrict exec paths, localhost-only HTTP, per-plugin timeout (default 3000ms), stderr tail (4KB) and health at `GET /api/plugins/:id/health`. **No sandboxing — run only trusted plugins.** Contract is versioned (`v:1`); wrong version or unknown fields are rejected; rows capped at 20, field lengths capped; PNG dimensions must match request or is rejected. Optional seed from `config/plugins.yaml` (disabled by default).
@@ -108,6 +109,14 @@ LEDit is configured through the admin panel at `/admin/settings`. Key environmen
 | `DOCKER` | Set to `true` when running in Docker (auto-configured in Dockerfile) |
 | `ARTIFACT_CATALOG_URL` | Optional JSON index URL for one-click artifact installs (unset = catalog disabled) |
 | `ARTIFACT_CATALOG_HOSTS` | Optional comma-separated host allowlist for remote artifact bundles (default: public addresses only) |
+| `BASE_URL` | Public origin of the instance, used by legal pages and store metadata |
+| `LEGAL_CONTROLLER_NAME` | Controller named in the privacy policy (default: "the operator of this LEDit instance") |
+| `LEGAL_CONTACT_EMAIL` | Privacy contact and email fallback for account deletion |
+| `LEGAL_CONTACT_ADDRESS` | Optional postal address shown on the privacy policy |
+| `LEGAL_HOSTING_REGION` | Hosting region named in the privacy policy (default: "the European Union") |
+
+See [docs/legal.md](docs/legal.md) for the legal page and deletion behaviour, and
+[docs/play-store.md](docs/play-store.md) for the Play Console data-safety answers.
 
 All other settings (datasources, schedules, devices, themes) are managed through the web UI.
 

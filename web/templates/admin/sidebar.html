@@ -60,6 +60,9 @@
         <a href="/admin/artifacts" class="nav-link{{if eq $.active "artifacts"}} active{{end}}"><span class="nav-icon">⇄</span>Share Artifacts</a>
         <a href="/admin/artifacts/catalog" class="nav-link{{if eq $.active "artifact_catalog"}} active{{end}}"><span class="nav-icon">⇩</span>Artifact Catalog</a>
         <a href="/admin/events" class="nav-link{{if eq $.active "events"}} active{{end}}"><span class="nav-icon">⚡</span>Events</a>
+        <a href="/privacy" class="nav-link{{if eq $.active "privacy"}} active{{end}}"><span class="nav-icon">§</span>Privacy</a>
+        <a href="/terms" class="nav-link{{if eq $.active "terms"}} active{{end}}"><span class="nav-icon">§</span>Terms</a>
+        <a href="/account/delete" class="nav-link{{if eq $.active "account-delete"}} active{{end}}"><span class="nav-icon">⌫</span>Delete account</a>
         <a href="/admin/eink/toggle" class="nav-link{{if eq $.active "eink"}} active{{end}}" id="eink-toggle-link"><span class="nav-icon">{{if .eink_mode}}■{{else}}□{{end}}</span>E-Ink: {{if .eink_mode}}On{{else}}Off{{end}}</a>
         <details class="nav-datasources">
             <summary class="nav-link"><span class="nav-icon">＋</span>Add datasource</summary>

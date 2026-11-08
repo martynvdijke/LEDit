@@ -469,6 +469,21 @@ func (s *Server) setupRoutes() {
 	s.Router.POST("/login", s.LoginAction)
 	s.Router.GET("/logout", s.LogoutAction)
 
+	// Public legal pages. Both app stores and data-protection law require the
+	// policy and deletion instructions to be readable before sign-in.
+	s.Router.GET("/privacy", s.privacyPage)
+	s.Router.GET("/terms", s.termsPage)
+	s.Router.GET("/account/delete", s.accountDeletePage)
+	s.Router.POST("/settings/account/delete", s.requireSessionAccount(), s.SettingsAccountDelete)
+
+	// Account self-service API (session or bearer token).
+	me := s.Router.Group("/api/v1")
+	me.Use(s.RequireAccount())
+	{
+		me.GET("/me/export", s.APIMeExport)
+		me.DELETE("/me", s.APIMeDelete)
+	}
+
 	// OIDC SSO via Authelia (no-op 404 when OIDC_ENABLED=false).
 	s.Router.GET("/api/auth/oidc/login", s.OIDCLogin)
 	s.Router.GET("/api/auth/oidc/callback", s.OIDCCallback)
