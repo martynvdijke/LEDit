@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -114,6 +115,31 @@ func (s *Server) AdminLogSettings(c *gin.Context) {
 		"settings":    settings,
 		"hasSettings": settings != nil,
 		"levels":      logging.ValidLevels(),
+	})
+}
+
+// PublicOTelSettings exposes the OTel trace target to native clients.
+//
+// The mobile app needs the collector endpoint to export its own spans, and it
+// has no admin session. The response contains no secrets (the endpoint is
+// already shipped to browsers in the admin UI), and metrics/logs export stay
+// disabled for clients.
+func (s *Server) PublicOTelSettings(c *gin.Context) {
+	endpoint := ""
+	enabled := false
+
+	settings, err := s.DB.LogSettings.Query().Only(s.Ctx)
+	if err == nil && settings != nil {
+		endpoint = strings.TrimSpace(settings.OtelEndpoint)
+		enabled = settings.OtelEnabled && endpoint != ""
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"endpoint":        endpoint,
+		"enabled":         enabled,
+		"traces_enabled":  enabled,
+		"metrics_enabled": false,
+		"logs_enabled":    false,
 	})
 }
 
