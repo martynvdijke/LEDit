@@ -1,3 +1,10 @@
+# [1.57.0](https://github.com/martynvdijke/LEDit/compare/v1.56.3...v1.57.0) (2026-11-08)
+
+
+### Features
+
+* **mobile:** add OpenTelemetry tracing with runtime endpoint from API ([0024ff0](https://github.com/martynvdijke/LEDit/commit/0024ff064f417d1c60b3d8628b61b71e42c2a376))
+
 ## [1.56.3](https://github.com/martynvdijke/LEDit/compare/v1.56.2...v1.56.3) (2026-11-03)
 
 ## [1.56.2](https://github.com/martynvdijke/LEDit/compare/v1.56.1...v1.56.2) (2026-11-01)
