@@ -1,3 +1,10 @@
+## [1.58.1](https://github.com/martynvdijke/LEDit/compare/v1.58.0...v1.58.1) (2026-11-10)
+
+
+### Bug Fixes
+
+* **renovate:** disable platform automerge so Renovate merges green PRs itself ([57fabaa](https://github.com/martynvdijke/LEDit/commit/57fabaaa1c33b9369b3112b84334d9e2f5f4ad83))
+
 # [1.58.0](https://github.com/martynvdijke/LEDit/compare/v1.57.0...v1.58.0) (2026-11-08)
 
 
