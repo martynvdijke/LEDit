@@ -1,3 +1,10 @@
+## [1.58.3](https://github.com/martynvdijke/LEDit/compare/v1.58.2...v1.58.3) (2026-11-11)
+
+
+### Bug Fixes
+
+* **ci:** bound android emulator e2e so it cannot hang for six hours ([f8fc9b9](https://github.com/martynvdijke/LEDit/commit/f8fc9b9e42a1a0d0c7d8594de3c82b8f5edd0576))
+
 ## [1.58.2](https://github.com/martynvdijke/LEDit/compare/v1.58.1...v1.58.2) (2026-11-10)
 
 
