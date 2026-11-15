@@ -1,3 +1,10 @@
+## [1.58.4](https://github.com/martynvdijke/LEDit/compare/v1.58.3...v1.58.4) (2026-11-15)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#104](https://github.com/martynvdijke/LEDit/issues/104)) ([195c73d](https://github.com/martynvdijke/LEDit/commit/195c73d82a82afa7f0652115074e0e8d4d557779))
+
 ## [1.58.3](https://github.com/martynvdijke/LEDit/compare/v1.58.2...v1.58.3) (2026-11-11)
 
 
