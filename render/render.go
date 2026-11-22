@@ -294,12 +294,17 @@ func shouldScroll(text string, availW int) bool {
 	return len(text)*simpleCharW > availW
 }
 
+// timeNow is the render package clock. Production code reads it instead of
+// calling time.Now directly inside scroll rendering so tests can pin the
+// clock and assert same-bucket determinism without racing a bucket boundary.
+var timeNow = time.Now
+
 func drawStringSimpleScrolling(img *image.RGBA, text string, x, y int, col color.Color, availW int) {
 	charW := simpleCharW
 	charH := simpleCharH
 	gap := charW * 3
 	textW := len(text) * charW
-	offset := ScrollOffset(time.Now(), 100, 30, textW, gap)
+	offset := ScrollOffset(timeNow(), 100, 30, textW, gap)
 	total := textW + gap
 	if total <= 0 {
 		return

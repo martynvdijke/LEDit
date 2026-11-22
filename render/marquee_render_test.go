@@ -40,10 +40,22 @@ func TestRenderDict_ShortRow_NoScroll(t *testing.T) {
 	}
 }
 
+// stubClock replaces the package clock with a controllable one and returns an
+// advance function. The original clock is restored on cleanup.
+func stubClock(t *testing.T, start time.Time) func(time.Duration) {
+	t.Helper()
+	orig := timeNow
+	cur := start
+	timeNow = func() time.Time { return cur }
+	t.Cleanup(func() { timeNow = orig })
+	return func(d time.Duration) { cur = cur.Add(d) }
+}
+
 func TestRenderDict_LongRow_Scrolls(t *testing.T) {
 	theme := testTheme()
 	long := strings.Repeat("ABCDEFGHIJ", 4)
 	data := map[string]string{"k": long}
+	advance := stubClock(t, time.UnixMilli(1_700_000_000_000))
 	r1, err := RenderDict(data, 320, 128, theme, "/nonexistent/font.ttf")
 	if err != nil {
 		t.Fatalf("RenderDict: %v", err)
@@ -59,17 +71,10 @@ func TestRenderDict_LongRow_Scrolls(t *testing.T) {
 	if !bytes.Equal(r1.Data, r2.Data) {
 		t.Fatalf("expected identical bytes within same bucket")
 	}
-	// Poll until bytes differ across buckets.
-	differed := false
-	for i := 0; i < 15; i++ {
-		time.Sleep(110 * time.Millisecond)
-		r3, _ := RenderDict(data, 320, 128, theme, "/nonexistent/font.ttf")
-		if !bytes.Equal(r1.Data, r3.Data) {
-			differed = true
-			break
-		}
-	}
-	if !differed {
+	// Renders in a later bucket differ.
+	advance(350 * time.Millisecond)
+	r3, _ := RenderDict(data, 320, 128, theme, "/nonexistent/font.ttf")
+	if bytes.Equal(r1.Data, r3.Data) {
 		t.Fatalf("expected renders in different buckets to differ")
 	}
 }
@@ -97,6 +102,7 @@ func TestRenderPanel_LongScrolls(t *testing.T) {
 	theme := testTheme()
 	long := strings.Repeat("ABCDEFGHIJ", 4)
 	data := map[string]string{"k": long}
+	advance := stubClock(t, time.UnixMilli(1_700_000_000_000))
 	r1, err := RenderPanel(data, 128, 128, theme, "/nonexistent/font.ttf")
 	if err != nil {
 		t.Fatalf("RenderPanel: %v", err)
@@ -108,17 +114,10 @@ func TestRenderPanel_LongScrolls(t *testing.T) {
 	if !bytes.Equal(r1.Data, r2.Data) {
 		t.Fatalf("expected identical bytes within same bucket")
 	}
-	// Ensure different bucket differs.
-	differed := false
-	for i := 0; i < 15; i++ {
-		time.Sleep(110 * time.Millisecond)
-		r3, _ := RenderPanel(data, 128, 128, theme, "/nonexistent/font.ttf")
-		if !bytes.Equal(r1.Data, r3.Data) {
-			differed = true
-			break
-		}
-	}
-	if !differed {
+	// Ensure a later bucket differs.
+	advance(350 * time.Millisecond)
+	r3, _ := RenderPanel(data, 128, 128, theme, "/nonexistent/font.ttf")
+	if bytes.Equal(r1.Data, r3.Data) {
 		t.Fatalf("expected panel renders in different buckets to differ")
 	}
 }
@@ -142,6 +141,7 @@ func TestFittingRow_PixelsConfined(t *testing.T) {
 func TestMarqueeSizes(t *testing.T) {
 	theme := testTheme()
 	long := strings.Repeat("scrolling ", 12) // far wider than 64 or 32 px
+	stubClock(t, time.UnixMilli(1_700_000_000_000))
 	for _, size := range [][2]int{{64, 64}, {32, 32}} {
 		w, h := size[0], size[1]
 		r, err := RenderDict(map[string]string{"k": long}, w, h, theme, "/nonexistent/font.ttf")
